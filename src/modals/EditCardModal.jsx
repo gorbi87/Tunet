@@ -513,7 +513,25 @@ function RoomSettingsSection({
   const applySearchAndDomain = React.useCallback(
     (ids) =>
       ids.filter((id) => {
-        if (domainFilter !== 'all' && !id.startsWith(`${domainFilter}.`)) return false;
+        if (domainFilter !== 'all') {
+          if (domainFilter === '_motion') {
+            const e = entities[id];
+            const dc = e?.attributes?.device_class;
+            if (dc !== 'motion' && dc !== 'occupancy' && dc !== 'presence') return false;
+          } else if (domainFilter === '_temperature') {
+            const e = entities[id];
+            if (
+              !(
+                e?.attributes?.device_class === 'temperature' ||
+                id.includes('temperature') ||
+                id.includes('temp')
+              )
+            )
+              return false;
+          } else if (!id.startsWith(`${domainFilter}.`)) {
+            return false;
+          }
+        }
         if (!query) return true;
         const q = query.toLowerCase();
         const name = entities[id]?.attributes?.friendly_name || id;
@@ -552,135 +570,122 @@ function RoomSettingsSection({
   };
 
   const areAllDomainEntitiesExcluded =
-    domainScopedEntityIds.length > 0 &&
-    domainScopedEntityIds.every((id) => excludedEntityIds.includes(id));
-  const hasExcludedDomainEntities = domainScopedEntityIds.some((id) =>
-    excludedEntityIds.includes(id)
-  );
+    roomEntityIds.length > 0 && roomEntityIds.every((id) => excludedEntityIds.includes(id));
+  const hasExcludedDomainEntities = roomEntityIds.some((id) => excludedEntityIds.includes(id));
 
   const handleExcludeAllEntities = () => {
-    if (!domainScopedEntityIds.length || areAllDomainEntitiesExcluded) return;
-    const confirmMsg =
-      domainFilter !== 'all'
-        ? `Exclude all ${domainLabelMap[domainFilter] || domainFilter} entities?`
-        : t('room.excludeAllConfirm') ||
-          'Are you sure you want to exclude all entities in this room?';
-    const confirmed = globalThis.confirm(confirmMsg);
+    if (!roomEntityIds.length || areAllDomainEntitiesExcluded) return;
+    const confirmed = globalThis.confirm(
+      t('room.excludeAllConfirm') || 'Are you sure you want to exclude all entities in this room?'
+    );
     if (!confirmed) return;
     const mergedExcluded = Array.from(
       new Set([
         ...(Array.isArray(editSettings.excludedEntityIds) ? editSettings.excludedEntityIds : []),
-        ...domainScopedEntityIds,
+        ...roomEntityIds,
       ])
     );
     saveCardSetting(editSettingsKey, 'excludedEntityIds', mergedExcluded);
   };
 
   const handleIncludeAllEntities = () => {
-    if (!domainScopedEntityIds.length || !hasExcludedDomainEntities) return;
-    const domainEntitySet = new Set(domainScopedEntityIds);
+    if (!roomEntityIds.length || !hasExcludedDomainEntities) return;
     const currentExcluded = Array.isArray(editSettings.excludedEntityIds)
       ? editSettings.excludedEntityIds
       : [];
-    const nextExcluded = currentExcluded.filter((id) => !domainEntitySet.has(id));
+    const nextExcluded = currentExcluded.filter((id) => !roomEntityIds.includes(id));
     saveCardSetting(editSettingsKey, 'excludedEntityIds', nextExcluded);
   };
 
-  const domainCandidates = React.useMemo(() => {
-    const lights = activeAreaEntityIds.filter((id) => id.startsWith('light.'));
-    const climates = activeAreaEntityIds.filter((id) => id.startsWith('climate.'));
-    const vacuums = activeAreaEntityIds.filter((id) => id.startsWith('vacuum.'));
-    const covers = activeAreaEntityIds.filter((id) => id.startsWith('cover.'));
-    const mediaPlayers = activeAreaEntityIds.filter((id) => id.startsWith('media_player.'));
-    const temps = activeAreaEntityIds.filter((id) => {
-      const e = entities[id];
-      return (
-        e &&
-        (e.attributes?.device_class === 'temperature' ||
-          id.includes('temperature') ||
-          id.includes('temp'))
-      );
-    });
-    const motions = activeAreaEntityIds.filter((id) => {
-      const e = entities[id];
-      return (
-        e &&
-        (e.attributes?.device_class === 'motion' ||
-          e.attributes?.device_class === 'occupancy' ||
-          e.attributes?.device_class === 'presence')
-      );
-    });
-    const humidities = activeAreaEntityIds.filter((id) => {
-      const e = entities[id];
-      return e && e.attributes?.device_class === 'humidity';
-    });
-    return { lights, climates, vacuums, covers, mediaPlayers, temps, motions, humidities };
-  }, [activeAreaEntityIds, entities]);
+  const cardToggleOptions = [
+    { key: 'showLights', label: t('room.showLights'), defaultVal: true },
+    { key: 'showTemp', label: t('room.showTemp'), defaultVal: true },
+    { key: 'showMotion', label: t('room.showMotion'), defaultVal: true },
+    { key: 'showLightChip', label: t('room.showLightChip') || 'Show light chip', defaultVal: true },
+    { key: 'showMediaChip', label: t('room.showMediaChip') || 'Show media chip', defaultVal: true },
+    {
+      key: 'showActiveChip',
+      label: t('room.showActiveChip') || 'Show active devices chip',
+      defaultVal: true,
+    },
+    {
+      key: 'showVacuumChip',
+      label: t('room.showVacuumChip') || 'Show vacuum chip',
+      defaultVal: true,
+    },
+    {
+      key: 'showCoverChip',
+      label: t('room.showCoverChip') || 'Show cover chip',
+      defaultVal: true,
+    },
+    {
+      key: 'showOccupiedIndicator',
+      label: t('room.showOccupiedIndicator') || 'Show occupied indicator',
+      defaultVal: true,
+    },
+    {
+      key: 'showIconWatermark',
+      label: t('room.showIconWatermark') || 'Show icon watermark',
+      defaultVal: true,
+    },
+  ];
 
-  const availableDomainFilters = React.useMemo(() => {
-    const domains = new Set(roomEntityIds.map((id) => id.split('.')[0]));
-    return [
-      'all',
-      'light',
-      'climate',
-      'vacuum',
-      'media_player',
-      'sensor',
-      'binary_sensor',
-      'switch',
-      'fan',
-      'cover',
-    ].filter((d) => d === 'all' || domains.has(d));
-  }, [roomEntityIds]);
-
-  const renderFeatureToggle = (key, label, defaultVal = true) => {
-    const value = editSettings[key] !== undefined ? editSettings[key] : defaultVal;
-    return (
-      <div key={key} className="flex items-center justify-between gap-2">
-        <span className="truncate pr-2 text-[10px] font-bold tracking-widest text-gray-500 uppercase">
-          {label}
-        </span>
-        <button
-          onClick={() => saveCardSetting(editSettingsKey, key, !value)}
-          className={`relative h-5 w-10 rounded-full transition-colors ${value ? 'border border-[var(--glass-border)] bg-[var(--glass-bg-hover)]' : 'bg-[var(--glass-bg-hover)]'}`}
-        >
-          <div
-            className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${value ? 'left-5' : 'left-0.5'}`}
-          />
-        </button>
-      </div>
-    );
-  };
-
-  const renderEntityPicker = (settingKey, label, candidates) => (
-    <div className="space-y-1">
-      <label className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
-        {label}
-      </label>
-      <select
-        value={editSettings[settingKey] || ''}
-        onChange={(e) => saveCardSetting(editSettingsKey, settingKey, e.target.value || null)}
-        className="popup-surface w-full rounded-xl px-3 py-2 text-xs text-[var(--text-primary)] outline-none"
-        style={{ color: 'var(--text-primary)' }}
-      >
-        <option
-          value=""
-          style={{ backgroundColor: 'var(--modal-bg)', color: 'var(--text-primary)' }}
-        >
-          {t('common.auto') || 'Auto'}
-        </option>
-        {candidates.map((id) => (
-          <option
-            key={id}
-            value={id}
-            style={{ backgroundColor: 'var(--modal-bg)', color: 'var(--text-primary)' }}
-          >
-            {entities[id]?.attributes?.friendly_name || id}
-          </option>
-        ))}
-      </select>
-    </div>
+  const hasAutoCandidates = React.useMemo(
+    () => ({
+      mainLightEntityId: activeAreaEntityIds.some((id) => id.startsWith('light.')),
+      tempEntityId: activeAreaEntityIds.some((id) => {
+        const e = entities[id];
+        return (
+          e &&
+          (e.attributes?.device_class === 'temperature' ||
+            id.includes('temperature') ||
+            id.includes('temp'))
+        );
+      }),
+      motionEntityId: activeAreaEntityIds.some((id) => {
+        const e = entities[id];
+        return (
+          e &&
+          (e.attributes?.device_class === 'motion' ||
+            e.attributes?.device_class === 'occupancy' ||
+            e.attributes?.device_class === 'presence')
+        );
+      }),
+      vacuumEntityId: activeAreaEntityIds.some((id) => id.startsWith('vacuum.')),
+      coverEntityId: activeAreaEntityIds.some((id) => id.startsWith('cover.')),
+    }),
+    [activeAreaEntityIds, entities]
   );
+
+  const hasSource = React.useMemo(() => {
+    const selected = {
+      mainLightEntityId: editSettings.mainLightEntityId,
+      tempEntityId: editSettings.tempEntityId,
+      motionEntityId: editSettings.motionEntityId,
+      vacuumEntityId: editSettings.vacuumEntityId,
+      coverEntityId: editSettings.coverEntityId,
+    };
+    return {
+      mainLightEntityId: !!selected.mainLightEntityId || hasAutoCandidates.mainLightEntityId,
+      tempEntityId: !!selected.tempEntityId || hasAutoCandidates.tempEntityId,
+      motionEntityId: !!selected.motionEntityId || hasAutoCandidates.motionEntityId,
+      vacuumEntityId: !!selected.vacuumEntityId || hasAutoCandidates.vacuumEntityId,
+      coverEntityId: !!selected.coverEntityId || hasAutoCandidates.coverEntityId,
+    };
+  }, [editSettings, hasAutoCandidates]);
+
+  const compactFeatureOptions = cardToggleOptions.filter((option) => {
+    if (['showLights', 'showLightChip'].includes(option.key)) return hasSource.mainLightEntityId;
+    if (option.key === 'showTemp') return hasSource.tempEntityId;
+    if (['showMotion', 'showOccupiedIndicator'].includes(option.key))
+      return hasSource.motionEntityId;
+    if (option.key === 'showVacuumChip') return hasSource.vacuumEntityId;
+    if (option.key === 'showCoverChip') return hasSource.coverEntityId;
+    if (option.key === 'showMediaChip')
+      return activeAreaEntityIds.some((id) => id.startsWith('media_player.'));
+    if (option.key === 'showActiveChip') return activeAreaEntityIds.length > 0;
+    return true;
+  });
 
   const domainLabelMap = {
     all: t('room.filterAll') || 'All',
@@ -693,7 +698,51 @@ function RoomSettingsSection({
     switch: t('room.domain.switch') || 'Switches',
     fan: t('room.domain.fan') || 'Fans',
     cover: t('room.domain.cover') || 'Covers',
+    _motion: t('room.motionShort') || 'Motion',
+    _temperature: t('room.tempShort') || 'Temp',
   };
+
+  const allDomainKeys = [
+    'all',
+    'light',
+    'climate',
+    'vacuum',
+    'media_player',
+    'sensor',
+    'binary_sensor',
+    'switch',
+    'fan',
+    'cover',
+    '_motion',
+    '_temperature',
+  ];
+
+  const presentDomainFilters = React.useMemo(() => {
+    return allDomainKeys.filter((key) => {
+      if (key === 'all') return true;
+      if (key === '_motion')
+        return roomEntityIds.some((id) => {
+          const e = entities[id];
+          return (
+            e &&
+            (e.attributes?.device_class === 'motion' ||
+              e.attributes?.device_class === 'occupancy' ||
+              e.attributes?.device_class === 'presence')
+          );
+        });
+      if (key === '_temperature')
+        return roomEntityIds.some((id) => {
+          const e = entities[id];
+          return (
+            e &&
+            (e.attributes?.device_class === 'temperature' ||
+              id.includes('temperature') ||
+              id.includes('temp'))
+          );
+        });
+      return roomEntityIds.some((id) => id.startsWith(`${key}.`));
+    });
+  }, [roomEntityIds, entities]);
 
   const entityActionLabels = {
     main: t('room.mainShort') || 'Main',
@@ -757,7 +806,7 @@ function RoomSettingsSection({
             />
 
             <div className="flex flex-wrap gap-2">
-              {availableDomainFilters.map((domain) => (
+              {presentDomainFilters.map((domain) => (
                 <button
                   type="button"
                   key={domain}
@@ -960,120 +1009,29 @@ function RoomSettingsSection({
           </span>
         </button>
         {showCardFeatures && (
-          <div className="space-y-3">
-            {domainCandidates.lights.length > 0 && (
-              <div className="space-y-2 rounded-xl bg-[var(--glass-bg)]/60 p-3">
-                <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
-                  {t('room.domain.light') || 'Lights'}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {compactFeatureOptions.map((opt) => {
+              const value =
+                editSettings[opt.key] !== undefined ? editSettings[opt.key] : opt.defaultVal;
+              return (
+                <div
+                  key={opt.key}
+                  className="flex items-center justify-between gap-2 rounded-xl bg-[var(--glass-bg)]/60 px-2.5 py-2"
+                >
+                  <span className="truncate pr-2 text-[10px] font-bold tracking-widest text-gray-500 uppercase">
+                    {opt.label}
+                  </span>
+                  <button
+                    onClick={() => saveCardSetting(editSettingsKey, opt.key, !value)}
+                    className={`relative h-5 w-10 rounded-full transition-colors ${value ? 'border border-[var(--glass-border)] bg-[var(--glass-bg-hover)]' : 'bg-[var(--glass-bg-hover)]'}`}
+                  >
+                    <div
+                      className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${value ? 'left-5' : 'left-0.5'}`}
+                    />
+                  </button>
                 </div>
-                {renderFeatureToggle('showLights', t('room.showLights'))}
-                {renderFeatureToggle('showLightChip', t('room.showLightChip') || 'Show light chip')}
-                {renderEntityPicker(
-                  'mainLightEntityId',
-                  t('room.mainLight') || 'Main light',
-                  domainCandidates.lights
-                )}
-              </div>
-            )}
-            {domainCandidates.temps.length > 0 && (
-              <div className="space-y-2 rounded-xl bg-[var(--glass-bg)]/60 p-3">
-                <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
-                  {t('room.showTemp') || 'Temperature'}
-                </div>
-                {renderFeatureToggle('showTemp', t('room.showTemp'))}
-                {renderEntityPicker(
-                  'tempEntityId',
-                  t('room.tempSensor') || 'Temperature sensor',
-                  domainCandidates.temps
-                )}
-              </div>
-            )}
-            {domainCandidates.motions.length > 0 && (
-              <div className="space-y-2 rounded-xl bg-[var(--glass-bg)]/60 p-3">
-                <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
-                  {t('room.motionShort') || 'Motion / Occupancy'}
-                </div>
-                {renderFeatureToggle('showMotion', t('room.showMotion'))}
-                {renderFeatureToggle(
-                  'showOccupiedIndicator',
-                  t('room.showOccupiedIndicator') || 'Show occupied indicator'
-                )}
-                {renderEntityPicker(
-                  'motionEntityId',
-                  t('room.motionSensor') || 'Motion sensor',
-                  domainCandidates.motions
-                )}
-              </div>
-            )}
-            {domainCandidates.covers.length > 0 && (
-              <div className="space-y-2 rounded-xl bg-[var(--glass-bg)]/60 p-3">
-                <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
-                  {t('room.domain.cover') || 'Covers'}
-                </div>
-                {renderFeatureToggle('showCoverChip', t('room.showCoverChip') || 'Show cover chip')}
-              </div>
-            )}
-            {domainCandidates.mediaPlayers.length > 0 && (
-              <div className="space-y-2 rounded-xl bg-[var(--glass-bg)]/60 p-3">
-                <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
-                  {t('room.domain.mediaPlayer') || 'Media'}
-                </div>
-                {renderFeatureToggle('showMediaChip', t('room.showMediaChip') || 'Show media chip')}
-              </div>
-            )}
-            {domainCandidates.vacuums.length > 0 && (
-              <div className="space-y-2 rounded-xl bg-[var(--glass-bg)]/60 p-3">
-                <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
-                  {t('room.domain.vacuum') || 'Vacuum'}
-                </div>
-                {renderFeatureToggle(
-                  'showVacuumChip',
-                  t('room.showVacuumChip') || 'Show vacuum chip'
-                )}
-                {renderEntityPicker(
-                  'vacuumEntityId',
-                  t('room.vacuumEntity') || 'Vacuum entity',
-                  domainCandidates.vacuums
-                )}
-              </div>
-            )}
-            {domainCandidates.climates.length > 0 && (
-              <div className="space-y-2 rounded-xl bg-[var(--glass-bg)]/60 p-3">
-                <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
-                  {t('room.domain.climate') || 'Climate'}
-                </div>
-                {renderEntityPicker(
-                  'climateEntityId',
-                  t('room.climateSensor') || 'Climate entity',
-                  domainCandidates.climates
-                )}
-              </div>
-            )}
-            {domainCandidates.humidities.length > 0 && (
-              <div className="space-y-2 rounded-xl bg-[var(--glass-bg)]/60 p-3">
-                <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
-                  {t('room.humidityShort') || 'Humidity'}
-                </div>
-                {renderEntityPicker(
-                  'humidityEntityId',
-                  t('room.humiditySensor') || 'Humidity sensor',
-                  domainCandidates.humidities
-                )}
-              </div>
-            )}
-            <div className="space-y-2 rounded-xl bg-[var(--glass-bg)]/60 p-3">
-              <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
-                {t('room.cardFeatures') || 'General'}
-              </div>
-              {renderFeatureToggle(
-                'showActiveChip',
-                t('room.showActiveChip') || 'Show active devices chip'
-              )}
-              {renderFeatureToggle(
-                'showIconWatermark',
-                t('room.showIconWatermark') || 'Show icon watermark'
-              )}
-            </div>
+              );
+            })}
           </div>
         )}
       </div>

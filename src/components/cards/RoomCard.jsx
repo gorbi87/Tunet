@@ -160,6 +160,14 @@ export default function RoomCard({
       null,
     [vacuumIds, entities]
   );
+  const activeCover = useMemo(
+    () =>
+      coverIds
+        .map((id) => entities[id])
+        .find((entity) => entity && !['closed', 'unavailable', 'unknown'].includes(entity.state)) ||
+      null,
+    [coverIds, entities]
+  );
   const isMainLightOn = mainLightId ? entities[mainLightId]?.state === 'on' : false;
 
   const climateEntity = climateId ? entities[climateId] : null;
@@ -245,45 +253,31 @@ export default function RoomCard({
     }
   }, [activeVacuum]);
 
-  const coverState = useMemo(() => {
-    if (!coverIds.length) return null;
-    const covers = coverIds.map((id) => entities[id]).filter(Boolean);
-    const opening = covers.filter((e) => e.state === 'opening');
-    if (opening.length) return { state: 'opening', count: opening.length };
-    const closing = covers.filter((e) => e.state === 'closing');
-    if (closing.length) return { state: 'closing', count: closing.length };
-    const openCovers = covers.filter((e) => e.state === 'open');
-    if (openCovers.length) return { state: 'open', count: openCovers.length };
-    return null;
-  }, [coverIds, entities]);
-
   const coverStatusLabel = useMemo(() => {
-    if (!coverState) return null;
-    switch (coverState.state) {
+    if (!activeCover) return null;
+    switch (activeCover.state) {
+      case 'open':
+        return t('room.coverStatus.open') || 'Open';
       case 'opening':
         return t('room.coverStatus.opening') || 'Opening';
       case 'closing':
         return t('room.coverStatus.closing') || 'Closing';
-      case 'open':
-        return coverState.count > 1
-          ? `${coverState.count} ${t('room.coverStatus.open') || 'Open'}`
-          : t('room.coverStatus.open') || 'Open';
       default:
-        return null;
+        return activeCover.state;
     }
-  }, [coverState, t]);
-
+  }, [activeCover, t]);
   const coverPillToneClass = useMemo(() => {
-    switch (coverState?.state) {
-      case 'opening':
-      case 'closing':
-        return 'bg-sky-500/14 text-sky-300';
+    switch (activeCover?.state) {
       case 'open':
+        return 'bg-sky-500/14 text-sky-300';
+      case 'opening':
+        return 'bg-emerald-500/14 text-emerald-300';
+      case 'closing':
         return 'bg-amber-500/14 text-amber-300';
       default:
         return 'bg-[var(--glass-bg-hover)] text-[var(--text-secondary)]';
     }
-  }, [coverState]);
+  }, [activeCover]);
 
   const activeDeviceCount = useMemo(() => {
     const toggleDomains = new Set(['switch', 'fan', 'cover', 'climate', 'media_player']);

@@ -691,7 +691,6 @@
   "room.coverStatus.open": "Open",
   "room.coverStatus.opening": "Opening",
   "room.coverStatus.closing": "Closing",
-  "room.vacuumEntity": "Vacuum entity",
   "room.exclude": "Exclude",
   "room.includeAll": "Include all",
   "room.excludeAll": "Exclude all",

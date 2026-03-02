@@ -678,7 +678,6 @@
   "room.coverStatus.open": "Offen",
   "room.coverStatus.opening": "Öffnet",
   "room.coverStatus.closing": "Schließt",
-  "room.vacuumEntity": "Staubsauger-Entität",
   "room.tempSensor": "Temperatursensor",
   "room.turnOffAll": "Alle ausschalten",
   "room.turnOnAll": "Alle Lichter einschalten",
