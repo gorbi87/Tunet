@@ -528,6 +528,10 @@ function RoomSettingsSection({
               )
             )
               return false;
+          } else if (domainFilter === '_door') {
+            const e = entities[id];
+            const dc = e?.attributes?.device_class;
+            if (dc !== 'door' && dc !== 'window' && dc !== 'garage_door') return false;
           } else if (!id.startsWith(`${domainFilter}.`)) {
             return false;
           }
@@ -619,6 +623,11 @@ function RoomSettingsSection({
       defaultVal: true,
     },
     {
+      key: 'showDoorChip',
+      label: t('room.showDoorChip') || 'Show door/window chip',
+      defaultVal: true,
+    },
+    {
       key: 'showOccupiedIndicator',
       label: t('room.showOccupiedIndicator') || 'Show occupied indicator',
       defaultVal: true,
@@ -653,6 +662,15 @@ function RoomSettingsSection({
       }),
       vacuumEntityId: activeAreaEntityIds.some((id) => id.startsWith('vacuum.')),
       coverEntityId: activeAreaEntityIds.some((id) => id.startsWith('cover.')),
+      doorEntityId: activeAreaEntityIds.some((id) => {
+        const e = entities[id];
+        return (
+          e &&
+          (e.attributes?.device_class === 'door' ||
+            e.attributes?.device_class === 'window' ||
+            e.attributes?.device_class === 'garage_door')
+        );
+      }),
     }),
     [activeAreaEntityIds, entities]
   );
@@ -664,6 +682,7 @@ function RoomSettingsSection({
       motionEntityId: editSettings.motionEntityId,
       vacuumEntityId: editSettings.vacuumEntityId,
       coverEntityId: editSettings.coverEntityId,
+      doorEntityId: editSettings.doorEntityId,
     };
     return {
       mainLightEntityId: !!selected.mainLightEntityId || hasAutoCandidates.mainLightEntityId,
@@ -671,6 +690,7 @@ function RoomSettingsSection({
       motionEntityId: !!selected.motionEntityId || hasAutoCandidates.motionEntityId,
       vacuumEntityId: !!selected.vacuumEntityId || hasAutoCandidates.vacuumEntityId,
       coverEntityId: !!selected.coverEntityId || hasAutoCandidates.coverEntityId,
+      doorEntityId: !!selected.doorEntityId || hasAutoCandidates.doorEntityId,
     };
   }, [editSettings, hasAutoCandidates]);
 
@@ -681,6 +701,7 @@ function RoomSettingsSection({
       return hasSource.motionEntityId;
     if (option.key === 'showVacuumChip') return hasSource.vacuumEntityId;
     if (option.key === 'showCoverChip') return hasSource.coverEntityId;
+    if (option.key === 'showDoorChip') return hasSource.doorEntityId;
     if (option.key === 'showMediaChip')
       return activeAreaEntityIds.some((id) => id.startsWith('media_player.'));
     if (option.key === 'showActiveChip') return activeAreaEntityIds.length > 0;
@@ -700,12 +721,15 @@ function RoomSettingsSection({
     cover: t('room.domain.cover') || 'Covers',
     _motion: t('room.motionShort') || 'Motion',
     _temperature: t('room.tempShort') || 'Temp',
+    _door: t('room.doorShort') || 'Door',
   };
 
   const allDomainKeys = [
     'all',
     'light',
     'climate',
+    '_motion',
+    '_temperature',
     'vacuum',
     'media_player',
     'sensor',
@@ -713,8 +737,7 @@ function RoomSettingsSection({
     'switch',
     'fan',
     'cover',
-    '_motion',
-    '_temperature',
+    '_door',
   ];
 
   const presentDomainFilters = React.useMemo(() => {
@@ -740,6 +763,16 @@ function RoomSettingsSection({
               id.includes('temp'))
           );
         });
+      if (key === '_door')
+        return roomEntityIds.some((id) => {
+          const e = entities[id];
+          return (
+            e &&
+            (e.attributes?.device_class === 'door' ||
+              e.attributes?.device_class === 'window' ||
+              e.attributes?.device_class === 'garage_door')
+          );
+        });
       return roomEntityIds.some((id) => id.startsWith(`${key}.`));
     });
   }, [roomEntityIds, entities]);
@@ -751,6 +784,7 @@ function RoomSettingsSection({
     temp: t('room.tempShort') || 'Temp',
     motion: t('room.motionShort') || 'Motion',
     humidity: t('room.humidityShort') || 'Humidity',
+    door: t('room.doorShort') || 'Door',
   };
 
   const navigateOnTap = editSettings.navigateOnTap === true;
@@ -865,6 +899,11 @@ function RoomSettingsSection({
                   const isMainMotion = editSettings.motionEntityId === id;
                   const isHumidityEntity = deviceClass === 'humidity';
                   const isMainHumidity = editSettings.humidityEntityId === id;
+                  const isDoorEntity =
+                    deviceClass === 'door' ||
+                    deviceClass === 'window' ||
+                    deviceClass === 'garage_door';
+                  const isMainDoor = editSettings.doorEntityId === id;
                   return (
                     <div
                       key={`area-${id}`}
@@ -889,6 +928,7 @@ function RoomSettingsSection({
                             }
                             className={`rounded-lg border px-2 py-1 text-[10px] font-bold tracking-widest uppercase transition-colors ${isMainLight ? 'border-amber-400/40 bg-amber-500/15 text-amber-300' : 'popup-surface popup-surface-hover border-transparent text-[var(--text-secondary)]'}`}
                           >
+                            {isMainLight && <span className="mr-0.5">★</span>}
                             {entityActionLabels.main}
                           </button>
                         )}
@@ -904,6 +944,7 @@ function RoomSettingsSection({
                             }
                             className={`rounded-lg border px-2 py-1 text-[10px] font-bold tracking-widest uppercase transition-colors ${isMainClimate ? 'border-amber-400/40 bg-amber-500/15 text-amber-300' : 'popup-surface popup-surface-hover border-transparent text-[var(--text-secondary)]'}`}
                           >
+                            {isMainClimate && <span className="mr-0.5">★</span>}
                             {entityActionLabels.climate}
                           </button>
                         )}
@@ -919,6 +960,7 @@ function RoomSettingsSection({
                             }
                             className={`rounded-lg border px-2 py-1 text-[10px] font-bold tracking-widest uppercase transition-colors ${isMainVacuum ? 'border-amber-400/40 bg-amber-500/15 text-amber-300' : 'popup-surface popup-surface-hover border-transparent text-[var(--text-secondary)]'}`}
                           >
+                            {isMainVacuum && <span className="mr-0.5">★</span>}
                             {entityActionLabels.vacuum}
                           </button>
                         )}
@@ -934,6 +976,7 @@ function RoomSettingsSection({
                             }
                             className={`rounded-lg border px-2 py-1 text-[10px] font-bold tracking-widest uppercase transition-colors ${isMainTemp ? 'border-amber-400/40 bg-amber-500/15 text-amber-300' : 'popup-surface popup-surface-hover border-transparent text-[var(--text-secondary)]'}`}
                           >
+                            {isMainTemp && <span className="mr-0.5">★</span>}
                             {entityActionLabels.temp}
                           </button>
                         )}
@@ -949,6 +992,7 @@ function RoomSettingsSection({
                             }
                             className={`rounded-lg border px-2 py-1 text-[10px] font-bold tracking-widest uppercase transition-colors ${isMainMotion ? 'border-amber-400/40 bg-amber-500/15 text-amber-300' : 'popup-surface popup-surface-hover border-transparent text-[var(--text-secondary)]'}`}
                           >
+                            {isMainMotion && <span className="mr-0.5">★</span>}
                             {entityActionLabels.motion}
                           </button>
                         )}
@@ -964,7 +1008,24 @@ function RoomSettingsSection({
                             }
                             className={`rounded-lg border px-2 py-1 text-[10px] font-bold tracking-widest uppercase transition-colors ${isMainHumidity ? 'border-amber-400/40 bg-amber-500/15 text-amber-300' : 'popup-surface popup-surface-hover border-transparent text-[var(--text-secondary)]'}`}
                           >
+                            {isMainHumidity && <span className="mr-0.5">★</span>}
                             {entityActionLabels.humidity}
+                          </button>
+                        )}
+                        {isDoorEntity && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              saveCardSetting(
+                                editSettingsKey,
+                                'doorEntityId',
+                                isMainDoor ? null : id
+                              )
+                            }
+                            className={`rounded-lg border px-2 py-1 text-[10px] font-bold tracking-widest uppercase transition-colors ${isMainDoor ? 'border-amber-400/40 bg-amber-500/15 text-amber-300' : 'popup-surface popup-surface-hover border-transparent text-[var(--text-secondary)]'}`}
+                          >
+                            {isMainDoor && <span className="mr-0.5">★</span>}
+                            {entityActionLabels.door}
                           </button>
                         )}
                         <button

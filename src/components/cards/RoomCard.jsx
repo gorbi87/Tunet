@@ -1,5 +1,14 @@
-import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
-import { Home, Thermometer, Lightbulb, Tv, Activity, Bot, ArrowUpDown } from 'lucide-react';
+import React, { useMemo, useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
+import {
+  Home,
+  Thermometer,
+  Lightbulb,
+  Tv,
+  Activity,
+  Bot,
+  ArrowUpDown,
+  DoorOpen,
+} from 'lucide-react';
 import { useConfig, useHomeAssistantMeta } from '../../contexts';
 import { getIconComponent } from '../../icons';
 import {
@@ -50,23 +59,28 @@ export default function RoomCard({
   const showActiveChip = settings?.showActiveChip !== false;
   const showVacuumChip = settings?.showVacuumChip !== false;
   const showCoverChip = settings?.showCoverChip !== false;
+  const showDoorChip = settings?.showDoorChip !== false;
   const showOccupiedIndicator = settings?.showOccupiedIndicator !== false;
   const showIconWatermark = settings?.showIconWatermark !== false;
   const cardRef = useRef(null);
   const chipContainerRef = useRef(null);
+  const [cardWidth, setCardWidth] = useState(0);
   const [isSpacious, setIsSpacious] = useState(false);
-  const [forceCompactPills, setForceCompactPills] = useState(false);
+  const [iconOnlyStatusPills, setIconOnlyStatusPills] = useState(false);
+  const [iconOnlyAllPills, setIconOnlyAllPills] = useState(false);
 
   useEffect(() => {
     const element = cardRef.current;
     if (!element || typeof ResizeObserver === 'undefined') return;
 
     const updateByWidth = (width) => {
+      setCardWidth(width);
       setIsSpacious((prev) => {
         if (prev) return width >= 372;
         return width >= 388;
       });
-      setForceCompactPills(false);
+      setIconOnlyStatusPills(false);
+      setIconOnlyAllPills(false);
     };
 
     updateByWidth(element.clientWidth);
@@ -80,18 +94,21 @@ export default function RoomCard({
     return () => observer.disconnect();
   }, []);
 
-  const useLargePills = isSpacious && !forceCompactPills;
+  const useCompactPills = !isSpacious || iconOnlyStatusPills || iconOnlyAllPills;
 
-  const chipContainerClass = useLargePills
-    ? 'mt-5 flex flex-wrap items-start justify-start gap-3.5 w-full max-w-none pb-1'
-    : 'mt-5 flex flex-wrap items-start justify-start gap-3 max-w-[232px] pb-1';
-  const chipClass = useLargePills
-    ? 'flex items-center gap-2.5 px-4.5 py-2 rounded-full backdrop-blur-sm'
-    : 'flex items-center gap-2 px-3.5 py-1.5 rounded-full backdrop-blur-sm';
-  const chipTextClass = useLargePills
-    ? 'text-[15px] tracking-wide font-bold uppercase'
-    : 'text-[13px] tracking-wider font-bold uppercase';
-  const chipIconClass = useLargePills ? 'w-[18px] h-[18px]' : 'w-[14px] h-[14px]';
+  const chipContainerClass = useCompactPills
+    ? 'mt-5 flex max-w-[232px] flex-wrap items-start justify-start gap-3 pb-1'
+    : 'mt-5 flex w-full max-w-none flex-wrap items-start justify-start gap-3.5 pb-1';
+  const chipClass = useCompactPills
+    ? 'flex items-center gap-2 px-3.5 py-1.5 rounded-full backdrop-blur-sm'
+    : 'flex items-center gap-2.5 px-4.5 py-2 rounded-full backdrop-blur-sm';
+  const statusIconOnlyChipClass = useCompactPills
+    ? 'justify-center min-w-[56px] min-h-[32px]'
+    : 'justify-center min-w-[68px] min-h-[40px]';
+  const chipTextClass = useCompactPills
+    ? 'text-[13px] tracking-wider font-bold uppercase'
+    : 'text-[15px] tracking-wide font-bold uppercase';
+  const chipIconClass = useCompactPills ? 'w-[14px] h-[14px]' : 'w-[18px] h-[18px]';
 
   const roomEntityIds = useMemo(() => getEffectiveRoomEntityIds(settings), [settings]);
 
@@ -111,6 +128,21 @@ export default function RoomCard({
     () => roomEntityIds.filter((id) => id.startsWith('cover.')),
     [roomEntityIds]
   );
+
+  const doorWindowId = useMemo(() => {
+    return (
+      settings?.doorEntityId ||
+      roomEntityIds.find((id) => {
+        const e = entities[id];
+        return (
+          e &&
+          (e.attributes?.device_class === 'door' ||
+            e.attributes?.device_class === 'window' ||
+            e.attributes?.device_class === 'garage_door')
+        );
+      })
+    );
+  }, [roomEntityIds, entities, settings]);
 
   const mainLightId = useMemo(() => {
     if (settings?.mainLightEntityId && entities[settings.mainLightEntityId])
@@ -168,6 +200,8 @@ export default function RoomCard({
       null,
     [coverIds, entities]
   );
+  const doorWindowEntity = doorWindowId ? entities[doorWindowId] : null;
+  const isDoorOpen = doorWindowEntity?.state === 'on';
   const isMainLightOn = mainLightId ? entities[mainLightId]?.state === 'on' : false;
 
   const climateEntity = climateId ? entities[climateId] : null;
@@ -266,6 +300,11 @@ export default function RoomCard({
         return activeCover.state;
     }
   }, [activeCover, t]);
+
+  const doorPillLabel = useMemo(() => {
+    if (!isDoorOpen || !doorWindowEntity) return null;
+    return t('room.doorStatus.open') || 'Open';
+  }, [isDoorOpen, doorWindowEntity, t]);
   const coverPillToneClass = useMemo(() => {
     switch (activeCover?.state) {
       case 'open':
@@ -301,38 +340,44 @@ export default function RoomCard({
     (showMediaChip && mediaPlayingCount > 0 ? 1 : 0) +
     (showActiveChip && activeDeviceCount > 0 ? 1 : 0) +
     (showVacuumChip && Boolean(vacuumStatusLabel) ? 1 : 0) +
-    (showCoverChip && Boolean(coverStatusLabel) ? 1 : 0);
+    (showCoverChip && Boolean(coverStatusLabel) ? 1 : 0) +
+    (showDoorChip && Boolean(doorPillLabel) ? 1 : 0);
 
   useEffect(() => {
-    setForceCompactPills(false);
+    setIconOnlyStatusPills(false);
+    setIconOnlyAllPills(false);
   }, [visiblePillCount]);
 
-  useEffect(() => {
-    if (!isSpacious || forceCompactPills) return;
+  useLayoutEffect(() => {
     const container = chipContainerRef.current;
     if (!container) return;
-
-    let cancelled = false;
-    const frame = globalThis.requestAnimationFrame(() => {
-      if (cancelled) return;
-      const children = Array.from(container.children);
-      if (children.length <= 1) return;
-      const rowTops = [];
-      children.forEach((child) => {
-        const top = child.offsetTop;
-        if (!rowTops.some((value) => Math.abs(value - top) <= 1)) {
-          rowTops.push(top);
-        }
-      });
-      const wrapsToSecondRow = rowTops.length > 1;
-      if (wrapsToSecondRow) setForceCompactPills(true);
+    const children = Array.from(container.children);
+    if (children.length <= 2) return;
+    const rowTops = [];
+    children.forEach((child) => {
+      const top = child.offsetTop;
+      if (!rowTops.some((value) => Math.abs(value - top) <= 1)) {
+        rowTops.push(top);
+      }
     });
-
-    return () => {
-      cancelled = true;
-      globalThis.cancelAnimationFrame(frame);
-    };
-  }, [isSpacious, forceCompactPills, visiblePillCount]);
+    if (rowTops.length > 2) {
+      if (!iconOnlyStatusPills) {
+        setIconOnlyStatusPills(true);
+        return;
+      }
+      if (!iconOnlyAllPills) {
+        setIconOnlyAllPills(true);
+      }
+    }
+  }, [
+    iconOnlyStatusPills,
+    iconOnlyAllPills,
+    visiblePillCount,
+    cardWidth,
+    isSpacious,
+    showCoverChip,
+    showDoorChip,
+  ]);
 
   const handleMainLightToggle = useCallback(
     (e) => {
@@ -370,7 +415,7 @@ export default function RoomCard({
       <div className="z-10 flex min-w-0 flex-1 flex-col justify-between text-[var(--text-primary)]">
         <div className="flex items-start justify-between gap-2">
           <div
-            className={`flex min-w-0 flex-col items-start ${useLargePills ? 'w-full max-w-none' : 'max-w-[220px]'}`}
+            className={`flex min-w-0 flex-col items-start ${useCompactPills ? 'max-w-[220px]' : 'w-full max-w-none'}`}
           >
             <button
               type="button"
@@ -404,10 +449,12 @@ export default function RoomCard({
           {showTemp && displayTempValue && (
             <div className={`${chipClass} bg-[var(--glass-bg-hover)] text-[var(--text-secondary)]`}>
               <Thermometer className={`${chipIconClass} fill-current stroke-[1.75px]`} />
-              <span className={chipTextClass}>
-                {displayTempValue}
-                {displayTempUnit}
-              </span>
+              {!iconOnlyAllPills && (
+                <span className={chipTextClass}>
+                  {displayTempValue}
+                  {displayTempUnit}
+                </span>
+              )}
             </div>
           )}
           {showLightChip && showLights && lightsOnCount > 0 && (
@@ -415,7 +462,7 @@ export default function RoomCard({
               <Lightbulb
                 className={`${chipIconClass} fill-current stroke-[1.75px] ${lightsOnCount > 0 ? 'text-amber-400' : ''}`}
               />
-              <span className={chipTextClass}>{lightsOnCount}</span>
+              {!iconOnlyAllPills && <span className={chipTextClass}>{lightsOnCount}</span>}
             </div>
           )}
           {showMediaChip && mediaPlayingCount > 0 && (
@@ -423,25 +470,35 @@ export default function RoomCard({
               <Tv
                 className={`${chipIconClass} ${mediaPlayingCount > 0 ? 'text-[var(--accent-color)]' : ''}`}
               />
-              <span className={chipTextClass}>{mediaPlayingCount}</span>
+              {!iconOnlyAllPills && <span className={chipTextClass}>{mediaPlayingCount}</span>}
             </div>
           )}
           {showActiveChip && activeDeviceCount > 0 && (
             <div className={`${chipClass} bg-[var(--glass-bg-hover)] text-[var(--text-secondary)]`}>
               <Activity className={chipIconClass} />
-              <span className={chipTextClass}>{activeDeviceCount}</span>
+              {!iconOnlyAllPills && <span className={chipTextClass}>{activeDeviceCount}</span>}
             </div>
           )}
           {showVacuumChip && vacuumStatusLabel && (
             <div className={`${chipClass} ${vacuumPillToneClass}`}>
               <Bot className={chipIconClass} />
-              <span className={chipTextClass}>{vacuumStatusLabel}</span>
+              {!iconOnlyAllPills && <span className={chipTextClass}>{vacuumStatusLabel}</span>}
             </div>
           )}
           {showCoverChip && coverStatusLabel && (
-            <div className={`${chipClass} ${coverPillToneClass}`}>
+            <div
+              className={`${chipClass} ${coverPillToneClass} ${iconOnlyStatusPills && !iconOnlyAllPills ? statusIconOnlyChipClass : ''}`}
+            >
               <ArrowUpDown className={chipIconClass} />
-              <span className={chipTextClass}>{coverStatusLabel}</span>
+              {!iconOnlyStatusPills && <span className={chipTextClass}>{coverStatusLabel}</span>}
+            </div>
+          )}
+          {showDoorChip && doorPillLabel && (
+            <div
+              className={`${chipClass} bg-orange-500/14 text-orange-300 ${iconOnlyStatusPills && !iconOnlyAllPills ? statusIconOnlyChipClass : ''}`}
+            >
+              <DoorOpen className={chipIconClass} />
+              {!iconOnlyStatusPills && <span className={chipTextClass}>{doorPillLabel}</span>}
             </div>
           )}
         </div>
