@@ -25,6 +25,7 @@ const releaseFiles = [
 ];
 
 const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const PLACEHOLDER_RELEASE_NOTE = 'Release metadata sync.';
 
 function usage() {
   console.log(
@@ -118,6 +119,58 @@ function extractMainChangelogNotes(changelog, appVersion) {
 
   const sectionBody = changelog.slice(start, end).trim();
   return sectionBody || `Release ${appVersion}`;
+}
+
+function extractAddonChangelogNotes(changelog, addonVersion) {
+  const heading = `## ${addonVersion}`;
+  const headingIndex = changelog.indexOf(heading);
+  if (headingIndex === -1) {
+    return `Release ${addonVersion}`;
+  }
+
+  const start = headingIndex + heading.length;
+  const rest = changelog.slice(start);
+  const nextHeadingMatch = rest.match(/^##\s+/m);
+  const end =
+    nextHeadingMatch && nextHeadingMatch.index !== undefined
+      ? start + nextHeadingMatch.index
+      : changelog.length;
+
+  const sectionBody = changelog.slice(start, end).trim();
+  return sectionBody || `Release ${addonVersion}`;
+}
+
+function hasMeaningfulReleaseNotes(notes) {
+  const bullets = notes
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('- '))
+    .map((line) =>
+      line
+        .replace(/^-\s+/, '')
+        .trim()
+        .replace(/[.。]+$/g, '')
+    );
+
+  if (!bullets.length) return false;
+
+  return bullets.some((line) => {
+    const normalized = line.toLowerCase();
+    return normalized !== PLACEHOLDER_RELEASE_NOTE.toLowerCase().replace(/[.。]+$/g, '');
+  });
+}
+
+function updateAddonConfigVersion(configYaml, version) {
+  const replaced = configYaml.replace(
+    /^version:\s*(?:"[^"]+"|'[^']+'|[^\s#]+)(\s*(?:#.*)?)?$/m,
+    `version: "${version}"$1`
+  );
+
+  if (replaced === configYaml) {
+    throw new Error('Could not update hassio-addon/config.yaml version line.');
+  }
+
+  return replaced;
 }
 
 function isPreRelease(version) {
@@ -225,6 +278,12 @@ async function runCheck() {
     );
   if (!mainChangelog.includes(`## [${pkgVersion}]`))
     errors.push(`CHANGELOG.md is missing entry for ${pkgVersion}.`);
+  else {
+    const mainNotes = extractMainChangelogNotes(mainChangelog, pkgVersion);
+    if (!hasMeaningfulReleaseNotes(mainNotes)) {
+      errors.push('CHANGELOG.md release notes must include short, meaningful change bullets.');
+    }
+  }
 
   if (!addonVersion) {
     errors.push('Could not read hassio-addon/config.yaml version.');
@@ -236,6 +295,13 @@ async function runCheck() {
     }
     if (!addonChangelog.includes(`## ${addonVersion}`)) {
       errors.push(`hassio-addon/CHANGELOG.md is missing entry for ${addonVersion}.`);
+    } else {
+      const addonNotes = extractAddonChangelogNotes(addonChangelog, addonVersion);
+      if (!hasMeaningfulReleaseNotes(addonNotes)) {
+        errors.push(
+          'hassio-addon/CHANGELOG.md release notes must include short, meaningful change bullets.'
+        );
+      }
     }
   }
 
@@ -277,12 +343,12 @@ async function runPrep(args) {
   if (!lock.packages['']) lock.packages[''] = {};
   lock.packages[''].version = version;
 
-  const nextAddonConfig = addonConfig.replace(/^version:\s*"[^"]+"/m, `version: "${version}"`);
+  const nextAddonConfig = updateAddonConfigVersion(addonConfig, version);
   const nextMainChangelog = upsertMainChangelogEntry(mainChangelog, version, releaseDate);
   const nextAddonChangelog = upsertTopSection(
     addonChangelog,
     `## ${version}`,
-    '- Release metadata sync.'
+    '- Add release notes.'
   );
 
   await Promise.all([

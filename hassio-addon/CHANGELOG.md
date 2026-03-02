@@ -3,9 +3,9 @@
 ## 1.11.1
 
 - Includes dashboard release `1.11.1`.
-- Adds Chinese (Simplified) language support with updated language selection wiring and locale labels.
-- Restores Vacuum popup room action buttons by passing configured room scripts to `VacuumModal`.
-- Improves Vacuum room-script editor row styling in Edit Card.
+- Adds Simplified Chinese language support.
+- Adds room action buttons to the Vacuum popup for room cleaning.
+- Expands the Vacuum popup with more sensors.
 
 ## 1.11.0
 
