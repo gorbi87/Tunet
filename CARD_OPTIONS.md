@@ -4,8 +4,6 @@ Practical guide to what each card is best for, what you can configure, and commo
 
 ## Screenshots
 
-![Main dashboard](public/Main.png)
-
 ![Main dashboard alternative](public/1.Main.jpg)
 
 > Tip: If you want per-card screenshots, add images under `public/cards/` and reference them in each section below.
