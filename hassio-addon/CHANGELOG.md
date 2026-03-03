@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.3
+
+- Includes dashboard release `1.12.3`.
+- Improves Car/auto popup layout by reducing map height to leave room for more sensors on vehicles with dense telemetry (#84).
+- Fixes missing car charge-control actions in popup flows configured from Edit Card, with broader control-domain support (#84).
+
 ## 1.12.2
 
 - Includes dashboard release `1.12.2`.

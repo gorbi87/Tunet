@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.12.3] — 2026-03-03
+
+### Changed
+- Improved Car/auto card popup layout by reducing map height to make room for dense sensor setups (#84).
+- Fixed missing car charge-control actions in the popup when configured from Edit Card, including broader action-domain support (#84).
+
+
 ## [1.12.2] — 2026-03-03
 
 ### Changed
