@@ -25,7 +25,8 @@
     "src/hooks/useAddCard.js",
     "src/hooks/useResponsiveGrid.js",
     "src/hooks/useModals.js",
-    "src/hooks/useDashboardEffects.js"
+    "src/hooks/useDashboardEffects.js",
+    "src/utils/logger.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

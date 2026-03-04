@@ -357,32 +357,50 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     swingMap,
   } = useEntityHelpers({ entities, conn, activeUrl, language, now, t });
 
-  const personStatus = (id) => (
-    <PersonStatus
-      key={id}
-      id={id}
-      entities={entities}
-      editMode={editMode}
-      customNames={customNames}
-      customIcons={customIcons}
-      cardSettings={cardSettings}
-      getCardSettingsKey={getCardSettingsKey}
-      getEntityImageUrl={getEntityImageUrl}
-      getS={getS}
-      onOpenPerson={(pid) => setShowPersonModal(pid)}
-      onEditCard={(eid, sk) => {
-        requestSettingsAccess(() => {
-          setShowEditCardModal(eid);
-          setEditCardSettingsKey(sk);
-        });
-      }}
-      onRemoveCard={(cardId, listName) => {
-        requestSettingsAccess(() => {
-          removeCard(cardId, listName);
-        });
-      }}
-      t={t}
-    />
+  const personStatus = useCallback(
+    (id) => (
+      <PersonStatus
+        key={id}
+        id={id}
+        entities={entities}
+        editMode={editMode}
+        customNames={customNames}
+        customIcons={customIcons}
+        cardSettings={cardSettings}
+        getCardSettingsKey={getCardSettingsKey}
+        getEntityImageUrl={getEntityImageUrl}
+        getS={getS}
+        onOpenPerson={(pid) => setShowPersonModal(pid)}
+        onEditCard={(eid, sk) => {
+          requestSettingsAccess(() => {
+            setShowEditCardModal(eid);
+            setEditCardSettingsKey(sk);
+          });
+        }}
+        onRemoveCard={(cardId, listName) => {
+          requestSettingsAccess(() => {
+            removeCard(cardId, listName);
+          });
+        }}
+        t={t}
+      />
+    ),
+    [
+      entities,
+      editMode,
+      customNames,
+      customIcons,
+      cardSettings,
+      getCardSettingsKey,
+      getEntityImageUrl,
+      getS,
+      requestSettingsAccess,
+      removeCard,
+      setShowPersonModal,
+      setShowEditCardModal,
+      setEditCardSettingsKey,
+      t,
+    ]
   );
 
   usePopupTriggers({

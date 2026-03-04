@@ -30,10 +30,9 @@ export default function GenericAndroidTVModal({
   customNames,
   t,
 }) {
-  if (!show) return null;
+  const [pictureFailed, setPictureFailed] = useState(false);
 
   const entity = entities[mediaPlayerId];
-  if (!entity) return null;
 
   // Determine priority entity for metadata
   let displayEntityId = mediaPlayerId;
@@ -84,10 +83,14 @@ export default function GenericAndroidTVModal({
   }
 
   const picture = getEntityImageUrl(displayEntity?.attributes?.entity_picture);
-  const [pictureFailed, setPictureFailed] = useState(false);
   useEffect(() => {
     setPictureFailed(false);
   }, [picture]);
+
+  if (!show) return null;
+
+  if (!entity) return null;
+
   const deviceName =
     customNames[mediaPlayerId] || entity?.attributes?.friendly_name || 'Android TV';
 
@@ -143,6 +146,7 @@ export default function GenericAndroidTVModal({
         <button
           onClick={onClose}
           className="modal-close absolute top-6 right-6 z-20 md:top-10 md:right-10"
+          aria-label="Close"
         >
           <X className="h-4 w-4" />
         </button>
@@ -211,12 +215,14 @@ export default function GenericAndroidTVModal({
                 <button
                   onClick={() => controlMedia('media_previous_track')}
                   className="rounded-full bg-[var(--glass-bg)] p-3 text-[var(--text-secondary)] transition-all hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
+                  aria-label="Previous track"
                 >
                   <SkipBack className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => controlMedia('media_play_pause')}
                   className="rounded-full bg-[var(--accent-color)] p-5 font-bold text-white shadow-lg transition-all hover:bg-[var(--accent-color)] active:scale-95"
+                  aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
                   {isPlaying ? (
                     <Pause className="h-6 w-6 fill-current" />
@@ -227,6 +233,7 @@ export default function GenericAndroidTVModal({
                 <button
                   onClick={() => controlMedia('media_next_track')}
                   className="rounded-full bg-[var(--glass-bg)] p-3 text-[var(--text-secondary)] transition-all hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
+                  aria-label="Next track"
                 >
                   <SkipForward className="h-5 w-5" />
                 </button>
@@ -243,6 +250,7 @@ export default function GenericAndroidTVModal({
                 <button
                   onClick={() => sendCommand('DPAD_UP')}
                   className="absolute top-0 left-1/2 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-2xl bg-[var(--glass-bg)] text-[var(--text-secondary)] transition-all hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-90"
+                  aria-label="Up"
                 >
                   <ChevronUp className="h-5 w-5" />
                 </button>
@@ -250,6 +258,7 @@ export default function GenericAndroidTVModal({
                 <button
                   onClick={() => sendCommand('DPAD_LEFT')}
                   className="absolute top-1/2 left-0 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-2xl bg-[var(--glass-bg)] text-[var(--text-secondary)] transition-all hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-90"
+                  aria-label="Left"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
@@ -257,6 +266,7 @@ export default function GenericAndroidTVModal({
                 <button
                   onClick={() => sendCommand('DPAD_RIGHT')}
                   className="absolute top-1/2 right-0 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-2xl bg-[var(--glass-bg)] text-[var(--text-secondary)] transition-all hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-90"
+                  aria-label="Right"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -264,6 +274,7 @@ export default function GenericAndroidTVModal({
                 <button
                   onClick={() => sendCommand('DPAD_DOWN')}
                   className="absolute bottom-0 left-1/2 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-2xl bg-[var(--glass-bg)] text-[var(--text-secondary)] transition-all hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-90"
+                  aria-label="Down"
                 >
                   <ChevronDown className="h-5 w-5" />
                 </button>
@@ -271,6 +282,7 @@ export default function GenericAndroidTVModal({
                 <button
                   onClick={() => sendCommand('DPAD_CENTER')}
                   className="absolute top-1/2 left-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--accent-color)] text-[10px] font-bold text-white shadow-lg transition-all hover:bg-[var(--accent-color)] active:scale-90"
+                  aria-label="Select"
                 >
                   OK
                 </button>
@@ -313,6 +325,7 @@ export default function GenericAndroidTVModal({
                   <button
                     onClick={() => controlMedia('volume_down')}
                     className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--glass-bg)] py-3 transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95"
+                    aria-label="Volume down"
                   >
                     <Volume2 className="h-4 w-4 opacity-50" />
                     <span className="text-lg font-bold">−</span>
@@ -320,6 +333,7 @@ export default function GenericAndroidTVModal({
                   <button
                     onClick={() => controlMedia('volume_up')}
                     className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--glass-bg)] py-3 transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95"
+                    aria-label="Volume up"
                   >
                     <span className="text-lg font-bold">+</span>
                     <Volume2 className="h-4 w-4 opacity-50" />

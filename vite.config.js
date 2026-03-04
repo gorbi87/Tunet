@@ -16,12 +16,23 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes('node_modules')) return;
 
-          if (id.includes('react') || id.includes('scheduler')) {
-            return 'vendor-react';
-          }
-
           if (id.includes('react-router')) {
             return 'vendor-router';
+          }
+
+          if (id.includes('@remix-run/router')) {
+            return 'vendor-router';
+          }
+
+          if (
+            id.includes('/node_modules/react/') ||
+            id.includes('/node_modules/react-dom/') ||
+            id.includes('/node_modules/scheduler/') ||
+            id.includes('/node_modules/prop-types/') ||
+            id.includes('/node_modules/react-is/') ||
+            id.includes('/node_modules/use-sync-external-store/')
+          ) {
+            return 'vendor-react';
           }
 
           if (id.includes('home-assistant-js-websocket')) {
@@ -84,7 +95,19 @@ export default defineConfig({
             return 'vendor-icons-react-misc';
           }
 
-          return 'vendor-misc';
+          if (
+            id.includes('/node_modules/dayjs/') ||
+            id.includes('/node_modules/date-fns/') ||
+            id.includes('/node_modules/lodash/') ||
+            id.includes('/node_modules/lodash-es/') ||
+            id.includes('/node_modules/clsx/') ||
+            id.includes('/node_modules/nanoid/') ||
+            id.includes('/node_modules/tslib/')
+          ) {
+            return 'vendor-utils';
+          }
+
+          return;
         },
       },
     },

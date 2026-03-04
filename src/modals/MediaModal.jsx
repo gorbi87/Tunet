@@ -406,11 +406,6 @@ export default function MediaModal({
     writeJSON('tunet_media_extra_players', extraSelectedPlayerIds);
   }, [extraSelectedPlayerIds]);
 
-  const normalizeChoice = useCallback(
-    (item, fallbackType) => normalizeMediaChoice(item, fallbackType),
-    []
-  );
-
   const normalizeChoiceArray = useCallback(
     (raw, fallbackType) => normalizeMediaChoiceArray(raw, fallbackType),
     []
@@ -492,7 +487,6 @@ export default function MediaModal({
     [playerNameDisplayFilter]
   );
 
-  const isMusicAssistantEntity = isMusicAssistantMediaEntity;
   const isStrictSonosEntity = isStrictSonosMediaEntity;
   const isSonosUiEntity = isSonosUiMediaEntity;
 

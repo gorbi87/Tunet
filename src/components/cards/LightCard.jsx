@@ -82,6 +82,16 @@ const LightCard = ({
           e.stopPropagation();
           if (!editMode) onOpen();
         }}
+        onKeyDown={(e) => {
+          if (editMode) return;
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            onOpen();
+          }
+        }}
+        role={editMode ? undefined : 'button'}
+        tabIndex={editMode ? -1 : 0}
         className={`touch-feedback group relative flex h-full items-center gap-4 overflow-hidden rounded-3xl border p-4 pl-5 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
         style={cardStyle}
       >
@@ -134,6 +144,7 @@ const LightCard = ({
                 disabled={isUnavailable}
                 onChange={handleBrightnessChange}
                 colorClass="bg-amber-500"
+                ariaLabel={t('light.brightness')}
               />
             )}
           </div>
@@ -151,6 +162,16 @@ const LightCard = ({
         e.stopPropagation();
         if (!editMode) onOpen();
       }}
+      onKeyDown={(e) => {
+        if (editMode) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+          onOpen();
+        }
+      }}
+      role={editMode ? undefined : 'button'}
+      tabIndex={editMode ? -1 : 0}
       className={`touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-7 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
       style={cardStyle}
     >
@@ -160,6 +181,7 @@ const LightCard = ({
           onClick={handleToggleLight}
           className={`rounded-2xl p-3 transition-all duration-500 ${isOn ? 'bg-amber-500/20 text-amber-400' : 'bg-[var(--glass-bg)] text-[var(--text-muted)]'}`}
           disabled={isUnavailable}
+          aria-label={`${name || t('common.light')}: ${isOn ? t('common.off') : t('common.on')}`}
         >
           <LightIcon
             className={`h-5 w-5 stroke-[1.5px] ${isOn ? 'fill-amber-400/20' : ''} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6`}
@@ -215,6 +237,7 @@ const LightCard = ({
               disabled={isUnavailable}
               onChange={handleBrightnessChange}
               colorClass="bg-amber-500"
+              ariaLabel={t('light.brightness')}
             />
           )}
         </div>
