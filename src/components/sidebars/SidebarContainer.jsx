@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X } from '../../icons';
 
-export default function SidebarContainer({ open, onClose, title, children, icon: Icon }) {
+export default function SidebarContainer({ open, onClose, title, children, icon: Icon, testId }) {
   const panelRef = useRef(null);
   const [isColorPickerActive, setIsColorPickerActive] = useState(false);
 
@@ -77,6 +77,7 @@ export default function SidebarContainer({ open, onClose, title, children, icon:
       {/* Sidebar Panel */}
       <div
         ref={panelRef}
+        data-testid={testId}
         className={`popup-anim cubic-bezier(0.34, 1.56, 0.64, 1) fixed inset-y-0 right-0 z-[101] w-full max-w-[360px] transform border-l shadow-2xl backdrop-blur-xl transition-transform duration-500 ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}

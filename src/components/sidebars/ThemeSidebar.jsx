@@ -140,6 +140,7 @@ export default function ThemeSidebar({
       onClose={onClose}
       title={t('system.tabAppearance')}
       icon={Palette}
+      testId="theme-sidebar"
     >
       <div className="space-y-8 font-sans">
         {/* Switcher Tab */}

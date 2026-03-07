@@ -22,7 +22,7 @@ Features:
 - Pre-loaded entity data (lights, climate, etc.)
 
 ### 3. **OAuth Flow Tests** (`e2e/oauth-flow.e2e.js`)
-**11 test cases covering:**
+**10 test cases covering:**
 - ✅ Onboarding visibility when unauthenticated
 - ✅ HA URL entry and validation
 - ✅ OAuth login flow initiation
@@ -36,7 +36,7 @@ Features:
 - ✅ HA URL format validation
 
 ### 4. **Drag and Drop Tests** (`e2e/drag-and-drop.e2e.js`)
-**11 test cases covering:**
+**8 test cases covering:**
 - ✅ Edit mode toggle
 - ✅ Card drag to new position
 - ✅ Drop zone visibility during drag
@@ -87,10 +87,10 @@ Features:
 
 | Feature | Tests | Status |
 |---------|-------|--------|
-| OAuth Authentication | 11 | ✅ |
-| Drag & Drop | 11 | ✅ |
+| OAuth Authentication | 10 | ✅ |
+| Drag & Drop | 8 | ✅ |
 | Modals | 11 | ✅ |
-| **Total** | **33** | **✅** |
+| **Total** | **29** | **✅** |
 
 ## 🚀 Quick Start
 
@@ -245,7 +245,7 @@ npm run test:e2e:headed # Terminal 2: Run tests with headed browser
 ## Summary
 
 You now have a comprehensive E2E test suite with:
-- ✅ 33 test cases across 3 critical flows
+- ✅ 29 test cases across 3 critical flows
 - ✅ Custom Playwright fixtures for mocking HA connection
 - ✅ OAuth, drag-and-drop, and modal testing
 - ✅ Multiple run modes (headless, UI, headed, debug)

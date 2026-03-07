@@ -132,7 +132,7 @@ export const test = baseTest.extend({
    * Skip onboarding by setting authentication flag
    */
   authenticatedPage: async ({ page, mockHAConnection }, use) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     
     // Wait for app to initialize
     await page.waitForLoadState('domcontentloaded');

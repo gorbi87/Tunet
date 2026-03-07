@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.13.0] — 2026-03-05
 
 ### Added
-- Added comprehensive Playwright E2E coverage for critical flows with 33 tests across OAuth, drag-and-drop, and modal interactions.
+- Added comprehensive Playwright E2E coverage for critical flows (initially 33 tests across OAuth, drag-and-drop, and modal interactions).
 - Added E2E tooling and docs (`playwright.config.js`, `e2e/`, `E2E_TESTS_SETUP.md`) plus run scripts (`test:e2e`, `test:e2e:ui`, `test:e2e:headed`).
 
 ### Changed
