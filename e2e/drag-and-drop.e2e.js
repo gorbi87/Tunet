@@ -2,25 +2,19 @@ import { test, expect } from './fixtures';
 
 test.describe('Drag and Drop Interactions', () => {
   test.beforeEach(async ({ page, mockHAConnection }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
-
-    // Setup authenticated session after origin is available
-    await page.evaluate(() => {
+    await page.addInitScript(() => {
+      localStorage.setItem('ha_url', 'http://localhost:8123');
+      localStorage.setItem('ha_auth_method', 'token');
+      localStorage.setItem('ha_token', 'test_token');
       localStorage.setItem(
-        'tunet_config',
+        'tunet_auth_cache_v1',
         JSON.stringify({
-          url: 'http://localhost:8123',
-          authMethod: 'token',
-          token: 'test_token',
+          access_token: 'test_token',
+          refresh_token: 'test_refresh_token',
+          expires_in: 1800,
+          token_type: 'Bearer',
         })
       );
-      localStorage.setItem('tunet_auth_cache_v1', JSON.stringify({
-        access_token: 'test_token',
-        refresh_token: 'test_refresh_token',
-        expires_in: 1800,
-        token_type: 'Bearer',
-      }));
     });
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -234,26 +228,20 @@ test.describe('Drag and Drop Interactions', () => {
     });
 
     const mobilePage = await mobile.newPage();
-    
-    await mobilePage.goto('/');
-    await mobilePage.waitForLoadState('domcontentloaded');
 
-    // Setup auth after page origin is available
-    await mobilePage.evaluate(() => {
+    await mobilePage.addInitScript(() => {
+      localStorage.setItem('ha_url', 'http://localhost:8123');
+      localStorage.setItem('ha_auth_method', 'token');
+      localStorage.setItem('ha_token', 'test_token');
       localStorage.setItem(
-        'tunet_config',
+        'tunet_auth_cache_v1',
         JSON.stringify({
-          url: 'http://localhost:8123',
-          authMethod: 'token',
-          token: 'test_token',
+          access_token: 'test_token',
+          refresh_token: 'test_refresh_token',
+          expires_in: 1800,
+          token_type: 'Bearer',
         })
       );
-      localStorage.setItem('tunet_auth_cache_v1', JSON.stringify({
-        access_token: 'test_token',
-        refresh_token: 'test_refresh_token',
-        expires_in: 1800,
-        token_type: 'Bearer',
-      }));
     });
 
     await mobilePage.goto('/', { waitUntil: 'domcontentloaded' });

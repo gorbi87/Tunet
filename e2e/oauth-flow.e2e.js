@@ -117,24 +117,18 @@ test.describe('OAuth Authentication Flow', () => {
   });
 
   test('should persist OAuth tokens to localStorage', async ({ page, mockHAConnection }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
-
-    // Simulate OAuth token saved to localStorage
-    await page.evaluate(() => {
-      localStorage.setItem('tunet_auth_cache_v1', JSON.stringify({
-        access_token: 'test_access_token_123',
-        refresh_token: 'test_refresh_token_456',
-        expires_in: 1800,
-        token_type: 'Bearer',
-      }));
+    await page.addInitScript(() => {
       localStorage.setItem(
-        'tunet_config',
+        'tunet_auth_cache_v1',
         JSON.stringify({
-          url: 'http://home-assistant.local:8123',
-          authMethod: 'oauth',
+          access_token: 'test_access_token_123',
+          refresh_token: 'test_refresh_token_456',
+          expires_in: 1800,
+          token_type: 'Bearer',
         })
       );
+      localStorage.setItem('ha_url', 'http://home-assistant.local:8123');
+      localStorage.setItem('ha_auth_method', 'oauth');
     });
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -230,14 +224,9 @@ test.describe('OAuth Authentication Flow', () => {
 
     // Set up invalid token
     await page.evaluate(() => {
-      localStorage.setItem(
-        'tunet_config',
-        JSON.stringify({
-          url: 'http://localhost:8123',
-          authMethod: 'token',
-          token: 'invalid_token_xyz',
-        })
-      );
+      localStorage.setItem('ha_url', 'http://localhost:8123');
+      localStorage.setItem('ha_auth_method', 'token');
+      localStorage.setItem('ha_token', 'invalid_token_xyz');
     });
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -254,9 +243,7 @@ test.describe('OAuth Authentication Flow', () => {
     if (!hasStatus) {
       // If no status text is shown, auth cache should still hold the invalid token attempt.
       const currentToken = await page.evaluate(() => {
-        const cfg = localStorage.getItem('tunet_config');
-        if (!cfg) return null;
-        return JSON.parse(cfg)?.token ?? null;
+        return localStorage.getItem('ha_token');
       });
       expect(currentToken).toBe('invalid_token_xyz');
       return;
@@ -289,14 +276,8 @@ test.describe('OAuth Authentication Flow', () => {
     if (!tokenVisible) {
       // Some onboarding variants open a custom token panel without a placeholder-based input.
       const hasAuthMode = await page.evaluate(() => {
-        const cfg = localStorage.getItem('tunet_config');
-        if (!cfg) return false;
-        try {
-          const parsed = JSON.parse(cfg);
-          return ['token', 'oauth'].includes(parsed?.authMethod);
-        } catch {
-          return false;
-        }
+        const authMethod = localStorage.getItem('ha_auth_method');
+        return authMethod === 'token' || authMethod === 'oauth';
       });
       if (!hasAuthMode) {
         test.skip(true, 'Token auth fallback UI is not exposed in this onboarding variant.');

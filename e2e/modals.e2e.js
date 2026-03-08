@@ -25,24 +25,19 @@ test.describe('Modal Interactions', () => {
   };
 
   test.beforeEach(async ({ page, mockHAConnection }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-    // Setup authenticated session with mock entities after origin is available
-    await page.evaluate(() => {
+    await page.addInitScript(() => {
+      localStorage.setItem('ha_url', 'http://localhost:8123');
+      localStorage.setItem('ha_auth_method', 'token');
+      localStorage.setItem('ha_token', 'test_token');
       localStorage.setItem(
-        'tunet_config',
+        'tunet_auth_cache_v1',
         JSON.stringify({
-          url: 'http://localhost:8123',
-          authMethod: 'token',
-          token: 'test_token',
+          access_token: 'test_token',
+          refresh_token: 'test_refresh_token',
+          expires_in: 1800,
+          token_type: 'Bearer',
         })
       );
-      localStorage.setItem('tunet_auth_cache_v1', JSON.stringify({
-        access_token: 'test_token',
-        refresh_token: 'test_refresh_token',
-        expires_in: 1800,
-        token_type: 'Bearer',
-      }));
     });
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });

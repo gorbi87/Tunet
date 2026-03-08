@@ -19,110 +19,152 @@ export const test = baseTest.extend({
    * Intercept WebSocket connections and mock HA responses
    */
   mockHAConnection: async ({ page }, use) => {
-    // Mock WebSocket for Home Assistant communication
-    await page.evaluateHandle(() => {
-      // Store original WebSocket
-      const OriginalWebSocket = window.WebSocket;
-      
-      window.mockHAWebSocket = class MockWebSocket extends EventTarget {
+    await page.addInitScript(() => {
+      const emitMessage = (target, payload) => {
+        target.dispatchEvent(
+          new MessageEvent('message', {
+            data: JSON.stringify(payload),
+          })
+        );
+      };
+
+      class MockWebSocket extends EventTarget {
+        static CONNECTING = 0;
+        static OPEN = 1;
+        static CLOSING = 2;
+        static CLOSED = 3;
+
         constructor(url) {
           super();
           this.url = url;
-          this.readyState = WebSocket.CONNECTING;
-          
-          // Simulate connection ready after a short delay
+          this.readyState = MockWebSocket.CONNECTING;
+
           setTimeout(() => {
-            this.readyState = WebSocket.OPEN;
+            this.readyState = MockWebSocket.OPEN;
             this.dispatchEvent(new Event('open'));
-          }, 100);
+            emitMessage(this, {
+              type: 'auth_required',
+              ha_version: '2026.3.0',
+            });
+          }, 25);
         }
 
         send(data) {
-          // Parse and respond to Home Assistant messages
           try {
             const msg = JSON.parse(data);
-            if (msg.type === 'subscribe_entities') {
-              // Simulate entity subscription response
+
+            if (msg.type === 'auth') {
               setTimeout(() => {
-                this.dispatchEvent(
-                  new MessageEvent('message', {
-                    data: JSON.stringify({
-                      id: msg.id,
-                      type: 'result',
-                      success: true,
-                    }),
-                  })
-                );
-                
-                // Send mock entities
+                emitMessage(this, {
+                  type: 'auth_ok',
+                  ha_version: '2026.3.0',
+                });
+              }, 10);
+              return;
+            }
+
+            if (msg.type === 'auth/current_user') {
+              setTimeout(() => {
+                emitMessage(this, {
+                  id: msg.id,
+                  type: 'result',
+                  success: true,
+                  result: {
+                    id: 'user-1',
+                    name: 'E2E User',
+                    is_admin: true,
+                    is_owner: false,
+                  },
+                });
+              }, 10);
+              return;
+            }
+
+            if (msg.type === 'get_config') {
+              setTimeout(() => {
+                emitMessage(this, {
+                  id: msg.id,
+                  type: 'result',
+                  success: true,
+                  result: {
+                    latitude: 0,
+                    longitude: 0,
+                    elevation: 0,
+                    unit_system: {
+                      temperature: 'C',
+                      length: 'km',
+                    },
+                    location_name: 'Test Home',
+                    time_zone: 'UTC',
+                    currency: 'EUR',
+                  },
+                });
+              }, 10);
+              return;
+            }
+
+            if (msg.type === 'subscribe_entities') {
+              setTimeout(() => {
+                emitMessage(this, {
+                  id: msg.id,
+                  type: 'result',
+                  success: true,
+                });
+
                 setTimeout(() => {
-                  this.dispatchEvent(
-                    new MessageEvent('message', {
-                      data: JSON.stringify({
-                        id: msg.id,
-                        type: 'event',
-                        event: {
-                          light: {
-                            'light.bedroom': {
-                              entity_id: 'light.bedroom',
-                              state: 'on',
-                              attributes: {
-                                friendly_name: 'Bedroom Light',
-                                brightness: 200,
-                                supported_features: 1,
-                              },
-                            },
-                            'light.kitchen': {
-                              entity_id: 'light.kitchen',
-                              state: 'off',
-                              attributes: {
-                                friendly_name: 'Kitchen Light',
-                                brightness: 0,
-                                supported_features: 1,
-                              },
-                            },
-                          },
-                          climate: {
-                            'climate.living_room': {
-                              entity_id: 'climate.living_room',
-                              state: 'heat',
-                              attributes: {
-                                friendly_name: 'Living Room Climate',
-                                current_temperature: 20,
-                                target_temperature: 22,
-                                supported_features: 391,
-                              },
-                            },
+                  emitMessage(this, {
+                    id: msg.id,
+                    type: 'event',
+                    event: {
+                      light: {
+                        'light.bedroom': {
+                          entity_id: 'light.bedroom',
+                          state: 'on',
+                          attributes: {
+                            friendly_name: 'Bedroom Light',
+                            brightness: 200,
+                            supported_features: 1,
                           },
                         },
-                      }),
-                    })
-                  );
-                }, 50);
-              }, 50);
+                        'light.kitchen': {
+                          entity_id: 'light.kitchen',
+                          state: 'off',
+                          attributes: {
+                            friendly_name: 'Kitchen Light',
+                            brightness: 0,
+                            supported_features: 1,
+                          },
+                        },
+                      },
+                      climate: {
+                        'climate.living_room': {
+                          entity_id: 'climate.living_room',
+                          state: 'heat',
+                          attributes: {
+                            friendly_name: 'Living Room Climate',
+                            current_temperature: 20,
+                            target_temperature: 22,
+                            supported_features: 391,
+                          },
+                        },
+                      },
+                    },
+                  });
+                }, 25);
+              }, 25);
             }
-          } catch (e) {
-            // Silently ignore unparseable messages
+          } catch {
+            // ignore malformed test messages
           }
         }
 
         close() {
-          this.readyState = WebSocket.CLOSED;
+          this.readyState = MockWebSocket.CLOSED;
           this.dispatchEvent(new CloseEvent('close'));
         }
-      };
-    });
-
-    // Intercept WebSocket constructor
-    await page.addInitScript(() => {
-      if (window.mockHAWebSocket) {
-        const OriginalWebSocket = window.WebSocket;
-        window.WebSocket = window.mockHAWebSocket;
-        window.WebSocket.CONNECTING = OriginalWebSocket.CONNECTING;
-        window.WebSocket.OPEN = OriginalWebSocket.OPEN;
-        window.WebSocket.CLOSING = OriginalWebSocket.CLOSING;
-        window.WebSocket.CLOSED = OriginalWebSocket.CLOSED;
       }
+
+      window.WebSocket = MockWebSocket;
     });
 
     await use();
@@ -132,31 +174,23 @@ export const test = baseTest.extend({
    * Skip onboarding by setting authentication flag
    */
   authenticatedPage: async ({ page, mockHAConnection }, use) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    
-    // Wait for app to initialize
-    await page.waitForLoadState('domcontentloaded');
-    
-    // Ensure authentication is recognized
-    await page.evaluate(() => {
+    await page.addInitScript(() => {
+      localStorage.setItem('ha_url', 'http://localhost:8123');
+      localStorage.setItem('ha_auth_method', 'token');
+      localStorage.setItem('ha_token', 'test_token');
       localStorage.setItem(
-        'tunet_config',
+        'tunet_auth_cache_v1',
         JSON.stringify({
-          url: 'http://localhost:8123',
-          authMethod: 'token',
-          token: 'test_token',
+          access_token: 'test_token',
+          refresh_token: 'test_refresh_token',
+          expires_in: 1800,
+          token_type: 'Bearer',
         })
       );
-      localStorage.setItem('tunet_auth_cache_v1', JSON.stringify({
-        access_token: 'test_token',
-        refresh_token: 'test_refresh_token',
-        expires_in: 1800,
-        token_type: 'Bearer',
-      }));
     });
 
-    // Navigate again after setting auth values
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(300);
     
     await use(page);
   },
