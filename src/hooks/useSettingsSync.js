@@ -92,6 +92,7 @@ export function useSettingsSync({ haUserId, contextSettersRef }) {
   const syncInFlightRef = useRef(false);
   const lastObservedHashRef = useRef('');
   const lastUploadedHashRef = useRef('');
+  const pushCurrentToServerRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -160,6 +161,68 @@ export function useSettingsSync({ haUserId, contextSettersRef }) {
     }
   }, [haUserId]);
 
+  const applyServerRow = useCallback(
+    async (row, options = {}) => {
+      if (!row || typeof row !== 'object' || !Number.isFinite(Number(row.revision))) return false;
+
+      const forcedServerRevision = Number.isFinite(Number(options.forceServerRevision))
+        ? Number(options.forceServerRevision)
+        : null;
+      const serverRevision = Number(row.revision);
+      const localRevision = Number.isFinite(Number(currentRevision)) ? Number(currentRevision) : 0;
+      if (forcedServerRevision !== null && serverRevision < forcedServerRevision) return false;
+      if (forcedServerRevision === null && serverRevision <= localRevision) return false;
+
+      let localSerialized =
+        typeof options.localSerializedOverride === 'string' ? options.localSerializedOverride : '';
+      if (!localSerialized) {
+        try {
+          const snapshot = collectSnapshot();
+          if (isValidSnapshot(snapshot)) {
+            localSerialized = JSON.stringify(snapshot);
+          }
+        } catch {
+          localSerialized = '';
+        }
+      }
+
+      const hasKnownBaseline = Boolean(lastUploadedHashRef.current);
+      if (hasKnownBaseline && localSerialized && localSerialized !== lastUploadedHashRef.current) {
+        return false;
+      }
+
+      if (!row.data || typeof row.data !== 'object') return false;
+      applySnapshot(row.data, contextSettersRef?.current || {});
+
+      const serialized = JSON.stringify(row.data || {});
+      lastUploadedHashRef.current = serialized;
+      lastObservedHashRef.current = serialized;
+      setCurrentRevision(serverRevision);
+      setLastSyncedAt(row.updated_at || null);
+      setStatus('synced');
+      setError('');
+      await refreshHistory();
+      return true;
+    },
+    [currentRevision, contextSettersRef, refreshHistory]
+  );
+
+  const reconcileFromServer = useCallback(async (options = {}) => {
+    if (!haUserId) return false;
+
+    const forcedServerRevision = Number.isFinite(Number(options.forceServerRevision))
+      ? Number(options.forceServerRevision)
+      : null;
+
+    try {
+      const row = await apiFetchCurrentSettings(haUserId, deviceIdRef.current);
+      return applyServerRow(row, { ...options, forceServerRevision: forcedServerRevision });
+    } catch {
+      // ignore reconciliation errors
+      return false;
+    }
+  }, [haUserId, applyServerRow]);
+
   const pushCurrentToServer = useCallback(
     async (options = {}) => {
       if (!haUserId) return null;
@@ -205,9 +268,14 @@ export function useSettingsSync({ haUserId, contextSettersRef }) {
         return response;
       } catch (saveError) {
         if (saveError?.status === 409 && Number.isFinite(Number(saveError?.body?.revision))) {
-          setCurrentRevision(Number(saveError.body.revision));
+          const conflictRevision = Number(saveError.body.revision);
+          setCurrentRevision(conflictRevision);
           setStatus('conflict');
           setError('Revision conflict');
+          await reconcileFromServer({
+            forceServerRevision: conflictRevision,
+            localSerializedOverride: serialized,
+          });
         } else {
           setStatus('error');
           setError(saveError?.message || 'Failed to sync settings');
@@ -215,50 +283,17 @@ export function useSettingsSync({ haUserId, contextSettersRef }) {
         throw saveError;
       }
     },
-    [haUserId, currentRevision, historyKeepLimit, refreshKnownDevices, refreshHistory]
+    [
+      haUserId,
+      currentRevision,
+      historyKeepLimit,
+      reconcileFromServer,
+      refreshKnownDevices,
+      refreshHistory,
+    ]
   );
 
-  const reconcileFromServer = useCallback(async () => {
-    if (!haUserId) return;
-
-    try {
-      const row = await apiFetchCurrentSettings(haUserId, deviceIdRef.current);
-      if (!row || typeof row !== 'object' || !Number.isFinite(Number(row.revision))) return;
-
-      const serverRevision = Number(row.revision);
-      const localRevision = Number.isFinite(Number(currentRevision)) ? Number(currentRevision) : 0;
-      if (serverRevision <= localRevision) return;
-
-      let localSerialized = '';
-      try {
-        const snapshot = collectSnapshot();
-        if (isValidSnapshot(snapshot)) {
-          localSerialized = JSON.stringify(snapshot);
-        }
-      } catch {
-        localSerialized = '';
-      }
-
-      const hasKnownBaseline = Boolean(lastUploadedHashRef.current);
-      if (hasKnownBaseline && localSerialized && localSerialized !== lastUploadedHashRef.current) {
-        return;
-      }
-
-      if (!row.data || typeof row.data !== 'object') return;
-      applySnapshot(row.data, contextSettersRef?.current || {});
-
-      const serialized = JSON.stringify(row.data || {});
-      lastUploadedHashRef.current = serialized;
-      lastObservedHashRef.current = serialized;
-      setCurrentRevision(serverRevision);
-      setLastSyncedAt(row.updated_at || null);
-      setStatus('synced');
-      setError('');
-      await refreshHistory();
-    } catch {
-      // ignore reconciliation errors
-    }
-  }, [haUserId, currentRevision, contextSettersRef, refreshHistory]);
+  pushCurrentToServerRef.current = pushCurrentToServer;
 
   const queueAutoSync = useCallback(
     (force = false, { ignoreEnabled = false } = {}) => {
@@ -306,7 +341,7 @@ export function useSettingsSync({ haUserId, contextSettersRef }) {
 
       if (!row) {
         try {
-          await pushCurrentToServer({ force: true });
+          await pushCurrentToServerRef.current?.({ force: true });
         } catch {
           // ignore bootstrap errors
         }
@@ -321,7 +356,7 @@ export function useSettingsSync({ haUserId, contextSettersRef }) {
     return () => {
       disposed = true;
     };
-  }, [haUserId, readCurrentFromServer, pushCurrentToServer, refreshKnownDevices, refreshHistory]);
+  }, [haUserId, readCurrentFromServer, refreshKnownDevices, refreshHistory]);
 
   useEffect(() => {
     if (!haUserId) return;

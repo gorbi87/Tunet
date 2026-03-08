@@ -177,7 +177,7 @@ describe('useSettingsSync', () => {
   });
 
   it('does not register device when reading current settings fails', async () => {
-    fetchCurrentSettings.mockRejectedValueOnce(new Error('network down'));
+    fetchCurrentSettings.mockRejectedValue(new Error('network down'));
 
     const { result } = renderHook(() =>
       useSettingsSync({ haUserId: 'user-1', contextSettersRef: { current: {} } })
@@ -224,11 +224,23 @@ describe('useSettingsSync', () => {
   });
 
   it('handles revision conflict response', async () => {
-    fetchCurrentSettings.mockResolvedValue({
-      revision: 1,
-      updated_at: '2026-02-22T12:00:00.000Z',
-      data: { version: 1, layout: {}, appearance: {} },
-    });
+    collectSnapshot.mockReturnValue({ version: 1, layout: {}, appearance: {} });
+
+    fetchCurrentSettings
+      .mockResolvedValueOnce({
+        revision: 1,
+        updated_at: '2026-02-22T12:00:00.000Z',
+        data: { version: 1, layout: {}, appearance: {} },
+      })
+      .mockResolvedValueOnce({
+        revision: 9,
+        updated_at: '2026-02-22T12:05:00.000Z',
+        data: {
+          version: 1,
+          layout: { pagesConfig: { header: ['server'], pages: ['home'], home: [] } },
+          appearance: {},
+        },
+      });
 
     const conflictError = new Error('Revision conflict');
     conflictError.status = 409;
@@ -251,8 +263,18 @@ describe('useSettingsSync', () => {
 
     await waitFor(() => {
       expect(saveCurrentSettings).toHaveBeenCalled();
-      expect(Number.isFinite(Number(result.current.currentRevision))).toBe(true);
+      expect(result.current.currentRevision).toBe(9);
+      expect(result.current.status).toBe('synced');
     });
+
+    expect(applySnapshot).toHaveBeenCalledWith(
+      {
+        version: 1,
+        layout: { pagesConfig: { header: ['server'], pages: ['home'], home: [] } },
+        appearance: {},
+      },
+      {}
+    );
   });
 
   it('publishes current config to other devices', async () => {
