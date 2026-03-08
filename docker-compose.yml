@@ -3,6 +3,8 @@ services:
     build: .
     ports:
       - '3002:3002'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     container_name: tunet-dashboard
     restart: unless-stopped
     environment:

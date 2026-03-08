@@ -1,5 +1,7 @@
 const API_BASE = './api';
 
+import { getHomeAssistantRequestHeaders } from './apiAuth';
+
 async function request(path, options = {}) {
   const mergedHeaders = options.headers
     ? {
@@ -24,7 +26,7 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-const userHeaders = (haUserId) => (haUserId ? { 'x-ha-user-id': String(haUserId) } : {});
+const requestHeaders = () => getHomeAssistantRequestHeaders();
 
 export function fetchCurrentSettings(haUserId, deviceId, revision) {
   const revisionQuery = Number.isFinite(Number(revision))
@@ -33,7 +35,7 @@ export function fetchCurrentSettings(haUserId, deviceId, revision) {
   return request(
     `/settings/current?ha_user_id=${encodeURIComponent(haUserId)}&device_id=${encodeURIComponent(deviceId)}${revisionQuery}`,
     {
-      headers: userHeaders(haUserId),
+      headers: requestHeaders(),
     }
   );
 }
@@ -42,7 +44,7 @@ export function fetchSettingsHistory(haUserId, deviceId, limit = 20) {
   return request(
     `/settings/history?ha_user_id=${encodeURIComponent(haUserId)}&device_id=${encodeURIComponent(deviceId)}&limit=${encodeURIComponent(limit)}`,
     {
-      headers: userHeaders(haUserId),
+      headers: requestHeaders(),
     }
   );
 }
@@ -53,7 +55,7 @@ export function deleteSettingsHistory(haUserId, deviceId, keepLatest = true) {
     `/settings/history?ha_user_id=${encodeURIComponent(haUserId)}&device_id=${encodeURIComponent(deviceId)}&keep_latest=${keepLatestQuery}`,
     {
       method: 'DELETE',
-      headers: userHeaders(haUserId),
+      headers: requestHeaders(),
     }
   );
 }
@@ -64,7 +66,7 @@ export function saveCurrentSettings(
 ) {
   return request('/settings/current', {
     method: 'PUT',
-    headers: userHeaders(ha_user_id),
+    headers: requestHeaders(),
     body: JSON.stringify({
       ha_user_id,
       device_id,
@@ -79,7 +81,7 @@ export function saveCurrentSettings(
 
 export function fetchCurrentDevices(haUserId) {
   return request(`/settings/devices?ha_user_id=${encodeURIComponent(haUserId)}`, {
-    headers: userHeaders(haUserId),
+    headers: requestHeaders(),
   });
 }
 
@@ -88,7 +90,7 @@ export function deleteSettingsDevice(haUserId, deviceId) {
     `/settings/devices?ha_user_id=${encodeURIComponent(haUserId)}&device_id=${encodeURIComponent(deviceId)}`,
     {
       method: 'DELETE',
-      headers: userHeaders(haUserId),
+      headers: requestHeaders(),
     }
   );
 }
@@ -96,7 +98,7 @@ export function deleteSettingsDevice(haUserId, deviceId) {
 export function updateSettingsDeviceLabel(haUserId, deviceId, deviceLabel) {
   return request('/settings/devices/label', {
     method: 'PUT',
-    headers: userHeaders(haUserId),
+    headers: requestHeaders(),
     body: JSON.stringify({
       ha_user_id: haUserId,
       device_id: deviceId,
@@ -113,7 +115,7 @@ export function publishCurrentSettings({
 }) {
   return request('/settings/publish', {
     method: 'POST',
-    headers: userHeaders(ha_user_id),
+    headers: requestHeaders(),
     body: JSON.stringify({ ha_user_id, source_device_id, target_device_id, history_keep_limit }),
   });
 }

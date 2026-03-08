@@ -4,6 +4,8 @@
  * and Express serves directly in production.
  */
 
+import { getHomeAssistantRequestHeaders } from './apiAuth';
+
 const API_BASE = './api';
 
 async function request(path, options = {}) {
@@ -30,26 +32,26 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-const userHeaders = (haUserId) => (haUserId ? { 'x-ha-user-id': String(haUserId) } : {});
+const requestHeaders = () => getHomeAssistantRequestHeaders();
 
 // ── Profiles ─────────────────────────────────────────────────────────
 
 export function fetchProfiles(haUserId) {
   return request(`/profiles?ha_user_id=${encodeURIComponent(haUserId)}`, {
-    headers: userHeaders(haUserId),
+    headers: requestHeaders(),
   });
 }
 
-export function fetchProfile(id, haUserId) {
+export function fetchProfile(id, _haUserId) {
   return request(`/profiles/${id}`, {
-    headers: userHeaders(haUserId),
+    headers: requestHeaders(),
   });
 }
 
 export function createProfile({ ha_user_id, name, device_label, data }) {
   return request('/profiles', {
     method: 'POST',
-    headers: userHeaders(ha_user_id),
+    headers: requestHeaders(),
     body: JSON.stringify({ ha_user_id, name, device_label, data }),
   });
 }
@@ -57,15 +59,15 @@ export function createProfile({ ha_user_id, name, device_label, data }) {
 export function updateProfile(id, { ha_user_id, name, device_label, data }) {
   return request(`/profiles/${id}`, {
     method: 'PUT',
-    headers: userHeaders(ha_user_id),
+    headers: requestHeaders(),
     body: JSON.stringify({ ha_user_id, name, device_label, data }),
   });
 }
 
-export function deleteProfile(id, haUserId) {
+export function deleteProfile(id, _haUserId) {
   return request(`/profiles/${id}`, {
     method: 'DELETE',
-    headers: userHeaders(haUserId),
+    headers: requestHeaders(),
   });
 }
 

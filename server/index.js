@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import profilesRouter from './routes/profiles.js';
 import iconsRouter from './routes/icons.js';
 import settingsRouter from './routes/settings.js';
+import { createHomeAssistantAuthMiddleware } from './haAuth.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3002', 10);
@@ -27,6 +28,7 @@ try {
 }
 
 const app = express();
+const homeAssistantAuth = createHomeAssistantAuthMiddleware();
 app.disable('x-powered-by');
 app.use((_req, res, next) => {
   res.removeHeader('X-Powered-By');
@@ -55,9 +57,9 @@ app.use((req, _res, next) => {
 });
 
 // API routes
-app.use('/api/profiles', profilesRouter);
+app.use('/api/profiles', homeAssistantAuth, profilesRouter);
 app.use('/api/icons', iconsRouter);
-app.use('/api/settings', settingsRouter);
+app.use('/api/settings', homeAssistantAuth, settingsRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {

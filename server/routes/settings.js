@@ -34,16 +34,10 @@ const safeParseJson = (raw, fallback = null) => {
   }
 };
 
-const getRequestUserId = (req) => {
-  const headerUserId = req.get('x-ha-user-id');
-  if (typeof headerUserId === 'string' && headerUserId.trim()) return headerUserId.trim();
-  return null;
-};
-
 const ensureRequestUser = (req, res) => {
-  const requestUserId = getRequestUserId(req);
+  const requestUserId = req.authenticatedHaUser?.id;
   if (!requestUserId) {
-    res.status(401).json({ error: 'Missing x-ha-user-id header' });
+    res.status(401).json({ error: 'Missing authenticated Home Assistant user' });
     return null;
   }
   return requestUserId;

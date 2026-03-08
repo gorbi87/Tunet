@@ -52,7 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Changed
-- No unreleased changes yet.
+- Hardened server-side Profiles and Settings authorization by validating Home Assistant identity on the backend instead of trusting a client-supplied user-id header.
+- Restored Docker compatibility for protected backend calls by adding Node WebSocket support plus internal/fallback Home Assistant URL handling for server-side auth validation.
 
 ## [1.11.2] — 2026-03-01
 
