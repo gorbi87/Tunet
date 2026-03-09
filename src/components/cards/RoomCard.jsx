@@ -35,6 +35,7 @@ const RoomCard = memo(function RoomCard({
   editMode,
   customNames,
   customIcons,
+  isMobile,
   onOpen,
   t,
 }) {
@@ -95,20 +96,27 @@ const RoomCard = memo(function RoomCard({
   }, []);
 
   const useCompactPills = !isSpacious || iconOnlyStatusPills || iconOnlyAllPills;
+  const showIconOnlyOccupancy = isMobile || iconOnlyStatusPills || iconOnlyAllPills;
 
   const chipContainerClass = useCompactPills
-    ? 'mt-5 flex max-w-[232px] flex-wrap items-start justify-start gap-3 pb-1'
-    : 'mt-5 flex w-full max-w-none flex-wrap items-start justify-start gap-3.5 pb-1';
+    ? `flex max-w-[232px] flex-wrap items-start justify-start pb-1 ${isMobile ? 'mt-4 gap-2.5' : 'mt-5 gap-3'}`
+    : `flex w-full max-w-none flex-wrap items-start justify-start pb-1 ${isMobile ? 'mt-4 gap-3' : 'mt-5 gap-3.5'}`;
   const chipClass = useCompactPills
-    ? 'flex items-center gap-2 px-3.5 py-1.5 rounded-full backdrop-blur-sm'
-    : 'flex items-center gap-2.5 px-4.5 py-2 rounded-full backdrop-blur-sm';
+    ? `flex items-center rounded-full backdrop-blur-sm ${isMobile ? 'gap-1.5 px-3 py-1.5' : 'gap-2 px-3.5 py-1.5'}`
+    : `flex items-center rounded-full backdrop-blur-sm ${isMobile ? 'gap-2 px-3.5 py-1.5' : 'gap-2.5 px-4.5 py-2'}`;
   const statusIconOnlyChipClass = useCompactPills
-    ? 'justify-center min-w-[56px] min-h-[32px]'
-    : 'justify-center min-w-[68px] min-h-[40px]';
+    ? `justify-center ${isMobile ? 'min-w-[40px] min-h-[30px]' : 'min-w-[56px] min-h-[32px]'}`
+    : `justify-center ${isMobile ? 'min-w-[48px] min-h-[34px]' : 'min-w-[68px] min-h-[40px]'}`;
   const chipTextClass = useCompactPills
-    ? 'text-[13px] tracking-wider font-bold uppercase'
-    : 'text-[15px] tracking-wide font-bold uppercase';
-  const chipIconClass = useCompactPills ? 'w-[14px] h-[14px]' : 'w-[18px] h-[18px]';
+    ? `${isMobile ? 'text-[11px]' : 'text-[13px]'} tracking-wider font-bold uppercase`
+    : `${isMobile ? 'text-[12px]' : 'text-[15px]'} tracking-wide font-bold uppercase`;
+  const chipIconClass = useCompactPills
+    ? isMobile
+      ? 'w-[13px] h-[13px]'
+      : 'w-[14px] h-[14px]'
+    : isMobile
+      ? 'w-[15px] h-[15px]'
+      : 'w-[18px] h-[18px]';
 
   const roomEntityIds = useMemo(() => getEffectiveRoomEntityIds(settings), [settings]);
 
@@ -398,7 +406,7 @@ const RoomCard = memo(function RoomCard({
         e.stopPropagation();
         if (!editMode) onOpen?.();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col overflow-hidden rounded-[2.5rem] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-7 font-sans transition-all duration-500 select-none ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} `}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col overflow-hidden rounded-[2.5rem] border border-[var(--glass-border)] bg-[var(--glass-bg)] font-sans transition-all duration-500 select-none ${isMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} `}
       style={cardStyle}
     >
       {controls}
@@ -415,31 +423,36 @@ const RoomCard = memo(function RoomCard({
       <div className="z-10 flex min-w-0 flex-1 flex-col justify-between text-[var(--text-primary)]">
         <div className="flex items-start justify-between gap-2">
           <div
-            className={`flex min-w-0 flex-col items-start ${useCompactPills ? 'max-w-[220px]' : 'w-full max-w-none'}`}
+            className={`flex min-w-0 flex-1 flex-col items-start ${useCompactPills && !isMobile ? 'max-w-[220px]' : 'w-full max-w-none'}`}
           >
             <button
               type="button"
               onClick={handleMainLightToggle}
-              className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-all duration-500 ${isMainLightOn ? 'bg-amber-500/20 text-amber-400' : 'bg-[var(--glass-bg)] text-[var(--text-muted)] hover:bg-[var(--glass-bg-hover)]'} ${hasMainLightToggle ? 'cursor-pointer active:scale-95' : 'cursor-default'}`}
+              className={`flex flex-shrink-0 items-center justify-center transition-all duration-500 ${isMainLightOn ? 'bg-amber-500/20 text-amber-400' : 'bg-[var(--glass-bg)] text-[var(--text-muted)] hover:bg-[var(--glass-bg-hover)]'} ${isMobile ? 'h-10 w-10 rounded-xl' : 'h-12 w-12 rounded-2xl'} ${hasMainLightToggle ? 'cursor-pointer active:scale-95' : 'cursor-default'}`}
               aria-label={t('room.mainLight')}
               disabled={!hasMainLightToggle || !conn}
             >
               <RoomIcon
-                className={`h-6 w-6 stroke-[1.5px] ${isMainLightOn ? 'fill-amber-400/20' : ''} transition-transform duration-300 group-hover:scale-110`}
+                className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} stroke-[1.5px] ${isMainLightOn ? 'fill-amber-400/20' : ''} transition-transform duration-300 group-hover:scale-110`}
               />
             </button>
 
             <div className="mt-2 flex w-full min-w-0 flex-col items-start text-left">
-              <div className="w-full truncate text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
+              <div className={`${isMobile ? 'text-[11px]' : 'text-xs'} w-full truncate font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60`}>
                 {areaName}
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex shrink-0 flex-col items-end gap-2">
             {showMotion && showOccupiedIndicator && isOccupied && (
-              <div className={`${chipClass} bg-[var(--status-success-bg)] text-[var(--status-success-fg)]`}>
-                <span className={chipTextClass}>{occupancyPillLabel}</span>
+              <div
+                className={`${chipClass} bg-[var(--status-success-bg)] text-[var(--status-success-fg)] ${showIconOnlyOccupancy ? statusIconOnlyChipClass : ''}`}
+                title={occupancyPillLabel}
+                aria-label={occupancyPillLabel}
+              >
+                <Activity className={chipIconClass} />
+                {!showIconOnlyOccupancy && <span className={chipTextClass}>{occupancyPillLabel}</span>}
               </div>
             )}
           </div>

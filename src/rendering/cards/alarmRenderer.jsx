@@ -11,6 +11,7 @@ export function renderAlarmCard(cardId, dragProps, getControls, cardStyle, setti
     callService,
     setShowAlarmModal,
     setShowAlarmActionModal,
+    isMobile,
     t,
   } = ctx;
   const settings = getSettings(cardSettings, settingsKey, cardId);
@@ -59,6 +60,7 @@ export function renderAlarmCard(cardId, dragProps, getControls, cardStyle, setti
       editMode={editMode}
       customNames={customNames}
       customIcons={customIcons}
+      isMobile={isMobile}
       onOpen={() => setShowAlarmModal(cardId)}
       onOpenAction={(actionKey) => setShowAlarmActionModal({ cardId, actionKey })}
       onAction={runAction}

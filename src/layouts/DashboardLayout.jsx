@@ -124,7 +124,7 @@ export default function DashboardLayout(props) {
         aria-label="Dashboard"
         className={`relative z-10 mx-auto w-full max-w-[1600px] py-6 md:py-10 ${
           isMobile
-            ? 'mobile-grid px-5'
+            ? 'mobile-grid px-2'
             : gridColCount === 1
               ? 'px-10 sm:px-16 md:px-24'
               : gridColCount === 3

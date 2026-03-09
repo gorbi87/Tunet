@@ -17,6 +17,7 @@ const GenericAndroidTVCard = memo(function GenericAndroidTVCard({
   getEntityImageUrl,
   onOpen,
   customNames,
+  isMobile,
   t,
   callService,
 }) {
@@ -87,6 +88,7 @@ const GenericAndroidTVCard = memo(function GenericAndroidTVCard({
   const picture = getEntityImageUrl(displayEntity?.attributes?.entity_picture);
   const deviceName = customNames[cardId] || entity?.attributes?.friendly_name || 'Android TV';
   const isSmall = size === 'small';
+  const isDenseMobile = isMobile && !isSmall;
 
   const getAppLogo = (app) => {
     // Detect linked player app from display entity attributes
@@ -173,41 +175,41 @@ const GenericAndroidTVCard = memo(function GenericAndroidTVCard({
         e.stopPropagation();
         if (!editMode && onOpen) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-7 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
       style={{ ...cardStyle, color: picture || appLogo ? 'white' : 'var(--text-primary)' }}
     >
       {controls}
 
       <div className="relative z-10 flex items-start justify-between">
         <div
-          className={`rounded-2xl p-3 transition-all group-hover:scale-110 ${isOn ? 'bg-[var(--status-success-bg)] text-[var(--status-success-fg)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'}`}
+          className={`transition-all group-hover:scale-110 ${isOn ? 'bg-[var(--status-success-bg)] text-[var(--status-success-fg)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'} ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
         >
-          <Tv className="h-5 w-5" />
+          <Tv className={isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'} />
         </div>
         {!linkedActive && (
           <div
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all ${isOn ? 'border-[var(--status-success-border)] bg-[var(--status-success-bg)] text-[var(--status-success-fg)]' : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)]'}`}
+            className={`flex items-center rounded-full border transition-all ${isOn ? 'border-[var(--status-success-border)] bg-[var(--status-success-bg)] text-[var(--status-success-fg)]' : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)]'} ${isDenseMobile ? 'gap-1 px-2.5 py-1' : 'gap-1.5 px-3 py-1.5'}`}
           >
-            <span className="text-xs font-bold tracking-widest uppercase">
+            <span className={`${isDenseMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest uppercase`}>
               {isOn ? (isPlaying ? t('status.playing') : t('common.on')) : t('common.off')}
             </span>
           </div>
         )}
       </div>
 
-      <div className="relative z-10 flex items-end justify-between gap-4">
+      <div className={`relative z-10 flex items-end justify-between ${isDenseMobile ? 'gap-3' : 'gap-4'}`}>
         <div className="min-w-0">
           <p
-            className={`${picture || appLogo ? 'text-white/70' : 'text-[var(--text-secondary)]'} mb-1 text-xs font-bold tracking-widest uppercase opacity-60`}
+            className={`${picture || appLogo ? 'text-white/70' : 'text-[var(--text-secondary)]'} ${isDenseMobile ? 'mb-0.5 text-[10px]' : 'mb-1 text-xs'} font-bold tracking-widest uppercase opacity-60`}
           >
             {deviceName}
           </p>
-          <h3 className="mb-1 line-clamp-2 text-3xl leading-none font-thin">
+          <h3 className={`${isDenseMobile ? 'mb-0.5 text-[1.45rem]' : 'mb-1 text-3xl'} line-clamp-2 leading-none font-thin`}>
             {appName || (isOn ? t('media.homeScreen') : t('status.off'))}
           </h3>
           {title && (
             <p
-              className={`text-xs ${picture || appLogo ? 'text-white/80' : 'text-[var(--text-muted)]'} line-clamp-1 font-medium`}
+              className={`${isDenseMobile ? 'text-[11px]' : 'text-xs'} ${picture || appLogo ? 'text-white/80' : 'text-[var(--text-muted)]'} line-clamp-1 font-medium`}
             >
               {title}
             </p>
@@ -221,12 +223,12 @@ const GenericAndroidTVCard = memo(function GenericAndroidTVCard({
               const targetId = isPlaying ? displayEntityId : mediaPlayerId;
               callService('media_player', 'media_play_pause', { entity_id: targetId });
             }}
-            className="relative z-20 flex-shrink-0 rounded-full bg-white p-3 shadow-lg transition-all active:scale-95"
+            className={`relative z-20 flex-shrink-0 rounded-full bg-white shadow-lg transition-all active:scale-95 ${isDenseMobile ? 'p-2.5' : 'p-3'}`}
           >
             {isPlaying ? (
-              <Pause className="h-6 w-6" color="black" fill="black" />
+              <Pause className={isDenseMobile ? 'h-5 w-5' : 'h-6 w-6'} color="black" fill="black" />
             ) : (
-              <Play className="ml-0.5 h-6 w-6" color="black" fill="black" />
+              <Play className={`${isDenseMobile ? 'ml-0.5 h-5 w-5' : 'ml-0.5 h-6 w-6'}`} color="black" fill="black" />
             )}
           </button>
         )}
@@ -238,7 +240,7 @@ const GenericAndroidTVCard = memo(function GenericAndroidTVCard({
             <img src={picture} alt="" className="h-full w-full object-cover" />
           ) : (
             <div
-              className={`flex h-full w-full items-center justify-center ${!linkedActive ? 'p-0' : 'p-12'}`}
+              className={`flex h-full w-full items-center justify-center ${!linkedActive ? 'p-0' : isDenseMobile ? 'p-8' : 'p-12'}`}
             >
               <img
                 src={appLogo}

@@ -50,7 +50,7 @@ const CarCard = ({
   getEntityImageUrl,
   _callService,
   onOpen,
-  _isMobile,
+  isMobile,
   t,
 }) => {
   const { unitsMode } = useConfig();
@@ -128,6 +128,7 @@ const CarCard = ({
   const Icon = customIcons[cardId] ? getIconComponent(customIcons[cardId]) || Car : Car;
   const sizeSetting = cardSettings[settingsKey]?.size || cardSettings[cardId]?.size;
   const isSmall = sizeSetting === 'small';
+  const isDenseMobile = isMobile && !isSmall;
 
   if (isSmall) {
     return (
@@ -188,7 +189,7 @@ const CarCard = ({
         e.stopPropagation();
         if (!editMode) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-7 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'}`}
       style={{
         ...cardStyle,
         backgroundColor: isHtg ? 'rgba(249, 115, 22, 0.08)' : 'var(--card-bg)',
@@ -200,22 +201,26 @@ const CarCard = ({
       }}
     >
       {controls}
-      <div className="flex items-start justify-between font-sans">
+      <div className={`flex items-start justify-between font-sans ${isDenseMobile ? 'gap-3' : ''}`}>
         <div
-          className={`rounded-2xl p-3 transition-all group-hover:scale-110 ${isHtg ? 'animate-pulse bg-orange-500/20 text-orange-400' : isCharging ? 'bg-[var(--status-success-bg)] text-[var(--status-success-fg)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'}`}
+          className={`transition-all group-hover:scale-110 ${isHtg ? 'animate-pulse bg-orange-500/20 text-orange-400' : isCharging ? 'bg-[var(--status-success-bg)] text-[var(--status-success-fg)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'} ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
         >
-          <Icon className="h-5 w-5 stroke-[1.5px]" />
+          <Icon className={`${isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'} stroke-[1.5px]`} />
         </div>
-        <div className="flex max-w-[65%] flex-col items-end gap-2">
+        <div className={`flex max-w-[65%] flex-col items-end ${isDenseMobile ? 'gap-1.5' : 'gap-2'}`}>
           {locationLabel && (
-            <div className="flex max-w-full items-start gap-1.5 rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1.5 text-[var(--text-secondary)]">
-              <MapPin className="mt-0.5 h-3 w-3 flex-shrink-0" />
-              <span className="text-xs leading-tight font-bold tracking-widest break-words whitespace-normal uppercase">
+            <div
+              className={`flex max-w-full items-start border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] ${isDenseMobile ? 'gap-1 rounded-xl px-2.5 py-1' : 'gap-1.5 rounded-2xl px-3 py-1.5'}`}
+            >
+              <MapPin className={`${isDenseMobile ? 'mt-0 h-2.5 w-2.5' : 'mt-0.5 h-3 w-3'} flex-shrink-0`} />
+              <span
+                className={`${isDenseMobile ? 'text-[10px]' : 'text-xs'} leading-tight font-bold tracking-widest break-words whitespace-normal uppercase`}
+              >
                 {String(locationLabel)}
               </span>
             </div>
           )}
-          {tempValue !== null && (
+          {tempValue !== null && !isDenseMobile && (
             <div className="flex items-center gap-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1.5 text-[var(--text-secondary)]">
               <Thermometer className="h-3 w-3" />
               <span className="text-xs font-bold tracking-widest uppercase">
@@ -225,9 +230,11 @@ const CarCard = ({
             </div>
           )}
           {isHtg && (
-            <div className="flex animate-pulse items-center gap-1.5 rounded-full border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] px-3 py-1.5 text-[var(--status-warning-fg)]">
-              <Flame className="h-3 w-3" />
-              <span className="text-xs font-bold tracking-widest uppercase">
+            <div
+              className={`flex animate-pulse items-center rounded-full border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] text-[var(--status-warning-fg)] ${isDenseMobile ? 'gap-1 px-2.5 py-1' : 'gap-1.5 px-3 py-1.5'}`}
+            >
+              <Flame className={isDenseMobile ? 'h-2.5 w-2.5' : 'h-3 w-3'} />
+              <span className={`${isDenseMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest uppercase`}>
                 {t('car.heating')}
               </span>
             </div>
@@ -236,23 +243,27 @@ const CarCard = ({
       </div>
       <div className="flex items-end justify-between">
         <div>
-          <p className="mb-1 text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
+          <p
+            className={`${isDenseMobile ? 'mb-0.5 text-[10px]' : 'mb-1 text-xs'} font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60`}
+          >
             {name}
           </p>
-          <div className="flex items-baseline gap-2 font-sans leading-none">
+          <div className={`flex items-baseline font-sans leading-none ${isDenseMobile ? 'gap-1.5' : 'gap-2'}`}>
             <span
-              className={`text-4xl leading-none font-thin ${isCharging ? 'text-[var(--status-success-fg)]' : 'text-[var(--text-primary)]'}`}
+              className={`${isDenseMobile ? 'text-3xl' : 'text-4xl'} leading-none font-thin ${isCharging ? 'text-[var(--status-success-fg)]' : 'text-[var(--text-primary)]'}`}
             >
               {batteryValue !== null ? `${formatValue(batteryValue)}%` : '--'}
             </span>
             {isCharging && (
               <Zap
-                className="mb-1 -ml-1 h-5 w-5 animate-pulse text-[var(--status-success-fg)]"
+                className={`${isDenseMobile ? 'mb-0.5 h-4 w-4' : 'mb-1 -ml-1 h-5 w-5'} animate-pulse text-[var(--status-success-fg)]`}
                 fill="currentColor"
               />
             )}
             {displayRangeValue !== null && (
-              <span className="ml-1 text-xl font-light text-[var(--text-secondary)]">
+              <span
+                className={`${isDenseMobile ? 'text-lg' : 'ml-1 text-xl'} font-light text-[var(--text-secondary)]`}
+              >
                 {formatUnitValue(displayRangeValue, { fallback: '--' })}
                 {rangeUnit}
               </span>

@@ -91,6 +91,8 @@ const VacuumCard = ({
   const vacuumIconName = customIcons[vacuumId] || entity?.attributes?.icon;
   const Icon = vacuumIconName ? getIconComponent(vacuumIconName) || Bot : Bot;
   const statusText = getVacuumStateLabel(state, battery, t);
+  const useStackedSmallControls = isMobile || isNarrowSmallCard;
+  const useDenseMobileLargeLayout = isMobile && !isSmall;
 
   const showRoom = !!room;
   const showBattery = typeof battery === 'number';
@@ -106,7 +108,7 @@ const VacuumCard = ({
           e.stopPropagation();
           if (!editMode) onOpen();
         }}
-        className={`glass-texture touch-feedback ${isMobile ? 'gap-2 p-3 pl-4' : 'gap-4 p-4 pl-5'} group relative flex h-full items-center justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
+        className={`glass-texture touch-feedback group relative flex h-full overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${useStackedSmallControls ? 'flex-col items-stretch justify-center gap-2 p-3.5' : isMobile ? 'items-center justify-between gap-2 p-3 pl-4' : 'items-center justify-between gap-4 p-4 pl-5'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
         style={{
           ...cardStyle,
           backgroundColor: isErrorState
@@ -125,18 +127,18 @@ const VacuumCard = ({
         }}
       >
         {controls}
-        <div className={`flex items-center ${isMobile ? 'gap-3' : 'gap-4'} min-w-0 flex-1`}>
+        <div className={`flex min-w-0 ${useStackedSmallControls ? 'w-full items-center gap-3' : isMobile ? 'flex-1 items-center gap-3' : 'flex-1 items-center gap-4'}`}>
           <div
-            className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-all group-hover:scale-110 ${state === 'cleaning' ? 'animate-pulse bg-[var(--accent-bg)] text-[var(--accent-color)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'}`}
+            className={`flex flex-shrink-0 items-center justify-center transition-all group-hover:scale-110 ${state === 'cleaning' ? 'animate-pulse bg-[var(--accent-bg)] text-[var(--accent-color)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'} ${isMobile ? 'h-10 w-10 rounded-xl' : 'h-12 w-12 rounded-2xl'}`}
           >
-            <Icon className="h-6 w-6 stroke-[1.5px]" />
+            <Icon className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} stroke-[1.5px]`} />
           </div>
           <div className="flex min-w-0 flex-col">
-            <p className="mb-1.5 text-xs leading-none font-bold tracking-widest break-words whitespace-normal text-[var(--text-secondary)] uppercase opacity-60">
+            <p className={`${isMobile ? 'mb-1 text-[10px]' : 'mb-1.5 text-xs'} leading-none font-bold tracking-widest break-words whitespace-normal text-[var(--text-secondary)] uppercase opacity-60`}>
               {name}
             </p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm leading-none font-bold text-[var(--text-primary)]">
+            <div className={`flex items-center ${isMobile ? 'gap-1.5' : 'gap-2'}`}>
+              <span className={`${isMobile ? 'text-xs' : 'text-sm'} leading-none font-bold text-[var(--text-primary)]`}>
                 {statusText}
               </span>
               {isErrorState && (
@@ -145,13 +147,15 @@ const VacuumCard = ({
                   {t('room.vacuumStatus.error') || 'Error'}
                 </span>
               )}
-              {showBattery && !isNarrowSmallCard && (
+              {showBattery && !useStackedSmallControls && (
                 <span className="text-xs text-[var(--text-secondary)]">{battery}%</span>
               )}
             </div>
           </div>
         </div>
-        <div className="vacuum-card-controls shrink-0">
+        <div
+          className={`vacuum-card-controls shrink-0 ${useStackedSmallControls ? 'self-end rounded-2xl bg-[var(--glass-bg)] p-1' : ''}`}
+        >
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -160,7 +164,7 @@ const VacuumCard = ({
                   entity_id: vacuumId,
                 });
             }}
-            className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--glass-bg)] text-[var(--text-primary)] transition-colors hover:bg-[var(--glass-bg-hover)] active:scale-95"
+            className={`flex items-center justify-center text-[var(--text-primary)] transition-colors active:scale-95 ${useStackedSmallControls ? 'h-8 w-8 rounded-xl hover:bg-[var(--glass-bg-hover)]' : 'h-8 w-8 rounded-xl bg-[var(--glass-bg)] hover:bg-[var(--glass-bg-hover)]'}`}
           >
             {state === 'cleaning' ? (
               <Pause className="h-4 w-4 fill-current" />
@@ -173,7 +177,7 @@ const VacuumCard = ({
               e.stopPropagation();
               if (!isUnavailable) callService('vacuum', 'return_to_base', { entity_id: vacuumId });
             }}
-            className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--glass-bg)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
+            className={`flex items-center justify-center text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] active:scale-95 ${useStackedSmallControls ? 'h-8 w-8 rounded-xl hover:bg-[var(--glass-bg-hover)]' : 'h-8 w-8 rounded-xl bg-[var(--glass-bg)] hover:bg-[var(--glass-bg-hover)]'}`}
           >
             <Home className="h-4 w-4" />
           </button>
@@ -209,28 +213,30 @@ const VacuumCard = ({
       }}
     >
       {controls}
-      <div className="flex items-start justify-between font-sans">
+      <div className={`flex items-start justify-between font-sans ${useDenseMobileLargeLayout ? 'gap-3' : ''}`}>
         <div
-          className={`rounded-2xl transition-all group-hover:scale-110 group-hover:rotate-3 ${isMobile ? 'p-2.5' : 'p-3'} ${state === 'cleaning' ? 'animate-pulse bg-[var(--accent-bg)] text-[var(--accent-color)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'}`}
+          className={`transition-all group-hover:scale-110 group-hover:rotate-3 ${isMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'} ${state === 'cleaning' ? 'animate-pulse bg-[var(--accent-bg)] text-[var(--accent-color)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'}`}
         >
-          <Icon className="h-5 w-5 stroke-[1.5px]" />
+          <Icon className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} stroke-[1.5px]`} />
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className={`flex flex-col items-end ${useDenseMobileLargeLayout ? 'gap-1.5' : 'gap-2'}`}>
           {isErrorState && (
-            <div className="flex items-center gap-1.5 rounded-full border border-[var(--status-error-border)] bg-[var(--status-error-bg)] px-3 py-1 text-[var(--status-error-fg)]">
-              <AlertTriangle className="h-3 w-3" />
-              <span className="text-xs font-bold tracking-widest uppercase">
+            <div className={`flex items-center rounded-full border border-[var(--status-error-border)] bg-[var(--status-error-bg)] text-[var(--status-error-fg)] ${useDenseMobileLargeLayout ? 'gap-1 px-2.5 py-1' : 'gap-1.5 px-3 py-1'}`}>
+              <AlertTriangle className={useDenseMobileLargeLayout ? 'h-2.5 w-2.5' : 'h-3 w-3'} />
+              <span className={`${useDenseMobileLargeLayout ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest uppercase`}>
                 {t('room.vacuumStatus.error') || 'Error'}
               </span>
             </div>
           )}
           {showRoom && (
-            <div className="flex items-center gap-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1 text-[var(--text-secondary)]">
-              <MapPin className="h-3 w-3" />
-              <span className="text-xs font-bold tracking-widest uppercase">{room}</span>
+            <div className={`flex items-center rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] ${useDenseMobileLargeLayout ? 'gap-1 px-2.5 py-1' : 'gap-1.5 px-3 py-1'}`}>
+              <MapPin className={useDenseMobileLargeLayout ? 'h-2.5 w-2.5' : 'h-3 w-3'} />
+              <span className={`${useDenseMobileLargeLayout ? 'max-w-[9ch] text-[10px]' : 'text-xs'} truncate font-bold tracking-widest uppercase`}>
+                {room}
+              </span>
             </div>
           )}
-          {showBattery && (
+          {showBattery && !useDenseMobileLargeLayout && (
             <div className="flex items-center gap-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1 text-[var(--text-secondary)]">
               <Battery className="h-3 w-3" />
               <span className="text-xs font-bold tracking-widest uppercase">{battery}%</span>
@@ -239,16 +245,22 @@ const VacuumCard = ({
         </div>
       </div>
 
-      <div className="flex items-end justify-between">
+      <div className={`${useDenseMobileLargeLayout ? 'mt-2' : ''} ${useDenseMobileLargeLayout ? 'flex flex-col gap-3' : 'flex items-end justify-between'}`}>
         <div>
-          <p className="mb-1 text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
+          <p className={`${useDenseMobileLargeLayout ? 'mb-0.5 text-[10px]' : 'mb-1 text-xs'} font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60`}>
             {name}
           </p>
-          <h3 className="text-3xl leading-none font-thin text-[var(--text-primary)]">
+          <h3 className={`${useDenseMobileLargeLayout ? 'text-[1.4rem]' : isMobile ? 'text-[1.65rem]' : 'text-3xl'} leading-none font-thin text-[var(--text-primary)]`}>
             {statusText}
           </h3>
+          {showBattery && useDenseMobileLargeLayout && (
+            <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-2.5 py-1 text-[var(--text-secondary)]">
+              <Battery className="h-2.5 w-2.5" />
+              <span className="text-[10px] font-bold tracking-widest uppercase">{battery}%</span>
+            </div>
+          )}
         </div>
-        <div className="flex gap-2">
+        <div className={`${useDenseMobileLargeLayout ? 'grid w-full grid-cols-2 gap-2' : 'flex gap-2'}`}>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -257,12 +269,12 @@ const VacuumCard = ({
                   entity_id: vacuumId,
                 });
             }}
-            className={`${isMobile ? 'p-2.5' : 'p-3'} rounded-xl bg-[var(--glass-bg)] text-[var(--text-primary)] transition-colors hover:bg-[var(--glass-bg-hover)] active:scale-95`}
+            className={`${useDenseMobileLargeLayout ? 'flex h-10 items-center justify-center rounded-xl bg-[var(--glass-bg)] text-[var(--text-primary)]' : `${isMobile ? 'p-2.5' : 'p-3'} rounded-xl bg-[var(--glass-bg)] text-[var(--text-primary)]`} transition-colors hover:bg-[var(--glass-bg-hover)] active:scale-95`}
           >
             {state === 'cleaning' ? (
-              <Pause className="h-5 w-5 fill-current" />
+              <Pause className={`${useDenseMobileLargeLayout ? 'h-4 w-4' : 'h-5 w-5'} fill-current`} />
             ) : (
-              <Play className="ml-0.5 h-5 w-5 fill-current" />
+              <Play className={`${useDenseMobileLargeLayout ? 'ml-0.5 h-4 w-4' : 'ml-0.5 h-5 w-5'} fill-current`} />
             )}
           </button>
           <button
@@ -270,9 +282,9 @@ const VacuumCard = ({
               e.stopPropagation();
               if (!isUnavailable) callService('vacuum', 'return_to_base', { entity_id: vacuumId });
             }}
-            className={`${isMobile ? 'p-2.5' : 'p-3'} rounded-xl bg-[var(--glass-bg)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95`}
+            className={`${useDenseMobileLargeLayout ? 'flex h-10 items-center justify-center rounded-xl bg-[var(--glass-bg)] text-[var(--text-secondary)]' : `${isMobile ? 'p-2.5' : 'p-3'} rounded-xl bg-[var(--glass-bg)] text-[var(--text-secondary)]`} transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95`}
           >
-            <Home className="h-5 w-5" />
+            <Home className={useDenseMobileLargeLayout ? 'h-4 w-4' : 'h-5 w-5'} />
           </button>
         </div>
       </div>

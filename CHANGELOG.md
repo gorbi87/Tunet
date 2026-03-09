@@ -85,7 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-- No unreleased changes yet.
+### Changed
+- Mobile friendly cards - First batch: Alarm, Android TV, Car, Climate, Cover, Cost, Fan, Light, Media, Nordpool, Room, and Vacuum cards.
 
 ## [1.11.2] — 2026-03-01
 

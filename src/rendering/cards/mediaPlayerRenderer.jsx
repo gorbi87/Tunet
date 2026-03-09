@@ -12,6 +12,7 @@ export function renderMediaPlayerCard(mpId, dragProps, getControls, cardStyle, s
     isMediaActive,
     openMediaModal,
     cardSettings,
+    isMobile,
     t,
   } = ctx;
   if (!entities[mpId]) {
@@ -40,6 +41,7 @@ export function renderMediaPlayerCard(mpId, dragProps, getControls, cardStyle, s
       callService={callService}
       isMediaActive={isMediaActive}
       onOpen={openMediaModal}
+      isMobile={isMobile}
       t={t}
       cardSettings={cardSettings}
       settingsKey={settingsKey}

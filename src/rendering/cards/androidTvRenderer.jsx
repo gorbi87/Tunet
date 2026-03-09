@@ -18,6 +18,7 @@ export function renderGenericAndroidTVCard(
     getEntityImageUrl,
     setShowAndroidTVModal,
     callService,
+    isMobile,
     t,
   } = ctx;
   const settings = getSettings(cardSettings, settingsKey, cardId);
@@ -52,6 +53,7 @@ export function renderGenericAndroidTVCard(
       getEntityImageUrl={getEntityImageUrl}
       onOpen={() => setShowAndroidTVModal(cardId)}
       customNames={customNames}
+      isMobile={isMobile}
       t={t}
       callService={callService}
     />

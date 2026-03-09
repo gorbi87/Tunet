@@ -14,6 +14,7 @@ const GenericNordpoolCard = memo(function GenericNordpoolCard({
   customNames,
   customIcons,
   onOpen,
+  isMobile,
   t,
   settings = {},
 }) {
@@ -26,6 +27,7 @@ const GenericNordpoolCard = memo(function GenericNordpoolCard({
   const name = customNames?.[cardId] || entity.attributes?.friendly_name || cardId;
   const decimals = settings.decimals ?? 2;
   const Icon = customIcons?.[cardId] ? getIconComponent(customIcons[cardId]) || Zap : Zap;
+  const isDenseMobile = isMobile && settings.size !== 'small';
 
   // Extract price data from sensor attributes
   const todayPrices = Array.isArray(entity.attributes?.today) ? entity.attributes.today : [];
@@ -171,47 +173,65 @@ const GenericNordpoolCard = memo(function GenericNordpoolCard({
         e.stopPropagation();
         if (!editMode && onOpen) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-7 font-sans transition-colors duration-500 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
       style={cardStyle}
     >
       {controls}
-      <div className="relative z-10 pb-20">
+      <div className={`relative z-10 ${isDenseMobile ? 'pb-16' : 'pb-20'}`}>
         <div className="flex items-start justify-between">
           <div
-            className="rounded-2xl p-3 text-amber-400 transition-transform duration-500 group-hover:scale-110"
+            className={`text-amber-400 transition-transform duration-500 group-hover:scale-110 ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
             style={{ backgroundColor: 'rgba(217, 119, 6, 0.1)' }}
           >
-            <Icon className="h-5 w-5" style={{ strokeWidth: 1.5 }} />
+            <Icon
+              className={isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'}
+              style={{ strokeWidth: 1.5 }}
+            />
           </div>
-          <div
-            className="flex items-center gap-1.5 rounded-full border px-3 py-1"
-            style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
-          >
-            <span className={`text-xs font-bold tracking-widest uppercase ${levelColor}`}>
-              {levelText}
-            </span>
-          </div>
+          {isDenseMobile ? (
+            <div className="flex items-end gap-1 leading-none">
+              <span className="text-2xl leading-none font-light text-[var(--text-primary)]">
+                {String(priceDisplay)}
+              </span>
+              <span className="text-[11px] font-medium text-[var(--text-muted)]">{currency}</span>
+            </div>
+          ) : (
+            <div
+              className="flex items-center gap-1.5 rounded-full border px-3 py-1"
+              style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
+            >
+              <span className={`text-xs font-bold tracking-widest uppercase ${levelColor}`}>
+                {levelText}
+              </span>
+            </div>
+          )}
         </div>
-        <div className="mt-2">
+        <div className={isDenseMobile ? 'mt-3' : 'mt-2'}>
           <p
-            className="mb-0.5 text-xs leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60"
+            className={`${isDenseMobile ? 'mb-1 text-[10px]' : 'mb-0.5 text-xs'} leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60`}
             style={{ letterSpacing: '0.05em' }}
           >
             {name}
           </p>
-          <div className="mt-2 flex items-baseline gap-1 leading-none">
-            <span className="text-4xl leading-none font-thin text-[var(--text-primary)]">
-              {String(priceDisplay)}
+          {isDenseMobile ? (
+            <span className={`text-[10px] font-bold tracking-widest uppercase ${levelColor}`}>
+              {levelText}
             </span>
-            <span className="ml-1 text-base font-medium text-[var(--text-muted)]">{currency}</span>
-          </div>
+          ) : (
+            <div className="mt-2 flex items-baseline gap-1 leading-none">
+              <span className="text-4xl leading-none font-thin text-[var(--text-primary)]">
+                {String(priceDisplay)}
+              </span>
+              <span className="ml-1 text-base font-medium text-[var(--text-muted)]">{currency}</span>
+            </div>
+          )}
         </div>
       </div>
       <div className="absolute inset-x-0 bottom-0">
         <SparkLine
           data={fullPriceData}
           currentIndex={currentPriceIndex}
-          height={84}
+          height={isDenseMobile ? 72 : 84}
           variant={settings.graphStyle === 'bar' ? 'bar' : 'line'}
         />
       </div>

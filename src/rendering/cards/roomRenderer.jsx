@@ -14,6 +14,7 @@ export function renderRoomCard(cardId, dragProps, getControls, cardStyle, settin
     setShowEditCardModal,
     setEditCardSettingsKey,
     setActivePage,
+    isMobile,
     t,
   } = ctx;
   const roomSettings = getSettings(cardSettings, settingsKey, cardId);
@@ -30,6 +31,7 @@ export function renderRoomCard(cardId, dragProps, getControls, cardStyle, settin
       editMode={editMode}
       customNames={customNames}
       customIcons={customIcons}
+      isMobile={isMobile}
       onOpen={() => {
         if (editMode) {
           setShowEditCardModal(cardId);

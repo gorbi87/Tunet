@@ -2,7 +2,16 @@ import { GenericEnergyCostCard } from '../../components';
 import { getSettings } from '../helpers';
 
 export function renderGenericCostCard(cardId, dragProps, getControls, cardStyle, settingsKey, ctx) {
-  const { entities, editMode, cardSettings, customNames, customIcons, setShowCostModal, t } = ctx;
+  const {
+    entities,
+    editMode,
+    cardSettings,
+    customNames,
+    customIcons,
+    setShowCostModal,
+    isMobile,
+    t,
+  } = ctx;
   const settings = getSettings(cardSettings, settingsKey, cardId);
   return (
     <GenericEnergyCostCard
@@ -18,6 +27,7 @@ export function renderGenericCostCard(cardId, dragProps, getControls, cardStyle,
       customIcons={customIcons}
       decimals={settings.decimals ?? 0}
       settings={settings}
+      isMobile={isMobile}
       onOpen={() => setShowCostModal(cardId)}
       t={t}
     />

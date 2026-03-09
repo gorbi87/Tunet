@@ -65,4 +65,10 @@ describe('GenericClimateCard', () => {
 
     expect(screen.queryByText('climate.fanAuto')).not.toBeInTheDocument();
   });
+
+  it('hides the fan block on mobile large cards', () => {
+    render(<GenericClimateCard {...baseProps({ fan_mode: 'auto' })} isMobile />);
+
+    expect(screen.queryByText('climate.fanAuto')).not.toBeInTheDocument();
+  });
 });
