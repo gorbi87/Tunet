@@ -20,6 +20,7 @@ export function renderLightCard(cardId, dragProps, getControls, cardStyle, setti
     optimisticLightBrightness,
     setOptimisticLightBrightness,
     setShowLightModal,
+    isMobile,
     t,
   } = ctx;
 
@@ -41,6 +42,7 @@ export function renderLightCard(cardId, dragProps, getControls, cardStyle, setti
       onOpen={() => {
         if (!editMode) setShowLightModal(cardId);
       }}
+      isMobile={isMobile}
       optimisticLightBrightness={optimisticLightBrightness}
       setOptimisticLightBrightness={setOptimisticLightBrightness}
       t={t}

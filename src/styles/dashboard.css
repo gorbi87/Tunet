@@ -212,14 +212,14 @@
   width: 100%;
 }
 .mobile-grid .card-compact {
-  transform: scale(0.82);
-  transform-origin: top center;
-  width: 122%;
-  height: 122%;
-  margin-left: -11%;
+  transform: none;
+  width: 100%;
+  height: 100%;
+  margin-left: 0;
 }
 .mobile-grid .card-compact > * {
   width: 100%;
+  min-height: 100%;
 }
 .modal-close {
   width: 36px;

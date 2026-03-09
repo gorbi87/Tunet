@@ -122,7 +122,7 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
       key={activePage}
       className="page-transition grid items-start font-sans"
       style={{
-        gap: isMobile ? '12px' : `${gridGapV}px ${gridGapH}px`,
+        gap: isMobile ? '8px' : `${gridGapV}px ${gridGapH}px`,
         gridAutoRows: 'auto',
         gridTemplateColumns: `repeat(${gridColCount}, minmax(0, 1fr))`,
       }}
@@ -161,7 +161,7 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
           const cardContent = renderCard(id, index);
           if (!cardContent) return null;
 
-          const gapPx = isMobile ? 12 : gridGapV;
+          const gapPx = isMobile ? 8 : gridGapV;
           const rowPx = isMobile ? 82 : 100;
           let cardHeight;
           if (

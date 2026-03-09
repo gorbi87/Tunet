@@ -344,12 +344,14 @@ const CoverCard = ({
   onOpen,
   callService,
   settings,
+  isMobile,
   t,
 }) => {
   const activeEntityId = entityId || '';
   const activeEntity = entity || { state: 'unknown', attributes: {} };
 
   const isSmall = settings?.size === 'small';
+  const isDenseMobile = isMobile && !isSmall;
   const state = activeEntity.state;
   const isUnavailable = state === 'unavailable' || state === 'unknown' || !state;
   const isOpening = state === 'opening';
@@ -462,7 +464,7 @@ const CoverCard = ({
       key={cardId}
       {...dragProps}
       data-haptic={editMode ? undefined : 'card'}
-      className={`glass-texture touch-feedback group relative flex h-full items-stretch justify-between overflow-hidden rounded-[2.5rem] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-7 font-sans transition-all duration-500 select-none ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''} `}
+      className={`glass-texture touch-feedback group relative flex h-full items-stretch justify-between overflow-hidden rounded-[2.5rem] border border-[var(--glass-border)] bg-[var(--glass-bg)] font-sans transition-all duration-500 select-none ${isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''} `}
       style={cardStyle}
       onClick={(e) => {
         e.stopPropagation();
@@ -472,43 +474,43 @@ const CoverCard = ({
       {controls}
 
       {/* LEFT COLUMN: Info */}
-      <div className="pointer-events-none z-10 flex min-w-0 flex-1 flex-col justify-between pr-2">
+      <div className={`pointer-events-none z-10 flex min-w-0 flex-1 flex-col justify-between ${isDenseMobile ? 'pr-1.5' : 'pr-2'}`}>
         {/* Top: Icon (Interactive for mode toggle) */}
         <div className="pointer-events-auto flex items-start">
           <div
             onClick={handleToggleMode}
-            className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] shadow-sm transition-all group-hover:scale-110 hover:bg-white/10 active:scale-90"
+            className={`flex cursor-pointer items-center justify-center border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] shadow-sm transition-all group-hover:scale-110 hover:bg-white/10 active:scale-90 ${isDenseMobile ? 'h-10 w-10 rounded-xl' : 'h-12 w-12 rounded-2xl'}`}
             style={{ color: accent.text }}
           >
-            <Icon className={`h-6 w-6 stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
+            <Icon className={`${isDenseMobile ? 'h-5 w-5' : 'h-6 w-6'} stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
           </div>
         </div>
 
         {/* Bottom: Info */}
-        <div className="flex flex-col gap-1 pl-1">
+        <div className={`flex flex-col ${isDenseMobile ? 'gap-0.5 pl-0.5' : 'gap-1 pl-1'}`}>
           <div className="flex items-baseline gap-1">
             {typeof position === 'number' ? (
               <>
-                <span className="text-4xl leading-none font-thin text-[var(--text-primary)] tabular-nums">
+                <span className={`${isDenseMobile ? 'text-3xl' : 'text-4xl'} leading-none font-thin text-[var(--text-primary)] tabular-nums`}>
                   {localPos}
                 </span>
-                <span className="text-xl leading-none font-light text-[var(--text-secondary)]">
+                <span className={`${isDenseMobile ? 'text-lg' : 'text-xl'} leading-none font-light text-[var(--text-secondary)]`}>
                   %
                 </span>
               </>
             ) : (
-              <span className="text-3xl leading-none font-thin text-[var(--text-primary)] capitalize">
+              <span className={`${isDenseMobile ? 'text-[1.55rem]' : 'text-3xl'} leading-none font-thin text-[var(--text-primary)] capitalize`}>
                 {getStateLabel()}
               </span>
             )}
           </div>
 
-          <div className="truncate text-xs font-bold tracking-wider text-[var(--text-secondary)] uppercase opacity-80">
+          <div className={`${isDenseMobile ? 'text-[10px]' : 'text-xs'} truncate font-bold tracking-wider text-[var(--text-secondary)] uppercase opacity-80`}>
             {name}
           </div>
 
           {isMoving && (
-            <div className="mt-1 animate-pulse text-[10px] font-bold tracking-widest text-[var(--text-primary)] uppercase">
+            <div className={`${isDenseMobile ? 'mt-0.5 text-[9px]' : 'mt-1 text-[10px]'} animate-pulse font-bold tracking-widest text-[var(--text-primary)] uppercase`}>
               {isOpening ? `${translate('cover.opening')}...` : `${translate('cover.closing')}...`}
             </div>
           )}
@@ -516,7 +518,7 @@ const CoverCard = ({
       </div>
 
       {/* RIGHT COLUMN: Control */}
-      <div className="relative z-0 flex w-14 flex-col pl-3" onClick={(e) => e.stopPropagation()}>
+      <div className={`relative z-0 flex flex-col ${isDenseMobile ? 'w-12 pl-2' : 'w-14 pl-3'}`} onClick={(e) => e.stopPropagation()}>
         {mode === 'slider' && supportsPosition ? (
           <BlindSlider
             position={localPos}

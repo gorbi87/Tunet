@@ -19,6 +19,7 @@ const LightCard = ({
   getA,
   callService,
   onOpen,
+  isMobile,
   optimisticLightBrightness,
   setOptimisticLightBrightness,
   t,
@@ -44,6 +45,7 @@ const LightCard = ({
 
   const sizeSetting = cardSettings[settingsKey]?.size || cardSettings[cardId]?.size;
   const isSmall = sizeSetting === 'small';
+  const isDenseMobile = isMobile && !isSmall;
 
   // Debounced brightness service call
   const debounceRef = useRef(null);
@@ -172,25 +174,25 @@ const LightCard = ({
       }}
       role={editMode ? undefined : 'button'}
       tabIndex={editMode ? -1 : 0}
-      className={`touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-7 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
+      className={`touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
       style={cardStyle}
     >
       {controls}
       <div className="flex items-start justify-between">
         <button
           onClick={handleToggleLight}
-          className={`rounded-2xl p-3 transition-all duration-500 ${isOn ? 'bg-amber-500/20 text-amber-400' : 'bg-[var(--glass-bg)] text-[var(--text-muted)]'}`}
+          className={`transition-all duration-500 ${isOn ? 'bg-amber-500/20 text-amber-400' : 'bg-[var(--glass-bg)] text-[var(--text-muted)]'} ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
           disabled={isUnavailable}
           aria-label={`${name || t('common.light')}: ${isOn ? t('common.off') : t('common.on')}`}
         >
           <LightIcon
-            className={`h-5 w-5 stroke-[1.5px] ${isOn ? 'fill-amber-400/20' : ''} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6`}
+            className={`${isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'} stroke-[1.5px] ${isOn ? 'fill-amber-400/20' : ''} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6`}
           />
         </button>
         <div
-          className={`flex items-center gap-1.5 rounded-full border px-3 py-1 transition-all ${isUnavailable ? 'border-[var(--status-error-border)] bg-[var(--status-error-bg)] text-[var(--status-error-fg)]' : isOn ? 'border-amber-500/20 bg-amber-500/10 text-amber-500' : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)]'}`}
+          className={`flex items-center rounded-full border transition-all ${isUnavailable ? 'border-[var(--status-error-border)] bg-[var(--status-error-bg)] text-[var(--status-error-fg)]' : isOn ? 'border-amber-500/20 bg-amber-500/10 text-amber-500' : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)]'} ${isDenseMobile ? 'gap-1 px-2.5 py-1' : 'gap-1.5 px-3 py-1'}`}
         >
-          <span className="text-xs font-bold tracking-widest uppercase">
+          <span className={`${isDenseMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest uppercase`}>
             {isUnavailable
               ? t('status.unavailable')
               : totalCount > 0
@@ -203,33 +205,47 @@ const LightCard = ({
           </span>
         </div>
       </div>
-      <div className="mt-2 font-sans">
-        <p className="mb-0.5 text-[10px] leading-none font-bold tracking-[0.2em] text-[var(--text-secondary)] uppercase opacity-60">
-          {String(name || t('common.light'))}
-        </p>
-        <div className="mt-1 flex items-baseline gap-1 leading-none">
+      <div className={`${isDenseMobile ? 'mt-1' : 'mt-2'} font-sans`}>
+        {!isDenseMobile && (
+          <p className="mb-0.5 text-[10px] leading-none font-bold tracking-[0.2em] text-[var(--text-secondary)] uppercase opacity-60">
+            {String(name || t('common.light'))}
+          </p>
+        )}
+        <div className={`flex items-baseline gap-1 leading-none ${isDenseMobile ? 'mt-0.5' : 'mt-1'}`}>
           {isDimmable ? (
             <>
-              <span className="text-4xl leading-none font-thin text-[var(--text-primary)]">
+              <span
+                className={`${isDenseMobile ? 'text-3xl' : 'text-4xl'} leading-none font-thin text-[var(--text-primary)]`}
+              >
                 {isUnavailable
                   ? '--'
                   : isOn
                     ? Math.round(((optimisticLightBrightness[cardId] ?? br) / 255) * 100)
                     : '0'}
               </span>
-              <span className="ml-1 text-xl font-light text-[var(--text-muted)]">%</span>
+              <span className={`${isDenseMobile ? 'text-lg' : 'ml-1 text-xl'} font-light text-[var(--text-muted)]`}>
+                %
+              </span>
             </>
           ) : (
             /* Layout: maintain 4xl height but show nothing unless UNAVAILABLE */
-            <span className="text-4xl leading-none font-thin text-transparent select-none">
+            <span
+              className={`${isDenseMobile ? 'text-3xl' : 'text-4xl'} leading-none font-thin text-transparent select-none`}
+            >
               {isUnavailable ? <span className="text-[var(--text-primary)]">--</span> : '0'}
             </span>
           )}
         </div>
+        {isDenseMobile && (
+          <p className="mt-3 mb-1 text-[10px] leading-none font-bold tracking-[0.2em] text-[var(--text-secondary)] uppercase opacity-60">
+            {String(name || t('common.light'))}
+          </p>
+        )}
         {/* Helper to keep layout consistent. For non-dimmable, we keep the empty space where slider would be. */}
-        <div className={`mt-3 flex w-full items-center ${isDimmable ? '' : 'h-12'}`}>
+        <div className={`flex w-full items-center ${isDenseMobile ? 'mt-2' : 'mt-3'} ${isDimmable ? '' : isDenseMobile ? 'h-8' : 'h-12'}`}>
           {isDimmable && (
             <M3Slider
+              variant={isDenseMobile ? 'thinLg' : 'default'}
               min={0}
               max={255}
               step={1}

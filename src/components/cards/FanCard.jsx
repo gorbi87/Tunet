@@ -72,6 +72,7 @@ const FanCard = memo(function FanCard({
 
   const settings = cardSettings[settingsKey] || cardSettings[fanId] || {};
   const isSmall = settings.size === 'small';
+  const isDenseMobile = isMobile && !isSmall;
   const disableAnimation = settings.disable_animation;
   const state = normalizeState(entity.state);
   const isOn = state === 'on';
@@ -107,6 +108,14 @@ const FanCard = memo(function FanCard({
     return t('status.on');
   })();
 
+  const mobileBadgeText = (() => {
+    if (isUnavailable) return t('common.unknown');
+    if (!isOn) return t('status.off');
+    if (oscillating) return t('fan.oscillating') || 'Osc';
+    if (hasPresetControl && presetMode) return String(presetMode);
+    return t('status.on');
+  })();
+
   const togglePower = (event) => {
     event.stopPropagation();
     if (isUnavailable || !canTogglePower) return;
@@ -128,7 +137,7 @@ const FanCard = memo(function FanCard({
         event.stopPropagation();
         if (!editMode) onOpen();
       }}
-      className={`glass-texture touch-feedback ${isSmall ? (isMobile ? 'gap-2 p-3 pl-4' : 'gap-4 p-4 pl-5') : isMobile ? 'p-5' : 'p-7'} rounded-3xl ${isSmall ? 'flex items-center justify-between' : 'flex flex-col justify-between'} group relative h-full overflow-hidden border font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
+      className={`glass-texture touch-feedback ${isSmall ? (isMobile ? 'gap-2 p-3 pl-4' : 'gap-4 p-4 pl-5') : isDenseMobile ? 'p-5' : isMobile ? 'p-5' : 'p-7'} rounded-3xl ${isSmall ? 'flex items-center justify-between' : 'flex flex-col justify-between'} group relative h-full overflow-hidden border font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
       style={{
         ...cardStyle,
         backgroundColor: 'var(--card-bg)',
@@ -174,18 +183,27 @@ const FanCard = memo(function FanCard({
         </>
       ) : (
         <>
-          <div className="mb-4 flex items-start justify-between gap-4">
+          <div className={`flex items-start justify-between ${isDenseMobile ? 'mb-3 gap-3' : 'mb-4 gap-4'}`}>
             <button
               onClick={togglePower}
               disabled={!canTogglePower}
-              className={`flex-shrink-0 rounded-2xl p-3 transition-all group-hover:scale-110 group-hover:rotate-3 ${isOn ? 'bg-[var(--accent-color)]/20 text-[var(--accent-color)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'}`}
+              className={`flex-shrink-0 transition-all group-hover:scale-110 group-hover:rotate-3 ${isOn ? 'bg-[var(--accent-color)]/20 text-[var(--accent-color)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'} ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
             >
               <Icon
-                className={`h-5 w-5 stroke-[1.5px] ${isOn && !disableAnimation ? 'animate-spin [animation-duration:2.4s]' : ''}`}
+                className={`${isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'} stroke-[1.5px] ${isOn && !disableAnimation ? 'animate-spin [animation-duration:2.4s]' : ''}`}
               />
             </button>
-            <div className="flex items-center gap-2">
-              {hasDirectionControl && (
+            {isDenseMobile ? (
+              <div
+                className={`flex items-center rounded-full border transition-all ${isUnavailable ? 'border-[var(--status-error-border)] bg-[var(--status-error-bg)] text-[var(--status-error-fg)]' : isOn ? 'border-[var(--accent-color)]/20 bg-[var(--accent-color)]/10 text-[var(--accent-color)]' : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)]'} gap-1 px-2.5 py-1`}
+              >
+                <span className="text-[10px] font-bold tracking-widest uppercase">
+                  {mobileBadgeText}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                {hasDirectionControl && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -203,8 +221,8 @@ const FanCard = memo(function FanCard({
                     <RotateCw className="h-4 w-4" />
                   )}
                 </button>
-              )}
-              {hasOscillationControl && (
+                )}
+                {hasOscillationControl && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -217,29 +235,46 @@ const FanCard = memo(function FanCard({
                 >
                   <MoveHorizontal className="h-4 w-4" />
                 </button>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div>
-            <span className="text-4xl leading-none font-thin text-[var(--text-primary)]">
+            <span className={`${isDenseMobile ? 'text-3xl' : 'text-4xl'} leading-none font-thin text-[var(--text-primary)]`}>
               {hasSpeedControl ? `${boundedPercentage}%` : isOn ? 'ON' : 'OFF'}
             </span>
           </div>
 
-          <div className="mt-2 text-xs">
-            <div className="mb-3 flex items-center gap-2">
+          <div className={`${isDenseMobile ? 'mt-1 text-xs' : 'mt-2 text-xs'}`}>
+            <div className={`flex items-center gap-2 ${isDenseMobile ? 'mb-2' : 'mb-3'}`}>
               <p
-                className="text-xs leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60"
+                className={`${isDenseMobile ? 'text-[10px]' : 'text-xs'} leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60`}
                 style={{ letterSpacing: '0.05em' }}
               >
                 {name}
               </p>
             </div>
 
+            {isDenseMobile && (hasDirectionControl || hasOscillationControl) && (
+              <div className="mb-2 flex items-center gap-2 text-[var(--text-secondary)]">
+                {hasDirectionControl && direction === 'reverse' && (
+                  <div className="flex items-center gap-1 rounded-full bg-[var(--glass-bg)] px-2 py-1">
+                    <RotateCcw className="h-3 w-3" />
+                  </div>
+                )}
+                {hasOscillationControl && oscillating && (
+                  <div className="flex items-center gap-1 rounded-full bg-[var(--glass-bg)] px-2 py-1">
+                    <MoveHorizontal className="h-3 w-3" />
+                  </div>
+                )}
+              </div>
+            )}
+
             {hasSpeedControl && (
-              <div onClick={(e) => e.stopPropagation()} className="mb-1 w-full">
+              <div onClick={(e) => e.stopPropagation()} className={`w-full ${isDenseMobile ? 'mb-0' : 'mb-1'}`}>
                 <M3Slider
+                  variant={isDenseMobile ? 'thinLg' : 'default'}
                   min={0}
                   max={100}
                   step={1}

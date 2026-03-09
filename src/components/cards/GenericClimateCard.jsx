@@ -53,6 +53,7 @@ const GenericClimateCard = memo(function GenericClimateCard({
   customIcons,
   onOpen,
   onSetTemperature,
+  isMobile,
   settings,
   t,
 }) {
@@ -81,6 +82,7 @@ const GenericClimateCard = memo(function GenericClimateCard({
   const fanModes = entity.attributes?.fan_modes || [];
   const showFan = Array.isArray(fanModes) && fanModes.length > 0;
   const fanSpeedLevel = getFanSpeedLevel(fanMode, fanModes);
+  const isDenseMobile = isMobile && !isSmall;
 
   const name = customNames[cardId] || entity.attributes?.friendly_name || entityId;
 
@@ -181,51 +183,60 @@ const GenericClimateCard = memo(function GenericClimateCard({
         e.stopPropagation();
         if (!editMode && onOpen) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-7 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'}`}
       style={cardStyle}
     >
       {controls}
-      <div className="mb-4 flex items-start justify-between gap-4">
+      <div className={`flex items-start justify-between ${isDenseMobile ? 'mb-3 gap-3' : 'mb-4 gap-4'}`}>
         <div
-          className={`flex-shrink-0 rounded-2xl p-3 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${activeTheme.iconBg}`}
+          className={`flex-shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${activeTheme.iconBg} ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
         >
-          <DisplayIcon className="h-5 w-5" style={{ strokeWidth: 1.5 }} />
+          <DisplayIcon
+            className={isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'}
+            style={{ strokeWidth: 1.5 }}
+          />
         </div>
         <div
-          className={`flex flex-shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 ${activeTheme.badge}`}
+          className={`flex flex-shrink-0 items-center rounded-full border ${activeTheme.badge} ${isDenseMobile ? 'gap-1 px-2.5 py-1' : 'gap-1.5 px-3 py-1'}`}
         >
-          <span className="text-xs font-bold tracking-widest uppercase">
+          <span className={`${isDenseMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest uppercase`}>
             {translate('climate.action.' + hvacAction)}
           </span>
         </div>
       </div>
       <div>
-        <span className="text-4xl leading-none font-thin text-[var(--text-primary)]">
+        <span
+          className={`${isDenseMobile ? 'text-3xl' : 'text-4xl'} leading-none font-thin text-[var(--text-primary)]`}
+        >
           {displayCurrentTemp.text}
         </span>
       </div>
-      <div className="mt-2">
-        <div className="mb-3 flex items-center gap-2">
+      <div className={isDenseMobile ? 'mt-1.5' : 'mt-2'}>
+        <div className={`flex items-center gap-2 ${isDenseMobile ? 'mb-2' : 'mb-3'}`}>
           <p
-            className="text-xs leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60"
+            className={`${isDenseMobile ? 'text-[10px]' : 'text-xs'} leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60`}
             style={{ letterSpacing: '0.05em' }}
           >
             {name}
           </p>
         </div>
-        <div className="flex items-stretch gap-3">
-          <div className="flex flex-1 items-center justify-between rounded-2xl bg-[var(--glass-bg)] p-1">
+        <div className={`flex items-stretch ${isDenseMobile ? 'gap-2' : 'gap-3'}`}>
+          <div
+            className={`flex flex-1 items-center justify-between bg-[var(--glass-bg)] ${isDenseMobile ? 'rounded-xl p-0.5' : 'rounded-2xl p-1'}`}
+          >
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 stepTemp(-0.5);
               }}
-              className="flex h-8 w-6 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-90"
+              className={`flex items-center justify-center text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-90 ${isDenseMobile ? 'h-7 w-5 rounded-lg' : 'h-8 w-6 rounded-xl'}`}
             >
               <Minus className="h-4 w-4" />
             </button>
             <div className="flex flex-col items-center">
-              <span className="text-xl leading-none font-medium text-[var(--text-primary)]">
+              <span
+                className={`${isDenseMobile ? 'text-lg' : 'text-xl'} leading-none font-medium text-[var(--text-primary)]`}
+              >
                 {displayTargetTemp.text}
               </span>
             </div>
@@ -234,12 +245,12 @@ const GenericClimateCard = memo(function GenericClimateCard({
                 e.stopPropagation();
                 stepTemp(0.5);
               }}
-              className="flex h-8 w-6 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-90"
+              className={`flex items-center justify-center text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-90 ${isDenseMobile ? 'h-7 w-5 rounded-lg' : 'h-8 w-6 rounded-xl'}`}
             >
               <Plus className="h-4 w-4" />
             </button>
           </div>
-          {showFan && (
+          {showFan && !isDenseMobile && (
             <div className="flex w-20 items-center justify-center gap-2 rounded-2xl bg-[var(--glass-bg)] pr-2">
               <Fan className="h-4 w-4 text-[var(--text-secondary)]" />
               {fanSpeedLevel === 0 ? (

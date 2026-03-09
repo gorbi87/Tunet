@@ -12,6 +12,7 @@ export function renderMediaGroupCard(cardId, dragProps, getControls, cardStyle, 
     isMediaActive,
     saveCardSetting,
     openMediaModal,
+    isMobile,
     t,
   } = ctx;
   return (
@@ -32,6 +33,7 @@ export function renderMediaGroupCard(cardId, dragProps, getControls, cardStyle, 
       isMediaActive={isMediaActive}
       saveCardSetting={saveCardSetting}
       onOpen={openMediaModal}
+      isMobile={isMobile}
       t={t}
     />
   );

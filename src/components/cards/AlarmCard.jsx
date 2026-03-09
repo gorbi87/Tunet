@@ -155,6 +155,7 @@ const AlarmCard = memo(function AlarmCard({
   cardStyle,
   editMode,
   customNames,
+  isMobile,
   onOpen,
   onOpenAction,
   onAction,
@@ -169,6 +170,7 @@ const AlarmCard = memo(function AlarmCard({
   const inTransition = TRANSITION_STATES.has(state);
   const isDisarmed = state === 'disarmed';
   const isSmall = settings?.size === 'small';
+  const isDenseMobile = isMobile && !isSmall;
   const unsupportedCode = isUnsupportedCodeFormat(entity);
   const availableArmActions = getAvailableArmActions(entity);
   const stateVisual = getStateVisual(state);
@@ -273,29 +275,29 @@ const AlarmCard = memo(function AlarmCard({
         event.stopPropagation();
         if (!editMode && onOpen) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between gap-4 overflow-hidden rounded-3xl border p-5 font-sans transition-all duration-500 ${
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isDenseMobile ? 'gap-3 p-4' : 'gap-4 p-5'} ${
         !editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'
       }`}
       style={cardStyle}
     >
       {controls}
 
-      <div className="flex items-start justify-between gap-3">
+      <div className={`flex items-start justify-between ${isDenseMobile ? 'gap-2.5' : 'gap-3'}`}>
         <div className="flex min-w-0 items-center gap-3">
           <div
-            className="flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3"
+            className={`flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${isDenseMobile ? 'h-10 w-10 rounded-xl' : 'h-11 w-11 rounded-2xl'}`}
             style={stateVisual.iconBgStyle}
           >
             {stateVisual.mdiPath ? (
               <MdiIcon
                 path={stateVisual.mdiPath}
-                size={0.95}
+                size={isDenseMobile ? 0.82 : 0.95}
                 color={stateVisual.iconColor}
                 className={inTransition ? 'animate-spin' : ''}
               />
             ) : (
               <StateIcon
-                className={`h-5 w-5 ${inTransition ? 'animate-spin' : ''}`}
+                className={`${isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'} ${inTransition ? 'animate-spin' : ''}`}
                 color={stateVisual.iconColor}
                 style={{ color: stateVisual.iconColor }}
               />
@@ -303,49 +305,49 @@ const AlarmCard = memo(function AlarmCard({
           </div>
         </div>
 
-        <div className="rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-2 py-1 text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+        <div className={`rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] font-bold tracking-widest text-[var(--text-secondary)] uppercase ${isDenseMobile ? 'px-2 py-1 text-[9px]' : 'px-2 py-1 text-[10px]'}`}>
           {translate('alarm.title')}
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className={isDenseMobile ? 'space-y-1.5' : 'space-y-2'}>
         <div className="flex items-baseline gap-1 leading-none">
-          <span className="truncate text-3xl leading-none font-thin text-[var(--text-primary)]">
+          <span className={`truncate leading-none font-thin text-[var(--text-primary)] ${isDenseMobile ? 'text-[1.55rem]' : 'text-3xl'}`}>
             {getStateLabel(state, translate)}
           </span>
         </div>
-        <p className="truncate text-[10px] leading-none font-bold tracking-[0.2em] text-[var(--text-secondary)] uppercase opacity-60">
+        <p className={`truncate leading-none font-bold tracking-[0.2em] text-[var(--text-secondary)] uppercase opacity-60 ${isDenseMobile ? 'text-[9px]' : 'text-[10px]'}`}>
           {name}
         </p>
         {entity.attributes?.changed_by && (
-          <p className="truncate text-[11px] text-[var(--text-secondary)]">
+          <p className={`truncate text-[var(--text-secondary)] ${isDenseMobile ? 'text-[10px]' : 'text-[11px]'}`}>
             {translate('alarm.changedBy')}: {entity.attributes.changed_by}
           </p>
         )}
         {unsupportedCode && (
-          <p className="text-[11px] text-[var(--text-secondary)]">
+          <p className={`${isDenseMobile ? 'text-[10px]' : 'text-[11px]'} text-[var(--text-secondary)]`}>
             {translate('alarm.code.numberOnlyHint')}
           </p>
         )}
         {isTriggered && (
-          <div className="flex items-center gap-2 text-[11px] text-[var(--text-primary)]">
-            <AlertTriangle className="h-3.5 w-3.5" />
+          <div className={`flex items-center text-[var(--text-primary)] ${isDenseMobile ? 'gap-1.5 text-[10px]' : 'gap-2 text-[11px]'}`}>
+            <AlertTriangle className={isDenseMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
             <span className="font-bold tracking-wider uppercase">{translate('status.alert')}</span>
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className={`flex items-center ${isDenseMobile ? 'gap-1.5' : 'gap-2'}`}>
         {quickActions.map((action) => (
           <button
             key={action.key}
             type="button"
             onClick={(event) => runQuickAction(event, action.key)}
-            className="h-12 flex-1 rounded-2xl bg-[var(--glass-bg)] px-3 text-[11px] font-bold tracking-wider text-[var(--text-primary)] uppercase transition-colors hover:bg-[var(--glass-bg-hover)] disabled:opacity-50"
+            className={`flex-1 bg-[var(--glass-bg)] font-bold tracking-wider text-[var(--text-primary)] uppercase transition-colors hover:bg-[var(--glass-bg-hover)] disabled:opacity-50 ${isDenseMobile ? 'h-10 rounded-xl px-2 text-[10px]' : 'h-12 rounded-2xl px-3 text-[11px]'}`}
             disabled={isUnavailable || inTransition}
           >
-            <span className="flex items-center justify-center gap-1.5">
-              <action.icon className="h-3.5 w-3.5" />
+            <span className={`flex items-center justify-center ${isDenseMobile ? 'gap-1' : 'gap-1.5'}`}>
+              <action.icon className={isDenseMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
               {translate(action.labelKey)}
             </span>
           </button>

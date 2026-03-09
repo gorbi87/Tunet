@@ -28,6 +28,7 @@ export const MediaPlayerCard = memo(({
   callService,
   isMediaActive,
   onOpen,
+  isMobile,
   t,
   cardSettings,
   settingsKey,
@@ -71,6 +72,7 @@ export const MediaPlayerCard = memo(({
   const powerAction = getMediaPlayerPowerAction(entity);
   const canTogglePower = Boolean(powerAction);
   const isPowerOffAction = powerAction === 'turn_off';
+  const isDenseMobile = Boolean(isMobile);
 
   const settings =
     cardSettings && settingsKey ? cardSettings[settingsKey] || cardSettings[cardId] || {} : {};
@@ -87,18 +89,18 @@ export const MediaPlayerCard = memo(({
           e.stopPropagation();
           if (!editMode) onOpen(mpId, null, null);
         }}
-        className={`glass-texture touch-feedback group relative flex h-full flex-col items-center justify-center overflow-hidden rounded-3xl border p-4 font-sans transition-all duration-500 sm:p-7 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
+        className={`glass-texture touch-feedback group relative flex h-full flex-col items-center justify-center overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isDenseMobile ? 'p-5' : 'p-4 sm:p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
         style={{ ...cardStyle, color: 'var(--text-primary)' }}
       >
         {controls}
         <div
-          className="mb-4 rounded-full p-5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3"
+          className={`${isDenseMobile ? 'mb-3 rounded-full p-4' : 'mb-4 rounded-full p-5'} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}
           style={{ backgroundColor: 'var(--glass-bg)' }}
         >
           {isChannel ? (
-            <Tv className="h-8 w-8 text-[var(--text-secondary)]" />
+            <Tv className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)]`} />
           ) : (
-            <Speaker className="h-8 w-8 text-[var(--text-secondary)]" />
+            <Speaker className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)]`} />
           )}
         </div>
         <div className="w-full px-4 text-center">
@@ -136,7 +138,7 @@ export const MediaPlayerCard = memo(({
         e.stopPropagation();
         if (!editMode) onOpen(mpId, null, null);
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-4 font-sans transition-all duration-500 sm:p-7 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isDenseMobile ? 'p-5' : 'p-4 sm:p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
       style={{
         ...cardStyle,
         color:
@@ -165,65 +167,65 @@ export const MediaPlayerCard = memo(({
         </div>
       )}
 
-      <div className="relative z-10 flex items-start gap-4">
-        {!isCoverMode && (
-          <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-lg">
-            {picture ? (
-              <img src={picture} alt="Cover" className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center">
-                {isChannel ? (
-                  <Tv className="h-8 w-8 text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110" />
-                ) : (
-                  <Speaker className="h-8 w-8 text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110" />
-                )}
-              </div>
-            )}
-          </div>
-        )}
+      <div className={`relative z-10 flex items-start ${isDenseMobile ? 'gap-3' : 'gap-4'}`}>
+        <div className={`${isDenseMobile ? 'h-16 w-16' : 'h-20 w-20'} flex shrink-0 items-center justify-center overflow-hidden`}>
+          {picture ? (
+            <img
+              src={picture}
+              alt="Cover"
+              className={`h-full w-full object-cover ${isDenseMobile ? 'rounded-xl' : 'rounded-2xl'}`}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              {isChannel ? (
+                <Tv className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} ${isCoverMode ? 'text-white/85' : 'text-[var(--text-secondary)]'} transition-transform duration-300 group-hover:scale-110`} />
+              ) : (
+                <Speaker className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} ${isCoverMode ? 'text-white/85' : 'text-[var(--text-secondary)]'} transition-transform duration-300 group-hover:scale-110`} />
+              )}
+            </div>
+          )}
+        </div>
         <div className={`flex flex-col overflow-hidden ${isCoverMode ? 'mt-auto pt-8' : 'pt-1'}`}>
           <div className="mb-1 flex items-center gap-2">
-            <p
-              className={`truncate text-xs font-bold tracking-widest uppercase ${isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'}`}
-            >
+            <p className={`truncate ${isDenseMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest uppercase ${isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'}`}>
               {name}
             </p>
           </div>
           <h3
-            className={`mb-0.5 truncate text-lg leading-tight font-bold ${isCoverMode ? 'text-white' : ''}`}
+            className={`mb-0.5 truncate ${isDenseMobile ? 'text-base' : 'text-lg'} leading-tight font-bold ${isCoverMode ? 'text-white' : ''}`}
           >
             {title || t('common.unknown')}
           </h3>
           {subtitle && (
             <p
-              className={`${picture || isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'} truncate text-xs font-medium`}
+              className={`${picture || isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'} truncate ${isDenseMobile ? 'text-[11px]' : 'text-xs'} font-medium`}
             >
               {subtitle}
             </p>
           )}
         </div>
       </div>
-      <div className="relative z-10 mt-1 flex items-center justify-center gap-[clamp(0.125rem,1.5vw,1.5rem)] px-0.5 sm:mt-2 sm:px-0">
+      <div className={`relative z-10 flex items-center justify-center ${isDenseMobile ? 'mt-3 gap-3 px-0' : 'mt-1 gap-[clamp(0.125rem,1.5vw,1.5rem)] px-0.5 sm:mt-2 sm:px-0'}`}>
         <button
           onClick={(e) => {
             e.stopPropagation();
             callService('media_player', 'media_previous_track', { entity_id: mpId });
           }}
-          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 p-[clamp(0.15rem,0.9vw,0.5rem)] transition-colors active:scale-90`}
+          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
         >
-          <SkipBack className="h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]" />
+          <SkipBack className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
             callService('media_player', 'media_play_pause', { entity_id: mpId });
           }}
-          className={`flex h-[clamp(1.9rem,5.8vw,3rem)] w-[clamp(1.9rem,5.8vw,3rem)] shrink-0 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 ${isCoverMode ? 'border border-white/30 bg-white/20 text-white backdrop-blur-md' : 'bg-white text-black'}`}
+          className={`flex shrink-0 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 ${isCoverMode ? 'border border-white/30 bg-white/20 text-white backdrop-blur-md' : 'bg-white text-black'} ${isDenseMobile ? 'h-11 w-11' : 'h-[clamp(1.9rem,5.8vw,3rem)] w-[clamp(1.9rem,5.8vw,3rem)]'}`}
         >
           {isPlaying ? (
-            <Pause className="h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current" />
+            <Pause className={isDenseMobile ? 'h-5 w-5 fill-current' : 'h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
           ) : (
-            <Play className="ml-0.5 h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current" />
+            <Play className={isDenseMobile ? 'ml-0.5 h-5 w-5 fill-current' : 'ml-0.5 h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
           )}
         </button>
         <button
@@ -231,9 +233,9 @@ export const MediaPlayerCard = memo(({
             e.stopPropagation();
             callService('media_player', 'media_next_track', { entity_id: mpId });
           }}
-          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 p-[clamp(0.15rem,0.9vw,0.5rem)] transition-colors active:scale-90`}
+          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
         >
-          <SkipForward className="h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]" />
+          <SkipForward className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
         </button>
         {canTogglePower && (
           <button
@@ -241,10 +243,10 @@ export const MediaPlayerCard = memo(({
               e.stopPropagation();
               callService('media_player', powerAction, { entity_id: mpId });
             }}
-            className={`${picture || isCoverMode ? (isPowerOffAction ? 'text-[var(--status-error-fg)] hover:text-white' : 'text-[var(--status-success-fg)] hover:text-white') : isPowerOffAction ? 'text-[var(--status-error-fg)] hover:opacity-80' : 'text-[var(--status-success-fg)] hover:opacity-80'} shrink-0 p-[clamp(0.15rem,0.9vw,0.5rem)] transition-colors active:scale-90`}
+            className={`${picture || isCoverMode ? (isPowerOffAction ? 'text-[var(--status-error-fg)] hover:text-white' : 'text-[var(--status-success-fg)] hover:text-white') : isPowerOffAction ? 'text-[var(--status-error-fg)] hover:opacity-80' : 'text-[var(--status-success-fg)] hover:opacity-80'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
             title={isPowerOffAction ? t('status.off') : t('status.on')}
           >
-            <Power className="h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]" />
+            <Power className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
           </button>
         )}
       </div>
@@ -270,6 +272,7 @@ export const MediaGroupCard = memo(({
   isMediaActive,
   saveCardSetting,
   onOpen,
+  isMobile,
   t,
 }) => {
   const groupSettings = cardSettings[settingsKey] || {};
@@ -312,6 +315,7 @@ export const MediaGroupCard = memo(({
   const powerAction = getMediaPlayerPowerAction(currentMp);
   const canTogglePower = Boolean(powerAction);
   const isPowerOffAction = powerAction === 'turn_off';
+  const isDenseMobile = Boolean(isMobile);
 
   const cyclePlayers = (e) => {
     e.stopPropagation();
@@ -331,15 +335,15 @@ export const MediaGroupCard = memo(({
           e.stopPropagation();
           if (!editMode) onOpen(mpId, settingsKey, null);
         }}
-        className={`glass-texture touch-feedback group relative flex h-full flex-col items-center justify-center overflow-hidden rounded-3xl border p-4 font-sans transition-all duration-500 sm:p-7 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
+        className={`glass-texture touch-feedback group relative flex h-full flex-col items-center justify-center overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isDenseMobile ? 'p-5' : 'p-4 sm:p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
         style={{ ...cardStyle, color: 'var(--text-primary)' }}
       >
         {controls}
-        <div className="mb-4 rounded-full p-5" style={{ backgroundColor: 'var(--glass-bg)' }}>
+        <div className={`${isDenseMobile ? 'mb-3 rounded-full p-4' : 'mb-4 rounded-full p-5'}`} style={{ backgroundColor: 'var(--glass-bg)' }}>
           {isChannel ? (
-            <Tv className="h-8 w-8 text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110" />
+            <Tv className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110`} />
           ) : (
-            <Speaker className="h-8 w-8 text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110" />
+            <Speaker className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110`} />
           )}
         </div>
         <div className="w-full px-4 text-center">
@@ -377,7 +381,7 @@ export const MediaGroupCard = memo(({
         e.stopPropagation();
         if (!editMode) onOpen(mpId, settingsKey, null);
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-4 font-sans transition-all duration-500 sm:p-7 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isDenseMobile ? 'p-5' : 'p-4 sm:p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
       style={{
         ...cardStyle,
         color:
@@ -392,7 +396,7 @@ export const MediaGroupCard = memo(({
       {cyclePool.length > 1 && (
         <button
           onClick={cyclePlayers}
-          className="absolute top-4 right-4 z-30 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[var(--text-secondary)] backdrop-blur-md transition-colors hover:text-[var(--text-primary)]"
+          className={`absolute z-30 flex items-center gap-1.5 rounded-full border text-[var(--text-secondary)] backdrop-blur-md transition-colors hover:text-[var(--text-primary)] ${isDenseMobile ? 'top-3 right-3 px-2 py-1' : 'top-4 right-4 px-2.5 py-1'}`}
           style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
         >
           <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--text-secondary)]" />
@@ -436,63 +440,65 @@ export const MediaGroupCard = memo(({
         </>
       )}
 
-      <div className="relative z-10 flex items-start gap-4">
-        {(!picture || !isCoverMode) && (
-          <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-lg">
-            {picture ? (
-              <img src={picture} alt="Cover" className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center">
-                {isChannel ? (
-                  <Tv className="h-8 w-8 text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110" />
-                ) : (
-                  <Speaker className="h-8 w-8 text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110" />
-                )}
-              </div>
-            )}
-          </div>
-        )}
+      <div className={`relative z-10 flex items-start ${isDenseMobile ? 'gap-3' : 'gap-4'}`}>
+        <div className={`${isDenseMobile ? 'h-16 w-16' : 'h-20 w-20'} flex shrink-0 items-center justify-center overflow-hidden`}>
+          {picture ? (
+            <img
+              src={picture}
+              alt="Cover"
+              className={`h-full w-full object-cover ${isDenseMobile ? 'rounded-xl' : 'rounded-2xl'}`}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              {isChannel ? (
+                <Tv className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} ${isCoverMode ? 'text-white/85' : 'text-[var(--text-secondary)]'} transition-transform duration-300 group-hover:scale-110`} />
+              ) : (
+                <Speaker className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} ${isCoverMode ? 'text-white/85' : 'text-[var(--text-secondary)]'} transition-transform duration-300 group-hover:scale-110`} />
+              )}
+            </div>
+          )}
+        </div>
         <div className={`flex flex-col overflow-hidden pt-1 ${isCoverMode ? 'w-full' : ''}`}>
           <div className="mb-1 flex items-center gap-2">
-            <p className="truncate text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+            <p className={`truncate ${isDenseMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest text-[var(--text-secondary)] uppercase`}>
               {name}
             </p>
           </div>
           <h3
-            className={`mb-0.5 truncate text-lg leading-tight font-bold ${isCoverMode ? 'text-2xl' : ''}`}
+            className={`mb-0.5 truncate ${isDenseMobile ? 'text-base' : 'text-lg'} leading-tight font-bold ${isCoverMode ? 'text-2xl' : ''}`}
           >
             {title || t('common.unknown')}
           </h3>
           {subtitle && (
             <p
-              className={`${picture || isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'} truncate text-xs font-medium`}
+              className={`${picture || isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'} truncate ${isDenseMobile ? 'text-[11px]' : 'text-xs'} font-medium`}
             >
               {subtitle}
             </p>
           )}
         </div>
       </div>
-      <div className="relative z-10 mt-1 flex items-center justify-center gap-[clamp(0.125rem,1.5vw,1.5rem)] px-0.5 sm:mt-2 sm:px-0">
+      <div className={`relative z-10 flex items-center justify-center ${isDenseMobile ? 'mt-3 gap-3 px-0' : 'mt-1 gap-[clamp(0.125rem,1.5vw,1.5rem)] px-0.5 sm:mt-2 sm:px-0'}`}>
         <button
           onClick={(e) => {
             e.stopPropagation();
             callService('media_player', 'media_previous_track', { entity_id: mpId });
           }}
-          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 p-[clamp(0.15rem,0.9vw,0.5rem)] transition-colors active:scale-90`}
+          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
         >
-          <SkipBack className="h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]" />
+          <SkipBack className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
             callService('media_player', 'media_play_pause', { entity_id: mpId });
           }}
-          className={`flex h-[clamp(1.9rem,5.8vw,3rem)] w-[clamp(1.9rem,5.8vw,3rem)] shrink-0 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 ${isCoverMode ? 'border border-white/30 bg-white/20 text-white backdrop-blur-md' : 'bg-white text-black'}`}
+          className={`flex shrink-0 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 ${isCoverMode ? 'border border-white/30 bg-white/20 text-white backdrop-blur-md' : 'bg-white text-black'} ${isDenseMobile ? 'h-11 w-11' : 'h-[clamp(1.9rem,5.8vw,3rem)] w-[clamp(1.9rem,5.8vw,3rem)]'}`}
         >
           {isPlaying ? (
-            <Pause className="h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current" />
+            <Pause className={isDenseMobile ? 'h-5 w-5 fill-current' : 'h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
           ) : (
-            <Play className="ml-0.5 h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current" />
+            <Play className={isDenseMobile ? 'ml-0.5 h-5 w-5 fill-current' : 'ml-0.5 h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
           )}
         </button>
         <button
@@ -500,9 +506,9 @@ export const MediaGroupCard = memo(({
             e.stopPropagation();
             callService('media_player', 'media_next_track', { entity_id: mpId });
           }}
-          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 p-[clamp(0.15rem,0.9vw,0.5rem)] transition-colors active:scale-90`}
+          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
         >
-          <SkipForward className="h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]" />
+          <SkipForward className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
         </button>
         {canTogglePower && (
           <button
@@ -510,10 +516,10 @@ export const MediaGroupCard = memo(({
               e.stopPropagation();
               callService('media_player', powerAction, { entity_id: mpId });
             }}
-            className={`${picture || isCoverMode ? (isPowerOffAction ? 'text-[var(--status-error-fg)] hover:text-white' : 'text-[var(--status-success-fg)] hover:text-white') : isPowerOffAction ? 'text-[var(--status-error-fg)] hover:opacity-80' : 'text-[var(--status-success-fg)] hover:opacity-80'} shrink-0 p-[clamp(0.15rem,0.9vw,0.5rem)] transition-colors active:scale-90`}
+            className={`${picture || isCoverMode ? (isPowerOffAction ? 'text-[var(--status-error-fg)] hover:text-white' : 'text-[var(--status-success-fg)] hover:text-white') : isPowerOffAction ? 'text-[var(--status-error-fg)] hover:opacity-80' : 'text-[var(--status-success-fg)] hover:opacity-80'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
             title={isPowerOffAction ? t('status.off') : t('status.on')}
           >
-            <Power className="h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]" />
+            <Power className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
           </button>
         )}
       </div>

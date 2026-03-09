@@ -8,6 +8,7 @@ export function renderNordpoolCard(cardId, dragProps, getControls, cardStyle, se
     cardSettings,
     customNames,
     customIcons,
+    isMobile,
     saveCardSetting,
     setShowNordpoolModal,
     t,
@@ -36,6 +37,7 @@ export function renderNordpoolCard(cardId, dragProps, getControls, cardStyle, se
       customNames={customNames}
       customIcons={customIcons}
       onOpen={() => setShowNordpoolModal(cardId)}
+      isMobile={isMobile}
       settings={settings}
       saveCardSetting={saveCardSetting}
       t={t}

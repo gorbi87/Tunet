@@ -10,6 +10,7 @@ export function renderCoverCard(cardId, dragProps, getControls, cardStyle, setti
     customIcons,
     callService,
     setShowCoverModal,
+    isMobile,
     t,
   } = ctx;
   const settings = getSettings(cardSettings, settingsKey, cardId);
@@ -39,6 +40,7 @@ export function renderCoverCard(cardId, dragProps, getControls, cardStyle, setti
       editMode={editMode}
       customNames={customNames}
       customIcons={customIcons}
+      isMobile={isMobile}
       onOpen={() => setShowCoverModal(cardId)}
       callService={callService}
       settings={settings}

@@ -17,6 +17,7 @@ export function renderGenericClimateCard(
     customIcons,
     callService,
     setActiveClimateEntityModal,
+    isMobile,
     t,
   } = ctx;
   const settings = getSettings(cardSettings, settingsKey, cardId);
@@ -50,6 +51,7 @@ export function renderGenericClimateCard(
       onSetTemperature={(temp) =>
         callService('climate', 'set_temperature', { entity_id: entityId, temperature: temp })
       }
+      isMobile={isMobile}
       settings={settings}
       t={t}
     />
