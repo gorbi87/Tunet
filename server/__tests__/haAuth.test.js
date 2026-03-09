@@ -149,6 +149,48 @@ describe('createHomeAssistantAuthMiddleware', () => {
     expect(next).toHaveBeenCalledTimes(1);
   });
 
+  it('returns 503 when Home Assistant is unreachable instead of forcing an auth failure', async () => {
+    const validateHomeAssistantUser = vi
+      .fn()
+      .mockRejectedValue(new Error('connect ECONNREFUSED 192.168.1.20:8123'));
+    const middleware = createHomeAssistantAuthMiddleware({ validateHomeAssistantUser });
+    const req = createRequest({
+      authorization: 'Bearer token-1',
+      'x-ha-url': 'http://192.168.1.20:8123',
+    });
+    const res = createResponse();
+    const next = vi.fn();
+
+    await middleware(req, res, next);
+
+    expect(res.statusCode).toBe(503);
+    expect(res.body).toEqual({
+      error: 'Tunet backend could not reach Home Assistant while validating the current user.',
+      code: 'HA_VALIDATION_UNREACHABLE',
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('still returns 401 for invalid Home Assistant auth', async () => {
+    const validateHomeAssistantUser = vi.fn().mockRejectedValue(new Error('Invalid auth'));
+    const middleware = createHomeAssistantAuthMiddleware({ validateHomeAssistantUser });
+    const req = createRequest({
+      authorization: 'Bearer token-1',
+      'x-ha-url': 'https://ha.example',
+    });
+    const res = createResponse();
+    const next = vi.fn();
+
+    await middleware(req, res, next);
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({
+      error: 'Home Assistant authentication failed: Invalid auth',
+      code: 'HA_AUTH_INVALID',
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
   it('tries the fallback Home Assistant URL when the primary URL is not reachable from Docker', async () => {
     const validateHomeAssistantUser = vi
       .fn()

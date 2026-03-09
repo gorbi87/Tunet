@@ -16,6 +16,26 @@ const DEFAULT_INVALID_AUTH_CACHE_TTL_MS = Math.min(
 const MAX_CACHE_ENTRIES = 200;
 const TRUSTED_INGRESS_IPS = new Set(['172.30.32.2', '127.0.0.1', '::1']);
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
+const NETWORK_ERROR_PATTERNS = [
+  'econnrefused',
+  'econnreset',
+  'enotfound',
+  'ehostunreach',
+  'eai_again',
+  'etimedout',
+  'socket hang up',
+  'network error',
+  'fetch failed',
+  'getaddrinfo',
+];
+const TLS_ERROR_PATTERNS = [
+  'certificate',
+  'self signed',
+  'tls',
+  'ssl',
+  'unable to verify the first certificate',
+  'hostname/ip does not match certificate',
+];
 
 if (typeof globalThis.WebSocket === 'undefined') {
   globalThis.WebSocket = NodeWebSocket;
@@ -158,6 +178,47 @@ const isInvalidAuthError = (error) => {
   );
 };
 
+const isHomeAssistantReachabilityError = (error) => {
+  const message = String(error?.message || error || '').toLowerCase();
+  return [...NETWORK_ERROR_PATTERNS, ...TLS_ERROR_PATTERNS].some((pattern) =>
+    message.includes(pattern)
+  );
+};
+
+const sendJsonError = (res, statusCode, error, code) => {
+  const body = { error };
+  if (code) {
+    body.code = code;
+  }
+  res.status(statusCode).json(body);
+};
+
+const sendValidationFailure = (res, error) => {
+  const message = String(error?.message || 'Home Assistant validation failed');
+
+  if (isInvalidAuthError(error)) {
+    sendJsonError(res, 401, `Home Assistant authentication failed: ${message}`, 'HA_AUTH_INVALID');
+    return;
+  }
+
+  if (isHomeAssistantReachabilityError(error)) {
+    sendJsonError(
+      res,
+      503,
+      'Tunet backend could not reach Home Assistant while validating the current user.',
+      'HA_VALIDATION_UNREACHABLE'
+    );
+    return;
+  }
+
+  sendJsonError(
+    res,
+    503,
+    'Tunet backend could not validate the current Home Assistant session.',
+    'HA_VALIDATION_FAILED'
+  );
+};
+
 const createCachedAuthError = (error) => {
   if (error instanceof Error) return error;
   return new Error(String(error || 'Home Assistant authentication failed'));
@@ -245,10 +306,6 @@ export const createValidatedHomeAssistantUserResolver = ({
 
 const resolveValidatedHomeAssistantUser = createValidatedHomeAssistantUserResolver();
 
-const sendUnauthorized = (res, error) => {
-  res.status(401).json({ error });
-};
-
 export const createHomeAssistantAuthMiddleware = ({
   validateHomeAssistantUser = resolveValidatedHomeAssistantUser,
 } = {}) => {
@@ -263,13 +320,13 @@ export const createHomeAssistantAuthMiddleware = ({
 
     const haUrls = getHomeAssistantUrlCandidates(req);
     if (!haUrls.length) {
-      sendUnauthorized(res, 'Missing or invalid x-ha-url header');
+      sendJsonError(res, 401, 'Missing or invalid x-ha-url header');
       return;
     }
 
     const accessToken = getBearerToken(req);
     if (!accessToken) {
-      sendUnauthorized(res, 'Missing Authorization bearer token');
+      sendJsonError(res, 401, 'Missing Authorization bearer token');
       return;
     }
 
@@ -287,7 +344,6 @@ export const createHomeAssistantAuthMiddleware = ({
       }
     }
 
-    const message = String(lastError?.message || 'Home Assistant authentication failed');
-    sendUnauthorized(res, `Home Assistant authentication failed: ${message}`);
+    sendValidationFailure(res, lastError);
   };
 };

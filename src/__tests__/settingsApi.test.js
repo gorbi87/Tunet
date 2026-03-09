@@ -80,4 +80,35 @@ describe('settingsApi OAuth refresh retry', () => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
     expect(notifyUnauthorizedMock).not.toHaveBeenCalled();
   });
+
+  it('does not treat backend reachability failures as OAuth expiration', async () => {
+    getValidatedHeadersAsyncMock.mockReset();
+    getStoredAuthMethodMock.mockReturnValue('oauth');
+    getValidatedHeadersAsyncMock.mockResolvedValueOnce({
+      'x-ha-url': 'https://ha.example',
+      Authorization: 'Bearer oauth-token',
+    });
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      json: vi.fn().mockResolvedValue({
+        error: 'Tunet backend could not reach Home Assistant while validating the current user.',
+        code: 'HA_VALIDATION_UNREACHABLE',
+      }),
+    });
+
+    const { fetchCurrentSettings } = await import('../services/settingsApi');
+
+    await expect(fetchCurrentSettings('user-1', 'device-1')).rejects.toMatchObject({
+      message: 'Tunet backend could not reach Home Assistant while validating the current user.',
+      status: 503,
+      body: {
+        code: 'HA_VALIDATION_UNREACHABLE',
+      },
+    });
+
+    expect(getValidatedHeadersAsyncMock).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(notifyUnauthorizedMock).not.toHaveBeenCalled();
+  });
 });
