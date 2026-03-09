@@ -6,6 +6,7 @@ export function renderMediaGroupCard(cardId, dragProps, getControls, cardStyle, 
     editMode,
     cardSettings,
     customNames,
+    customIcons,
     getA,
     getEntityImageUrl,
     callService,
@@ -27,6 +28,7 @@ export function renderMediaGroupCard(cardId, dragProps, getControls, cardStyle, 
       cardSettings={cardSettings}
       settingsKey={settingsKey}
       customNames={customNames}
+      customIcons={customIcons}
       getA={getA}
       getEntityImageUrl={getEntityImageUrl}
       callService={callService}

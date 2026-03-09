@@ -71,4 +71,49 @@
   animation: pageFadeIn 0.2s ease-out forwards;
 }
 
+/* Media playing background motion (optional + subtle) */
+@keyframes mediaBgSubtleDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  33% {
+    transform: translate3d(-1.25%, -0.9%, 0) scale(1.08);
+  }
+  66% {
+    transform: translate3d(1.1%, 0.75%, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+}
+
+@keyframes mediaBgSubtlePulse {
+  0% {
+    opacity: 0.88;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.88;
+  }
+}
+
+.media-bg-subtle-drift {
+  animation: mediaBgSubtleDrift 14s ease-in-out infinite;
+  will-change: transform;
+}
+
+.media-bg-subtle-pulse {
+  animation: mediaBgSubtlePulse 6s ease-in-out infinite;
+}
+
+.media-bg-subtle-overlay {
+  background:
+    radial-gradient(120% 60% at 20% 20%, rgba(255, 255, 255, 0.08), transparent 60%),
+    radial-gradient(90% 50% at 80% 75%, rgba(255, 255, 255, 0.06), transparent 65%);
+  mix-blend-mode: soft-light;
+  opacity: 0.45;
+}
+
 /* Update older fade-in-anim if needed, but keeping it for compatibility */

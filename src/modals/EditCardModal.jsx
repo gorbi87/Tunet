@@ -2940,6 +2940,45 @@ export default function EditCardModal({
                     : t('media.artwork.defaultHint') || 'Standard icon & background'}
                 </p>
               </div>
+
+              <div className="space-y-2">
+                <label className="ml-1 text-xs font-bold text-[var(--text-muted)] uppercase">
+                  {t('media.playingBgMotion') || 'Playing Background Motion'}
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => saveCardSetting(editSettingsKey, 'playingBackgroundMotion', 'off')}
+                    className={`flex-1 rounded-xl border px-4 py-3 text-xs font-bold tracking-widest uppercase transition-colors ${!editSettings.playingBackgroundMotion || editSettings.playingBackgroundMotion === 'off' ? 'popup-surface border-[var(--glass-border)] text-[var(--text-primary)]' : 'popup-surface popup-surface-hover border-transparent text-[var(--text-secondary)]'}`}
+                    style={
+                      !editSettings.playingBackgroundMotion || editSettings.playingBackgroundMotion === 'off'
+                        ? { backgroundColor: 'var(--glass-bg-hover)' }
+                        : undefined
+                    }
+                  >
+                    {t('common.off') || 'Off'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      saveCardSetting(editSettingsKey, 'playingBackgroundMotion', 'subtle')
+                    }
+                    className={`flex-1 rounded-xl border px-4 py-3 text-xs font-bold tracking-widest uppercase transition-colors ${editSettings.playingBackgroundMotion === 'subtle' ? 'popup-surface border-[var(--glass-border)] text-[var(--text-primary)]' : 'popup-surface popup-surface-hover border-transparent text-[var(--text-secondary)]'}`}
+                    style={
+                      editSettings.playingBackgroundMotion === 'subtle'
+                        ? { backgroundColor: 'var(--glass-bg-hover)' }
+                        : undefined
+                    }
+                  >
+                    {t('media.motion.subtle') || 'Subtle'}
+                  </button>
+                </div>
+                <p className="ml-1 text-[10px] text-[var(--text-muted)]">
+                  {editSettings.playingBackgroundMotion === 'subtle'
+                    ? t('media.motion.subtleHint') || 'Gently drifts artwork while playing'
+                    : t('media.motion.offHint') || 'No extra background motion'}
+                </p>
+              </div>
             </div>
           )}
 

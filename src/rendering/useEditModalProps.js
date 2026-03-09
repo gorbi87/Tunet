@@ -68,6 +68,7 @@ export function useEditModalProps({
     const canEditIcon =
       !!editId &&
       (isEditLight ||
+        isEditMedia ||
         isEditCalendar ||
         isEditTodo ||
         isEditRoom ||

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, memo } from 'react';
 import { getIconComponent } from '../../icons';
-import { Car, Flame, MapPin, Thermometer, Zap } from '../../icons';
+import { Car, MapPin, Zap } from '../../icons';
 import { useConfig, useHomeAssistantMeta } from '../../contexts';
 import {
   convertValueByKind,
@@ -46,9 +46,7 @@ const CarCard = ({
   customNames,
   customIcons,
   getS,
-  getA,
   getEntityImageUrl,
-  _callService,
   onOpen,
   isMobile,
   t,
@@ -89,7 +87,6 @@ const CarCard = ({
     chargingStateId,
     pluggedId,
     climateId,
-    tempId,
     imageUrl,
   } = settings;
   const effectiveChargingId = chargingStateId || chargingId;
@@ -110,29 +107,6 @@ const CarCard = ({
         fromUnit: sourceRangeUnit || 'km',
         unitMode: effectiveUnitMode,
       });
-  const climateTempValueRaw = climateId ? getA(climateId, 'current_temperature') : null;
-  const climateTempValue =
-    climateTempValueRaw !== null && climateTempValueRaw !== undefined
-      ? parseFloat(climateTempValueRaw)
-      : null;
-  const sourceTempUnit = tempId
-    ? entities[tempId]?.attributes?.unit_of_measurement ||
-      haConfig?.unit_system?.temperature ||
-      '°C'
-    : climateId
-      ? entities[climateId]?.attributes?.temperature_unit ||
-        haConfig?.unit_system?.temperature ||
-        '°C'
-      : haConfig?.unit_system?.temperature || '°C';
-  const displayTempUnit = getDisplayUnitForKind('temperature', effectiveUnitMode);
-  const tempValue =
-    getNumberState(entities, tempId) ??
-    (Number.isFinite(climateTempValue) ? climateTempValue : null);
-  const displayTempValue = convertValueByKind(tempValue, {
-    kind: 'temperature',
-    fromUnit: sourceTempUnit,
-    unitMode: effectiveUnitMode,
-  });
   const locationLabel = locationId ? getS(locationId) : null;
 
   const chargingState = getSafeState(entities, effectiveChargingId);
@@ -243,25 +217,6 @@ const CarCard = ({
                 className={`${isDenseMobile ? 'text-[10px]' : 'text-xs'} leading-tight font-bold tracking-widest break-words whitespace-normal uppercase`}
               >
                 {String(locationLabel)}
-              </span>
-            </div>
-          )}
-          {tempValue !== null && !isDenseMobile && (
-            <div className="flex items-center gap-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1.5 text-[var(--text-secondary)]">
-              <Thermometer className="h-3 w-3" />
-              <span className="text-xs font-bold tracking-widest uppercase">
-                {formatUnitValue(displayTempValue, { fallback: '--' })}
-                {displayTempUnit}
-              </span>
-            </div>
-          )}
-          {isHtg && (
-            <div
-              className={`flex animate-pulse items-center rounded-full border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] text-[var(--status-warning-fg)] ${isDenseMobile ? 'gap-1 px-2.5 py-1' : 'gap-1.5 px-3 py-1.5'}`}
-            >
-              <Flame className={isDenseMobile ? 'h-2.5 w-2.5' : 'h-3 w-3'} />
-              <span className={`${isDenseMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest uppercase`}>
-                {t('car.heating')}
               </span>
             </div>
           )}

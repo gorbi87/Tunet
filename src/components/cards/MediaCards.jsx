@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { getIconComponent } from '../../icons';
 import {
   AlertTriangle,
   ArrowLeftRight,
@@ -23,6 +24,7 @@ export const MediaPlayerCard = memo(({
   entities,
   editMode,
   customNames,
+  customIcons,
   getA,
   getEntityImageUrl,
   callService,
@@ -69,6 +71,12 @@ export const MediaPlayerCard = memo(({
     '';
   const picture = getEntityImageUrl(entity?.attributes?.entity_picture);
   const isChannel = getA(mpId, 'media_content_type') === 'channel';
+  const mediaIconName = customIcons?.[cardId] || customIcons?.[mpId] || null;
+  const MediaIcon = mediaIconName
+    ? getIconComponent(mediaIconName) || (isChannel ? Tv : Speaker)
+    : isChannel
+      ? Tv
+      : Speaker;
   const powerAction = getMediaPlayerPowerAction(entity);
   const canTogglePower = Boolean(powerAction);
   const isPowerOffAction = powerAction === 'turn_off';
@@ -78,6 +86,8 @@ export const MediaPlayerCard = memo(({
     cardSettings && settingsKey ? cardSettings[settingsKey] || cardSettings[cardId] || {} : {};
   const artworkMode = settings.artworkMode || 'default';
   const isCoverMode = artworkMode === 'cover';
+  const playingBackgroundMotion = settings.playingBackgroundMotion || 'off';
+  const useSubtlePlayingMotion = isPlaying && playingBackgroundMotion === 'subtle';
 
   if (!isActive) {
     return (
@@ -98,9 +108,9 @@ export const MediaPlayerCard = memo(({
           style={{ backgroundColor: 'var(--glass-bg)' }}
         >
           {isChannel ? (
-            <Tv className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)]`} />
+            <MediaIcon className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)]`} />
           ) : (
-            <Speaker className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)]`} />
+            <MediaIcon className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)]`} />
           )}
         </div>
         <div className="w-full px-4 text-center">
@@ -154,51 +164,54 @@ export const MediaPlayerCard = memo(({
       {/* Background artwork */}
       {picture && (
         <div
-          className={`pointer-events-none absolute inset-0 z-0 transition-all duration-500 ${isCoverMode ? 'opacity-100' : 'opacity-20'}`}
+          className={`pointer-events-none absolute inset-0 z-0 transition-all duration-500 ${isCoverMode ? 'opacity-100' : 'opacity-20'} ${useSubtlePlayingMotion ? 'media-bg-subtle-pulse' : ''}`}
         >
           <img
             src={picture}
             alt=""
-            className={`h-full w-full object-cover transition-transform duration-[10s] ease-in-out ${isCoverMode ? '' : 'scale-150 blur-xl'} ${isPlaying ? 'scale-[1.1]' : 'scale-100'}`}
+            className={`h-full w-full object-cover transition-transform duration-[10s] ease-in-out ${isCoverMode ? '' : 'scale-150 blur-xl'} ${isPlaying ? 'scale-[1.1]' : 'scale-100'} ${useSubtlePlayingMotion ? 'media-bg-subtle-drift' : ''}`}
           />
           <div
             className={`absolute inset-0 transition-opacity duration-500 ${isCoverMode ? 'bg-gradient-to-t from-black/80 via-black/40 to-black/30' : 'bg-black/20'}`}
           />
+          {useSubtlePlayingMotion && (
+            <div className="media-bg-subtle-overlay absolute inset-0" />
+          )}
         </div>
       )}
 
-      <div className={`relative z-10 flex items-start ${isDenseMobile ? 'gap-3' : 'gap-4'}`}>
-        <div className={`${isDenseMobile ? 'h-16 w-16' : 'h-20 w-20'} flex shrink-0 items-center justify-center overflow-hidden`}>
-          {picture ? (
-            <img
-              src={picture}
-              alt="Cover"
-              className={`h-full w-full object-cover ${isDenseMobile ? 'rounded-xl' : 'rounded-2xl'}`}
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              {isChannel ? (
-                <Tv className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} ${isCoverMode ? 'text-white/85' : 'text-[var(--text-secondary)]'} transition-transform duration-300 group-hover:scale-110`} />
-              ) : (
-                <Speaker className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} ${isCoverMode ? 'text-white/85' : 'text-[var(--text-secondary)]'} transition-transform duration-300 group-hover:scale-110`} />
-              )}
-            </div>
-          )}
-        </div>
-        <div className={`flex flex-col overflow-hidden ${isCoverMode ? 'mt-auto pt-8' : 'pt-1'}`}>
+      <div className={`relative z-10 ${isCoverMode ? '' : `flex items-start ${isDenseMobile ? 'gap-3' : 'gap-4'}`}`}>
+        {!isCoverMode && (
+          <div className={`${isDenseMobile ? 'h-16 w-16' : 'h-20 w-20'} flex shrink-0 items-center justify-center overflow-hidden`}>
+            {picture ? (
+              <img
+                src={picture}
+                alt="Cover"
+                className={`h-full w-full object-cover ${isDenseMobile ? 'rounded-xl' : 'rounded-2xl'}`}
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <MediaIcon
+                  className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110`}
+                />
+              </div>
+            )}
+          </div>
+        )}
+        <div className={`flex flex-col overflow-hidden ${isCoverMode ? 'w-full pt-1' : 'pt-1'}`}>
           <div className="mb-1 flex items-center gap-2">
             <p className={`truncate ${isDenseMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest uppercase ${isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'}`}>
               {name}
             </p>
           </div>
           <h3
-            className={`mb-0.5 truncate ${isDenseMobile ? 'text-base' : 'text-lg'} leading-tight font-bold ${isCoverMode ? 'text-white' : ''}`}
+            className={`mb-0.5 ${isCoverMode ? (isDenseMobile ? 'text-lg' : 'text-2xl') : isDenseMobile ? 'truncate text-base' : 'truncate text-lg'} leading-tight font-bold ${isCoverMode ? 'text-white' : ''}`}
           >
             {title || t('common.unknown')}
           </h3>
           {subtitle && (
             <p
-              className={`${picture || isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'} truncate ${isDenseMobile ? 'text-[11px]' : 'text-xs'} font-medium`}
+              className={`${picture || isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'} ${isCoverMode ? (isDenseMobile ? 'text-xs' : 'text-sm') : isDenseMobile ? 'truncate text-[11px]' : 'truncate text-xs'} font-medium`}
             >
               {subtitle}
             </p>
@@ -266,6 +279,7 @@ export const MediaGroupCard = memo(({
   cardSettings,
   settingsKey,
   customNames,
+  customIcons,
   getA,
   getEntityImageUrl,
   callService,
@@ -302,6 +316,8 @@ export const MediaGroupCard = memo(({
 
   const artworkMode = groupSettings.artworkMode || 'default';
   const isCoverMode = artworkMode === 'cover';
+  const playingBackgroundMotion = groupSettings.playingBackgroundMotion || 'off';
+  const useSubtlePlayingMotion = isPlaying && playingBackgroundMotion === 'subtle';
 
   const name = customNames[cardId] || getA(mpId, 'friendly_name', 'Musikk');
   const title = getA(mpId, 'media_title') || (isActive ? t('status.active') : t('media.noneMusic'));
@@ -312,6 +328,12 @@ export const MediaGroupCard = memo(({
     '';
   const picture = getEntityImageUrl(currentMp.attributes?.entity_picture);
   const isChannel = getA(mpId, 'media_content_type') === 'channel';
+  const mediaIconName = customIcons?.[cardId] || customIcons?.[mpId] || null;
+  const MediaIcon = mediaIconName
+    ? getIconComponent(mediaIconName) || (isChannel ? Tv : Speaker)
+    : isChannel
+      ? Tv
+      : Speaker;
   const powerAction = getMediaPlayerPowerAction(currentMp);
   const canTogglePower = Boolean(powerAction);
   const isPowerOffAction = powerAction === 'turn_off';
@@ -340,11 +362,9 @@ export const MediaGroupCard = memo(({
       >
         {controls}
         <div className={`${isDenseMobile ? 'mb-3 rounded-full p-4' : 'mb-4 rounded-full p-5'}`} style={{ backgroundColor: 'var(--glass-bg)' }}>
-          {isChannel ? (
-            <Tv className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110`} />
-          ) : (
-            <Speaker className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110`} />
-          )}
+          <MediaIcon
+            className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110`}
+          />
         </div>
         <div className="w-full px-4 text-center">
           <p className="text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
@@ -416,62 +436,72 @@ export const MediaGroupCard = memo(({
         <>
           {/* Default artwork (blurred background) */}
           {!isCoverMode && (
-            <div className="pointer-events-none absolute inset-0 z-0 opacity-20">
+            <div
+              className={`pointer-events-none absolute inset-0 z-0 opacity-20 ${useSubtlePlayingMotion ? 'media-bg-subtle-pulse' : ''}`}
+            >
               <img
                 src={picture}
                 alt=""
-                className={`h-full w-full scale-150 object-cover blur-xl transition-transform duration-[10s] ease-in-out ${isPlaying ? 'scale-[1.6]' : 'scale-150'}`}
+                className={`h-full w-full scale-150 object-cover blur-xl transition-transform duration-[10s] ease-in-out ${isPlaying ? 'scale-[1.6]' : 'scale-150'} ${useSubtlePlayingMotion ? 'media-bg-subtle-drift' : ''}`}
               />
               <div className="absolute inset-0 bg-black/20" />
+              {useSubtlePlayingMotion && (
+                <div className="media-bg-subtle-overlay absolute inset-0" />
+              )}
             </div>
           )}
           {/* Cover artwork (full sharp background) */}
           {isCoverMode && (
-            <div className="pointer-events-none absolute inset-0 z-0">
+            <div
+              className={`pointer-events-none absolute inset-0 z-0 ${useSubtlePlayingMotion ? 'media-bg-subtle-pulse' : ''}`}
+            >
               <img
                 src={picture}
                 alt=""
-                className="h-full w-full scale-100 object-cover transition-transform duration-[10s] ease-in-out"
+                className={`h-full w-full scale-100 object-cover transition-transform duration-[10s] ease-in-out ${useSubtlePlayingMotion ? 'media-bg-subtle-drift' : ''}`}
               />
               <div className="absolute inset-0 bg-black/40" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+              {useSubtlePlayingMotion && (
+                <div className="media-bg-subtle-overlay absolute inset-0" />
+              )}
             </div>
           )}
         </>
       )}
 
-      <div className={`relative z-10 flex items-start ${isDenseMobile ? 'gap-3' : 'gap-4'}`}>
-        <div className={`${isDenseMobile ? 'h-16 w-16' : 'h-20 w-20'} flex shrink-0 items-center justify-center overflow-hidden`}>
-          {picture ? (
-            <img
-              src={picture}
-              alt="Cover"
-              className={`h-full w-full object-cover ${isDenseMobile ? 'rounded-xl' : 'rounded-2xl'}`}
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              {isChannel ? (
-                <Tv className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} ${isCoverMode ? 'text-white/85' : 'text-[var(--text-secondary)]'} transition-transform duration-300 group-hover:scale-110`} />
-              ) : (
-                <Speaker className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} ${isCoverMode ? 'text-white/85' : 'text-[var(--text-secondary)]'} transition-transform duration-300 group-hover:scale-110`} />
-              )}
-            </div>
-          )}
-        </div>
-        <div className={`flex flex-col overflow-hidden pt-1 ${isCoverMode ? 'w-full' : ''}`}>
+      <div className={`relative z-10 ${isCoverMode ? '' : `flex items-start ${isDenseMobile ? 'gap-3' : 'gap-4'}`}`}>
+        {!isCoverMode && (
+          <div className={`${isDenseMobile ? 'h-16 w-16' : 'h-20 w-20'} flex shrink-0 items-center justify-center overflow-hidden`}>
+            {picture ? (
+              <img
+                src={picture}
+                alt="Cover"
+                className={`h-full w-full object-cover ${isDenseMobile ? 'rounded-xl' : 'rounded-2xl'}`}
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <MediaIcon
+                  className={`${isDenseMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[var(--text-secondary)] transition-transform duration-300 group-hover:scale-110`}
+                />
+              </div>
+            )}
+          </div>
+        )}
+        <div className={`flex flex-col overflow-hidden ${isCoverMode ? 'w-full pt-1' : 'pt-1'}`}>
           <div className="mb-1 flex items-center gap-2">
-            <p className={`truncate ${isDenseMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest text-[var(--text-secondary)] uppercase`}>
+            <p className={`truncate ${isDenseMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-widest uppercase ${isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'}`}>
               {name}
             </p>
           </div>
           <h3
-            className={`mb-0.5 truncate ${isDenseMobile ? 'text-base' : 'text-lg'} leading-tight font-bold ${isCoverMode ? 'text-2xl' : ''}`}
+            className={`mb-0.5 ${isCoverMode ? (isDenseMobile ? 'text-lg' : 'text-2xl') : isDenseMobile ? 'truncate text-base' : 'truncate text-lg'} leading-tight font-bold ${isCoverMode ? 'text-white' : ''}`}
           >
             {title || t('common.unknown')}
           </h3>
           {subtitle && (
             <p
-              className={`${picture || isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'} truncate ${isDenseMobile ? 'text-[11px]' : 'text-xs'} font-medium`}
+              className={`${picture || isCoverMode ? 'text-white/80' : 'text-[var(--text-secondary)]'} ${isCoverMode ? (isDenseMobile ? 'text-xs' : 'text-sm') : isDenseMobile ? 'truncate text-[11px]' : 'truncate text-xs'} font-medium`}
             >
               {subtitle}
             </p>
