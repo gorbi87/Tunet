@@ -43,7 +43,7 @@
 
 ## Unreleased
 
-- No unreleased changes yet.
+- Mobile friendly cards - First batch: Alarm, Android TV, Car, Climate, Cover, Cost, Fan, Light, Media, Nordpool, Room, and Vacuum cards.
 
 ## 1.12.3
 
