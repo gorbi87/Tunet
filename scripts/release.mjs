@@ -26,6 +26,7 @@ const releaseFiles = [
 
 const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const PLACEHOLDER_RELEASE_NOTE = 'Release metadata sync.';
+const CHANGELOG_CATEGORIES = ['Added', 'Changed', 'Fixed', 'Security', 'Deprecated', 'Removed'];
 
 function usage() {
   console.log(
@@ -85,7 +86,16 @@ function upsertTopSection(changelog, heading, body) {
 
 function upsertMainChangelogEntry(changelog, appVersion, releaseDate) {
   const heading = `## [${appVersion}] — ${releaseDate}`;
-  const body = ['### Changed', '- Release metadata sync.'].join('\n');
+  const body = [
+    '### Added',
+    '- Add release notes.',
+    '',
+    '### Changed',
+    '- Add release notes.',
+    '',
+    '### Fixed',
+    '- Add release notes.',
+  ].join('\n');
 
   if (changelog.includes(`## [${appVersion}]`)) return changelog;
 
@@ -97,6 +107,12 @@ function upsertMainChangelogEntry(changelog, appVersion, releaseDate) {
 
   const insertAt = idx + semverAnchor.length;
   return `${changelog.slice(0, insertAt)}\n\n${heading}\n\n${body}\n${changelog.slice(insertAt)}`;
+}
+
+function hasCategorizedReleaseNotes(notes) {
+  return CHANGELOG_CATEGORIES.some((category) =>
+    notes.includes(`### ${category}`)
+  );
 }
 
 function extractMainChangelogNotes(changelog, appVersion) {
@@ -289,6 +305,11 @@ async function runCheck() {
     errors.push(`CHANGELOG.md is missing entry for ${pkgVersion}.`);
   else {
     const mainNotes = extractMainChangelogNotes(mainChangelog, pkgVersion);
+    if (!hasCategorizedReleaseNotes(mainNotes)) {
+      errors.push(
+        `CHANGELOG.md entry for ${pkgVersion} must use categorized headings like ### Added / ### Changed / ### Fixed.`
+      );
+    }
     if (!hasMeaningfulReleaseNotes(mainNotes)) {
       errors.push('CHANGELOG.md release notes must include short, meaningful change bullets.');
     }
@@ -306,6 +327,11 @@ async function runCheck() {
       errors.push(`hassio-addon/CHANGELOG.md is missing entry for ${addonVersion}.`);
     } else {
       const addonNotes = extractAddonChangelogNotes(addonChangelog, addonVersion);
+      if (!hasCategorizedReleaseNotes(addonNotes)) {
+        errors.push(
+          `hassio-addon/CHANGELOG.md entry for ${addonVersion} must use categorized headings like ### Added / ### Changed / ### Fixed.`
+        );
+      }
       if (!hasMeaningfulReleaseNotes(addonNotes)) {
         errors.push(
           'hassio-addon/CHANGELOG.md release notes must include short, meaningful change bullets.'
@@ -357,7 +383,7 @@ async function runPrep(args) {
   const nextAddonChangelog = upsertTopSection(
     addonChangelog,
     `## ${version}`,
-    '- Add release notes.'
+    ['### Changed', '- Add release notes.'].join('\n')
   );
 
   await Promise.all([

@@ -8,13 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.14.0] — 2026-03-09
 
 ### Changed
-- Hardened server-side Profiles and Settings authorization by validating Home Assistant identity on the backend instead of trusting a client-supplied user id.
 - Added internal and fallback Home Assistant URL handling for backend auth validation so protected API calls keep working in Docker and add-on deployments.
 - Switched settings sync writes to revision-checked compare-and-swap updates and added immediate reconciliation after conflicts to prevent stale overwrites across tabs and devices.
-- Limited OAuth token persistence to session storage and migrated old local cache entries into session scope to reduce long-lived credential exposure.
-- Removed rate limiting from production asset delivery so lazy-loaded chunks no longer fail with `429` responses.
 - Stabilized Playwright auth/bootstrap setup and reduced flaky skips across OAuth, drag-and-drop, and modal coverage.
+
+### Fixed
+- Removed rate limiting from production asset delivery so lazy-loaded chunks no longer fail with `429` responses.
 - Fixed Status Pills editor selection so clicking an already selected pill keeps the editor open.
+
+### Security
+- Hardened server-side Profiles and Settings authorization by validating Home Assistant identity on the backend instead of trusting a client-supplied user id.
+- Limited OAuth token persistence to session storage and migrated old local cache entries into session scope to reduce long-lived credential exposure.
 
 ## [1.13.0] — 2026-03-05
 
