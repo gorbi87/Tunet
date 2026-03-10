@@ -17,7 +17,7 @@ Tests for the authentication system including:
 **Key Scenarios:**
 - ✅ User with no auth sees onboarding
 - ✅ User can enter HA URL with format validation
-- ✅ OAuth tokens are persisted to localStorage
+- ✅ Saved auth state can be reused from browser storage
 - ✅ User can logout and clear OAuth session
 - ✅ URL validation prevents invalid inputs
 - ✅ Redirect from Home Assistant OAuth flow is handled
@@ -112,10 +112,10 @@ The test suite includes custom fixtures in `fixtures.js`:
 Mocks Home Assistant WebSocket connection with simulated entity responses
 
 ### `authenticatedPage`
-Pre-authenticated page with OAuth tokens and HA URL pre-configured
+Pre-authenticated page with Home Assistant auth data and HA URL pre-configured
 
 ### Context
-Auto-populates localStorage with auth credentials before each test
+Provides the browser context so each test can control its own auth setup
 
 ## Architecture Notes
 
@@ -166,9 +166,12 @@ For continuous integration:
 The `mockHAConnection` fixture mocks WebSocket globally. Ensure tests use `mockHAConnection` in their fixtures.
 
 ### Onboarding Modal Not Appearing
-Clear localStorage before test:
+Clear browser storage before test:
 ```javascript
-await page.evaluate(() => localStorage.clear());
+await page.evaluate(() => {
+   localStorage.clear();
+   sessionStorage.clear();
+});
 ```
 
 ### Modal Not Closing

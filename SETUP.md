@@ -107,7 +107,7 @@ Notes for Profiles / Settings Sync:
 - In Docker, the backend must be able to reach Home Assistant from inside the container. If your main HA URL is browser-only, set a token-mode fallback URL that is reachable from Docker.
 - Typical examples: use a LAN IP or an internal hostname as fallback when the primary URL is `localhost`, `.local`, or an external-only hostname.
 - Settings sync is revision-checked. If two tabs/devices save at the same time, the server will return a conflict instead of silently overwriting newer settings.
-- OAuth browser sessions are now session-scoped. Reloading the same tab keeps OAuth available, but a brand-new browser session may require signing in again.
+- OAuth browser sessions are persisted in browser storage for reload and same-browser tab reuse, while protected backend API calls still revalidate against Home Assistant.
 
 ### Media browsing prerequisites
 
@@ -122,7 +122,7 @@ For a detailed overview of card types, available options, and screenshots, see [
 Where data lives:
 
 - Dashboard/layout/theme/language: browser `localStorage` (`tunet_*` keys) by default; can also be saved/restored via Profiles (server-side) per HA user.
-- HA credentials: `ha_url`, `ha_token` stored locally; OAuth tokens are stored in browser session storage.
+- HA credentials: `ha_url`, `ha_token`, and the OAuth session cache are stored in browser storage for reconnect and same-browser tab reuse.
 - Profiles: server-side SQLite (`server/db.js`, default `data/` dir).
 
 ## Environment Variables
@@ -136,6 +136,7 @@ Where data lives:
 | `VITE_PROXY_TARGET`     | `http://localhost:3002` | API proxy target (dev)                                                                  |
 | `TUNET_INTERNAL_HA_URL` | _(unset)_               | Optional server-side Home Assistant URL override for backend auth validation             |
 | `TUNET_INTERNAL_HA_FALLBACK_URL` | _(unset)_      | Optional secondary internal HA URL for backend auth validation in Docker/server setups   |
+| `TUNET_TRUST_SUPERVISOR_INGRESS` | `0`            | Trust Home Assistant Supervisor ingress headers. Intended for the add-on runtime only.   |
 | `TUNET_ENCRYPTION_MODE` | `off`                   | Data-at-rest mode for server snapshots/profiles: `off`, `dual`, `enc_only`              |
 | `TUNET_DATA_KEY`        | _(unset)_               | Secret used for encryption when mode is `dual` or `enc_only`                            |
 | `TUNET_DATA_KEY_SALT`   | _(unset)_               | Required only when `TUNET_DATA_KEY` is a passphrase instead of a 32-byte base64/hex key |
@@ -145,6 +146,7 @@ Server-side auth guidance:
 - `ha_url` is still the primary browser connection target.
 - `ha_fallback_url` is also sent to the backend and can be used when the server cannot reach the primary HA URL.
 - `TUNET_INTERNAL_HA_URL` and `TUNET_INTERNAL_HA_FALLBACK_URL` take precedence for backend validation and are useful when Docker/server networking differs from browser networking.
+- `TUNET_TRUST_SUPERVISOR_INGRESS` should stay disabled outside the Home Assistant add-on. The add-on launcher enables it explicitly for trusted Supervisor ingress requests.
 
 ### Data-at-rest encryption rollout (safe migration)
 
@@ -202,5 +204,3 @@ npm run release
 ```
 
 The `release:check` step is also enforced in CI on `main` PRs/pushes.
-
-For this release, the synchronized app/add-on version is `1.14.0`.

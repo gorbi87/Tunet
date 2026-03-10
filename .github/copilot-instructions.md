@@ -2,7 +2,7 @@
 
 ## Big picture
 
-- React 18 + Vite Home Assistant dashboard. Real‑time entity updates via `window.HAWS` WebSocket; all configuration persists to simple localStorage keys (no database).
+- React 18 + Vite Home Assistant dashboard. Real-time entity updates via `window.HAWS` WebSocket; dashboard config persists mostly to `localStorage`, while auth/session state also uses browser storage for same-browser reuse.
 - **Architecture**:
   - **Data/Config**: Managed in `src/contexts` (`ConfigContext`, `PageContext`, `HomeAssistantContext`, `AppUiContext`, `ModalContext`).
   - **UI Orchestration**: `src/App.jsx` handles main layout, grid rendering, modal visibility state, and drag-and-drop.
@@ -10,9 +10,9 @@
 
 ## Core data flow
 
-1. **Init**: Read `ha_url`/`ha_token` from localStorage (via context).
+1. **Init**: Read browser-stored Home Assistant config/auth state (`ha_url`, token-mode credentials, OAuth cache) via context/services.
 2. **Connection**: `createConnection()` + `subscribeEntities()` updates global `entities` object.
-3. **Usage**: Components consume config/entities via hooks. User changes persist immediately to localStorage.
+3. **Usage**: Components consume config/entities via hooks. User changes persist immediately to browser storage and optional server-side profiles/settings APIs.
 
 ## Project structure
 
@@ -43,9 +43,9 @@ src/
 
 e2e/
   fixtures.js             # Playwright custom fixtures (mockHAConnection, authenticatedPage)
-  oauth-flow.e2e.js       # 11 OAuth authentication flow tests
-  drag-and-drop.e2e.js    # 11 drag & drop interaction tests
-  modals.e2e.js           # 11 modal interaction tests
+  oauth-flow.e2e.js       # OAuth authentication flow tests
+  drag-and-drop.e2e.js    # Drag & drop interaction tests
+  modals.e2e.js           # Modal interaction tests
   README.md               # E2E test documentation
 
 playwright.config.js      # Playwright configuration (Chromium + Firefox)
@@ -104,14 +104,14 @@ E2E_TESTS_SETUP.md        # Comprehensive E2E setup guide
 - Covers core logic: cardUtils, gridLayout, i18n, themes, hooks, contexts
 
 **Playwright E2E Tests (New—March 2026):**
-- Located in `e2e/` directory with 33 test cases across 3 flows
-- **OAuth Flow** (11 tests): onboarding, token management, validation, logout, redirect handling
-- **Drag & Drop** (11 tests): edit mode, reordering, persistence, mobile support, cancellation
-- **Modal Interactions** (11 tests): open/close, Escape key, theme/language switching, focus management
+- Located in `e2e/` directory with coverage for OAuth, drag-and-drop, and modal flows across Chromium and Firefox
+- **OAuth Flow**: onboarding, token management, validation, logout, redirect handling
+- **Drag & Drop**: edit mode, reordering, persistence, mobile support, cancellation
+- **Modal Interactions**: open/close, Escape key, theme/language switching, focus management
 - Configuration: `playwright.config.js` (Chromium + Firefox, auto-starts dev server)
 - Custom fixtures in `e2e/fixtures.js`:
   - `mockHAConnection`: Intercepts WebSocket, simulates HA protocol with mock entities
-  - `authenticatedPage`: Pre-populates OAuth tokens and HA URL in localStorage
+  - `authenticatedPage`: Pre-populates browser auth state and HA URL for test setup
   - `context`: Auto-configures test environment
 - Run locally with `npm run test:e2e:ui` (best for debugging)
 - CI/CD ready with retry logic and HTML reporting

@@ -13,8 +13,8 @@
 ### 2. **Test Fixtures** (`e2e/fixtures.js`)
 Custom Playwright fixtures for:
 - **`mockHAConnection`**: Mocks Home Assistant WebSocket with simulated entities
-- **`authenticatedPage`**: Pre-configured page with OAuth tokens
-- **`context`**: Auto-populates localStorage with credentials
+- **`authenticatedPage`**: Pre-configured page with Home Assistant auth data in browser storage
+- **`context`**: Keeps the browser context available for per-test auth setup
 
 Features:
 - MockWebSocket implementation for HA message handling
@@ -26,7 +26,7 @@ Features:
 - ✅ Onboarding visibility when unauthenticated
 - ✅ HA URL entry and validation
 - ✅ OAuth login flow initiation
-- ✅ Token persistence to localStorage
+- ✅ Browser-stored auth session reuse
 - ✅ OAuth token storage and retrieval
 - ✅ Logout functionality
 - ✅ Token clearing on logout
@@ -124,7 +124,7 @@ npx playwright show-report
 ## 🔧 Key Technical Details
 
 ### Authentication Flow
-- Tests use localStorage to simulate OAuth tokens
+- Tests preload browser storage to simulate saved auth state
 - MockWebSocket intercepts HA connections
 - Pre-configured entities (lights, climate, sensors)
 - Onboarding validation and progression
