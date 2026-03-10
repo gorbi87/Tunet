@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.14.7
+
+### Changed
+### Fixed
+- Includes dashboard release `1.14.7`.
+- Preserves working OAuth API calls when proactive refresh fails temporarily and keeps backend validation responses aligned with real auth failures versus reachability errors.
+
 ## 1.14.6
 
 ### Changed

@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.7] — 2026-03-10
+
+### Added
+### Fixed
+- Preserved working OAuth API calls when proactive token refresh or auth-session bootstrap fails temporarily, so profile and settings requests fall back to the current token instead of surfacing a false backend outage.
+- Prioritized genuine Home Assistant invalid-auth failures over later reachability errors when multiple backend validation URLs are tried, so expired tokens still return `401` and temporary network issues continue to return `503`.
+
+
 ## [1.14.6] — 2026-03-10
 
 ### Changed
