@@ -90,8 +90,18 @@ export default function SparkLine({
   const chartTop = verticalPadding;
   const chartBottom = height - verticalPadding;
   const chartHeight = Math.max(1, chartBottom - chartTop);
+  // Use time-based x-axis when autoZoom is active and data has timestamps
+  const times = autoZoom && sampledData[0]?.time
+    ? sampledData.map((d) => new Date(d.time).getTime())
+    : null;
+  const timeMin = times ? times[0] : 0;
+  const timeMax = times ? times[times.length - 1] : 0;
+  const timeRange = times && timeMax > timeMin ? timeMax - timeMin : 0;
+
   const points = values.map((v, i) => [
-    values.length === 1 ? width / 2 : (i / (values.length - 1)) * width,
+    timeRange > 0
+      ? ((times[i] - timeMin) / timeRange) * width
+      : values.length === 1 ? width / 2 : (i / (values.length - 1)) * width,
     Math.min(chartBottom, Math.max(chartTop, chartBottom - ((v - min) / range) * chartHeight)),
   ]);
 

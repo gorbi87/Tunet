@@ -286,7 +286,10 @@ const SensorCard = memo(function SensorCard({
     const fetchHistory = async () => {
       try {
         const end = new Date();
-        const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+        // For autoZoom, use today-since-midnight window to get today's daily curve
+        const start = settings?.autoZoom
+          ? new Date(end.getFullYear(), end.getMonth(), end.getDate(), 0, 0, 0)
+          : new Date(end.getTime() - 24 * 60 * 60 * 1000);
 
         // When autoZoom is active, prefer hourly statistics for a smooth daily curve
         if (settings?.autoZoom) {
@@ -330,6 +333,14 @@ const SensorCard = memo(function SensorCard({
         }
 
         if (processed.length > 1) {
+          // For autoZoom, prepend a 0W baseline at midnight so the daily curve starts from zero
+          if (settings?.autoZoom) {
+            const firstPointTime = processed[0].time.getTime();
+            const hoursSinceStart = (firstPointTime - start.getTime()) / (1000 * 60 * 60);
+            if (hoursSinceStart > 0.5) {
+              processed.unshift({ value: 0, time: start });
+            }
+          }
           setHistory(processed);
           return;
         }
