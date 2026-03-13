@@ -30,22 +30,43 @@ export default function SparkLine({
   height = 40,
   fade = false,
   variant = 'line',
+  autoZoom = false,
 }) {
   const pointsData = Array.isArray(data) ? data : [];
   const lineStrokeWidth = 3;
   const pointRadius = 3.5;
   const verticalPadding = Math.max(4, Math.ceil(pointRadius + lineStrokeWidth / 2));
 
-  const idSuffix = useMemo(() => Math.random().toString(36).substr(2, 9), []);
+  const idSuffix = useMemo(() => Math.random().toString(36).slice(2, 11), []);
   const areaId = `cardAreaGrad-${idSuffix}`;
   const lineId = `cardLineGrad-${idSuffix}`;
   const maskId = `cardMask-${idSuffix}`;
 
-  if (pointsData.length === 0) return null;
+  // Downsampling: reduce large datasets to max 150 points for smooth rendering
+  const { sampledData, mappedCurrentIndex } = useMemo(() => {
+    const MAX_POINTS = 150;
+    if (pointsData.length <= MAX_POINTS) {
+      return { sampledData: pointsData, mappedCurrentIndex: currentIndex };
+    }
+    const groupSize = Math.ceil(pointsData.length / MAX_POINTS);
+    const sampled = Array.from({ length: Math.ceil(pointsData.length / groupSize) }, (_, i) => {
+      const group = pointsData.slice(i * groupSize, (i + 1) * groupSize);
+      const avg = group.reduce((sum, d) => sum + d.value, 0) / group.length;
+      return { ...group[Math.floor(group.length / 2)], value: avg };
+    });
+    const mapped = Math.min(Math.floor(currentIndex / groupSize), sampled.length - 1);
+    return { sampledData: sampled, mappedCurrentIndex: mapped };
+  }, [pointsData, currentIndex]);
 
-  const values = pointsData.map((d) => d.value);
+  if (sampledData.length === 0) return null;
+
+  const values = sampledData.map((d) => d.value);
   let min = Math.min(...values);
   let max = Math.max(...values);
+  if (autoZoom && variant === 'line') {
+    const nonZero = values.filter((v) => v > 0);
+    if (nonZero.length > 0) min = Math.min(...nonZero) * 0.9;
+  }
   if (min === max) {
     min -= 1;
     max += 1;
@@ -63,8 +84,8 @@ export default function SparkLine({
   const pathData = createBezierPath(points, 0.3);
   const areaData = `${pathData} L ${width},${chartBottom} L 0,${chartBottom} Z`;
   const normalizedCurrentIndex =
-    Number.isInteger(currentIndex) && currentIndex >= 0 && currentIndex < values.length
-      ? currentIndex
+    Number.isInteger(mappedCurrentIndex) && mappedCurrentIndex >= 0 && mappedCurrentIndex < values.length
+      ? mappedCurrentIndex
       : 0;
   const currentPoint = points[normalizedCurrentIndex] || points[0];
 
