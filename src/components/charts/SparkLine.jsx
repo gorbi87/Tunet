@@ -64,8 +64,12 @@ export default function SparkLine({
   let min = Math.min(...values);
   let max = Math.max(...values);
   if (autoZoom && variant === 'line') {
-    const nonZero = values.filter((v) => v > 0);
-    if (nonZero.length > 0) min = Math.min(...nonZero) * 0.9;
+    const sorted = [...values].sort((a, b) => a - b);
+    const p05 = sorted[Math.floor(sorted.length * 0.05)];
+    const p95 = sorted[Math.floor(sorted.length * 0.95)];
+    const nonZeroMin = sorted.find((v) => v > 0);
+    if (nonZeroMin !== undefined) min = Math.min(p05, nonZeroMin) * 0.9;
+    if (p95 > min) max = p95 * 1.05;
   }
   if (min === max) {
     min -= 1;
