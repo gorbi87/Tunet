@@ -287,6 +287,27 @@ const SensorCard = memo(function SensorCard({
       try {
         const end = new Date();
         const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+
+        // When autoZoom is active, prefer hourly statistics for a smooth daily curve
+        if (settings?.autoZoom) {
+          const stats = await getStatistics(conn, {
+            statisticId: entity.entity_id,
+            start,
+            end,
+            period: 'hour',
+          });
+          const statPoints = (stats && Array.isArray(stats) ? stats : [])
+            .map((d) => ({
+              value: typeof d.mean === 'number' ? d.mean : typeof d.state === 'number' ? d.state : d.sum,
+              time: new Date(d.start),
+            }))
+            .filter((d) => !isNaN(parseFloat(d.value)));
+          if (statPoints.length > 1) {
+            setHistory(statPoints);
+            return;
+          }
+        }
+
         const data = await getHistory(conn, {
           entityId: entity.entity_id,
           start,
