@@ -21,19 +21,21 @@ export function callService(conn, domain, service, service_data) {
 
 export async function getHistory(
   conn,
-  { start, end, entityId, minimal_response = false, no_attributes = true }
+  { start, end, entityId, minimal_response = false, no_attributes = true, significant_changes_only }
 ) {
   if (!conn || typeof conn.sendMessagePromise !== 'function') {
     throw new Error('Invalid or disconnected HA connection');
   }
-  const res = await conn.sendMessagePromise({
+  const msg = {
     type: 'history/history_during_period',
     start_time: start.toISOString(),
     end_time: end.toISOString(),
     entity_ids: [entityId],
     minimal_response,
     no_attributes,
-  });
+  };
+  if (significant_changes_only !== undefined) msg.significant_changes_only = significant_changes_only;
+  const res = await conn.sendMessagePromise(msg);
   let payload = res;
   if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
     if (Array.isArray(payload.result)) payload = payload.result;

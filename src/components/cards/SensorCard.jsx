@@ -340,6 +340,7 @@ const SensorCard = memo(function SensorCard({
           start,
           end,
           minimal_response: true,
+          significant_changes_only: settings?.autoZoom ? false : undefined,
         });
 
         const processed = (data && Array.isArray(data) ? data : [])
