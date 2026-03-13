@@ -30,69 +30,22 @@ export default function SparkLine({
   height = 40,
   fade = false,
   variant = 'line',
-  autoZoom = false,
 }) {
   const pointsData = Array.isArray(data) ? data : [];
   const lineStrokeWidth = 3;
   const pointRadius = 3.5;
   const verticalPadding = Math.max(4, Math.ceil(pointRadius + lineStrokeWidth / 2));
 
-  const idSuffix = useMemo(() => Math.random().toString(36).slice(2, 11), []);
+  const idSuffix = useMemo(() => Math.random().toString(36).substr(2, 9), []);
   const areaId = `cardAreaGrad-${idSuffix}`;
   const lineId = `cardLineGrad-${idSuffix}`;
   const maskId = `cardMask-${idSuffix}`;
 
-  // Downsampling: reduce large datasets to max 150 points for smooth rendering
-  const { sampledData, mappedCurrentIndex } = useMemo(() => {
-    const MAX_POINTS = 150;
-    let sampled = pointsData;
-    let mapped = currentIndex;
-    if (pointsData.length > MAX_POINTS) {
-      const groupSize = Math.ceil(pointsData.length / MAX_POINTS);
-      sampled = Array.from({ length: Math.ceil(pointsData.length / groupSize) }, (_, i) => {
-        const group = pointsData.slice(i * groupSize, (i + 1) * groupSize);
-        const avg = group.reduce((sum, d) => sum + d.value, 0) / group.length;
-        return { ...group[Math.floor(group.length / 2)], value: avg };
-      });
-      mapped = Math.min(Math.floor(currentIndex / groupSize), sampled.length - 1);
-    }
-    // For autoZoom with timestamps: prepend a 0-baseline at day-start so the
-    // daily curve always rises from zero, regardless of when the sensor first reported
-    if (autoZoom && sampled.length > 0 && sampled[0]?.time) {
-      const firstTime = new Date(sampled[0].time);
-      const dayStart = new Date(firstTime.getFullYear(), firstTime.getMonth(), firstTime.getDate(), 0, 0, 0);
-      const hoursSinceMidnight = (firstTime - dayStart) / (1000 * 60 * 60);
-      if (hoursSinceMidnight > 0.5) {
-        sampled = [{ value: 0, time: dayStart }, ...sampled];
-        mapped = mapped + 1; // shift index due to prepended point
-      }
-    }
-    return { sampledData: sampled, mappedCurrentIndex: mapped };
-  }, [pointsData, currentIndex, autoZoom]);
+  if (pointsData.length === 0) return null;
 
-  if (sampledData.length === 0) return null;
-
-  const values = sampledData.map((d) => d.value);
+  const values = pointsData.map((d) => d.value);
   let min = Math.min(...values);
   let max = Math.max(...values);
-  if (autoZoom && variant === 'line') {
-    const sorted = [...values].sort((a, b) => a - b);
-    const n = sorted.length;
-    const p05 = sorted[Math.floor(n * 0.05)];
-    const p95 = sorted[Math.min(n - 1, Math.floor(n * 0.95))];
-    const nonZeroValues = sorted.filter((v) => v > 0);
-    const nonZeroMin = nonZeroValues[0];
-    if (nonZeroMin !== undefined) min = Math.min(p05, nonZeroMin) * 0.9;
-    if (p95 > min) {
-      // Cap at 2.5x the median of non-zero values to handle outliers in small datasets
-      const nonZeroMedian =
-        nonZeroValues.length > 0
-          ? nonZeroValues[Math.floor(nonZeroValues.length / 2)]
-          : p95;
-      const cappedMax = Math.min(p95, nonZeroMedian * 2.5);
-      max = (cappedMax > min ? cappedMax : p95) * 1.05;
-    }
-  }
   if (min === max) {
     min -= 1;
     max += 1;
@@ -102,26 +55,16 @@ export default function SparkLine({
   const chartTop = verticalPadding;
   const chartBottom = height - verticalPadding;
   const chartHeight = Math.max(1, chartBottom - chartTop);
-  // Use time-based x-axis when autoZoom is active and data has timestamps
-  const times = autoZoom && sampledData[0]?.time
-    ? sampledData.map((d) => new Date(d.time).getTime())
-    : null;
-  const timeMin = times ? times[0] : 0;
-  const timeMax = times ? times[times.length - 1] : 0;
-  const timeRange = times && timeMax > timeMin ? timeMax - timeMin : 0;
-
   const points = values.map((v, i) => [
-    timeRange > 0
-      ? ((times[i] - timeMin) / timeRange) * width
-      : values.length === 1 ? width / 2 : (i / (values.length - 1)) * width,
-    Math.min(chartBottom, Math.max(chartTop, chartBottom - ((v - min) / range) * chartHeight)),
+    values.length === 1 ? width / 2 : (i / (values.length - 1)) * width,
+    chartBottom - ((v - min) / range) * chartHeight,
   ]);
 
   const pathData = createBezierPath(points, 0.3);
   const areaData = `${pathData} L ${width},${chartBottom} L 0,${chartBottom} Z`;
   const normalizedCurrentIndex =
-    Number.isInteger(mappedCurrentIndex) && mappedCurrentIndex >= 0 && mappedCurrentIndex < values.length
-      ? mappedCurrentIndex
+    Number.isInteger(currentIndex) && currentIndex >= 0 && currentIndex < values.length
+      ? currentIndex
       : 0;
   const currentPoint = points[normalizedCurrentIndex] || points[0];
 
@@ -226,9 +169,9 @@ export default function SparkLine({
         <defs>
           {/* Area gradient - more opaque at top */}
           <linearGradient id={areaId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={CHART_STATUS_COLORS.high} stopOpacity={autoZoom ? "0.5" : "0.2"} />
-            <stop offset="50%" stopColor={CHART_STATUS_COLORS.mid} stopOpacity={autoZoom ? "0.3" : "0.12"} />
-            <stop offset="100%" stopColor={CHART_STATUS_COLORS.low} stopOpacity={autoZoom ? "0.15" : "0.04"} />
+            <stop offset="0%" stopColor={CHART_STATUS_COLORS.high} stopOpacity="0.2" />
+            <stop offset="50%" stopColor={CHART_STATUS_COLORS.mid} stopOpacity="0.12" />
+            <stop offset="100%" stopColor={CHART_STATUS_COLORS.low} stopOpacity="0.04" />
           </linearGradient>
 
           {/* Line gradient - color based on value */}
@@ -251,7 +194,7 @@ export default function SparkLine({
         </defs>
 
         {/* Area fill with smooth fade */}
-        <path d={areaData} fill={`url(#${areaId})`} mask={autoZoom ? undefined : `url(#${maskId}-use)`} />
+        <path d={areaData} fill={`url(#${areaId})`} mask={`url(#${maskId}-use)`} />
 
         {/* Bezier line with gradient */}
         <path
