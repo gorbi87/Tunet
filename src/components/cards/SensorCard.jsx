@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { Minus, Plus, Activity, Play } from 'lucide-react';
 import { getHistory, getStatistics } from '../../services/haClient';
 import SparkLine from '../charts/SparkLine';
+import SensorHistoryGraph from '../charts/SensorHistoryGraph';
 import { Gauge, Donut, Bar } from '../charts/SensorGauge';
 import { useConfig, useHomeAssistantMeta } from '../../contexts';
 import {
@@ -242,6 +243,29 @@ const SensorCard = memo(function SensorCard({
 
   const [history, setHistory] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
+
+  // Pre-processed data for autoZoom graph: downsampled + outlier-capped
+  const graphData = useMemo(() => {
+    if (!settings?.autoZoom || history.length === 0) return history;
+    const MAX_POINTS = 100;
+    let sampled = history;
+    if (history.length > MAX_POINTS) {
+      const groupSize = Math.ceil(history.length / MAX_POINTS);
+      sampled = Array.from({ length: Math.ceil(history.length / groupSize) }, (_, i) => {
+        const group = history.slice(i * groupSize, (i + 1) * groupSize);
+        const avg = group.reduce((sum, d) => sum + d.value, 0) / group.length;
+        return { ...group[Math.floor(group.length / 2)], value: avg };
+      });
+    }
+    // Cap outliers: max = 2.5x median of non-zero values
+    const nonZero = sampled.map((d) => d.value).filter((v) => v > 0).sort((a, b) => a - b);
+    if (nonZero.length > 0) {
+      const median = nonZero[Math.floor(nonZero.length / 2)];
+      const cap = median * 2.5;
+      sampled = sampled.map((d) => ({ ...d, value: Math.min(d.value, cap) }));
+    }
+    return sampled;
+  }, [history, settings?.autoZoom]);
   const [activeUntil, setActiveUntil] = useState(0);
   const cardRef = useRef(null);
 
@@ -653,9 +677,15 @@ const SensorCard = memo(function SensorCard({
       </div>
 
       {showGraph && history.length > 0 && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24">
-          <SparkLine data={history} height={96} currentIndex={history.length - 1} fade={!settings?.autoZoom} autoZoom={settings?.autoZoom === true} />
-        </div>
+        settings?.autoZoom ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ height: '160px' }}>
+            <SensorHistoryGraph data={graphData} height={160} color="#f97316" />
+          </div>
+        ) : (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24">
+            <SparkLine data={history} height={96} currentIndex={history.length - 1} fade={true} autoZoom={false} />
+          </div>
+        )
       )}
 
       <div className="relative z-10 flex shrink-0 items-start justify-between">
