@@ -2658,6 +2658,7 @@ export default function EditCardModal({
                   )}
 
                   {canGraph && (
+                    <>
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold tracking-widest text-[var(--text-muted)] uppercase">
@@ -2681,6 +2682,32 @@ export default function EditCardModal({
                         />
                       </button>
                     </div>
+                    {editSettings.showGraph !== false && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold tracking-widest text-[var(--text-muted)] uppercase">
+                            AUTO-ZOOM
+                          </span>
+                          <span className="text-[10px] text-[var(--text-muted)]">Y-Achse auf Wertebereich einzoomen</span>
+                        </div>
+                        <button
+                          onClick={() =>
+                            editSettingsKey &&
+                            saveCardSetting(
+                              editSettingsKey,
+                              'autoZoom',
+                              !editSettings.autoZoom
+                            )
+                          }
+                          className={`relative h-6 w-12 rounded-full transition-colors ${editSettings.autoZoom ? 'border border-[var(--glass-border)] bg-[var(--glass-bg-hover)]' : 'bg-[var(--glass-bg-hover)]'}`}
+                        >
+                          <div
+                            className={`absolute top-1 h-4 w-4 rounded-full bg-[var(--text-primary)] transition-all ${editSettings.autoZoom ? 'left-7' : 'left-1'}`}
+                          />
+                        </button>
+                      </div>
+                    )}
+                    </>
                   )}
                 </div>
               );
