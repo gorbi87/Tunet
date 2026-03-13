@@ -65,11 +65,21 @@ export default function SparkLine({
   let max = Math.max(...values);
   if (autoZoom && variant === 'line') {
     const sorted = [...values].sort((a, b) => a - b);
-    const p05 = sorted[Math.floor(sorted.length * 0.05)];
-    const p95 = sorted[Math.floor(sorted.length * 0.95)];
-    const nonZeroMin = sorted.find((v) => v > 0);
+    const n = sorted.length;
+    const p05 = sorted[Math.floor(n * 0.05)];
+    const p95 = sorted[Math.min(n - 1, Math.floor(n * 0.95))];
+    const nonZeroValues = sorted.filter((v) => v > 0);
+    const nonZeroMin = nonZeroValues[0];
     if (nonZeroMin !== undefined) min = Math.min(p05, nonZeroMin) * 0.9;
-    if (p95 > min) max = p95 * 1.05;
+    if (p95 > min) {
+      // Cap at 2.5x the median of non-zero values to handle outliers in small datasets
+      const nonZeroMedian =
+        nonZeroValues.length > 0
+          ? nonZeroValues[Math.floor(nonZeroValues.length / 2)]
+          : p95;
+      const cappedMax = Math.min(p95, nonZeroMedian * 2.5);
+      max = (cappedMax > min ? cappedMax : p95) * 1.05;
+    }
   }
   if (min === max) {
     min -= 1;
