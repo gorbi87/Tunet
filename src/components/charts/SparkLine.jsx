@@ -78,7 +78,7 @@ export default function SparkLine({
   const chartHeight = Math.max(1, chartBottom - chartTop);
   const points = values.map((v, i) => [
     values.length === 1 ? width / 2 : (i / (values.length - 1)) * width,
-    chartBottom - ((v - min) / range) * chartHeight,
+    Math.min(chartBottom, Math.max(chartTop, chartBottom - ((v - min) / range) * chartHeight)),
   ]);
 
   const pathData = createBezierPath(points, 0.3);
