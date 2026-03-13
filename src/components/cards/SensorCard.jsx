@@ -630,7 +630,7 @@ const SensorCard = memo(function SensorCard({
 
       {showGraph && history.length > 0 && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24">
-          <SparkLine data={history} height={96} currentIndex={history.length - 1} fade autoZoom={settings?.autoZoom === true} />
+          <SparkLine data={history} height={96} currentIndex={history.length - 1} fade={!settings?.autoZoom} autoZoom={settings?.autoZoom === true} />
         </div>
       )}
 
