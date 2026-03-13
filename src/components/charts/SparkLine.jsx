@@ -45,18 +45,30 @@ export default function SparkLine({
   // Downsampling: reduce large datasets to max 150 points for smooth rendering
   const { sampledData, mappedCurrentIndex } = useMemo(() => {
     const MAX_POINTS = 150;
-    if (pointsData.length <= MAX_POINTS) {
-      return { sampledData: pointsData, mappedCurrentIndex: currentIndex };
+    let sampled = pointsData;
+    let mapped = currentIndex;
+    if (pointsData.length > MAX_POINTS) {
+      const groupSize = Math.ceil(pointsData.length / MAX_POINTS);
+      sampled = Array.from({ length: Math.ceil(pointsData.length / groupSize) }, (_, i) => {
+        const group = pointsData.slice(i * groupSize, (i + 1) * groupSize);
+        const avg = group.reduce((sum, d) => sum + d.value, 0) / group.length;
+        return { ...group[Math.floor(group.length / 2)], value: avg };
+      });
+      mapped = Math.min(Math.floor(currentIndex / groupSize), sampled.length - 1);
     }
-    const groupSize = Math.ceil(pointsData.length / MAX_POINTS);
-    const sampled = Array.from({ length: Math.ceil(pointsData.length / groupSize) }, (_, i) => {
-      const group = pointsData.slice(i * groupSize, (i + 1) * groupSize);
-      const avg = group.reduce((sum, d) => sum + d.value, 0) / group.length;
-      return { ...group[Math.floor(group.length / 2)], value: avg };
-    });
-    const mapped = Math.min(Math.floor(currentIndex / groupSize), sampled.length - 1);
+    // For autoZoom with timestamps: prepend a 0-baseline at day-start so the
+    // daily curve always rises from zero, regardless of when the sensor first reported
+    if (autoZoom && sampled.length > 0 && sampled[0]?.time) {
+      const firstTime = new Date(sampled[0].time);
+      const dayStart = new Date(firstTime.getFullYear(), firstTime.getMonth(), firstTime.getDate(), 0, 0, 0);
+      const hoursSinceMidnight = (firstTime - dayStart) / (1000 * 60 * 60);
+      if (hoursSinceMidnight > 0.5) {
+        sampled = [{ value: 0, time: dayStart }, ...sampled];
+        mapped = mapped + 1; // shift index due to prepended point
+      }
+    }
     return { sampledData: sampled, mappedCurrentIndex: mapped };
-  }, [pointsData, currentIndex]);
+  }, [pointsData, currentIndex, autoZoom]);
 
   if (sampledData.length === 0) return null;
 
