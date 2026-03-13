@@ -194,9 +194,9 @@ export default function SparkLine({
         <defs>
           {/* Area gradient - more opaque at top */}
           <linearGradient id={areaId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={CHART_STATUS_COLORS.high} stopOpacity="0.2" />
-            <stop offset="50%" stopColor={CHART_STATUS_COLORS.mid} stopOpacity="0.12" />
-            <stop offset="100%" stopColor={CHART_STATUS_COLORS.low} stopOpacity="0.04" />
+            <stop offset="0%" stopColor={CHART_STATUS_COLORS.high} stopOpacity={autoZoom ? "0.5" : "0.2"} />
+            <stop offset="50%" stopColor={CHART_STATUS_COLORS.mid} stopOpacity={autoZoom ? "0.3" : "0.12"} />
+            <stop offset="100%" stopColor={CHART_STATUS_COLORS.low} stopOpacity={autoZoom ? "0.15" : "0.04"} />
           </linearGradient>
 
           {/* Line gradient - color based on value */}
@@ -219,7 +219,7 @@ export default function SparkLine({
         </defs>
 
         {/* Area fill with smooth fade */}
-        <path d={areaData} fill={`url(#${areaId})`} mask={`url(#${maskId}-use)`} />
+        <path d={areaData} fill={`url(#${areaId})`} mask={autoZoom ? undefined : `url(#${maskId}-use)`} />
 
         {/* Bezier line with gradient */}
         <path
