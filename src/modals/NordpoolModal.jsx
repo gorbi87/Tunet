@@ -34,6 +34,7 @@ export default function NordpoolModal({
   saveCardSetting,
   cardId,
   settings,
+  hideSupport = false,
 }) {
   const { haConfig } = useHomeAssistantMeta();
   const translate = t || ((key) => key);
@@ -93,6 +94,7 @@ export default function NordpoolModal({
       {() => (
         <>
         <div className="absolute top-6 right-6 z-20 flex gap-3 md:top-10 md:right-10">
+          {!hideSupport && (
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -113,6 +115,7 @@ export default function NordpoolModal({
               {showWithSupport ? t('nordpool.withSupport') : t('nordpool.withoutSupport')}
             </span>
           </button>
+          )}
           <button onClick={onClose} className="modal-close" aria-label={translate('common.close')}>
             <X className="h-4 w-4" />
           </button>

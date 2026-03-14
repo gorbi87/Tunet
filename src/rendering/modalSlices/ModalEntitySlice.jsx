@@ -112,6 +112,7 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
                 saveCardSetting={saveCardSetting}
                 cardId={showNordpoolModal}
                 settings={data.settings}
+                hideSupport={isOctopus}
               />
             </ModalSuspense>
           );
