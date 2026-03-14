@@ -30,6 +30,7 @@ const RESIZABLE_PREFIXES = [
   'calendar_card_',
   'todo_card_',
   'nordpool_card_',
+  'octopus_card_',
   'car_card_',
   'cover_card_',
   'camera_card_',

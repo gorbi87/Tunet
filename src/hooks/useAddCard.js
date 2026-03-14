@@ -42,6 +42,7 @@ export function useAddCard({
   const [costSelectionTarget, setCostSelectionTarget] = useState('today');
   const [selectedNordpoolId, setSelectedNordpoolId] = useState(null);
   const [nordpoolDecimals, setNordpoolDecimals] = useState(2);
+  const [selectedOctopusId, setSelectedOctopusId] = useState(null);
   const [selectedSpacerVariant, setSelectedSpacerVariant] = useState('divider');
 
   // ── Sync target page to active page ────────────────────────────────────
@@ -71,6 +72,7 @@ export function useAddCard({
       setCostSelectionTarget('today');
       setSelectedNordpoolId(null);
       setNordpoolDecimals(2);
+      setSelectedOctopusId(null);
       setSelectedSpacerVariant('divider');
     }
   }, [showAddCardModal]);
@@ -102,6 +104,7 @@ export function useAddCard({
     setCostSelectionTarget('today');
     setSelectedNordpoolId(null);
     setNordpoolDecimals(2);
+    setSelectedOctopusId(null);
   }, [addCardType, showAddCardModal]);
 
   // ── Labels ─────────────────────────────────────────────────────────────
@@ -177,6 +180,7 @@ export function useAddCard({
       selectedCostMonthId,
       selectedNordpoolId,
       nordpoolDecimals,
+      selectedOctopusId,
       selectedSpacerVariant: options.spacerVariant || selectedSpacerVariant,
       cardSettings,
       persistCardSettings,
@@ -192,6 +196,7 @@ export function useAddCard({
       setCostSelectionTarget,
       setSelectedNordpoolId,
       setNordpoolDecimals,
+      setSelectedOctopusId,
       saveCardSetting,
       setShowEditCardModal,
       setEditCardSettingsKey,
@@ -224,6 +229,8 @@ export function useAddCard({
     setSelectedNordpoolId,
     nordpoolDecimals,
     setNordpoolDecimals,
+    selectedOctopusId,
+    setSelectedOctopusId,
     selectedSpacerVariant,
     setSelectedSpacerVariant,
     onAddSelected,

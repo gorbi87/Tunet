@@ -85,6 +85,8 @@ export function ModalManagementSlice({
     setSelectedNordpoolId,
     nordpoolDecimals,
     setNordpoolDecimals,
+    selectedOctopusId,
+    setSelectedOctopusId,
     selectedSpacerVariant,
     setSelectedSpacerVariant,
     onAddSelected,
@@ -140,6 +142,8 @@ export function ModalManagementSlice({
             setSelectedNordpoolId={setSelectedNordpoolId}
             nordpoolDecimals={nordpoolDecimals}
             setNordpoolDecimals={setNordpoolDecimals}
+            selectedOctopusId={selectedOctopusId}
+            setSelectedOctopusId={setSelectedOctopusId}
             selectedSpacerVariant={selectedSpacerVariant}
             setSelectedSpacerVariant={setSelectedSpacerVariant}
             onAddSelected={onAddSelected}

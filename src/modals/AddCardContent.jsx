@@ -199,6 +199,8 @@ function AddCardContent({
   setSelectedNordpoolId,
   nordpoolDecimals,
   setNordpoolDecimals,
+  selectedOctopusId,
+  setSelectedOctopusId,
   selectedSpacerVariant,
   setSelectedSpacerVariant,
   onAddSelected,
@@ -293,6 +295,14 @@ function AddCardContent({
     if (addCardType !== 'nordpool') return [];
     return entityIds
       .filter((id) => id.startsWith('sensor.') && id.toLowerCase().includes('nordpool'))
+      .map((id) => ({ id, name: getEntityName(id) }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [addCardType, entityIds, getEntityName]);
+
+  const octopusOptionsSnapshot = useMemo(() => {
+    if (addCardType !== 'octopus') return [];
+    return entityIds
+      .filter((id) => id.startsWith('sensor.') && id.toLowerCase().includes('octopus'))
       .map((id) => ({ id, name: getEntityName(id) }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [addCardType, entityIds, getEntityName]);
@@ -431,6 +441,14 @@ function AddCardContent({
         !lowerSearchTerm || id.toLowerCase().includes(lowerSearchTerm) || name.toLowerCase().includes(lowerSearchTerm)
       ),
     [nordpoolOptionsSnapshot, lowerSearchTerm]
+  );
+
+  const visibleOctopusOptions = useMemo(
+    () =>
+      octopusOptionsSnapshot.filter(({ id, name }) =>
+        !lowerSearchTerm || id.toLowerCase().includes(lowerSearchTerm) || name.toLowerCase().includes(lowerSearchTerm)
+      ),
+    [octopusOptionsSnapshot, lowerSearchTerm]
   );
 
   // --- Render sections ---
@@ -759,6 +777,34 @@ function AddCardContent({
     );
   };
 
+  const renderOctopusSection = () => {
+    return (
+      <div className="space-y-8">
+        <div>
+          <p className="mb-4 ml-4 text-xs font-bold text-[var(--text-muted)] uppercase">
+            Octopus Energy sensor
+          </p>
+          <div className="space-y-3">
+            {visibleOctopusOptions.map(({ id, name }) => (
+              <EntityItem
+                key={id}
+                id={id}
+                displayName={name}
+                isSelected={selectedOctopusId === id}
+                onClick={() => setSelectedOctopusId((prev) => (prev === id ? null : id))}
+              />
+            ))}
+            {octopusOptionsSnapshot.length === 0 && (
+              <p className="py-4 text-center text-sm text-[var(--text-muted)] italic">
+                No Octopus Energy sensors found
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderGenericEntityList = () => {
     return (
       <div>
@@ -1068,6 +1114,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="octopus"
+                  icon={Zap}
+                  label="Octopus Energy"
+                  isActive={addCardType === 'octopus'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="room"
                   icon={Home}
                   label={`${getLabel('addCard.type.room', 'Room')}${betaSuffix}`}
@@ -1112,6 +1165,8 @@ function AddCardContent({
               renderSimpleAddSection(Car, t('addCard.carDescription'), t('addCard.carCard'))
             ) : addCardType === 'nordpool' ? (
               renderNordpoolSection()
+            ) : addCardType === 'octopus' ? (
+              renderOctopusSection()
             ) : addCardType === 'room' ? (
               <RoomSection
                 conn={conn}
@@ -1158,6 +1213,11 @@ function AddCardContent({
               <Plus className="h-5 w-5" /> {t('addCard.nordpoolCard')}
             </button>
           )}
+          {addCardType === 'octopus' && selectedOctopusId && (
+            <button onClick={onAddSelected} className={PRIMARY_ADD_BUTTON}>
+              <Plus className="h-5 w-5" /> Octopus Energy card
+            </button>
+          )}
           {addCardType === 'androidtv' && selectedAndroidTVMediaId && (
             <button onClick={onAddSelected} className={PRIMARY_ADD_BUTTON}>
               <Plus className="h-5 w-5" /> {t('addCard.add')}
@@ -1185,7 +1245,7 @@ function AddCardContent({
   );
 }
 
-const FLICKER_PRONE_TYPES = new Set(['androidtv', 'weather', 'nordpool']);
+const FLICKER_PRONE_TYPES = new Set(['androidtv', 'weather', 'nordpool', 'octopus']);
 
 function areAddCardPropsEqual(prev, next) {
   const freezeType =
@@ -1202,6 +1262,7 @@ function areAddCardPropsEqual(prev, next) {
     prev.selectedAndroidTVRemoteId === next.selectedAndroidTVRemoteId &&
     prev.selectedNordpoolId === next.selectedNordpoolId &&
     prev.nordpoolDecimals === next.nordpoolDecimals &&
+    prev.selectedOctopusId === next.selectedOctopusId &&
     prev.t === next.t
   );
 }

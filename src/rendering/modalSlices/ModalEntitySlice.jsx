@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { ModalSuspense } from '../../components';
 import { prepareNordpoolData } from '../../services';
+import { prepareOctopusData } from '../../services/octopusUtils';
 
 const CalendarModal = lazy(() => import('../../modals/CalendarModal'));
 const CostModal = lazy(() => import('../../modals/CostModal'));
@@ -81,12 +82,20 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     <>
       {showNordpoolModal &&
         (() => {
-          const data = prepareNordpoolData(showNordpoolModal, {
-            getCardSettingsKey,
-            cardSettings,
-            entities,
-            customNames,
-          });
+          const isOctopus = showNordpoolModal.startsWith('octopus_card_');
+          const data = isOctopus
+            ? prepareOctopusData(showNordpoolModal, {
+                getCardSettingsKey,
+                cardSettings,
+                entities,
+                customNames,
+              })
+            : prepareNordpoolData(showNordpoolModal, {
+                getCardSettingsKey,
+                cardSettings,
+                entities,
+                customNames,
+              });
           if (!data) return null;
           return (
             <ModalSuspense>

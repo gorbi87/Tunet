@@ -13,6 +13,7 @@ export { renderGenericAndroidTVCard } from './androidTvRenderer';
 export { renderCalendarCard } from './calendarRenderer';
 export { renderTodoCard } from './todoRenderer';
 export { renderNordpoolCard } from './nordpoolRenderer';
+export { renderOctopusCard } from './octopusRenderer';
 export { renderCoverCard } from './coverRenderer';
 export { renderAlarmCard } from './alarmRenderer';
 export { renderRoomCard } from './roomRenderer';

@@ -19,6 +19,7 @@ export const handleAddSelected = (ctx) => {
     selectedCostMonthId,
     selectedNordpoolId,
     nordpoolDecimals,
+    selectedOctopusId,
     selectedSpacerVariant,
     cardSettings,
     persistCardSettings,
@@ -34,6 +35,7 @@ export const handleAddSelected = (ctx) => {
     setCostSelectionTarget,
     setSelectedNordpoolId,
     setNordpoolDecimals,
+    setSelectedOctopusId,
     setShowEditCardModal,
     setEditCardSettingsKey,
   } = ctx;
@@ -236,6 +238,14 @@ export const handleAddSelected = (ctx) => {
       commitSingleCard(cardId, { nordpoolId: selectedNordpoolId, decimals: nordpoolDecimals });
       setSelectedNordpoolId(null);
       setNordpoolDecimals(2);
+      return;
+    }
+
+    case 'octopus': {
+      if (!selectedOctopusId) return;
+      const octopusCardId = `octopus_card_${Date.now()}`;
+      commitSingleCard(octopusCardId, { octopusId: selectedOctopusId });
+      setSelectedOctopusId(null);
       return;
     }
 
