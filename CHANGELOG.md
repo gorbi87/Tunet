@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.29] — 2026-03-15
+
+### Fixed
+- Wärmepumpe Hydraulik SVG: apply each rect's own `transform` when positioning sibling text — rects with `transform="translate(...)"` or `transform="matrix(...)"` caused text to render outside their boxes.
+- Restores dark placeholder rect appearance (reverts fill/stroke=none from 1.14.28).
+
 ## [1.14.28] — 2026-03-15
 
 ### Fixed

@@ -98,6 +98,21 @@ function formatState(entity, cfg) {
   return { text, fill: 'silver' };
 }
 
+// Applies the rect's own transform to local (x,y) to get parent-space coordinates.
+// Needed because rects may have transform="translate(...)" or transform="matrix(...)"
+// while text elements inserted as siblings live in the parent coordinate space.
+function applyRectTransform(rect, localX, localY) {
+  const transforms = rect.transform?.baseVal;
+  if (!transforms || transforms.numberOfItems === 0) return { x: localX, y: localY };
+  const consolidated = transforms.consolidate();
+  if (!consolidated) return { x: localX, y: localY };
+  const m = consolidated.matrix;
+  return {
+    x: m.a * localX + m.c * localY + m.e,
+    y: m.b * localX + m.d * localY + m.f,
+  };
+}
+
 function createTextEl(svgEl, rectId, x, y, anchor, fontSize, fill, content) {
   const textEl = document.createElementNS(SVG_NS, 'text');
   textEl.setAttribute('id', `${rectId}_text`);
@@ -138,13 +153,8 @@ export function HpsuHydraulicView({ entities }) {
       const ry = parseFloat(rect.getAttribute('y') || 0);
       const rw = parseFloat(rect.getAttribute('width') || 0);
       const rh = parseFloat(rect.getAttribute('height') || 0);
-      rect.setAttribute('fill', 'none');
-      rect.setAttribute('stroke', 'none');
-      const textEl = createTextEl(
-        svgEl, rectId,
-        rx + rw / 2, ry + rh / 2 + 3,
-        'middle', '35', 'rgb(191,191,191)', label
-      );
+      const { x, y } = applyRectTransform(rect, rx + rw / 2, ry + rh / 2 + 3);
+      const textEl = createTextEl(svgEl, rectId, x, y, 'middle', '35', 'rgb(191,191,191)', label);
       rect.parentNode.insertBefore(textEl, rect.nextSibling);
     });
 
@@ -156,15 +166,10 @@ export function HpsuHydraulicView({ entities }) {
       const ry = parseFloat(rect.getAttribute('y') || 0);
       const rw = parseFloat(rect.getAttribute('width') || 0);
       const rh = parseFloat(rect.getAttribute('height') || 0);
-      rect.setAttribute('fill', 'none');
-      rect.setAttribute('stroke', 'none');
-      const x = cfg.align === 'left' ? rx : rx + rw / 2;
+      const localX = cfg.align === 'left' ? rx : rx + rw / 2;
       const anchor = cfg.align === 'left' ? 'start' : 'middle';
-      const textEl = createTextEl(
-        svgEl, cfg.rectId,
-        x, ry + rh / 2 + cfg.offset,
-        anchor, cfg.fontSize, 'silver', '…'
-      );
+      const { x, y } = applyRectTransform(rect, localX, ry + rh / 2 + cfg.offset);
+      const textEl = createTextEl(svgEl, cfg.rectId, x, y, anchor, cfg.fontSize, 'silver', '…');
       rect.parentNode.insertBefore(textEl, rect.nextSibling);
       textMapRef.current[cfg.rectId] = { textEl, cfg };
     });

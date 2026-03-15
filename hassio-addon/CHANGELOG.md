@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.29
+
+### Fixed
+- Includes dashboard release `1.14.29`.
+- Hydraulik SVG: text values now correctly positioned inside their boxes by applying each rect's own transform attribute.
+
 ## 1.14.28
 
 ### Fixed
