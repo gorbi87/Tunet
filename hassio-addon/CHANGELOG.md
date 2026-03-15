@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.28
+
+### Fixed
+- Includes dashboard release `1.14.28`.
+- Hydraulik SVG: removes dark placeholder rects — values and labels now render cleanly over the diagram.
+
 ## 1.14.27
 
 ### Fixed

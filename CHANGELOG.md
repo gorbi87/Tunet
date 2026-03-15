@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.28] — 2026-03-15
+
+### Fixed
+- Wärmepumpe Hydraulik SVG: hide dark placeholder rects (fill/stroke set to none) after reading coordinates — removes the dark boxes overlaying the hydraulic diagram.
+
 ## [1.14.27] — 2026-03-15
 
 ### Fixed

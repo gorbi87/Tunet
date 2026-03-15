@@ -138,6 +138,8 @@ export function HpsuHydraulicView({ entities }) {
       const ry = parseFloat(rect.getAttribute('y') || 0);
       const rw = parseFloat(rect.getAttribute('width') || 0);
       const rh = parseFloat(rect.getAttribute('height') || 0);
+      rect.setAttribute('fill', 'none');
+      rect.setAttribute('stroke', 'none');
       const textEl = createTextEl(
         svgEl, rectId,
         rx + rw / 2, ry + rh / 2 + 3,
@@ -154,6 +156,8 @@ export function HpsuHydraulicView({ entities }) {
       const ry = parseFloat(rect.getAttribute('y') || 0);
       const rw = parseFloat(rect.getAttribute('width') || 0);
       const rh = parseFloat(rect.getAttribute('height') || 0);
+      rect.setAttribute('fill', 'none');
+      rect.setAttribute('stroke', 'none');
       const x = cfg.align === 'left' ? rx : rx + rw / 2;
       const anchor = cfg.align === 'left' ? 'start' : 'middle';
       const textEl = createTextEl(
