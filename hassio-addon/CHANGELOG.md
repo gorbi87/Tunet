@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.24
+
+### Added
+- Includes dashboard release `1.14.24`.
+- Wärmepumpe popup: Hydraulik tab with embedded hpsu-dashboard-card iframe.
+
 ## 1.14.23
 
 ### Changed

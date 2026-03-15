@@ -463,6 +463,7 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
             customNames={customNames}
             cardId={showWaermepumpeModal}
             callService={callService}
+            activeUrl={activeUrl}
             t={t}
           />
         </ModalSuspense>

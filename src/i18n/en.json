@@ -658,6 +658,8 @@
   "waermepumpe.steuerung": "Controls",
   "waermepumpe.betriebsmodus": "Operating Mode",
   "waermepumpe.wwSoll": "Hot Water Target Temp",
+  "waermepumpe.tab.overview": "Overview",
+  "waermepumpe.tab.hydraulik": "Hydraulics",
   "spacer.divider": "Divider",
   "spacer.spacer": "Spacer",
   "spacer.variant": "Variant",

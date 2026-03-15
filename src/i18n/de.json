@@ -644,6 +644,8 @@
   "waermepumpe.steuerung": "Steuerung",
   "waermepumpe.betriebsmodus": "Betriebsmodus",
   "waermepumpe.wwSoll": "WW-Solltemperatur",
+  "waermepumpe.tab.overview": "Übersicht",
+  "waermepumpe.tab.hydraulik": "Hydraulik",
   "spacer.divider": "Trennlinie",
   "spacer.spacer": "Abstandhalter",
   "spacer.variant": "Variante",
