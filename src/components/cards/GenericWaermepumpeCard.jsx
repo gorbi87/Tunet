@@ -17,6 +17,7 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   wwSoll: 'select.daikin_heizung_t_ww_soll1',
   betriebsmodus: 'select.daikin_heizung_betriebsmodus',
   heizstabSelect: 'select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018',
+  betriebsart: 'sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can',
 };
 
 const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
@@ -44,7 +45,9 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   const stromEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.stromTaglich];
   const waermeEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.waermeTaglich];
 
+  const betriebsartEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.betriebsart];
   const kompressorAktiv = kompressorEntity?.state === 'on';
+  const betriebsart = betriebsartEntity?.state || null;
   const wwTemp = warmwasserEntity ? parseFloat(warmwasserEntity.state) : null;
   const aussenTemp = aussentempEntity ? parseFloat(aussentempEntity.state) : null;
   const stromKwh = stromEntity ? parseFloat(stromEntity.state) : null;
@@ -57,8 +60,9 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   const kompressorColor = kompressorAktiv
     ? 'bg-[var(--status-success-fg)]'
     : 'bg-[var(--text-muted)]';
-  const kompressorLabel = kompressorAktiv
-    ? translate('waermepumpe.kompressor.on')
+  // When active: show betriebsart text if available, else "Aktiv"
+  const statusLabel = kompressorAktiv
+    ? (betriebsart || translate('waermepumpe.kompressor.on'))
     : translate('waermepumpe.kompressor.off');
 
   if (settings.size === 'small') {
@@ -86,7 +90,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
               </p>
               <span
                 className={`h-2.5 w-2.5 shrink-0 rounded-full shadow-sm ring-2 ${kompressorColor}`}
-                title={kompressorLabel}
+                title={statusLabel}
               />
             </div>
             <div className="flex items-baseline gap-1 leading-none">
@@ -134,7 +138,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
               className={`h-2 w-2 rounded-full ${kompressorColor}`}
             />
             <span className="text-xs font-bold tracking-widest uppercase text-[var(--text-secondary)]">
-              {kompressorLabel}
+              {statusLabel}
             </span>
           </div>
         </div>

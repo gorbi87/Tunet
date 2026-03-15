@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.22] — 2026-03-15
+
+### Changed
+- Wärmepumpe card: when the compressor is active, the status badge now shows the current **Betriebsart** (e.g. "Warmwasserbereitung", "Heizen") from `sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can` instead of the generic "Aktiv" label.
+
 ## [1.14.21] — 2026-03-15
 
 ### Added

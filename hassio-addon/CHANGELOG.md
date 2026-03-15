@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.22
+
+### Changed
+- Includes dashboard release `1.14.22`.
+- Wärmepumpe card status badge now shows the live Betriebsart (e.g. "Warmwasserbereitung") when the compressor is active.
+
 ## 1.14.21
 
 ### Added
