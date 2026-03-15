@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.26] — 2026-03-15
+
+### Fixed
+- Wärmepumpe Hydraulik tab: inject German label texts into all label rects (TA, EEV, Rücklauf, Vorlauf etc.) — previously empty dark boxes throughout the diagram. Mirrors card.ts createStateLabels label injection exactly (font-size 35, grey fill, centered).
+- Betriebsart "Warmwasserbereitung" now correctly shortened to "Warmwasser" in the SVG.
+
 ## [1.14.25] — 2026-03-15
 
 ### Changed

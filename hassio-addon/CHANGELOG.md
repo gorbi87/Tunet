@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.26
+
+### Fixed
+- Includes dashboard release `1.14.26`.
+- Wärmepumpe Hydraulik SVG: label rects now filled with German labels; Betriebsart shortening fixed.
+
 ## 1.14.25
 
 ### Changed

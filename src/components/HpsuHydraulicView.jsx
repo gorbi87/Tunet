@@ -3,8 +3,7 @@ import hpsuSvgRaw from '../assets/hpsu.svg?raw';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-// Maps HA entity IDs → SVG rect IDs with display params
-// Positioning/colors match card.ts from wrfz/daikin-rotex-hpsu-dashboard exactly
+// Value rects: entity → SVG rect, positioning matches card.ts exactly
 const SENSOR_MAP = [
   { entityId: 'sensor.daikin_heizung_aussentemperatur',                         rectId: 'ta_val',                  offset: 6, fontSize: '56' },
   { entityId: 'sensor.daikin_heizung_expansionsventil',                         rectId: 'eev_val',                 offset: 6, fontSize: '56' },
@@ -33,12 +32,41 @@ const SENSOR_MAP = [
   { entityId: 'sensor.daikin_heizung_bpv',                                      rectId: 'bypass_value',            offset: 6, fontSize: '40' },
   { entityId: 'sensor.daikin_heizung_fehlercode',                               rectId: 'fehlercode_value',        offset: 6, fontSize: '40', align: 'left', text: true },
   { entityId: 'select.daikin_heizung_betriebsmodus',                            rectId: 'betriebsmodus_value',     offset: 6, fontSize: '40', align: 'left', text: true },
-  { entityId: 'sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can',           rectId: 'betriebsart_value',       offset: 6, fontSize: '40', align: 'left', text: true },
+  { entityId: 'sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can',           rectId: 'betriebsart_value',       offset: 6, fontSize: '40', align: 'left', text: true, shorten: true },
   { entityId: 'sensor.daikin_heizung_thermische_leistung',                      rectId: 'therm_leistung_value',    offset: 6, fontSize: '40', align: 'left', digits: 2, prefix: 'Therm. Leistung: ' },
   { entityId: 'sensor.daikin_heizung_leistung',                                 rectId: 'el_power_value',          offset: 6, fontSize: '40', align: 'left', digits: 2, prefix: 'Elektr. Leistung: ' },
   { entityId: 'sensor.daikin_heizung_cop',                                      rectId: 'cop_value',               offset: 6, fontSize: '40', align: 'left', digits: 2, prefix: 'COP: ' },
   { entityId: 'sensor.klima_durchschnittliche_temperatur_haus',                 rectId: 't_room_is_value',         offset: 6, fontSize: '40', align: 'left', digits: 1, prefix: 'Raum-Ist: ' },
 ];
+
+// Label rects: static German labels, font-size=35, offset=3, fill=rgb(191,191,191)
+// Mirrors card.ts createStateLabels label injection
+const LABEL_MAP = [
+  { rectId: 'ta_label',                label: 'TA' },
+  { rectId: 'eev_label',               label: 'EEV' },
+  { rectId: 'kondensat_label',         label: 'Kondensat' },
+  { rectId: 'uwp_label',               label: 'Umwälzpumpe' },
+  { rectId: 'flow_rate_label',         label: 'Durchfluss' },
+  { rectId: 'return_flow_label',       label: 'Rücklauf' },
+  { rectId: 'evaporator_label',        label: 'Verdampfer' },
+  { rectId: 'hot_gas_label',           label: 'Heißgas' },
+  { rectId: 'hot_gas_condenser_label', label: 'Heißgas' },
+  { rectId: 'spread_label',            label: 'Spreizung' },
+  { rectId: 'flow_label',              label: 'Vorlauf' },
+  { rectId: 'flow_setpoint_label',     label: 'Vorlauf-Soll' },
+  { rectId: 'pressure_label',          label: 'Druck' },
+  { rectId: 'flow_bh_label',           label: 'Vorlauf BH' },
+  { rectId: 'fan_label',               label: 'Lüfter' },
+  { rectId: 'compressor_label',        label: 'Verdichter' },
+  { rectId: 'storage_label',           label: 'Speicher' },
+  { rectId: 'storage_setpoint_label',  label: 'Soll' },
+  { rectId: 'buh_info_label',          label: 'Heizstab' },
+];
+
+// card.ts shortens this in SVG display
+const BETRIEBSART_SHORT = {
+  'Warmwasserbereitung': 'Warmwasser',
+};
 
 function formatState(entity, cfg) {
   if (!entity || entity.state === 'unavailable' || entity.state === 'unknown') {
@@ -49,14 +77,27 @@ function formatState(entity, cfg) {
     return { text: on ? 'An' : 'Aus', fill: on ? 'yellow' : 'silver' };
   }
   if (cfg.text) {
-    return { text: entity.state, fill: 'silver' };
+    const raw = cfg.shorten ? (BETRIEBSART_SHORT[entity.state] ?? entity.state) : entity.state;
+    return { text: raw, fill: 'silver' };
   }
   const v = parseFloat(entity.state);
   const formatted = Number.isFinite(v) ? v.toFixed(cfg.digits ?? 1) : entity.state;
-  // card.ts shortens "Warmwasserbereitung" → "Warmwasser" in the SVG
-  const shortened = formatted === 'Warmwasserbereitung' ? 'Warmwasser' : formatted;
-  const text = cfg.prefix ? cfg.prefix + shortened : shortened;
+  const text = cfg.prefix ? cfg.prefix + formatted : formatted;
   return { text, fill: 'silver' };
+}
+
+function createTextEl(svgEl, rectId, x, y, anchor, fontSize, fill, content) {
+  const textEl = document.createElementNS(SVG_NS, 'text');
+  textEl.setAttribute('id', `${rectId}_text`);
+  textEl.setAttribute('x', x);
+  textEl.setAttribute('y', y);
+  textEl.setAttribute('text-anchor', anchor);
+  textEl.setAttribute('dominant-baseline', 'middle');
+  textEl.setAttribute('font-size', fontSize);
+  textEl.setAttribute('font-family', 'sans-serif');
+  textEl.setAttribute('fill', fill);
+  textEl.textContent = content;
+  return textEl;
 }
 
 export function HpsuHydraulicView({ entities }) {
@@ -77,31 +118,37 @@ export function HpsuHydraulicView({ entities }) {
     svgEl.setAttribute('height', '100%');
     svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
-    SENSOR_MAP.forEach((cfg) => {
-      const rect = svgEl.getElementById(cfg.rectId);
+    // Inject static label texts (mirrors card.ts createStateLabels label injection)
+    LABEL_MAP.forEach(({ rectId, label }) => {
+      const rect = svgEl.getElementById(rectId);
       if (!rect) return;
-
       const rx = parseFloat(rect.getAttribute('x') || 0);
       const ry = parseFloat(rect.getAttribute('y') || 0);
       const rw = parseFloat(rect.getAttribute('width') || 0);
       const rh = parseFloat(rect.getAttribute('height') || 0);
+      const textEl = createTextEl(
+        svgEl, rectId,
+        rx + rw / 2, ry + rh / 2 + 3,
+        'middle', '35', 'rgb(191,191,191)', label
+      );
+      rect.parentNode.insertBefore(textEl, rect.nextSibling);
+    });
 
-      const textEl = document.createElementNS(SVG_NS, 'text');
-      textEl.setAttribute('id', `${cfg.rectId}_text`);
-      if (cfg.align === 'left') {
-        textEl.setAttribute('x', rx);
-        textEl.setAttribute('text-anchor', 'start');
-      } else {
-        textEl.setAttribute('x', rx + rw / 2);
-        textEl.setAttribute('text-anchor', 'middle');
-      }
-      textEl.setAttribute('y', ry + rh / 2 + cfg.offset);
-      textEl.setAttribute('dominant-baseline', 'middle');
-      textEl.setAttribute('font-size', cfg.fontSize);
-      textEl.setAttribute('font-family', 'sans-serif');
-      textEl.setAttribute('fill', 'silver');
-      textEl.textContent = '…';
-
+    // Inject dynamic value text placeholders
+    SENSOR_MAP.forEach((cfg) => {
+      const rect = svgEl.getElementById(cfg.rectId);
+      if (!rect) return;
+      const rx = parseFloat(rect.getAttribute('x') || 0);
+      const ry = parseFloat(rect.getAttribute('y') || 0);
+      const rw = parseFloat(rect.getAttribute('width') || 0);
+      const rh = parseFloat(rect.getAttribute('height') || 0);
+      const x = cfg.align === 'left' ? rx : rx + rw / 2;
+      const anchor = cfg.align === 'left' ? 'start' : 'middle';
+      const textEl = createTextEl(
+        svgEl, cfg.rectId,
+        x, ry + rh / 2 + cfg.offset,
+        anchor, cfg.fontSize, 'silver', '…'
+      );
       rect.parentNode.insertBefore(textEl, rect.nextSibling);
       textMapRef.current[cfg.rectId] = { textEl, cfg };
     });
@@ -116,8 +163,7 @@ export function HpsuHydraulicView({ entities }) {
       const { text, fill, fontSize } = formatState(entity, cfg);
       textEl.textContent = text;
       textEl.setAttribute('fill', fill);
-      if (fontSize) textEl.setAttribute('font-size', fontSize);
-      else textEl.setAttribute('font-size', cfg.fontSize);
+      textEl.setAttribute('font-size', fontSize ?? cfg.fontSize);
     });
 
     const svgEl = containerRef.current?.querySelector('svg');
@@ -128,9 +174,9 @@ export function HpsuHydraulicView({ entities }) {
     const mischerPct = parseFloat(entities?.['sensor.daikin_heizung_dhw_mischer_position']?.state) || 0;
     const bpvPct = parseFloat(entities?.['sensor.daikin_heizung_bpv']?.state) || 0;
 
-    const dhwOpen = svgEl.getElementById('dhw-open-arrows');
+    const dhwOpen   = svgEl.getElementById('dhw-open-arrows');
     const dhwClosed = svgEl.getElementById('dhw-closed-arrows');
-    const bpvOpen = svgEl.getElementById('bpv-open-arrows');
+    const bpvOpen   = svgEl.getElementById('bpv-open-arrows');
     const bpvClosed = svgEl.getElementById('bpv-closed-arrows');
     if (dhwOpen)   dhwOpen.style.opacity   = (flowRate > 0 ? mischerPct / 100 : 0).toString();
     if (dhwClosed) dhwClosed.style.opacity = (flowRate > 0 ? (100 - mischerPct) / 100 : 0).toString();
@@ -142,19 +188,16 @@ export function HpsuHydraulicView({ entities }) {
       if (arrow) arrow.style.opacity = flowRate > 0 ? '1' : '0';
     }
 
-    // Pressure equalization arrows (fill color, mirrors card.ts)
+    // Pressure equalization arrow fill (mirrors card.ts updateLabels)
     const pressEq = entities?.['binary_sensor.daikin_heizung_druckausgleich'];
     const eevColor = pressEq?.state === 'on' ? '#00ff0080' : '#7f7f7f';
-    const arrowL = svgEl.getElementById('eev_arrow_left');
-    const arrowR = svgEl.getElementById('eev_arrow_right');
-    if (arrowL) arrowL.setAttribute('fill', eevColor);
-    if (arrowR) arrowR.setAttribute('fill', eevColor);
+    svgEl.getElementById('eev_arrow_left')?.setAttribute('fill', eevColor);
+    svgEl.getElementById('eev_arrow_right')?.setAttribute('fill', eevColor);
 
-    // Heizstab (buh-control) fill color
+    // Heizstab fill (mirrors card.ts updateLabels buh_power handling)
     const buhEntity = entities?.['select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018'];
     const buhActive = buhEntity && parseFloat(buhEntity.state) > 0;
-    const buhEl = svgEl.getElementById('buh-control');
-    if (buhEl) buhEl.setAttribute('fill', buhActive ? '#d4aa00ff' : '#7f7f7f');
+    svgEl.getElementById('buh-control')?.setAttribute('fill', buhActive ? '#d4aa00ff' : '#7f7f7f');
   }, [entities]);
 
   return (
