@@ -23,8 +23,8 @@ const SENSOR_MAP = [
   { entityId: 'sensor.daikin_heizung_vorlauftemperatur_heizung_tvbh',           rectId: 'flow_bh_can_value',       offset: 6, fontSize: '56' },
   { entityId: 'sensor.daikin_heizung_vorlauftemeratur_tvbh',                    rectId: 'flow_bh_uart_value',      offset: 6, fontSize: '56' },
   { entityId: 'binary_sensor.daikin_heizung_status_kompressor',                 rectId: 'comp_rect',               offset: 2, fontSize: '40', binary: true },
-  { entityId: 'sensor.daikin_heizung_ventilatordrehzahl',                       rectId: 'fan_value',               offset: 6, fontSize: '56' },
-  { entityId: 'sensor.daikin_heizung_kompressor_drehzahl',                      rectId: 'compressor_value',        offset: 6, fontSize: '56' },
+  { entityId: 'sensor.daikin_heizung_ventilatordrehzahl',                       rectId: 'fan_value',               offset: 6, fontSize: '44' },
+  { entityId: 'sensor.daikin_heizung_kompressor_drehzahl',                      rectId: 'compressor_value',        offset: 6, fontSize: '44' },
   { entityId: 'sensor.daikin_heizung_warmwassertemperatur',                     rectId: 'storage_value',           offset: 6, fontSize: '56' },
   { entityId: 'select.daikin_heizung_t_ww_soll1',                              rectId: 'storage_setpoint_value',  offset: 6, fontSize: '56', digits: 0 },
   { entityId: 'select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018',   rectId: 'buh_info_value',          offset: 6, fontSize: '56', text: true },
@@ -50,7 +50,6 @@ const LABEL_MAP = [
   { rectId: 'return_flow_label',       label: 'Rücklauf' },
   { rectId: 'evaporator_label',        label: 'Verdampfer' },
   { rectId: 'hot_gas_label',           label: 'Heißgas' },
-  { rectId: 'hot_gas_condenser_label', label: 'Heißgas' },
   { rectId: 'spread_label',            label: 'Spreizung' },
   { rectId: 'flow_label',              label: 'Vorlauf' },
   { rectId: 'flow_setpoint_label',     label: 'Vorlauf-Soll' },
@@ -147,6 +146,13 @@ export function HpsuHydraulicView({ entities }) {
     svgEl.setAttribute('width', '100%');
     svgEl.setAttribute('height', '100%');
     svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    // Hide unwanted rects (no entity mapped, not needed in display)
+    ['ta2_label', 'ta2_val', 'hot_gas_condenser_label', 'hot_gas_condenser_value',
+     'date_value', 'time_value'].forEach((id) => {
+      const el = svgEl.getElementById(id);
+      if (el) { el.setAttribute('fill', 'none'); el.setAttribute('stroke', 'none'); }
+    });
 
     // Inject static label texts into SVG root using actual rendered positions
     LABEL_MAP.forEach(({ rectId, label }) => {

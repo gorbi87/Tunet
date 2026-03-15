@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.31
+
+### Fixed
+- Includes dashboard release `1.14.31`.
+- Hydraulik SVG: hides ta2, second Heißgas and date/time boxes; reduces RPM font size.
+
 ## 1.14.30
 
 ### Fixed

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.31] — 2026-03-15
+
+### Fixed
+- Wärmepumpe Hydraulik SVG: hide ta2, hot_gas_condenser, date and time rects (not needed).
+- Reduce font size for Verdichter and Lüfter RPM values (56→44) to fit within their boxes.
+
 ## [1.14.30] — 2026-03-15
 
 ### Fixed
