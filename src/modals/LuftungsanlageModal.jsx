@@ -322,17 +322,32 @@ export default function LuftungsanlageModal({
                     <line x1="110" y1="120" x2="55" y2="150" stroke="#ffb74d" strokeWidth="1.5" opacity="0.6" />
 
                     {/* Center WRG box */}
-                    <rect x="110" y="72" width="80" height="51" rx="8" fill="var(--glass-bg)" stroke="var(--glass-border)" strokeWidth="1" />
-                    <text x="150" y="91" textAnchor="middle" fontSize="9" fontWeight="bold" fill={ACCENT} letterSpacing="0.05em">
+                    <rect x="110" y="68" width="80" height="59" rx="8" fill="var(--glass-bg)" stroke="var(--glass-border)" strokeWidth="1" />
+                    <text x="150" y="80" textAnchor="middle" fontSize="8" fontWeight="bold" fill={ACCENT} letterSpacing="0.05em">
                       {isBypass ? 'BYPASS' : 'WRG'}
                     </text>
-                    <text x="150" y="108" textAnchor="middle" fontSize="12" fontWeight="300" fill={ACCENT}>
+                    <text x="150" y="95" textAnchor="middle" fontSize="15" fontWeight="300" fill={ACCENT}>
                       {isBypass
                         ? `${bypass != null ? bypass.toFixed(0) : '—'}%`
                         : wrgEfficiency != null
                         ? `${wrgEfficiency}%`
                         : '—'}
                     </text>
+                    <text x="150" y="106" textAnchor="middle" fontSize="7" fill={ACCENT} opacity="0.65">
+                      {isBypass ? 'Bypass' : 'Wirkungsgrad'}
+                    </text>
+                    <text x="150" y="116" textAnchor="middle" fontSize="7" fill={ACCENT} opacity="0.55">
+                      {isBypass
+                        ? 'Bypass aktiv'
+                        : aussenluft != null && zuluft != null
+                        ? `+${(zuluft - aussenluft).toFixed(1)}°C Gewinn`
+                        : ''}
+                    </text>
+                    {bypass != null && (
+                      <text x="150" y="124" textAnchor="middle" fontSize="6.5" fill={ACCENT} opacity="0.4">
+                        {`Bypass ${bypass.toFixed(0)}%`}
+                      </text>
+                    )}
 
                     {/* AUSSEN — top left */}
                     <rect x="2" y="22" width="62" height="46" rx="8" fill="rgba(100,181,246,0.1)" stroke="rgba(100,181,246,0.4)" strokeWidth="1" />
