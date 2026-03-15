@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.27
+
+### Fixed
+- Includes dashboard release `1.14.27`.
+- Hydraulik SVG: German locale numbers with units (°C, pls, %, L/h, RPM, bar); prefixes for fehlercode/betriebsmodus/betriebsart.
+
 ## 1.14.26
 
 ### Fixed

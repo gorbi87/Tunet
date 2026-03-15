@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.27] — 2026-03-15
+
+### Fixed
+- Wärmepumpe Hydraulik SVG: values now display with German locale (comma decimal, e.g. "52,2 °C") and units from `unit_of_measurement` — mirrors card.ts `formatNumber` exactly with `Intl.NumberFormat('de', ...)`.
+- Added missing prefixes for fehlercode ("Fehlercode: "), betriebsmodus ("Modus: ") and betriebsart ("Betriebsart: ") to match original card display.
+
 ## [1.14.26] — 2026-03-15
 
 ### Fixed

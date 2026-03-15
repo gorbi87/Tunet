@@ -1,6 +1,6 @@
 name: 'Tunet (gorbi87)'
 description: 'A modern, responsive dashboard for Home Assistant (custom fork)'
-version: "1.14.26"
+version: "1.14.27"
 slug: 'tunet-gorbi87'
 url: 'https://github.com/gorbi87/Tunet'
 init: false

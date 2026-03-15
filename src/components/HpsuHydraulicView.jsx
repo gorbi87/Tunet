@@ -30,13 +30,13 @@ const SENSOR_MAP = [
   { entityId: 'select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018',   rectId: 'buh_info_value',          offset: 6, fontSize: '56', text: true },
   { entityId: 'sensor.daikin_heizung_dhw_mischer_position',                     rectId: 'dhw_mixer_value',         offset: 6, fontSize: '40' },
   { entityId: 'sensor.daikin_heizung_bpv',                                      rectId: 'bypass_value',            offset: 6, fontSize: '40' },
-  { entityId: 'sensor.daikin_heizung_fehlercode',                               rectId: 'fehlercode_value',        offset: 6, fontSize: '40', align: 'left', text: true },
-  { entityId: 'select.daikin_heizung_betriebsmodus',                            rectId: 'betriebsmodus_value',     offset: 6, fontSize: '40', align: 'left', text: true },
-  { entityId: 'sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can',           rectId: 'betriebsart_value',       offset: 6, fontSize: '40', align: 'left', text: true, shorten: true },
-  { entityId: 'sensor.daikin_heizung_thermische_leistung',                      rectId: 'therm_leistung_value',    offset: 6, fontSize: '40', align: 'left', digits: 2, prefix: 'Therm. Leistung: ' },
-  { entityId: 'sensor.daikin_heizung_leistung',                                 rectId: 'el_power_value',          offset: 6, fontSize: '40', align: 'left', digits: 2, prefix: 'Elektr. Leistung: ' },
-  { entityId: 'sensor.daikin_heizung_cop',                                      rectId: 'cop_value',               offset: 6, fontSize: '40', align: 'left', digits: 2, prefix: 'COP: ' },
-  { entityId: 'sensor.klima_durchschnittliche_temperatur_haus',                 rectId: 't_room_is_value',         offset: 6, fontSize: '40', align: 'left', digits: 1, prefix: 'Raum-Ist: ' },
+  { entityId: 'sensor.daikin_heizung_fehlercode',                               rectId: 'fehlercode_value',        offset: 6, fontSize: '40', align: 'left', text: true,   prefix: 'Fehlercode: ' },
+  { entityId: 'select.daikin_heizung_betriebsmodus',                            rectId: 'betriebsmodus_value',     offset: 6, fontSize: '40', align: 'left', text: true,   prefix: 'Modus: ' },
+  { entityId: 'sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can',           rectId: 'betriebsart_value',       offset: 6, fontSize: '40', align: 'left', text: true,   prefix: 'Betriebsart: ', shorten: true },
+  { entityId: 'sensor.daikin_heizung_thermische_leistung',                      rectId: 'therm_leistung_value',    offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Therm. Leistung: ' },
+  { entityId: 'sensor.daikin_heizung_leistung',                                 rectId: 'el_power_value',          offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Elektr. Leistung: ' },
+  { entityId: 'sensor.daikin_heizung_cop',                                      rectId: 'cop_value',               offset: 6, fontSize: '40', align: 'left', digits: 2,   prefix: 'COP: ' },
+  { entityId: 'sensor.klima_durchschnittliche_temperatur_haus',                 rectId: 't_room_is_value',         offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Raum-Ist: ' },
 ];
 
 // Label rects: static German labels, font-size=35, offset=3, fill=rgb(191,191,191)
@@ -68,6 +68,18 @@ const BETRIEBSART_SHORT = {
   'Warmwasserbereitung': 'Warmwasser',
 };
 
+// Mirrors card.ts formatNumber: locale-aware decimal, unit_of_measurement appended
+function formatNumber(entity, digits) {
+  const v = Number(entity.state);
+  if (isNaN(v)) return entity.state;
+  const formatted = new Intl.NumberFormat('de', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(v);
+  const unit = entity.attributes?.unit_of_measurement;
+  return unit ? `${formatted} ${unit}` : formatted;
+}
+
 function formatState(entity, cfg) {
   if (!entity || entity.state === 'unavailable' || entity.state === 'unknown') {
     return { text: 'N/A', fill: 'orange', fontSize: '30' };
@@ -78,11 +90,11 @@ function formatState(entity, cfg) {
   }
   if (cfg.text) {
     const raw = cfg.shorten ? (BETRIEBSART_SHORT[entity.state] ?? entity.state) : entity.state;
-    return { text: raw, fill: 'silver' };
+    const text = cfg.prefix ? cfg.prefix + raw : raw;
+    return { text, fill: 'silver' };
   }
-  const v = parseFloat(entity.state);
-  const formatted = Number.isFinite(v) ? v.toFixed(cfg.digits ?? 1) : entity.state;
-  const text = cfg.prefix ? cfg.prefix + formatted : formatted;
+  const value = formatNumber(entity, cfg.digits ?? 1);
+  const text = cfg.prefix ? cfg.prefix + value : value;
   return { text, fill: 'silver' };
 }
 
