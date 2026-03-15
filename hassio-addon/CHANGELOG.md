@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.21
+
+### Added
+- Includes dashboard release `1.14.21`.
+- Wärmepumpe popup controls: Betriebsmodus switcher, WW-Solltemperatur selector, and Heizstab power selector.
+
 ## 1.14.20
 
 ### Added

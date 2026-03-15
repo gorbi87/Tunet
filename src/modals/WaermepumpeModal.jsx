@@ -3,20 +3,68 @@ import { Flame, X, Thermometer, Zap } from '../icons';
 import { WAERMEPUMPE_ENTITY_IDS } from '../components/cards/GenericWaermepumpeCard';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 
-export default function WaermepumpeModal({ show, onClose, entities, customNames, cardId, t }) {
+function SelectPills({ entityId, entity, onSelect }) {
+  if (!entity) return null;
+  const current = entity.state;
+  const options = entity.attributes?.options || [];
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
+        const isActive = opt === current;
+        return (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => onSelect(entityId, opt)}
+            className="rounded-full border px-3 py-1.5 text-[11px] font-bold tracking-wider uppercase transition-all"
+            style={
+              isActive
+                ? {
+                    backgroundColor: 'var(--accent-bg)',
+                    borderColor: 'var(--accent-color)',
+                    color: 'var(--accent-color)',
+                  }
+                : {
+                    backgroundColor: 'var(--glass-bg)',
+                    borderColor: 'var(--glass-border)',
+                    color: 'var(--text-secondary)',
+                  }
+            }
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function WaermepumpeModal({
+  show,
+  onClose,
+  entities,
+  customNames,
+  cardId,
+  callService,
+  t,
+}) {
   const translate = t || ((key) => key);
   const [tab, setTab] = useState('today');
   const modalTitleId = 'waermepumpe-modal-title';
 
   if (!show) return null;
 
-  const name =
-    customNames?.[cardId] || translate('waermepumpe.title');
+  const name = customNames?.[cardId] || translate('waermepumpe.title');
 
   const e = (id) => entities?.[id];
   const val = (id) => {
     const v = parseFloat(e(id)?.state);
     return Number.isFinite(v) ? v : null;
+  };
+
+  const selectOption = (entityId, option) => {
+    callService?.('select', 'select_option', { entity_id: entityId, option });
   };
 
   const kompressorAktiv = e(WAERMEPUMPE_ENTITY_IDS.kompressor)?.state === 'on';
@@ -100,9 +148,7 @@ export default function WaermepumpeModal({ show, onClose, entities, customNames,
               <div
                 className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 transition-all duration-500"
                 style={{
-                  backgroundColor: kompressorAktiv
-                    ? 'var(--status-success-bg)'
-                    : 'var(--glass-bg)',
+                  backgroundColor: kompressorAktiv ? 'var(--status-success-bg)' : 'var(--glass-bg)',
                   borderColor: kompressorAktiv
                     ? 'var(--status-success-border)'
                     : 'var(--glass-border)',
@@ -114,9 +160,7 @@ export default function WaermepumpeModal({ show, onClose, entities, customNames,
                 <p
                   className="text-[10px] font-bold tracking-widest uppercase italic"
                   style={{
-                    color: kompressorAktiv
-                      ? 'var(--status-success-fg)'
-                      : 'var(--text-secondary)',
+                    color: kompressorAktiv ? 'var(--status-success-fg)' : 'var(--text-secondary)',
                   }}
                 >
                   {kompressorAktiv
@@ -127,6 +171,7 @@ export default function WaermepumpeModal({ show, onClose, entities, customNames,
             </div>
           </div>
 
+          {/* Temps + Energy grid */}
           <div className="grid grid-cols-1 items-start gap-8 font-sans lg:grid-cols-5">
             {/* Left: Temperatures */}
             <div className="space-y-4 lg:col-span-3">
@@ -134,16 +179,8 @@ export default function WaermepumpeModal({ show, onClose, entities, customNames,
                 {translate('waermepumpe.temperatures')}
               </p>
               <div className="grid grid-cols-2 gap-3">
-                <TempRow
-                  label={translate('waermepumpe.warmwasser')}
-                  value={wwTemp}
-                  color="#fb923c"
-                />
-                <TempRow
-                  label={translate('waermepumpe.aussentemp')}
-                  value={aussentemp}
-                  color="var(--text-primary)"
-                />
+                <TempRow label={translate('waermepumpe.warmwasser')} value={wwTemp} color="#fb923c" />
+                <TempRow label={translate('waermepumpe.aussentemp')} value={aussentemp} />
                 <TempRow
                   label={translate('waermepumpe.vorlauf')}
                   value={vorlauf}
@@ -185,10 +222,7 @@ export default function WaermepumpeModal({ show, onClose, entities, customNames,
             {/* Right: Energy stats */}
             <div className="space-y-4 lg:col-span-2">
               {/* Tab switcher */}
-              <div
-                className="flex rounded-2xl p-1"
-                style={{ backgroundColor: 'var(--glass-bg)' }}
-              >
+              <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
                 {['today', 'month'].map((key) => (
                   <button
                     key={key}
@@ -202,9 +236,7 @@ export default function WaermepumpeModal({ show, onClose, entities, customNames,
                             color: 'var(--accent-color)',
                             border: '1px solid var(--accent-color)',
                           }
-                        : {
-                            color: 'var(--text-secondary)',
-                          }
+                        : { color: 'var(--text-secondary)' }
                     }
                   >
                     {key === 'today'
@@ -219,11 +251,9 @@ export default function WaermepumpeModal({ show, onClose, entities, customNames,
                 <p className="text-xs font-bold tracking-[0.2em] text-[var(--accent-color)] uppercase">
                   COP
                 </p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-6xl leading-none font-light text-[var(--accent-color)] italic">
-                    {aktivCop ?? '—'}
-                  </span>
-                </div>
+                <span className="text-6xl leading-none font-light text-[var(--accent-color)] italic">
+                  {aktivCop ?? '—'}
+                </span>
               </div>
 
               {/* Strom + Wärme */}
@@ -234,7 +264,7 @@ export default function WaermepumpeModal({ show, onClose, entities, customNames,
                     {translate('waermepumpe.strom')}
                   </p>
                   <p className="text-xl font-light text-[var(--text-primary)]">
-                    {aktivStrom != null ? `${aktivStrom.toFixed(2)}` : '—'}
+                    {aktivStrom != null ? aktivStrom.toFixed(2) : '—'}
                   </p>
                   <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
                 </div>
@@ -244,12 +274,64 @@ export default function WaermepumpeModal({ show, onClose, entities, customNames,
                     {translate('waermepumpe.waerme')}
                   </p>
                   <p className="text-xl font-light text-[var(--text-primary)]">
-                    {aktivWaerme != null ? `${aktivWaerme.toFixed(2)}` : '—'}
+                    {aktivWaerme != null ? aktivWaerme.toFixed(2) : '—'}
                   </p>
                   <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Controls section */}
+          <div
+            className="mt-8 space-y-5 border-t pt-6 font-sans"
+            style={{ borderColor: 'var(--glass-border)' }}
+          >
+            <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
+              {translate('waermepumpe.steuerung')}
+            </p>
+
+            {/* Betriebsmodus */}
+            {e(WAERMEPUMPE_ENTITY_IDS.betriebsmodus) && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                  {translate('waermepumpe.betriebsmodus')}
+                </p>
+                <SelectPills
+                  entityId={WAERMEPUMPE_ENTITY_IDS.betriebsmodus}
+                  entity={e(WAERMEPUMPE_ENTITY_IDS.betriebsmodus)}
+                  onSelect={selectOption}
+                />
+              </div>
+            )}
+
+            {/* WW Solltemperatur */}
+            {e(WAERMEPUMPE_ENTITY_IDS.wwSoll) && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                  {translate('waermepumpe.wwSoll')}
+                </p>
+                <SelectPills
+                  entityId={WAERMEPUMPE_ENTITY_IDS.wwSoll}
+                  entity={e(WAERMEPUMPE_ENTITY_IDS.wwSoll)}
+                  onSelect={selectOption}
+                />
+              </div>
+            )}
+
+            {/* Heizstab */}
+            {e(WAERMEPUMPE_ENTITY_IDS.heizstabSelect) && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                  {translate('waermepumpe.heizstab')}
+                </p>
+                <SelectPills
+                  entityId={WAERMEPUMPE_ENTITY_IDS.heizstabSelect}
+                  entity={e(WAERMEPUMPE_ENTITY_IDS.heizstabSelect)}
+                  onSelect={selectOption}
+                />
+              </div>
+            )}
           </div>
         </>
       )}

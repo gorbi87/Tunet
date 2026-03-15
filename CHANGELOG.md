@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.21] — 2026-03-15
+
+### Added
+- Wärmepumpe popup now includes a **Controls section**: switch Betriebsmodus (Bereitschaft / Heizen / Absenken / Sommer / Kühlen / Automatik 1 / Automatik 2), set WW-Solltemperatur (35–70 °C), and enable/disable Heizstab (Aus / 3 kW / 6 kW / 9 kW).
+
 ## [1.14.20] — 2026-03-15
 
 ### Added

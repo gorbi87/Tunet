@@ -14,6 +14,9 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   waermeMonatlich: 'sensor.warmepumpe_thermische_energie_monatlich',
   heizstab: 'input_number.warmepumpe_heizstab',
   heizstabTaglich: 'sensor.warmepumpe_heizstab_verbrauch_taglich',
+  wwSoll: 'select.daikin_heizung_t_ww_soll1',
+  betriebsmodus: 'select.daikin_heizung_betriebsmodus',
+  heizstabSelect: 'select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018',
 };
 
 const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
