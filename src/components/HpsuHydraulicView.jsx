@@ -98,18 +98,21 @@ function formatState(entity, cfg) {
   return { text, fill: 'silver' };
 }
 
-// Applies the rect's own transform to local (x,y) to get parent-space coordinates.
-// Needed because rects may have transform="translate(...)" or transform="matrix(...)"
-// while text elements inserted as siblings live in the parent coordinate space.
-function applyRectTransform(rect, localX, localY) {
-  const transforms = rect.transform?.baseVal;
-  if (!transforms || transforms.numberOfItems === 0) return { x: localX, y: localY };
-  const consolidated = transforms.consolidate();
-  if (!consolidated) return { x: localX, y: localY };
-  const m = consolidated.matrix;
+// Returns the rect's bounding box in SVG viewBox coordinates by using
+// getBoundingClientRect — works correctly regardless of any transforms
+// on the rect or its ancestor groups.
+function getRectSVGBounds(rect, svgEl) {
+  const rr = rect.getBoundingClientRect();
+  const sr = svgEl.getBoundingClientRect();
+  if (sr.width === 0 || sr.height === 0) return null;
+  const vb = svgEl.viewBox.baseVal;
+  const sx = vb.width / sr.width;
+  const sy = vb.height / sr.height;
   return {
-    x: m.a * localX + m.c * localY + m.e,
-    y: m.b * localX + m.d * localY + m.f,
+    x: (rr.left - sr.left) * sx + vb.x,
+    y: (rr.top - sr.top) * sy + vb.y,
+    w: rr.width * sx,
+    h: rr.height * sy,
   };
 }
 
@@ -145,32 +148,34 @@ export function HpsuHydraulicView({ entities }) {
     svgEl.setAttribute('height', '100%');
     svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
-    // Inject static label texts (mirrors card.ts createStateLabels label injection)
+    // Inject static label texts into SVG root using actual rendered positions
     LABEL_MAP.forEach(({ rectId, label }) => {
       const rect = svgEl.getElementById(rectId);
       if (!rect) return;
-      const rx = parseFloat(rect.getAttribute('x') || 0);
-      const ry = parseFloat(rect.getAttribute('y') || 0);
-      const rw = parseFloat(rect.getAttribute('width') || 0);
-      const rh = parseFloat(rect.getAttribute('height') || 0);
-      const { x, y } = applyRectTransform(rect, rx + rw / 2, ry + rh / 2 + 3);
-      const textEl = createTextEl(svgEl, rectId, x, y, 'middle', '35', 'rgb(191,191,191)', label);
-      rect.parentNode.insertBefore(textEl, rect.nextSibling);
+      const b = getRectSVGBounds(rect, svgEl);
+      if (!b) return;
+      const textEl = createTextEl(
+        svgEl, rectId,
+        b.x + b.w / 2, b.y + b.h / 2 + 3,
+        'middle', '35', 'rgb(191,191,191)', label
+      );
+      svgEl.appendChild(textEl);
     });
 
-    // Inject dynamic value text placeholders
+    // Inject dynamic value text placeholders into SVG root
     SENSOR_MAP.forEach((cfg) => {
       const rect = svgEl.getElementById(cfg.rectId);
       if (!rect) return;
-      const rx = parseFloat(rect.getAttribute('x') || 0);
-      const ry = parseFloat(rect.getAttribute('y') || 0);
-      const rw = parseFloat(rect.getAttribute('width') || 0);
-      const rh = parseFloat(rect.getAttribute('height') || 0);
-      const localX = cfg.align === 'left' ? rx : rx + rw / 2;
+      const b = getRectSVGBounds(rect, svgEl);
+      if (!b) return;
+      const x = cfg.align === 'left' ? b.x : b.x + b.w / 2;
       const anchor = cfg.align === 'left' ? 'start' : 'middle';
-      const { x, y } = applyRectTransform(rect, localX, ry + rh / 2 + cfg.offset);
-      const textEl = createTextEl(svgEl, cfg.rectId, x, y, anchor, cfg.fontSize, 'silver', '…');
-      rect.parentNode.insertBefore(textEl, rect.nextSibling);
+      const textEl = createTextEl(
+        svgEl, cfg.rectId,
+        x, b.y + b.h / 2 + cfg.offset,
+        anchor, cfg.fontSize, 'silver', '…'
+      );
+      svgEl.appendChild(textEl);
       textMapRef.current[cfg.rectId] = { textEl, cfg };
     });
   }, []);

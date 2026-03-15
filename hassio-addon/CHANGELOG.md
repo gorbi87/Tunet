@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.30
+
+### Fixed
+- Includes dashboard release `1.14.30`.
+- Hydraulik SVG: use rendered screen positions (getBoundingClientRect) for text placement — fixes missing values in Rücklauf, Vorlauf, Vorlauf BH boxes.
+
 ## 1.14.29
 
 ### Fixed

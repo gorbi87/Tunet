@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.30] — 2026-03-15
+
+### Fixed
+- Wärmepumpe Hydraulik SVG: use `getBoundingClientRect()` to position text in SVG root coordinates — handles all transform combinations (rect transforms, parent group transforms) correctly and fixes missing values for Rücklauf, Vorlauf, Vorlauf BH.
+
 ## [1.14.29] — 2026-03-15
 
 ### Fixed
