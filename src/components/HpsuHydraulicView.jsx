@@ -147,11 +147,12 @@ export function HpsuHydraulicView({ entities }) {
     svgEl.setAttribute('height', '100%');
     svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
-    // Hide unwanted rects (no entity mapped, not needed in display)
-    ['ta2_label', 'ta2_val', 'hot_gas_condenser_label', 'hot_gas_condenser_value',
-     'date_value', 'time_value'].forEach((id) => {
+    // Hide unwanted elements (no entity mapped, not needed in display)
+    // Use style.display so inline styles can't override the hide
+    ['DateTime', 'ta2_label', 'ta2_val',
+     'hot_gas_condenser_label', 'hot_gas_condenser_value'].forEach((id) => {
       const el = svgEl.getElementById(id);
-      if (el) { el.setAttribute('fill', 'none'); el.setAttribute('stroke', 'none'); }
+      if (el) el.style.display = 'none';
     });
 
     // Inject static label texts into SVG root using actual rendered positions

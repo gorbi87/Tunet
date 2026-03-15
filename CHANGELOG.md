@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.32] — 2026-03-15
+
+### Fixed
+- Wärmepumpe Hydraulik SVG: hide DateTime group via `display:none` — the group's y-translate puts it at the bottom-left; inline `style` attributes prevented the previous fill=none approach from working.
+
 ## [1.14.31] — 2026-03-15
 
 ### Fixed

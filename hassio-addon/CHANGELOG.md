@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.32
+
+### Fixed
+- Includes dashboard release `1.14.32`.
+- Hydraulik SVG: hides DateTime group at bottom-left using display:none.
+
 ## 1.14.31
 
 ### Fixed
