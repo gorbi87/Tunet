@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.25] — 2026-03-15
+
+### Changed
+- Wärmepumpe popup **Hydraulik tab**: replaced iframe with a native React SVG component. The `hpsu.svg` from `wrfz/daikin-rotex-hpsu-dashboard` is now bundled directly and rendered inline with live sensor values injected — no HA iframe, no network request, exact same positioning/color logic as the original Lit card.
+
 ## [1.14.24] — 2026-03-15
 
 ### Added

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.25
+
+### Changed
+- Includes dashboard release `1.14.25`.
+- Wärmepumpe Hydraulik tab: native inline SVG with live entity values, no iframe.
+
 ## 1.14.24
 
 ### Added

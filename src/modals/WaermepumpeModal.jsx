@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Flame, X, Thermometer, Zap } from '../icons';
 import { WAERMEPUMPE_ENTITY_IDS } from '../components/cards/GenericWaermepumpeCard';
+import { HpsuHydraulicView } from '../components/HpsuHydraulicView';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
-
-const HYDRAULIK_PATH = '/test-mobile/hpsu-embed';
 
 function SelectPills({ entityId, entity, onSelect }) {
   if (!entity) return null;
@@ -49,7 +48,6 @@ export default function WaermepumpeModal({
   customNames,
   cardId,
   callService,
-  activeUrl,
   t,
 }) {
   const translate = t || ((key) => key);
@@ -370,20 +368,7 @@ export default function WaermepumpeModal({
 
           {/* Tab: Hydraulik */}
           {mainTab === 'hydraulik' && (
-            <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'var(--glass-border)' }}>
-              {activeUrl ? (
-                <iframe
-                  src={`${activeUrl}${HYDRAULIK_PATH}`}
-                  title="Hydraulik"
-                  className="w-full"
-                  style={{ height: '65vh', border: 'none', display: 'block' }}
-                />
-              ) : (
-                <div className="flex h-48 items-center justify-center text-sm text-[var(--text-muted)]">
-                  HA URL nicht verfügbar
-                </div>
-              )}
-            </div>
+            <HpsuHydraulicView entities={entities} />
           )}
         </>
       )}
