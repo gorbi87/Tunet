@@ -60,6 +60,18 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   const kompressorColor = kompressorAktiv
     ? 'bg-[var(--status-success-fg)]'
     : 'bg-[var(--text-muted)]';
+
+  const isWW = betriebsart === 'Warmwasserbereitung';
+  const iconColor = !kompressorAktiv
+    ? 'var(--text-muted)'
+    : isWW
+    ? '#38bdf8'
+    : '#fb923c';
+  const iconBg = !kompressorAktiv
+    ? 'rgba(127,127,127,0.1)'
+    : isWW
+    ? 'rgba(56,189,248,0.15)'
+    : 'rgba(234,88,12,0.1)';
   const BETRIEBSART_SHORT = {
     'Warmwasserbereitung': 'DHW',
     'Heizen': 'Heizen',
@@ -90,7 +102,10 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
       >
         {controls}
         <div className="flex min-w-0 items-center gap-4">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[var(--glass-bg)] text-orange-400 transition-transform duration-500 group-hover:scale-110">
+          <div
+            className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:scale-110"
+            style={{ backgroundColor: iconBg, color: iconColor }}
+          >
             <Icon className="h-6 w-6 stroke-[1.5px]" />
           </div>
           <div className="flex min-w-0 flex-col">
@@ -132,8 +147,8 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
         {/* Top row: icon + kompressor status */}
         <div className="flex items-start justify-between">
           <div
-            className={`text-orange-400 transition-transform duration-500 group-hover:scale-110 ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
-            style={{ backgroundColor: 'rgba(234, 88, 12, 0.1)' }}
+            className={`transition-transform duration-500 group-hover:scale-110 ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
+            style={{ backgroundColor: iconBg, color: iconColor }}
           >
             <Icon
               className={isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'}

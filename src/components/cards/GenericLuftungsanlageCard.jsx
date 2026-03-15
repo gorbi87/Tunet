@@ -7,6 +7,8 @@ export const LUFTUNGSANLAGE_ENTITY_IDS = {
   automation: 'automation.blauberg_luftung_smartsteuerung_mit_push_luftqualitats_override',
   saison: 'input_select.luftung_saison',
   lastMode: 'input_text.ventilation_last_mode',
+  outsideTemp: 'sensor.wetterstation_temperatur',
+  insideTemp: 'sensor.durchschnittstemperatur_haus',
   aussenluft: 'sensor.luftung_aussenluft',
   zuluft: 'sensor.luftung_zuluft',
   abluft: 'sensor.luftung_abluft',
@@ -75,6 +77,10 @@ const GenericLuftungsanlageCard = memo(function GenericLuftungsanlageCard({
   };
   const statusLabel = luftstufe || (hvacState ? (STATE_LABELS[hvacState] ?? hvacState) : '—');
 
+  const isActive = hvacState !== 'off' && hvacState != null;
+  const iconColor = isActive ? '#4ade80' : 'var(--text-muted)';
+  const iconBg = isActive ? 'rgba(74,222,128,0.1)' : 'rgba(127,127,127,0.1)';
+
   const statusDotColor =
     hvacState === 'off'
       ? 'bg-[var(--text-muted)]'
@@ -99,7 +105,7 @@ const GenericLuftungsanlageCard = memo(function GenericLuftungsanlageCard({
         <div className="flex min-w-0 items-center gap-4">
           <div
             className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:scale-110"
-            style={{ backgroundColor: 'rgba(56, 189, 248, 0.1)', color: ACCENT }}
+            style={{ backgroundColor: iconBg, color: iconColor }}
           >
             <Icon className="h-6 w-6 stroke-[1.5px]" />
           </div>
@@ -143,7 +149,7 @@ const GenericLuftungsanlageCard = memo(function GenericLuftungsanlageCard({
         <div className="flex items-start justify-between">
           <div
             className={`transition-transform duration-500 group-hover:scale-110 ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
-            style={{ backgroundColor: 'rgba(56, 189, 248, 0.1)', color: ACCENT }}
+            style={{ backgroundColor: iconBg, color: iconColor }}
           >
             <Icon
               className={isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'}
