@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.20] — 2026-03-15
+
+### Added
+- New **Wärmepumpe card** for Daikin heat pump (Kompressor status, Warmwasser temperature, outdoor temperature, COP, daily electric consumption). Popup shows all temperatures (Vorlauf, Rücklauf, Außen, Warmwasser) and energy stats (Strom / Wärme / COP) with Heute / Monat tabs.
+
+## [1.14.19] — 2026-03-15
+
+### Changed
+- Hide Norwegian electricity subsidy toggle in the Nordpool popup when opened from an Octopus Energy card (not applicable outside Norway).
+
+## [1.14.18] — 2026-03-15
+
+### Fixed
+- Octopus Energy sensors are now clickable in the Add Card dialog (missing state wiring in App.jsx).
+
+## [1.14.17] — 2026-03-15
+
+### Added
+- New **Octopus Energy card** showing current electricity price, 15-minute SparkLine chart, and price-level indicator (low / normal / high / very high). Interactive price graph popup included.
+
+## [1.14.16] — 2026-03-14
+
+### Changed
+- Restored gorbi87 fork identity (slug, name, repository URL) and reverted experimental autoZoom SparkLine patches.
+
 ## [1.14.7] — 2026-03-10
 
 ### Added

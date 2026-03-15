@@ -9,6 +9,7 @@ export { default as GenericClimateCard } from './cards/GenericClimateCard';
 export { default as GenericEnergyCostCard } from './cards/GenericEnergyCostCard';
 export { default as GenericNordpoolCard } from './cards/GenericNordpoolCard';
 export { default as GenericOctopusCard } from './cards/GenericOctopusCard';
+export { default as GenericWaermepumpeCard } from './cards/GenericWaermepumpeCard';
 export { default as FanCard } from './cards/FanCard';
 export { default as LightCard } from './cards/LightCard';
 export { default as MissingEntityCard } from './cards/MissingEntityCard';

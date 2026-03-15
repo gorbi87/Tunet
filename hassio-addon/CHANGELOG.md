@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.14.20
+
+### Added
+- Includes dashboard release `1.14.20`.
+- New Wärmepumpe card for Daikin heat pump with kompressor status, warmwater temperature, outdoor temp, COP, and daily consumption. Popup shows all temperatures and energy stats (today / month).
+
+## 1.14.19
+
+### Changed
+- Includes dashboard release `1.14.19`.
+- Hides Norwegian electricity subsidy toggle in Octopus Energy card popup.
+
+## 1.14.18
+
+### Fixed
+- Includes dashboard release `1.14.18`.
+- Fixes Octopus Energy sensor selection in Add Card dialog.
+
+## 1.14.17
+
+### Added
+- Includes dashboard release `1.14.17`.
+- New Octopus Energy electricity price card with 15-min SparkLine and price-level indicator.
+
+## 1.14.16
+
+### Changed
+- Includes dashboard release `1.14.16`.
+- Restored gorbi87 fork identity and reverted experimental autoZoom patches.
+
 ## 1.14.7
 
 ### Changed

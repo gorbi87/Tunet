@@ -56,6 +56,7 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     setActiveMediaGroupKey,
     setActiveMediaGroupIds,
     setActiveMediaSessionSensorIds,
+    setShowWaermepumpeModal,
   } = modalActions;
 
   if (typeof cardId !== 'string' || !cardId.trim()) return false;
@@ -121,6 +122,11 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
 
   if (cardId.startsWith('nordpool_card_')) {
     closeAndOpen(() => setShowNordpoolModal(cardId));
+    return true;
+  }
+
+  if (cardId.startsWith('waermepumpe_card_')) {
+    closeAndOpen(() => setShowWaermepumpeModal && setShowWaermepumpeModal(cardId));
     return true;
   }
 

@@ -37,6 +37,7 @@ const RESIZABLE_PREFIXES = [
   'fan.',
   'fan_card_',
   'alarm_card_',
+  'waermepumpe_card_',
 ];
 
 /** Prefixes that cycle through 3 sizes (small → medium → large). */

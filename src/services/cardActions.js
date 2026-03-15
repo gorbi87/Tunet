@@ -249,6 +249,12 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
+    case 'waermepumpe': {
+      const waermepumpeCardId = `waermepumpe_card_${Date.now()}`;
+      commitSingleCard(waermepumpeCardId, {});
+      return;
+    }
+
     case 'car': {
       const cardId = `car_card_${Date.now()}`;
       commitSingleCard(cardId, { type: 'car', size: 'large' }, { openEdit: true });

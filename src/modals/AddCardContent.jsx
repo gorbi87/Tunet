@@ -8,6 +8,7 @@ import {
   CloudSun,
   Coins,
   Fan,
+  Flame,
   Gamepad2,
   Home,
   Lightbulb,
@@ -1121,6 +1122,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="waermepumpe"
+                  icon={Flame}
+                  label="Wärmepumpe"
+                  isActive={addCardType === 'waermepumpe'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="room"
                   icon={Home}
                   label={`${getLabel('addCard.type.room', 'Room')}${betaSuffix}`}
@@ -1167,6 +1175,12 @@ function AddCardContent({
               renderNordpoolSection()
             ) : addCardType === 'octopus' ? (
               renderOctopusSection()
+            ) : addCardType === 'waermepumpe' ? (
+              renderSimpleAddSection(
+                Flame,
+                'Wärmepumpe (Daikin) Karte hinzufügen',
+                'Wärmepumpe hinzufügen'
+              )
             ) : addCardType === 'room' ? (
               <RoomSection
                 conn={conn}
