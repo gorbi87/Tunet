@@ -60,9 +60,19 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   const kompressorColor = kompressorAktiv
     ? 'bg-[var(--status-success-fg)]'
     : 'bg-[var(--text-muted)]';
+  const BETRIEBSART_SHORT = {
+    'Warmwasserbereitung': 'DHW',
+    'Heizen': 'Heizen',
+    'Kühlen': 'Kühlen',
+    'Bereitschaft': 'Standby',
+    'Abtauen': 'Abtauen',
+  };
+  const betriebsartShort = betriebsart
+    ? (BETRIEBSART_SHORT[betriebsart] ?? betriebsart)
+    : null;
   // When active: show betriebsart text if available, else "Aktiv"
   const statusLabel = kompressorAktiv
-    ? (betriebsart || translate('waermepumpe.kompressor.on'))
+    ? (betriebsartShort || translate('waermepumpe.kompressor.on'))
     : translate('waermepumpe.kompressor.off');
 
   if (settings.size === 'small') {

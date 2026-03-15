@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.23
+
+### Changed
+- Includes dashboard release `1.14.23`.
+- Wärmepumpe card status badge abbreviates Betriebsart: "Warmwasserbereitung" → "DHW", "Bereitschaft" → "Standby".
+
 ## 1.14.22
 
 ### Changed
