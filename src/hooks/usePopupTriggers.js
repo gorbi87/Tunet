@@ -57,6 +57,7 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     setActiveMediaGroupIds,
     setActiveMediaSessionSensorIds,
     setShowWaermepumpeModal,
+    setShowLuftungsanlageModal,
   } = modalActions;
 
   if (typeof cardId !== 'string' || !cardId.trim()) return false;
@@ -127,6 +128,11 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
 
   if (cardId.startsWith('waermepumpe_card_')) {
     closeAndOpen(() => setShowWaermepumpeModal && setShowWaermepumpeModal(cardId));
+    return true;
+  }
+
+  if (cardId.startsWith('luftungsanlage_card_')) {
+    closeAndOpen(() => setShowLuftungsanlageModal && setShowLuftungsanlageModal(cardId));
     return true;
   }
 

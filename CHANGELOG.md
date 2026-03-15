@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.33] — 2026-03-15
+
+### Added
+- New "Lüftungsanlage" card type for Blauberg S21 ventilation unit: card shows supply air temperature and CO₂ with color coding, modal has WRG flow diagram SVG with heat recovery efficiency, fan/HVAC controls, and a two-column air quality tab (EG/OG).
+
 ## [1.14.32] — 2026-03-15
 
 ### Fixed

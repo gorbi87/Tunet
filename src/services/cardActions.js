@@ -255,6 +255,12 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
+    case 'luftungsanlage': {
+      const luftungsanlageCardId = `luftungsanlage_card_${Date.now()}`;
+      commitSingleCard(luftungsanlageCardId, {});
+      return;
+    }
+
     case 'car': {
       const cardId = `car_card_${Date.now()}`;
       commitSingleCard(cardId, { type: 'car', size: 'large' }, { openEdit: true });

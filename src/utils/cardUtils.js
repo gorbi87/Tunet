@@ -32,6 +32,7 @@ const REMOVABLE_PREFIXES = [
   'alarm_card_',
   'spacer_card_',
   'waermepumpe_card_',
+  'luftungsanlage_card_',
   'fan.',
 ];
 
@@ -54,6 +55,7 @@ const SPECIAL_CARD_PREFIXES = [
   'alarm_card_',
   'spacer_card_',
   'waermepumpe_card_',
+  'luftungsanlage_card_',
 ];
 
 /**

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.33
+
+### Added
+- Includes dashboard release `1.14.33`.
+- New Lüftungsanlage card type: WRG flow diagram, air quality tab (EG/OG), HVAC/fan controls.
+
 ## 1.14.32
 
 ### Fixed

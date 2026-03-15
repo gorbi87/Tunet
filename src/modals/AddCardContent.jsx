@@ -1129,6 +1129,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="luftungsanlage"
+                  icon={Fan}
+                  label={t('addCard.type.luftungsanlage') || 'Lüftung'}
+                  isActive={addCardType === 'luftungsanlage'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="room"
                   icon={Home}
                   label={`${getLabel('addCard.type.room', 'Room')}${betaSuffix}`}
@@ -1180,6 +1187,12 @@ function AddCardContent({
                 Flame,
                 'Wärmepumpe (Daikin) Karte hinzufügen',
                 'Wärmepumpe hinzufügen'
+              )
+            ) : addCardType === 'luftungsanlage' ? (
+              renderSimpleAddSection(
+                Fan,
+                t('addCard.luftungsanlageDescription') || 'Lüftungsanlage (Blauberg S21) Karte hinzufügen',
+                t('addCard.type.luftungsanlage') || 'Lüftung hinzufügen'
               )
             ) : addCardType === 'room' ? (
               <RoomSection
