@@ -19,31 +19,59 @@ function getBattSocColor(soc) {
 
 // ─── SVG Power Flow Diagram ────────────────────────────────────────────────
 
-function FlowLine({ x1, y1, x2, y2, color, active }) {
+// Animated dashed line — values="26;0" flows in drawing direction, "0;26" reverses
+function AnimatedLine({ x1, y1, x2, y2, color, active, reverse = false }) {
+  if (!active) {
+    return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth="1" strokeOpacity="0.12" />;
+  }
   return (
-    <line
-      x1={x1} y1={y1} x2={x2} y2={y2}
-      stroke={color}
-      strokeWidth={active ? '2' : '1'}
-      strokeOpacity={active ? '0.7' : '0.2'}
-      strokeDasharray={active ? '6 4' : 'none'}
-    />
+    <line x1={x1} y1={y1} x2={x2} y2={y2}
+      stroke={color} strokeWidth="2.5" strokeOpacity="0.75" strokeDasharray="8 5">
+      <animate attributeName="stroke-dashoffset" values={reverse ? '0;26' : '26;0'} dur="1.2s" repeatCount="indefinite" />
+    </line>
   );
 }
 
-function ArrowHead({ x, y, dir, color, active }) {
+// Arrowhead placed at 58% along the line so it's clearly mid-line, not touching boxes
+function MidArrow({ x1, y1, x2, y2, color, active }) {
   if (!active) return null;
+  const mx = x1 + (x2 - x1) * 0.58;
+  const my = y1 + (y2 - y1) * 0.58;
+  const dx = x2 - x1, dy = y2 - y1;
   const s = 7;
-  let points;
-  if (dir === 'down')  points = `${x},${y + s} ${x - s * 0.6},${y - s * 0.4} ${x + s * 0.6},${y - s * 0.4}`;
-  if (dir === 'up')    points = `${x},${y - s} ${x - s * 0.6},${y + s * 0.4} ${x + s * 0.6},${y + s * 0.4}`;
-  if (dir === 'right') points = `${x + s},${y} ${x - s * 0.4},${y - s * 0.6} ${x - s * 0.4},${y + s * 0.6}`;
-  if (dir === 'left')  points = `${x - s},${y} ${x + s * 0.4},${y - s * 0.6} ${x + s * 0.4},${y + s * 0.6}`;
-  return <polygon points={points} fill={color} opacity="0.85" />;
+  let pts;
+  if (Math.abs(dy) > Math.abs(dx)) {
+    pts = dy > 0
+      ? `${mx},${my + s} ${mx - s * 0.55},${my - s * 0.45} ${mx + s * 0.55},${my - s * 0.45}`
+      : `${mx},${my - s} ${mx - s * 0.55},${my + s * 0.45} ${mx + s * 0.55},${my + s * 0.45}`;
+  } else {
+    pts = dx > 0
+      ? `${mx + s},${my} ${mx - s * 0.45},${my - s * 0.55} ${mx - s * 0.45},${my + s * 0.55}`
+      : `${mx - s},${my} ${mx + s * 0.45},${my - s * 0.55} ${mx + s * 0.45},${my + s * 0.55}`;
+  }
+  return <polygon points={pts} fill={color} opacity="0.9" />;
+}
+
+// Battery icon with fill level (Sunsynk style)
+function BatteryIcon({ x, y, w, h, soc, color, charging }) {
+  const nibH = Math.round(h * 0.5);
+  const nibY = y + (h - nibH) / 2;
+  const fillW = soc != null ? Math.max(0, Math.min((w - 3) * soc / 100, w - 3)) : 0;
+  return (
+    <>
+      <rect x={x} y={y} width={w} height={h} rx="3" fill="none" stroke={color} strokeWidth="1.2" strokeOpacity="0.5" />
+      <rect x={x + w} y={nibY} width={4} height={nibH} rx="1" fill={color} opacity="0.45" />
+      {soc != null && (
+        <rect x={x + 1.5} y={y + 1.5} width={fillW} height={h - 3} rx="2" fill={color} opacity={charging ? 0.9 : 0.65} />
+      )}
+      {charging && (
+        <text x={x + w / 2} y={y + h / 2 + 4.5} textAnchor="middle" fontSize="9" fill="white" opacity="0.85">⚡</text>
+      )}
+    </>
+  );
 }
 
 function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridExportW, batterySoc, pvDaily }) {
-  // Derived states
   const solarActive = pvW != null && pvW > 10;
   const battCharge = batteryInW != null && batteryInW > 10;
   const battDischarge = !battCharge && batteryOutW != null && batteryOutW > 10;
@@ -54,68 +82,87 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
   const socColor = getBattSocColor(batterySoc);
   const fmt = (w) => w != null ? (w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`) : '—';
 
-  // Layout constants
-  // viewBox 340 × 210
-  const CX = 170; // center x
-  const SOLAR = { x: 120, y: 8, w: 100, h: 44, cx: 170, cy: 30 };
-  const BATT  = { x: 5,   y: 88, w: 82,  h: 50, cx: 46,  cy: 113 };
-  const INV   = { x: 130, y: 88, w: 80,  h: 50, cx: 170, cy: 113 };
-  const GRID  = { x: 253, y: 88, w: 82,  h: 50, cx: 294, cy: 113 };
-  const HOUSE = { x: 120, y: 162, w: 100, h: 44, cx: 170, cy: 184 };
+  // Layout — viewBox 340 × 222
+  const CX = 170;
+  const SOLAR = { x: 120, y: 8,   w: 100, h: 44, cx: 170, cy: 30  };
+  const BATT  = { x: 5,   y: 88,  w: 82,  h: 54, cx: 46,  cy: 115 };
+  const INV   = { x: 130, y: 88,  w: 80,  h: 54, cx: 170, cy: 115 };
+  const GRID  = { x: 253, y: 88,  w: 82,  h: 54, cx: 294, cy: 115 };
+  const HOUSE = { x: 120, y: 168, w: 100, h: 44, cx: 170, cy: 190 };
+
+  // Battery icon centered in BATT box
+  const battIconW = 56, battIconH = 18;
+  const battIconX = BATT.x + Math.round((BATT.w - battIconW) / 2);
+  const battIconY = BATT.y + 26;
 
   return (
-    <svg viewBox="0 0 340 210" className="w-full" style={{ fontFamily: 'inherit' }}>
-      {/* ── Connecting lines ── */}
-      {/* Solar → Inverter */}
-      <FlowLine x1={CX} y1={SOLAR.y + SOLAR.h} x2={CX} y2={INV.y} color={SOLAR_COLOR} active={solarActive} />
-      <ArrowHead x={CX} y={INV.y - 2} dir="down" color={SOLAR_COLOR} active={solarActive} />
+    <svg viewBox="0 0 340 222" className="w-full" style={{ fontFamily: 'inherit' }}>
+      {/* ── Connecting lines + mid-arrows ── */}
 
-      {/* Battery ↔ Inverter */}
-      <FlowLine x1={BATT.x + BATT.w} y1={INV.cy} x2={INV.x} y2={INV.cy} color={BATT_COLOR} active={battCharge || battDischarge} />
-      {battCharge   && <ArrowHead x={INV.x - 2}        y={INV.cy} dir="left"  color={BATT_COLOR} active />}
-      {battDischarge && <ArrowHead x={BATT.x + BATT.w + 2} y={INV.cy} dir="right" color={BATT_COLOR} active />}
+      {/* Solar → Inverter (down) */}
+      <AnimatedLine x1={CX} y1={SOLAR.y + SOLAR.h} x2={CX} y2={INV.y} color={SOLAR_COLOR} active={solarActive} />
+      <MidArrow x1={CX} y1={SOLAR.y + SOLAR.h} x2={CX} y2={INV.y} color={SOLAR_COLOR} active={solarActive} />
 
-      {/* Inverter ↔ Grid */}
-      <FlowLine x1={INV.x + INV.w} y1={INV.cy} x2={GRID.x} y2={INV.cy} color={GRID_COLOR} active={gridImport || gridExport} />
-      {gridExport && <ArrowHead x={GRID.x + 2}          y={INV.cy} dir="right" color={GRID_COLOR} active />}
-      {gridImport && <ArrowHead x={INV.x + INV.w - 2}   y={INV.cy} dir="left"  color={GRID_COLOR} active />}
+      {/* Battery ↔ Inverter: line drawn left→right; charge = reverse */}
+      <AnimatedLine
+        x1={BATT.x + BATT.w} y1={INV.cy} x2={INV.x} y2={INV.cy}
+        color={BATT_COLOR} active={battCharge || battDischarge} reverse={battCharge}
+      />
+      <MidArrow
+        x1={battCharge ? INV.x : BATT.x + BATT.w} y1={INV.cy}
+        x2={battCharge ? BATT.x + BATT.w : INV.x} y2={INV.cy}
+        color={BATT_COLOR} active={battCharge || battDischarge}
+      />
 
-      {/* Inverter → House */}
-      <FlowLine x1={CX} y1={INV.y + INV.h} x2={CX} y2={HOUSE.y} color={HOUSE_COLOR} active={houseActive} />
-      <ArrowHead x={CX} y={HOUSE.y - 2} dir="down" color={HOUSE_COLOR} active={houseActive} />
+      {/* Inverter ↔ Grid: line drawn left→right; import = reverse */}
+      <AnimatedLine
+        x1={INV.x + INV.w} y1={INV.cy} x2={GRID.x} y2={INV.cy}
+        color={GRID_COLOR} active={gridImport || gridExport} reverse={gridImport}
+      />
+      <MidArrow
+        x1={gridExport ? INV.x + INV.w : GRID.x} y1={INV.cy}
+        x2={gridExport ? GRID.x : INV.x + INV.w} y2={INV.cy}
+        color={GRID_COLOR} active={gridImport || gridExport}
+      />
+
+      {/* Inverter → House (down) */}
+      <AnimatedLine x1={CX} y1={INV.y + INV.h} x2={CX} y2={HOUSE.y} color={HOUSE_COLOR} active={houseActive} />
+      <MidArrow x1={CX} y1={INV.y + INV.h} x2={CX} y2={HOUSE.y} color={HOUSE_COLOR} active={houseActive} />
 
       {/* ── Solar box ── */}
       <rect x={SOLAR.x} y={SOLAR.y} width={SOLAR.w} height={SOLAR.h} rx="8" fill="rgba(251,146,60,0.08)" stroke={SOLAR_COLOR} strokeWidth="1" strokeOpacity="0.5" />
       <text x={SOLAR.cx} y={SOLAR.y + 14} textAnchor="middle" fontSize="7" fontWeight="bold" fill={SOLAR_COLOR} letterSpacing="0.08em" opacity="0.7">SOLAR</text>
       <text x={SOLAR.cx} y={SOLAR.y + 30} textAnchor="middle" fontSize="14" fontWeight="300" fill={SOLAR_COLOR}>{fmt(pvW)}</text>
       {pvDaily != null && (
-        <text x={SOLAR.cx} y={SOLAR.y + 41} textAnchor="middle" fontSize="7" fill={SOLAR_COLOR} opacity="0.5">{pvDaily.toFixed(1)} kWh</text>
+        <text x={SOLAR.cx} y={SOLAR.y + 42} textAnchor="middle" fontSize="7" fill={SOLAR_COLOR} opacity="0.5">{pvDaily.toFixed(1)} kWh heute</text>
       )}
 
-      {/* ── Inverter box (center) ── */}
+      {/* ── Inverter box ── */}
       <rect x={INV.x} y={INV.y} width={INV.w} height={INV.h} rx="8" fill="var(--glass-bg)" stroke="var(--glass-border)" strokeWidth="1" />
-      <text x={INV.cx} y={INV.y + 16} textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--text-secondary)" letterSpacing="0.08em" opacity="0.6">INV</text>
-      <text x={INV.cx} y={INV.y + 30} textAnchor="middle" fontSize="8" fill="var(--text-secondary)" opacity="0.5">SolarEdge</text>
-      <text x={INV.cx} y={INV.y + 41} textAnchor="middle" fontSize="7" fill="var(--text-muted)" opacity="0.4">SE5K</text>
+      <text x={INV.cx} y={INV.y + 16} textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--text-secondary)" letterSpacing="0.08em" opacity="0.6">INVERTER</text>
+      <text x={INV.cx} y={INV.y + 31} textAnchor="middle" fontSize="8" fill="var(--text-secondary)" opacity="0.5">SolarEdge</text>
+      <text x={INV.cx} y={INV.y + 44} textAnchor="middle" fontSize="7" fill="var(--text-muted)" opacity="0.4">SE5K</text>
 
       {/* ── Battery box ── */}
       <rect x={BATT.x} y={BATT.y} width={BATT.w} height={BATT.h} rx="8" fill="rgba(240,98,146,0.08)" stroke={BATT_COLOR} strokeWidth="1" strokeOpacity="0.4" />
       <text x={BATT.cx} y={BATT.y + 14} textAnchor="middle" fontSize="7" fontWeight="bold" fill={BATT_COLOR} letterSpacing="0.08em" opacity="0.7">BATT</text>
-      <text x={BATT.cx} y={BATT.y + 30} textAnchor="middle" fontSize="14" fontWeight="300" fill={socColor}>
-        {batterySoc != null ? `${batterySoc.toFixed(0)}%` : '—'}
-      </text>
-      <text x={BATT.cx} y={BATT.y + 43} textAnchor="middle" fontSize="7" fill={BATT_COLOR} opacity="0.5">
-        {battCharge ? `+${fmt(batteryInW)}` : battDischarge ? `-${fmt(batteryOutW)}` : 'Standby'}
+      <BatteryIcon
+        x={battIconX} y={battIconY} w={battIconW} h={battIconH}
+        soc={batterySoc} color={socColor} charging={battCharge}
+      />
+      <text x={BATT.cx} y={BATT.y + BATT.h - 7} textAnchor="middle" fontSize="8" fill={socColor}>
+        {batterySoc != null ? `${batterySoc.toFixed(0)} %` : '—'}
+        {battCharge ? '  ↑' : battDischarge ? '  ↓' : ''}
       </text>
 
       {/* ── Grid box ── */}
       <rect x={GRID.x} y={GRID.y} width={GRID.w} height={GRID.h} rx="8" fill="rgba(100,181,246,0.08)" stroke={GRID_COLOR} strokeWidth="1" strokeOpacity="0.4" />
       <text x={GRID.cx} y={GRID.y + 14} textAnchor="middle" fontSize="7" fontWeight="bold" fill={GRID_COLOR} letterSpacing="0.08em" opacity="0.7">NETZ</text>
-      <text x={GRID.cx} y={GRID.y + 30} textAnchor="middle" fontSize="13" fontWeight="300"
+      <text x={GRID.cx} y={GRID.y + 32} textAnchor="middle" fontSize="13" fontWeight="300"
         fill={gridExport ? '#4ade80' : gridImport ? '#f87171' : 'var(--text-secondary)'}>
         {gridExport ? `+${fmt(gridExportW)}` : gridImport ? `-${fmt(gridImportW)}` : '0 W'}
       </text>
-      <text x={GRID.cx} y={GRID.y + 43} textAnchor="middle" fontSize="7" fill={GRID_COLOR} opacity="0.5">
+      <text x={GRID.cx} y={GRID.y + 46} textAnchor="middle" fontSize="7" fill={GRID_COLOR} opacity="0.5">
         {gridExport ? 'Einspeisung' : gridImport ? 'Bezug' : 'Ausgeglichen'}
       </text>
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.41
+
+### Changed
+- Includes dashboard release `1.14.41`.
+- PV modal: animated power flow lines, mid-line arrows, visual battery fill indicator.
+
 ## 1.14.40
 
 ### Added

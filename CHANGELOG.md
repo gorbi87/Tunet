@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.41] — 2026-03-16
+
+### Changed
+- PV modal power flow diagram: animated flowing dash lines with mid-line directional arrows (no more overlap with inverter box), battery box now shows visual fill-level indicator (Sunsynk style) with charge lightning bolt, SOC color and percentage.
+
 ## [1.14.40] — 2026-03-16
 
 ### Added
