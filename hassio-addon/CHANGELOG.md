@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.40
+
+### Added
+- Includes dashboard release `1.14.40`.
+- PV solar card now selectable in the "Verfügbare Karten" picker when adding cards in edit mode.
+
 ## 1.14.33
 
 ### Added

@@ -58,6 +58,7 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     setActiveMediaSessionSensorIds,
     setShowWaermepumpeModal,
     setShowLuftungsanlageModal,
+    setShowPvModal,
   } = modalActions;
 
   if (typeof cardId !== 'string' || !cardId.trim()) return false;
@@ -133,6 +134,11 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
 
   if (cardId.startsWith('luftungsanlage_card_')) {
     closeAndOpen(() => setShowLuftungsanlageModal && setShowLuftungsanlageModal(cardId));
+    return true;
+  }
+
+  if (cardId.startsWith('pv_card_')) {
+    closeAndOpen(() => setShowPvModal && setShowPvModal(cardId));
     return true;
   }
 

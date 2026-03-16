@@ -261,6 +261,12 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
+    case 'pv': {
+      const pvCardId = `pv_card_${Date.now()}`;
+      commitSingleCard(pvCardId, {});
+      return;
+    }
+
     case 'car': {
       const cardId = `car_card_${Date.now()}`;
       commitSingleCard(cardId, { type: 'car', size: 'large' }, { openEdit: true });

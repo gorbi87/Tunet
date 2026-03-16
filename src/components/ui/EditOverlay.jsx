@@ -39,6 +39,7 @@ const RESIZABLE_PREFIXES = [
   'alarm_card_',
   'waermepumpe_card_',
   'luftungsanlage_card_',
+  'pv_card_',
 ];
 
 /** Prefixes that cycle through 3 sizes (small → medium → large). */

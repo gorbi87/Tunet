@@ -1136,6 +1136,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="pv"
+                  icon={CloudSun}
+                  label="Solar / PV"
+                  isActive={addCardType === 'pv'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="room"
                   icon={Home}
                   label={`${getLabel('addCard.type.room', 'Room')}${betaSuffix}`}
@@ -1194,6 +1201,8 @@ function AddCardContent({
                 t('addCard.luftungsanlageDescription') || 'Lüftungsanlage (Blauberg S21) Karte hinzufügen',
                 t('addCard.type.luftungsanlage') || 'Lüftung hinzufügen'
               )
+            ) : addCardType === 'pv' ? (
+              renderSimpleAddSection(CloudSun, 'Solar / PV Karte hinzufügen', 'Solar / PV hinzufügen')
             ) : addCardType === 'room' ? (
               <RoomSection
                 conn={conn}
