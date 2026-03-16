@@ -26,6 +26,7 @@ const MODAL_DEFAULTS = {
   showAlarmActionModal: null,
   showWaermepumpeModal: null,
   showLuftungsanlageModal: null,
+  showPvModal: null,
   activeMediaModal: null,
   activeMediaGroupKey: null,
   activeMediaGroupIds: null,
@@ -66,6 +67,7 @@ const OPEN_CHECK_KEYS = [
   'showAlarmActionModal',
   'showWaermepumpeModal',
   'showLuftungsanlageModal',
+  'showPvModal',
 ];
 
 /** @param {ModalState} state @param {{ type: 'SET', key: keyof ModalState, value: ModalState[keyof ModalState] } | { type: 'CLOSE_ALL' }} action */
@@ -126,6 +128,7 @@ export function useModals() {
       setShowAlarmActionModal: setters.setShowAlarmActionModal,
       setShowWaermepumpeModal: setters.setShowWaermepumpeModal,
       setShowLuftungsanlageModal: setters.setShowLuftungsanlageModal,
+      setShowPvModal: setters.setShowPvModal,
     }),
     [setters]
   );

@@ -21,3 +21,4 @@ export { renderCameraCard } from './cameraRenderer';
 export { renderSpacerCard } from './spacerRenderer';
 export { renderWaermepumpeCard } from './waermepumpeRenderer';
 export { renderLuftungsanlageCard } from './luftungsanlageRenderer';
+export { renderPvCard } from './pvRenderer';

@@ -63,6 +63,7 @@ export function useCardRendering({
   setShowCameraModal: legacySetShowCameraModal,
   setShowWaermepumpeModal: legacySetShowWaermepumpeModal,
   setShowLuftungsanlageModal: legacySetShowLuftungsanlageModal,
+  setShowPvModal: legacySetShowPvModal,
   setActiveMediaId: legacySetActiveMediaId,
   setActiveMediaGroupKey: legacySetActiveMediaGroupKey,
   setActiveMediaGroupIds: legacySetActiveMediaGroupIds,
@@ -90,6 +91,7 @@ export function useCardRendering({
     setShowCameraModal: legacySetShowCameraModal,
     setShowWaermepumpeModal: legacySetShowWaermepumpeModal,
     setShowLuftungsanlageModal: legacySetShowLuftungsanlageModal,
+    setShowPvModal: legacySetShowPvModal,
   };
   const resolvedMediaModalActions = mediaModalActions || {
     setActiveMediaId: legacySetActiveMediaId,
@@ -116,6 +118,7 @@ export function useCardRendering({
     setShowCameraModal,
     setShowWaermepumpeModal,
     setShowLuftungsanlageModal,
+    setShowPvModal,
   } = resolvedEntityModalActions;
   const { setActiveMediaId, setActiveMediaGroupKey, setActiveMediaGroupIds, setActiveMediaModal } =
     resolvedMediaModalActions;
@@ -363,6 +366,7 @@ export function useCardRendering({
         setShowCameraModal,
         setShowWaermepumpeModal,
         setShowLuftungsanlageModal,
+        setShowPvModal,
         setActivePage,
         openMediaModal: (mpId, groupKey, groupIds) => {
           setActiveMediaId(mpId);
@@ -449,6 +453,7 @@ export function useCardRendering({
       setShowCameraModal,
       setShowWaermepumpeModal,
       setShowLuftungsanlageModal,
+      setShowPvModal,
       setActiveMediaId,
       setActiveMediaGroupKey,
       setActiveMediaGroupIds,

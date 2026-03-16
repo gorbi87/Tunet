@@ -23,6 +23,7 @@ const RoomModal = lazy(() => import('../../modals/RoomModal'));
 const VacuumModal = lazy(() => import('../../modals/VacuumModal'));
 const WaermepumpeModal = lazy(() => import('../../modals/WaermepumpeModal'));
 const LuftungsanlageModal = lazy(() => import('../../modals/LuftungsanlageModal'));
+const PvModal = lazy(() => import('../../modals/PvModal'));
 
 export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, resolveCarSettings }) {
   const { entities, conn, activeUrl, authRef, config, t, language } = core;
@@ -69,6 +70,8 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     setShowWaermepumpeModal,
     showLuftungsanlageModal,
     setShowLuftungsanlageModal,
+    showPvModal,
+    setShowPvModal,
   } = modals;
   const { cardSettings, saveCardSetting, customNames, customIcons, getCardSettingsKey } =
     cardConfig;
@@ -480,6 +483,24 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
             customNames={customNames}
             cardId={showLuftungsanlageModal}
             callService={callService}
+            conn={conn}
+            haUrl={activeUrl}
+            haToken={
+              config.authMethod === 'oauth' ? authRef?.current?.accessToken || '' : config.token
+            }
+            t={t}
+          />
+        </ModalSuspense>
+      )}
+
+      {showPvModal && (
+        <ModalSuspense>
+          <PvModal
+            show={true}
+            onClose={() => setShowPvModal(null)}
+            entities={entities}
+            customNames={customNames}
+            cardId={showPvModal}
             conn={conn}
             haUrl={activeUrl}
             haToken={
