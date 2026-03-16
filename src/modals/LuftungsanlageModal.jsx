@@ -2,10 +2,80 @@ import { useState, useEffect } from 'react';
 import { Fan, X } from '../icons';
 import { LUFTUNGSANLAGE_ENTITY_IDS } from '../components/cards/GenericLuftungsanlageCard';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
-import SensorHistoryGraph from '../components/charts/SensorHistoryGraph';
 import { getHistoryRest, getHistory } from '../services/haClient';
 
 const ACCENT = '#38bdf8';
+
+function getThresholdColor(value, thresholds) {
+  for (const t of thresholds) {
+    if (t.max == null || value < t.max) return t.color;
+  }
+  return thresholds[thresholds.length - 1].color;
+}
+
+function ColoredHistoryGraph({ data, height = 120, thresholds, noDataLabel = 'Keine Verlaufsdaten' }) {
+  if (!Array.isArray(data) || data.length < 2) {
+    return (
+      <div className="flex items-center justify-center text-xs" style={{ height, color: 'var(--text-muted)' }}>
+        {noDataLabel}
+      </div>
+    );
+  }
+  const pad = { top: 16, right: 16, bottom: 24, left: 38 };
+  const vbW = 600;
+  const gW = vbW - pad.left - pad.right;
+  const gH = height - pad.top - pad.bottom;
+  const values = data.map((d) => d.value);
+  let min = Math.min(...values);
+  let max = Math.max(...values);
+  if (min === max) { min -= 1; max += 1; }
+  const toX = (i) => pad.left + (i / (data.length - 1)) * gW;
+  const toY = (v) => pad.top + gH - ((v - min) / (max - min)) * gH;
+  const yLabels = [
+    { value: max, y: pad.top },
+    { value: (max + min) / 2, y: pad.top + gH / 2 },
+    { value: min, y: pad.top + gH },
+  ];
+  const xIdx = [0, Math.floor((data.length - 1) / 2), data.length - 1];
+  const xLabels = xIdx.map((i, k) => ({
+    x: toX(i),
+    label: new Date(data[i].time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    anchor: k === 0 ? 'start' : k === 2 ? 'end' : 'middle',
+  }));
+  return (
+    <div className="relative w-full select-none">
+      <svg viewBox={`0 0 ${vbW} ${height}`} className="h-full w-full overflow-visible" preserveAspectRatio="none">
+        {yLabels.map((l, i) => (
+          <line key={i} x1={pad.left} y1={l.y} x2={vbW - pad.right} y2={l.y}
+            stroke="currentColor" strokeOpacity="0.06" strokeDasharray="4 4" />
+        ))}
+        {data.slice(0, -1).map((d, i) => {
+          const mid = (d.value + data[i + 1].value) / 2;
+          return (
+            <line key={i}
+              x1={toX(i)} y1={toY(d.value)}
+              x2={toX(i + 1)} y2={toY(data[i + 1].value)}
+              stroke={getThresholdColor(mid, thresholds)}
+              strokeWidth="2.5" strokeLinecap="round" opacity="0.9"
+            />
+          );
+        })}
+        {yLabels.map((l, i) => (
+          <text key={i} x={pad.left - 6} y={l.y} textAnchor="end" dominantBaseline="middle"
+            style={{ fill: 'var(--text-secondary)', fontSize: '10px', opacity: 0.55, fontFamily: 'monospace' }}>
+            {l.value.toFixed(0)}
+          </text>
+        ))}
+        {xLabels.map((l, i) => (
+          <text key={i} x={l.x} y={height - 4} textAnchor={l.anchor}
+            style={{ fill: 'var(--text-secondary)', fontSize: '10px', opacity: 0.55, fontFamily: 'monospace' }}>
+            {l.label}
+          </text>
+        ))}
+      </svg>
+    </div>
+  );
+}
 
 function SelectPills({ options, current, onSelect }) {
   return (
@@ -496,26 +566,27 @@ export default function LuftungsanlageModal({
                   {translate('luftungsanlage.steuerung') || 'Steuerung'}
                 </p>
 
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
-                    {translate('luftungsanlage.hvacMode') || 'Betriebsmodus'}
-                  </p>
-                  <SelectPills
-                    options={hvacOptions}
-                    current={hvacState}
-                    onSelect={setHvacMode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
-                    {translate('luftungsanlage.fanMode') || 'Lüftungsstufe'}
-                  </p>
-                  <SelectPills
-                    options={fanOptions}
-                    current={fanMode}
-                    onSelect={setFanMode}
-                  />
+                <div className="flex flex-wrap gap-6">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                      {translate('luftungsanlage.hvacMode') || 'Betriebsmodus'}
+                    </p>
+                    <SelectPills
+                      options={hvacOptions}
+                      current={hvacState}
+                      onSelect={setHvacMode}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                      {translate('luftungsanlage.fanMode') || 'Lüftungsstufe'}
+                    </p>
+                    <SelectPills
+                      options={fanOptions}
+                      current={fanMode}
+                      onSelect={setFanMode}
+                    />
+                  </div>
                 </div>
               </div>
             </>
@@ -688,14 +759,17 @@ export default function LuftungsanlageModal({
                   </p>
                   {historyLoading ? (
                     <div className="flex h-[120px] items-center justify-center">
-                      <div className="h-6 w-6 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: getCo2Color(co2Eg) }} />
+                      <div className="h-6 w-6 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: ACCENT }} />
                     </div>
                   ) : (
-                    <SensorHistoryGraph
+                    <ColoredHistoryGraph
                       data={co2History}
                       height={120}
-                      color={getCo2Color(co2Eg)}
-                      noDataLabel="Keine Verlaufsdaten"
+                      thresholds={[
+                        { max: 800, color: '#4ade80' },
+                        { max: 1000, color: '#fb923c' },
+                        { color: '#f87171' },
+                      ]}
                     />
                   )}
                 </div>
@@ -735,14 +809,17 @@ export default function LuftungsanlageModal({
                   </p>
                   {historyLoading ? (
                     <div className="flex h-[120px] items-center justify-center">
-                      <div className="h-6 w-6 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: vocOg != null && vocOg > 200 ? '#fb923c' : 'var(--text-muted)' }} />
+                      <div className="h-6 w-6 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: ACCENT }} />
                     </div>
                   ) : (
-                    <SensorHistoryGraph
+                    <ColoredHistoryGraph
                       data={vocHistory}
                       height={120}
-                      color={vocOg != null && vocOg > 200 ? '#fb923c' : '#81c784'}
-                      noDataLabel="Keine Verlaufsdaten"
+                      thresholds={[
+                        { max: 300, color: '#4ade80' },
+                        { max: 400, color: '#fb923c' },
+                        { color: '#f87171' },
+                      ]}
                     />
                   )}
                 </div>
