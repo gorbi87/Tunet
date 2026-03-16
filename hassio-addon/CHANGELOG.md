@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.42
+
+### Fixed / Added
+- Includes dashboard release `1.14.42`.
+- PV modal: SOC% inside battery icon (not above it), time-to-full/empty from solaredge_b1_maximum_energy.
+
 ## 1.14.41
 
 ### Changed

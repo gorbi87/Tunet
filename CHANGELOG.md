@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.42] — 2026-03-16
+
+### Fixed
+- PV modal battery box: SOC% now shown inside the battery fill graphic (not above it), matching Sunsynk style.
+
+### Added
+- PV modal: time-to-full / time-to-empty displayed below battery icon, calculated from `sensor.solaredge_b1_maximum_energy` (4 kWh) and current charge/discharge power.
+
 ## [1.14.41] — 2026-03-16
 
 ### Changed

@@ -28,6 +28,7 @@ export const PV_ENTITY_IDS = {
   forecastPeakToday: 'sensor.solcast_pv_forecast_prognose_spitzenleistung_heute',
   forecastRemaining: 'sensor.solcast_pv_forecast_prognose_verbleibende_leistung_heute',
   pvToHouseDaily: 'sensor.solar_panel_to_house_daily',
+  batteryMaxEnergy: 'sensor.solaredge_b1_maximum_energy',
 };
 
 function getBattSocColor(soc) {

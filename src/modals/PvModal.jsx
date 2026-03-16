@@ -52,11 +52,17 @@ function MidArrow({ x1, y1, x2, y2, color, active }) {
   return <polygon points={pts} fill={color} opacity="0.9" />;
 }
 
-// Battery icon with fill level (Sunsynk style)
+// Battery icon with fill level + SOC% and optional charge indicator inside
 function BatteryIcon({ x, y, w, h, soc, color, charging }) {
   const nibH = Math.round(h * 0.5);
   const nibY = y + (h - nibH) / 2;
-  const fillW = soc != null ? Math.max(0, Math.min((w - 3) * soc / 100, w - 3)) : 0;
+  const innerW = w - 3;
+  const fillW = soc != null ? Math.max(0, Math.min(innerW * soc / 100, innerW)) : 0;
+  // Use white text when battery is more than 1/3 full (fill covers center), else use color
+  const textFill = fillW > innerW / 3 ? 'white' : color;
+  const label = soc != null
+    ? `${soc.toFixed(0)}%${charging ? ' ⚡' : ''}`
+    : '—';
   return (
     <>
       <rect x={x} y={y} width={w} height={h} rx="3" fill="none" stroke={color} strokeWidth="1.2" strokeOpacity="0.5" />
@@ -64,14 +70,28 @@ function BatteryIcon({ x, y, w, h, soc, color, charging }) {
       {soc != null && (
         <rect x={x + 1.5} y={y + 1.5} width={fillW} height={h - 3} rx="2" fill={color} opacity={charging ? 0.9 : 0.65} />
       )}
-      {charging && (
-        <text x={x + w / 2} y={y + h / 2 + 4.5} textAnchor="middle" fontSize="9" fill="white" opacity="0.85">⚡</text>
-      )}
+      <text x={x + w / 2} y={y + h / 2 + 4} textAnchor="middle" fontSize="10" fontWeight="bold" fill={textFill} opacity="0.95">
+        {label}
+      </text>
     </>
   );
 }
 
-function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridExportW, batterySoc, pvDaily }) {
+// Returns "voll in Xh Ym" or "leer in Xh Ym" or null
+function fmtBattTime(soc, maxKwh, powerW, charging) {
+  if (soc == null || maxKwh == null || maxKwh <= 0 || !powerW || powerW < 10) return null;
+  const powerKw = powerW / 1000;
+  const hrs = charging
+    ? (maxKwh * (1 - soc / 100)) / powerKw
+    : (maxKwh * soc / 100) / powerKw;
+  if (hrs <= 0 || hrs > 48) return null;
+  const h = Math.floor(hrs);
+  const m = Math.round((hrs - h) * 60);
+  const time = h > 0 ? `${h}h${m > 0 ? ` ${m}m` : ''}` : `${m}min`;
+  return `${charging ? 'voll' : 'leer'} in ${time}`;
+}
+
+function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridExportW, batterySoc, batteryMaxEnergy, pvDaily }) {
   const solarActive = pvW != null && pvW > 10;
   const battCharge = batteryInW != null && batteryInW > 10;
   const battDischarge = !battCharge && batteryOutW != null && batteryOutW > 10;
@@ -82,21 +102,29 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
   const socColor = getBattSocColor(batterySoc);
   const fmt = (w) => w != null ? (w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`) : '—';
 
-  // Layout — viewBox 340 × 222
+  // Time to full / empty
+  const battTimeStr = battCharge
+    ? fmtBattTime(batterySoc, batteryMaxEnergy, batteryInW, true)
+    : battDischarge
+      ? fmtBattTime(batterySoc, batteryMaxEnergy, batteryOutW, false)
+      : null;
+
+  // Layout — viewBox 340 × 226
+  // Middle row boxes h=58 so battery icon + time line fits cleanly
   const CX = 170;
   const SOLAR = { x: 120, y: 8,   w: 100, h: 44, cx: 170, cy: 30  };
-  const BATT  = { x: 5,   y: 88,  w: 82,  h: 54, cx: 46,  cy: 115 };
-  const INV   = { x: 130, y: 88,  w: 80,  h: 54, cx: 170, cy: 115 };
-  const GRID  = { x: 253, y: 88,  w: 82,  h: 54, cx: 294, cy: 115 };
-  const HOUSE = { x: 120, y: 168, w: 100, h: 44, cx: 170, cy: 190 };
+  const BATT  = { x: 5,   y: 88,  w: 82,  h: 58, cx: 46,  cy: 117 };
+  const INV   = { x: 130, y: 88,  w: 80,  h: 58, cx: 170, cy: 117 };
+  const GRID  = { x: 253, y: 88,  w: 82,  h: 58, cx: 294, cy: 117 };
+  const HOUSE = { x: 120, y: 172, w: 100, h: 44, cx: 170, cy: 194 };
 
-  // Battery icon centered in BATT box
-  const battIconW = 56, battIconH = 18;
+  // Battery icon: tall enough to fit SOC% inside, centered in upper part of BATT box
+  const battIconW = 60, battIconH = 26;
   const battIconX = BATT.x + Math.round((BATT.w - battIconW) / 2);
-  const battIconY = BATT.y + 26;
+  const battIconY = BATT.y + 14;
 
   return (
-    <svg viewBox="0 0 340 222" className="w-full" style={{ fontFamily: 'inherit' }}>
+    <svg viewBox="0 0 340 226" className="w-full" style={{ fontFamily: 'inherit' }}>
       {/* ── Connecting lines + mid-arrows ── */}
 
       {/* Solar → Inverter (down) */}
@@ -145,15 +173,16 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
 
       {/* ── Battery box ── */}
       <rect x={BATT.x} y={BATT.y} width={BATT.w} height={BATT.h} rx="8" fill="rgba(240,98,146,0.08)" stroke={BATT_COLOR} strokeWidth="1" strokeOpacity="0.4" />
-      <text x={BATT.cx} y={BATT.y + 14} textAnchor="middle" fontSize="7" fontWeight="bold" fill={BATT_COLOR} letterSpacing="0.08em" opacity="0.7">BATT</text>
+      <text x={BATT.cx} y={BATT.y + 12} textAnchor="middle" fontSize="7" fontWeight="bold" fill={BATT_COLOR} letterSpacing="0.08em" opacity="0.7">BATT</text>
       <BatteryIcon
         x={battIconX} y={battIconY} w={battIconW} h={battIconH}
         soc={batterySoc} color={socColor} charging={battCharge}
       />
-      <text x={BATT.cx} y={BATT.y + BATT.h - 7} textAnchor="middle" fontSize="8" fill={socColor}>
-        {batterySoc != null ? `${batterySoc.toFixed(0)} %` : '—'}
-        {battCharge ? '  ↑' : battDischarge ? '  ↓' : ''}
-      </text>
+      {battTimeStr && (
+        <text x={BATT.cx} y={BATT.y + BATT.h - 6} textAnchor="middle" fontSize="7" fill={socColor} opacity="0.8">
+          {battTimeStr}
+        </text>
+      )}
 
       {/* ── Grid box ── */}
       <rect x={GRID.x} y={GRID.y} width={GRID.w} height={GRID.h} rx="8" fill="rgba(100,181,246,0.08)" stroke={GRID_COLOR} strokeWidth="1" strokeOpacity="0.4" />
@@ -435,6 +464,7 @@ export default function PvModal({
   const gridImportDaily = v(PV_ENTITY_IDS.gridImportDaily);
   const gridExportDaily = v(PV_ENTITY_IDS.gridExportDaily);
   const pvToHouseDaily = v(PV_ENTITY_IDS.pvToHouseDaily);
+  const batteryMaxEnergy = v(PV_ENTITY_IDS.batteryMaxEnergy);
   const forecastRemaining = v(PV_ENTITY_IDS.forecastRemaining);
   const forecastPeakToday = v(PV_ENTITY_IDS.forecastPeakToday);
 
@@ -537,6 +567,7 @@ export default function PvModal({
                     gridImportW={gridImportW}
                     gridExportW={gridExportW}
                     batterySoc={batterySoc}
+                    batteryMaxEnergy={batteryMaxEnergy}
                     pvDaily={pvDaily}
                   />
                 </div>
