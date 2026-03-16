@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Fan, X } from '../icons';
+import { Fan, Thermometer, X } from '../icons';
 import { LUFTUNGSANLAGE_ENTITY_IDS } from '../components/cards/GenericLuftungsanlageCard';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 import { getHistoryRest, getHistory } from '../services/haClient';
@@ -230,8 +230,20 @@ export default function LuftungsanlageModal({
     });
   };
 
+  const setTemperature = (temp) => {
+    callService?.('climate', 'set_temperature', {
+      entity_id: LUFTUNGSANLAGE_ENTITY_IDS.climate,
+      temperature: temp,
+    });
+  };
+
   const hvacState = str(LUFTUNGSANLAGE_ENTITY_IDS.climate);
   const fanMode = e(LUFTUNGSANLAGE_ENTITY_IDS.climate)?.attributes?.fan_mode || null;
+  const targetTemp = e(LUFTUNGSANLAGE_ENTITY_IDS.climate)?.attributes?.temperature ?? null;
+  const currentTemp = e(LUFTUNGSANLAGE_ENTITY_IDS.climate)?.attributes?.current_temperature ?? null;
+  const minTemp = e(LUFTUNGSANLAGE_ENTITY_IDS.climate)?.attributes?.min_temp ?? 15;
+  const maxTemp = e(LUFTUNGSANLAGE_ENTITY_IDS.climate)?.attributes?.max_temp ?? 30;
+  const tempActive = hvacState === 'heat' || hvacState === 'cool' || hvacState === 'auto';
   const aussenluft = val(LUFTUNGSANLAGE_ENTITY_IDS.aussenluft);
   const zuluft = val(LUFTUNGSANLAGE_ENTITY_IDS.zuluft);
   const abluft = val(LUFTUNGSANLAGE_ENTITY_IDS.abluft);
@@ -586,6 +598,43 @@ export default function LuftungsanlageModal({
                       current={fanMode}
                       onSelect={setFanMode}
                     />
+                  </div>
+
+                  {/* Temperature control — only for heat/cool/auto modes */}
+                  <div className="space-y-2" style={{ opacity: tempActive ? 1 : 0.35 }}>
+                    <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                      Zieltemperatur
+                      {currentTemp != null && (
+                        <span className="ml-2 font-normal normal-case opacity-60">
+                          (Ist: {currentTemp}°C)
+                        </span>
+                      )}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => tempActive && targetTemp != null && targetTemp > minTemp && setTemperature(targetTemp - 1)}
+                        disabled={!tempActive || targetTemp == null || targetTemp <= minTemp}
+                        className="flex h-8 w-8 items-center justify-center rounded-xl border text-lg font-bold transition-colors"
+                        style={{ borderColor: 'var(--glass-border)', color: ACCENT, background: 'var(--glass-bg)' }}
+                      >
+                        −
+                      </button>
+                      <div className="flex min-w-[56px] items-center justify-center gap-1 rounded-xl border px-3 py-1.5"
+                        style={{ borderColor: ACCENT, background: 'rgba(56,189,248,0.08)' }}>
+                        <Thermometer className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+                        <span className="text-sm font-bold" style={{ color: ACCENT }}>
+                          {targetTemp != null ? `${targetTemp}°C` : '—'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => tempActive && targetTemp != null && targetTemp < maxTemp && setTemperature(targetTemp + 1)}
+                        disabled={!tempActive || targetTemp == null || targetTemp >= maxTemp}
+                        className="flex h-8 w-8 items-center justify-center rounded-xl border text-lg font-bold transition-colors"
+                        style={{ borderColor: 'var(--glass-border)', color: ACCENT, background: 'var(--glass-bg)' }}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.43
+
+### Added
+- Includes dashboard release `1.14.43`.
+- Lüftungsanlage modal: temperature stepper (−/+) to set target temperature via climate.set_temperature.
+
 ## 1.14.42
 
 ### Fixed / Added

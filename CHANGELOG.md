@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.43] — 2026-03-16
+
+### Added
+- Lüftungsanlage modal: Zieltemperatur-Stepper (−/+) in der Steuerung-Sektion. Zeigt Ist-Temperatur daneben, aktiv nur bei Betriebsmodus heat/cool/auto, ruft `climate.set_temperature` auf.
+
 ## [1.14.42] — 2026-03-16
 
 ### Fixed
