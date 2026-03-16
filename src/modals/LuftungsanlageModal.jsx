@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Fan, X } from '../icons';
 import { LUFTUNGSANLAGE_ENTITY_IDS } from '../components/cards/GenericLuftungsanlageCard';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
+import SensorHistoryGraph from '../components/charts/SensorHistoryGraph';
+import { getHistoryRest, getHistory } from '../services/haClient';
 
 const ACCENT = '#38bdf8';
 
@@ -65,11 +67,73 @@ export default function LuftungsanlageModal({
   customNames,
   cardId,
   callService,
+  conn,
+  haUrl,
+  haToken,
   t,
 }) {
   const translate = t || ((key) => key);
   const [mainTab, setMainTab] = useState('betrieb');
+  const [co2History, setCo2History] = useState([]);
+  const [vocHistory, setVocHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const modalTitleId = 'luftungsanlage-modal-title';
+
+  useEffect(() => {
+    if (!show || mainTab !== 'luftqualitaet') return;
+    if (!conn && !haUrl) return;
+
+    const fetchHistories = async () => {
+      setHistoryLoading(true);
+      const end = new Date();
+      const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+
+      const fetchOne = async (entityId) => {
+        try {
+          const data = await getHistoryRest(haUrl, haToken, {
+            entityId,
+            start,
+            end,
+            minimal_response: false,
+            no_attributes: false,
+            significant_changes_only: false,
+          });
+          const raw = Array.isArray(data?.[0]) ? data[0] : (Array.isArray(data) ? data : []);
+          return raw
+            .filter((d) => !isNaN(parseFloat(d?.state)))
+            .map((d) => ({
+              value: parseFloat(d.state),
+              time: new Date(d.last_changed || d.last_updated || d.lu || d.lc),
+            }))
+            .filter((d) => !isNaN(d.time.getTime()));
+        } catch (_e) {
+          try {
+            const wsData = await getHistory(conn, { entityId, start, end });
+            const raw = Array.isArray(wsData?.[0]) ? wsData[0] : (Array.isArray(wsData) ? wsData : []);
+            return raw
+              .filter((d) => !isNaN(parseFloat(d?.state)))
+              .map((d) => ({
+                value: parseFloat(d.state),
+                time: new Date(d.last_changed || d.last_updated || d.lu || d.lc),
+              }))
+              .filter((d) => !isNaN(d.time.getTime()));
+          } catch (_e2) {
+            return [];
+          }
+        }
+      };
+
+      const [co2, voc] = await Promise.all([
+        fetchOne(LUFTUNGSANLAGE_ENTITY_IDS.co2Eg),
+        fetchOne(LUFTUNGSANLAGE_ENTITY_IDS.vocOg),
+      ]);
+      setCo2History(co2);
+      setVocHistory(voc);
+      setHistoryLoading(false);
+    };
+
+    fetchHistories();
+  }, [show, mainTab, conn, haUrl, haToken]);
 
   if (!show) return null;
 
@@ -443,18 +507,16 @@ export default function LuftungsanlageModal({
                   />
                 </div>
 
-                {hvacState === 'fan_only' && (
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
-                      {translate('luftungsanlage.fanMode') || 'Lüftungsstufe'}
-                    </p>
-                    <SelectPills
-                      options={fanOptions}
-                      current={fanMode}
-                      onSelect={setFanMode}
-                    />
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                    {translate('luftungsanlage.fanMode') || 'Lüftungsstufe'}
+                  </p>
+                  <SelectPills
+                    options={fanOptions}
+                    current={fanMode}
+                    onSelect={setFanMode}
+                  />
+                </div>
               </div>
             </>
           )}
@@ -591,13 +653,13 @@ export default function LuftungsanlageModal({
 
           {/* Tab: Luftqualität */}
           {mainTab === 'luftqualitaet' && (
-            <div className="grid grid-cols-1 gap-8 font-sans lg:grid-cols-2">
+            <div className="space-y-8 font-sans">
               {/* EG */}
               <div className="space-y-3">
                 <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
                   {translate('luftungsanlage.eg') || 'EG'}
                 </p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-4">
                     <p className="text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
                       {translate('luftungsanlage.co2') || 'CO₂'}
@@ -619,6 +681,24 @@ export default function LuftungsanlageModal({
                     value={luftqualitaetEg}
                   />
                 </div>
+                {/* CO₂ 24h chart */}
+                <div className="popup-surface rounded-2xl p-4">
+                  <p className="mb-2 text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                    CO₂ — 24h
+                  </p>
+                  {historyLoading ? (
+                    <div className="flex h-[120px] items-center justify-center">
+                      <div className="h-6 w-6 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: getCo2Color(co2Eg) }} />
+                    </div>
+                  ) : (
+                    <SensorHistoryGraph
+                      data={co2History}
+                      height={120}
+                      color={getCo2Color(co2Eg)}
+                      noDataLabel="Keine Verlaufsdaten"
+                    />
+                  )}
+                </div>
               </div>
 
               {/* OG */}
@@ -626,7 +706,7 @@ export default function LuftungsanlageModal({
                 <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
                   {translate('luftungsanlage.og') || 'OG'}
                 </p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-4">
                     <p className="text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
                       VOC
@@ -647,6 +727,24 @@ export default function LuftungsanlageModal({
                     label={translate('luftungsanlage.temp') || 'Temperatur'}
                     value={tempOg != null ? `${tempOg.toFixed(1)} °C` : null}
                   />
+                </div>
+                {/* VOC 24h chart */}
+                <div className="popup-surface rounded-2xl p-4">
+                  <p className="mb-2 text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                    VOC — 24h
+                  </p>
+                  {historyLoading ? (
+                    <div className="flex h-[120px] items-center justify-center">
+                      <div className="h-6 w-6 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: vocOg != null && vocOg > 200 ? '#fb923c' : 'var(--text-muted)' }} />
+                    </div>
+                  ) : (
+                    <SensorHistoryGraph
+                      data={vocHistory}
+                      height={120}
+                      color={vocOg != null && vocOg > 200 ? '#fb923c' : '#81c784'}
+                      noDataLabel="Keine Verlaufsdaten"
+                    />
+                  )}
                 </div>
               </div>
             </div>

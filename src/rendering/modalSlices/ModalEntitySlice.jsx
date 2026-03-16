@@ -480,6 +480,11 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
             customNames={customNames}
             cardId={showLuftungsanlageModal}
             callService={callService}
+            conn={conn}
+            haUrl={activeUrl}
+            haToken={
+              config.authMethod === 'oauth' ? authRef?.current?.accessToken || '' : config.token
+            }
             t={t}
           />
         </ModalSuspense>
