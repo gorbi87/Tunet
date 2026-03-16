@@ -326,27 +326,42 @@ export default function LuftungsanlageModal({
                     <text x="150" y="80" textAnchor="middle" fontSize="8" fontWeight="bold" fill={ACCENT} letterSpacing="0.05em">
                       {isBypass ? 'BYPASS' : 'WRG'}
                     </text>
-                    <text x="150" y="95" textAnchor="middle" fontSize="15" fontWeight="300" fill={ACCENT}>
-                      {isBypass
-                        ? `${bypass != null ? bypass.toFixed(0) : '—'}%`
-                        : wrgEfficiency != null
-                        ? `${wrgEfficiency}%`
-                        : '—'}
-                    </text>
-                    <text x="150" y="106" textAnchor="middle" fontSize="7" fill={ACCENT} opacity="0.65">
-                      {isBypass ? 'Bypass' : 'Wirkungsgrad'}
-                    </text>
-                    <text x="150" y="116" textAnchor="middle" fontSize="7" fill={ACCENT} opacity="0.55">
-                      {isBypass
-                        ? 'Bypass aktiv'
-                        : aussenluft != null && zuluft != null
-                        ? `+${(zuluft - aussenluft).toFixed(1)}°C Gewinn`
-                        : ''}
-                    </text>
-                    {bypass != null && (
-                      <text x="150" y="124" textAnchor="middle" fontSize="6.5" fill={ACCENT} opacity="0.4">
-                        {`Bypass ${bypass.toFixed(0)}%`}
-                      </text>
+                    {isActive ? (
+                      <>
+                        <text x="150" y="95" textAnchor="middle" fontSize="15" fontWeight="300" fill={ACCENT}>
+                          {isBypass
+                            ? `${bypass != null ? bypass.toFixed(0) : '—'}%`
+                            : wrgEfficiency != null
+                            ? `${wrgEfficiency}%`
+                            : '—'}
+                        </text>
+                        <text x="150" y="106" textAnchor="middle" fontSize="7" fill={ACCENT} opacity="0.65">
+                          {isBypass ? 'Bypass' : 'Wirkungsgrad'}
+                        </text>
+                        <text x="150" y="116" textAnchor="middle" fontSize="7" fill={ACCENT} opacity="0.55">
+                          {isBypass
+                            ? 'Bypass aktiv'
+                            : aussenluft != null && zuluft != null
+                            ? `+${(zuluft - aussenluft).toFixed(1)}°C Gewinn`
+                            : ''}
+                        </text>
+                        {bypass != null && (
+                          <text x="150" y="124" textAnchor="middle" fontSize="6.5" fill={ACCENT} opacity="0.4">
+                            {`Bypass ${bypass.toFixed(0)}%`}
+                          </text>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <text x="150" y="97" textAnchor="middle" fontSize="13" fontWeight="300" fill={ACCENT} opacity="0.6">
+                          Aus
+                        </text>
+                        {bypass != null && (
+                          <text x="150" y="112" textAnchor="middle" fontSize="7" fill={ACCENT} opacity="0.4">
+                            {`Bypass ${bypass.toFixed(0)}%`}
+                          </text>
+                        )}
+                      </>
                     )}
 
                     {/* AUSSEN — top left */}
@@ -358,24 +373,24 @@ export default function LuftungsanlageModal({
 
                     {/* ZULUFT — top right */}
                     <rect x="236" y="22" width="62" height="46" rx="8" fill="rgba(129,199,132,0.1)" stroke="rgba(129,199,132,0.4)" strokeWidth="1" />
-                    <text x="267" y="38" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#81c784" letterSpacing="0.08em">ZULUFT</text>
-                    <text x="267" y="56" textAnchor="middle" fontSize="14" fontWeight="300" fill="#81c784">
+                    <text x="267" y="34" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#81c784" letterSpacing="0.08em">ZULUFT</text>
+                    <text x="267" y="50" textAnchor="middle" fontSize="14" fontWeight="300" fill="#81c784">
                       {zuluft != null ? `${zuluft.toFixed(1)}°` : '—'}
                     </text>
                     {zuluftRpm != null && (
-                      <text x="267" y="70" textAnchor="middle" fontSize="7" fill="#81c784" opacity="0.7">
+                      <text x="267" y="63" textAnchor="middle" fontSize="7" fill="#81c784" opacity="0.7">
                         {zuluftRpm.toFixed(0)} RPM
                       </text>
                     )}
 
                     {/* ABLUFT — bottom right */}
                     <rect x="236" y="127" width="62" height="46" rx="8" fill="rgba(239,154,154,0.1)" stroke="rgba(239,154,154,0.4)" strokeWidth="1" />
-                    <text x="267" y="143" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ef9a9a" letterSpacing="0.08em">ABLUFT</text>
-                    <text x="267" y="161" textAnchor="middle" fontSize="14" fontWeight="300" fill="#ef9a9a">
+                    <text x="267" y="139" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ef9a9a" letterSpacing="0.08em">ABLUFT</text>
+                    <text x="267" y="155" textAnchor="middle" fontSize="14" fontWeight="300" fill="#ef9a9a">
                       {abluft != null ? `${abluft.toFixed(1)}°` : '—'}
                     </text>
                     {abluftRpm != null && (
-                      <text x="267" y="175" textAnchor="middle" fontSize="7" fill="#ef9a9a" opacity="0.7">
+                      <text x="267" y="168" textAnchor="middle" fontSize="7" fill="#ef9a9a" opacity="0.7">
                         {abluftRpm.toFixed(0)} RPM
                       </text>
                     )}
