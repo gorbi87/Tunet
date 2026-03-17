@@ -82,8 +82,8 @@ function fmtBattTime(soc, maxKwh, powerW, charging) {
   if (soc == null || maxKwh == null || maxKwh <= 0 || !powerW || powerW < 10) return null;
   const powerKw = powerW / 1000;
   const hrs = charging
-    ? (maxKwh * (1 - soc / 100)) / powerKw
-    : (maxKwh * soc / 100) / powerKw;
+    ? (maxKwh * (1 - soc / 100)) / powerKw          // charge to 100%
+    : (maxKwh * Math.max(0, soc - 10) / 100) / powerKw; // discharge to 10% min
   if (hrs <= 0 || hrs > 48) return null;
   const h = Math.floor(hrs);
   const m = Math.round((hrs - h) * 60);
@@ -178,8 +178,13 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
         x={battIconX} y={battIconY} w={battIconW} h={battIconH}
         soc={batterySoc} color={socColor} charging={battCharge}
       />
+      {(battCharge || battDischarge) && (
+        <text x={BATT.cx} y={BATT.y + BATT.h - (battTimeStr ? 17 : 8)} textAnchor="middle" fontSize="9" fontWeight="300" fill={socColor}>
+          {battCharge ? '+' : '−'}{fmt(battCharge ? batteryInW : batteryOutW)}
+        </text>
+      )}
       {battTimeStr && (
-        <text x={BATT.cx} y={BATT.y + BATT.h - 6} textAnchor="middle" fontSize="7" fill={socColor} opacity="0.8">
+        <text x={BATT.cx} y={BATT.y + BATT.h - 6} textAnchor="middle" fontSize="6.5" fill={socColor} opacity="0.75">
           {battTimeStr}
         </text>
       )}

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.54] — 2026-03-17
+
+### Fixed / Added
+- PV Energiefluss: Batterie-Leistung (+/− W) direkt im BATT-Box angezeigt.
+- Restzeit-Berechnung: Entladung berücksichtigt 10% SOC Mindestlimit (`soc - 10` statt `soc`).
+
 ## [1.14.53] — 2026-03-17
 
 ### Fixed

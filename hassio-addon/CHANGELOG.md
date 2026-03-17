@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.54
+
+### Fixed / Added
+- PV PowerFlow: show battery charge/discharge power (+/- W) in BATT box.
+- Battery remaining time: discharge calculation uses (soc - 10%) minimum.
+
 ## 1.14.53
 
 ### Fixed
