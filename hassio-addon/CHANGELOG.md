@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.49
+
+### Fixed
+- WärmepumpeModal tablet: limit width to max-w-2xl (672px), centered.
+
 ## 1.14.48
 
 ### Fixed

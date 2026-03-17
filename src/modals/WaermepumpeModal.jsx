@@ -124,11 +124,11 @@ export default function WaermepumpeModal({
       onClose={onClose}
       titleId={modalTitleId}
       overlayClassName={isCompact
-        ? 'fixed inset-0 z-50 flex items-stretch'
+        ? 'fixed inset-0 z-50 flex items-stretch justify-center'
         : 'fixed inset-0 z-50 flex items-center justify-center p-6'}
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
       panelClassName={isCompact
-        ? 'popup-anim relative flex flex-col w-full h-full overflow-hidden rounded-none border font-sans backdrop-blur-xl'
+        ? 'popup-anim relative flex flex-col w-full max-w-2xl h-full overflow-hidden rounded-none border font-sans backdrop-blur-xl'
         : 'popup-anim relative flex flex-col w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[3rem] border font-sans backdrop-blur-xl'}
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
