@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.50
+
+### Changed
+- LuftungsanlageModal + PvModal: same tablet-responsive layout as WärmepumpeModal.
+
 ## 1.14.49
 
 ### Fixed

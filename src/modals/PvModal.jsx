@@ -482,6 +482,9 @@ export default function PvModal({
 
   const isProducing = pvW != null && pvW > 10;
 
+  const isCompact = window.innerHeight < 900 ||
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
   const mainTabs = [
     { key: 'leistung', label: 'Leistung' },
     { key: 'prognose', label: 'Prognose' },
@@ -493,9 +496,13 @@ export default function PvModal({
       open={show}
       onClose={onClose}
       titleId={modalTitleId}
-      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
+      overlayClassName={isCompact
+        ? 'fixed inset-0 z-50 flex items-stretch justify-center'
+        : 'fixed inset-0 z-50 flex items-center justify-center p-6'}
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName="popup-anim relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border p-4 font-sans backdrop-blur-xl md:p-6 lg:rounded-[3rem] lg:p-10"
+      panelClassName={isCompact
+        ? 'popup-anim relative flex flex-col w-full max-w-2xl h-full overflow-hidden rounded-none border font-sans backdrop-blur-xl'
+        : 'popup-anim relative flex flex-col w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[3rem] border font-sans backdrop-blur-xl'}
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -504,25 +511,30 @@ export default function PvModal({
     >
       {() => (
         <>
+          {/* ── Fixed header ── */}
+          <div
+            className={`flex-shrink-0 border-b ${isCompact ? 'p-4 pb-3' : 'p-8 pb-5'}`}
+            style={{ borderColor: 'var(--glass-border)' }}
+          >
           {/* Close */}
-          <div className="absolute top-6 right-6 z-20 md:top-10 md:right-10">
+          <div className="absolute top-4 right-4 z-20">
             <button onClick={onClose} className="modal-close" aria-label="Schließen">
               <X className="h-4 w-4" />
             </button>
           </div>
 
           {/* Header */}
-          <div className="mb-6 flex items-center gap-4 font-sans">
-            <div className="rounded-2xl p-4 transition-all duration-500"
+          <div className="mb-4 flex items-center gap-3 pr-10 font-sans">
+            <div className="rounded-2xl p-3 transition-all duration-500"
               style={{ backgroundColor: 'rgba(251,146,60,0.15)', color: SOLAR_COLOR }}>
-              <Sun className="h-8 w-8" />
+              <Sun className="h-6 w-6" />
             </div>
             <div>
               <h3 id={modalTitleId}
-                className="text-2xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic">
+                className="text-xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic">
                 {name}
               </h3>
-              <div className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 transition-all duration-500"
+              <div className="mt-1.5 inline-flex items-center gap-2 rounded-full border px-3 py-1 transition-all duration-500"
                 style={{
                   backgroundColor: isProducing ? 'var(--status-success-bg)' : 'var(--glass-bg)',
                   borderColor: isProducing ? 'var(--status-success-border)' : 'var(--glass-border)',
@@ -537,7 +549,7 @@ export default function PvModal({
           </div>
 
           {/* Tab switcher */}
-          <div className="mb-6 flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
+          <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
             {mainTabs.map(({ key, label }) => (
               <button key={key} onClick={() => setMainTab(key)}
                 className="flex-1 rounded-xl py-2 text-[11px] font-bold tracking-widest uppercase transition-all"
@@ -549,6 +561,10 @@ export default function PvModal({
               </button>
             ))}
           </div>
+          </div>{/* end fixed header */}
+
+          {/* ── Scrollable content ── */}
+          <div className={`flex-1 overflow-y-auto ${isCompact ? 'p-4' : 'p-8'}`}>
 
           {/* ── Tab: Leistung ── */}
           {mainTab === 'leistung' && (
@@ -732,6 +748,7 @@ export default function PvModal({
               </div>
             </div>
           )}
+          </div>{/* end scrollable content */}
         </>
       )}
     </AccessibleModalShell>

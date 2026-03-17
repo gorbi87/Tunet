@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.50] — 2026-03-17
+
+### Changed
+- LuftungsanlageModal + PvModal: gleiches Tablet-Layout wie Wärmepumpe — JS-basierte `isCompact`-Erkennung, fester Header mit Tabs, scrollbarer Inhaltsbereich, `max-w-2xl` zentriert.
+
 ## [1.14.49] — 2026-03-17
 
 ### Fixed
