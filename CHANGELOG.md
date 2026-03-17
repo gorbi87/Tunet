@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.52] — 2026-03-17
+
+### Fixed
+- WRG-Diagramm (Lüftung): maxHeight auf 220px erhöht (war zu klein).
+- PowerFlow SVG (Solar): overflow:hidden entfernt, maxHeight jetzt direkt am SVG-Element (190px) — kein Abschneiden mehr.
+
 ## [1.14.51] — 2026-03-17
 
 ### Fixed

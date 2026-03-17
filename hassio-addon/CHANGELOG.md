@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.52
+
+### Fixed
+- WRG diagram: maxHeight increased to 220px. PowerFlow SVG: maxHeight on SVG element directly, no more clipping.
+
 ## 1.14.51
 
 ### Fixed

@@ -91,7 +91,7 @@ function fmtBattTime(soc, maxKwh, powerW, charging) {
   return `${charging ? 'voll' : 'leer'} in ${time}`;
 }
 
-function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridExportW, batterySoc, batteryMaxEnergy, pvDaily }) {
+function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridExportW, batterySoc, batteryMaxEnergy, pvDaily, compact }) {
   const solarActive = pvW != null && pvW > 10;
   const battCharge = batteryInW != null && batteryInW > 10;
   const battDischarge = !battCharge && batteryOutW != null && batteryOutW > 10;
@@ -124,7 +124,7 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
   const battIconY = BATT.y + 14;
 
   return (
-    <svg viewBox="0 0 340 226" className="w-full" style={{ fontFamily: 'inherit' }}>
+    <svg viewBox="0 0 340 226" className="w-full" style={{ fontFamily: 'inherit', maxHeight: compact ? '190px' : undefined }}>
       {/* ── Connecting lines + mid-arrows ── */}
 
       {/* Solar → Inverter (down) */}
@@ -574,7 +574,7 @@ export default function PvModal({
                 <p className="mb-3 text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
                   Energiefluss
                 </p>
-                <div className="popup-surface rounded-2xl p-4" style={{ maxHeight: isCompact ? '170px' : undefined, overflow: 'hidden' }}>
+                <div className="popup-surface rounded-2xl p-4">
                   <PowerFlowSvg
                     pvW={pvW}
                     houseW={houseW}
@@ -585,6 +585,7 @@ export default function PvModal({
                     batterySoc={batterySoc}
                     batteryMaxEnergy={batteryMaxEnergy}
                     pvDaily={pvDaily}
+                    compact={isCompact}
                   />
                 </div>
               </div>
