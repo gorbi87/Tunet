@@ -96,14 +96,14 @@ export default function WaermepumpeModal({
   const aktivCop = energyTab === 'today' ? copHeute : copMonat;
 
   const TempRow = ({ label, value, color = 'var(--text-primary)' }) => (
-    <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3 lg:p-4">
+    <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3">
       <p
         className="text-[10px] font-bold tracking-[0.15em] uppercase"
         style={{ color: 'var(--text-muted)' }}
       >
         {label}
       </p>
-      <p className="text-xl font-light lg:text-2xl" style={{ color }}>
+      <p className="text-xl font-light" style={{ color }}>
         {value != null ? `${value.toFixed(1)} °C` : '—'}
       </p>
     </div>
@@ -119,9 +119,9 @@ export default function WaermepumpeModal({
       open={show}
       onClose={onClose}
       titleId={modalTitleId}
-      overlayClassName="fixed inset-0 z-50 flex items-stretch lg:items-center lg:justify-center lg:p-6"
+      overlayClassName="fixed inset-0 z-50 flex items-stretch xl:items-center xl:justify-center xl:p-6"
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName="popup-anim relative flex flex-col w-full h-full lg:h-auto lg:max-h-[90vh] lg:max-w-4xl overflow-hidden rounded-none lg:rounded-[3rem] border font-sans backdrop-blur-xl"
+      panelClassName="popup-anim relative flex flex-col w-full h-full xl:h-auto xl:max-h-[90vh] xl:max-w-4xl overflow-hidden rounded-none xl:rounded-[3rem] border font-sans backdrop-blur-xl"
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -132,11 +132,11 @@ export default function WaermepumpeModal({
         <>
           {/* ── Fixed header: close + icon/title + tabs ── */}
           <div
-            className="flex-shrink-0 border-b p-4 pb-3 md:p-6 md:pb-4 lg:p-10 lg:pb-6"
+            className="flex-shrink-0 border-b p-4 pb-3 xl:p-8 xl:pb-5"
             style={{ borderColor: 'var(--glass-border)' }}
           >
             {/* Close button */}
-            <div className="absolute top-4 right-4 z-20 md:top-6 md:right-6 lg:top-8 lg:right-8">
+            <div className="absolute top-4 right-4 z-20">
               <button onClick={onClose} className="modal-close" aria-label={translate('common.close')}>
                 <X className="h-4 w-4" />
               </button>
@@ -145,15 +145,15 @@ export default function WaermepumpeModal({
             {/* Header row */}
             <div className="mb-4 flex items-center gap-3 pr-10 font-sans">
               <div
-                className="rounded-2xl p-3 lg:p-4 transition-all duration-500"
+                className="rounded-2xl p-3 transition-all duration-500"
                 style={{ backgroundColor: 'rgba(234, 88, 12, 0.15)', color: '#fb923c' }}
               >
-                <Flame className="h-6 w-6 lg:h-8 lg:w-8" />
+                <Flame className="h-6 w-6" />
               </div>
               <div>
                 <h3
                   id={modalTitleId}
-                  className="text-xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic lg:text-2xl"
+                  className="text-xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic"
                 >
                   {name}
                 </h3>
@@ -208,15 +208,15 @@ export default function WaermepumpeModal({
           </div>
 
           {/* ── Scrollable content area ── */}
-          <div className="flex-1 overflow-y-auto p-3 md:p-4 lg:p-10">
+          <div className="flex-1 overflow-y-auto p-4 xl:p-8">
 
             {/* Tab: Übersicht */}
             {mainTab === 'overview' && (
               <>
                 {/* Temps + Energy grid — side-by-side from md */}
-                <div className="grid grid-cols-1 items-start gap-4 font-sans md:grid-cols-5 lg:gap-6">
+                <div className="grid grid-cols-1 items-start gap-4 font-sans md:grid-cols-5">
                   {/* Left: Temperatures */}
-                  <div className="space-y-2 md:col-span-3 lg:space-y-4">
+                  <div className="space-y-2 md:col-span-3">
                     <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
                       {translate('waermepumpe.temperatures')}
                     </p>
@@ -262,7 +262,7 @@ export default function WaermepumpeModal({
                   </div>
 
                   {/* Right: Energy stats */}
-                  <div className="space-y-2 md:col-span-2 lg:space-y-3">
+                  <div className="space-y-2 md:col-span-2">
                     {/* Energy tab switcher */}
                     <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
                       {['today', 'month'].map((key) => (
@@ -289,33 +289,33 @@ export default function WaermepumpeModal({
                     </div>
 
                     {/* COP */}
-                    <div className="popup-surface flex items-center justify-between gap-3 rounded-2xl px-4 py-3 transition-all lg:flex-col lg:justify-center lg:rounded-3xl lg:gap-2 lg:py-8">
+                    <div className="popup-surface flex items-center justify-between gap-3 rounded-2xl px-4 py-3 transition-all xl:flex-col xl:justify-center xl:rounded-3xl xl:gap-2 xl:py-8">
                       <p className="text-xs font-bold tracking-[0.2em] text-[var(--accent-color)] uppercase">
                         COP
                       </p>
-                      <span className="text-4xl leading-none font-light text-[var(--accent-color)] italic lg:text-6xl">
+                      <span className="text-4xl leading-none font-light text-[var(--accent-color)] italic">
                         {aktivCop ?? '—'}
                       </span>
                     </div>
 
                     {/* Strom + Wärme */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3 lg:p-4">
+                      <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3">
                         <Zap className="h-4 w-4 text-[var(--accent-color)]" />
                         <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                           {translate('waermepumpe.strom')}
                         </p>
-                        <p className="text-lg font-light text-[var(--text-primary)] lg:text-xl">
+                        <p className="text-lg font-light text-[var(--text-primary)]">
                           {aktivStrom != null ? aktivStrom.toFixed(2) : '—'}
                         </p>
                         <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
                       </div>
-                      <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3 lg:p-4">
+                      <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3">
                         <Thermometer className="h-4 w-4 text-orange-400" />
                         <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                           {translate('waermepumpe.waerme')}
                         </p>
-                        <p className="text-lg font-light text-[var(--text-primary)] lg:text-xl">
+                        <p className="text-lg font-light text-[var(--text-primary)]">
                           {aktivWaerme != null ? aktivWaerme.toFixed(2) : '—'}
                         </p>
                         <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
@@ -326,7 +326,7 @@ export default function WaermepumpeModal({
 
                 {/* Controls section */}
                 <div
-                  className="mt-3 border-t pt-3 font-sans lg:mt-6 lg:pt-5"
+                  className="mt-3 border-t pt-3 font-sans"
                   style={{ borderColor: 'var(--glass-border)' }}
                 >
                   <p className="mb-3 text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">

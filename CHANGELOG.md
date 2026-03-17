@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.47] — 2026-03-17
+
+### Fixed
+- WärmepumpeModal: "Desktop-only" Styles von `lg:` (≥1024px) auf `xl:` (≥1280px) verschoben. Tablet im Landscape (1024px) bekommt jetzt das kompakte Layout — kein Scrollen mehr nötig.
+
 ## [1.14.46] — 2026-03-17
 
 ### Changed

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.47
+
+### Fixed
+- WärmepumpeModal: desktop-only styles moved from lg: to xl: — tablet landscape (1024px) now gets compact layout.
+
 ## 1.14.46
 
 ### Changed
