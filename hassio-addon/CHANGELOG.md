@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.51
+
+### Fixed
+- Lüftung/PV tablet: WRG diagram, PowerFlow SVG and CO₂/VOC graphs smaller in compact mode.
+
 ## 1.14.50
 
 ### Changed

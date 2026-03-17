@@ -574,7 +574,7 @@ export default function PvModal({
                 <p className="mb-3 text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
                   Energiefluss
                 </p>
-                <div className="popup-surface rounded-2xl p-4">
+                <div className="popup-surface rounded-2xl p-4" style={{ maxHeight: isCompact ? '170px' : undefined, overflow: 'hidden' }}>
                   <PowerFlowSvg
                     pvW={pvW}
                     houseW={houseW}

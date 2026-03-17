@@ -473,7 +473,7 @@ export default function LuftungsanlageModal({
                   <svg
                     viewBox="0 0 300 195"
                     className="w-full"
-                    style={{ fontFamily: 'inherit' }}
+                    style={{ fontFamily: 'inherit', maxHeight: isCompact ? '150px' : undefined }}
                   >
                     {/* Flow arrows */}
                     {/* Top arrow: AUSSEN → WRG → ZULUFT */}
@@ -823,13 +823,13 @@ export default function LuftungsanlageModal({
                     CO₂ — 24h
                   </p>
                   {historyLoading ? (
-                    <div className="flex h-[120px] items-center justify-center">
+                    <div className="flex h-[80px] items-center justify-center">
                       <div className="h-6 w-6 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: ACCENT }} />
                     </div>
                   ) : (
                     <ColoredHistoryGraph
                       data={co2History}
-                      height={120}
+                      height={isCompact ? 75 : 120}
                       thresholds={[
                         { max: 800, color: '#4ade80' },
                         { max: 1000, color: '#fb923c' },
@@ -873,13 +873,13 @@ export default function LuftungsanlageModal({
                     VOC — 24h
                   </p>
                   {historyLoading ? (
-                    <div className="flex h-[120px] items-center justify-center">
+                    <div className="flex h-[80px] items-center justify-center">
                       <div className="h-6 w-6 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: ACCENT }} />
                     </div>
                   ) : (
                     <ColoredHistoryGraph
                       data={vocHistory}
-                      height={120}
+                      height={isCompact ? 75 : 120}
                       thresholds={[
                         { max: 300, color: '#4ade80' },
                         { max: 400, color: '#fb923c' },
