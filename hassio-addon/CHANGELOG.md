@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.48
+
+### Fixed
+- WärmepumpeModal: JS-based tablet detection (innerHeight < 900 or touch media query) replaces unreliable CSS breakpoints.
+
 ## 1.14.47
 
 ### Fixed

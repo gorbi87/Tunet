@@ -114,14 +114,22 @@ export default function WaermepumpeModal({
     { key: 'hydraulik', label: translate('waermepumpe.tab.hydraulik') || 'Hydraulik' },
   ];
 
+  // Compact mode: small screen height (tablet landscape) or touch device
+  const isCompact = window.innerHeight < 900 ||
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
   return (
     <AccessibleModalShell
       open={show}
       onClose={onClose}
       titleId={modalTitleId}
-      overlayClassName="fixed inset-0 z-50 flex items-stretch xl:items-center xl:justify-center xl:p-6"
+      overlayClassName={isCompact
+        ? 'fixed inset-0 z-50 flex items-stretch'
+        : 'fixed inset-0 z-50 flex items-center justify-center p-6'}
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName="popup-anim relative flex flex-col w-full h-full xl:h-auto xl:max-h-[90vh] xl:max-w-4xl overflow-hidden rounded-none xl:rounded-[3rem] border font-sans backdrop-blur-xl"
+      panelClassName={isCompact
+        ? 'popup-anim relative flex flex-col w-full h-full overflow-hidden rounded-none border font-sans backdrop-blur-xl'
+        : 'popup-anim relative flex flex-col w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[3rem] border font-sans backdrop-blur-xl'}
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -132,7 +140,7 @@ export default function WaermepumpeModal({
         <>
           {/* ── Fixed header: close + icon/title + tabs ── */}
           <div
-            className="flex-shrink-0 border-b p-4 pb-3 xl:p-8 xl:pb-5"
+            className={`flex-shrink-0 border-b ${isCompact ? 'p-4 pb-3' : 'p-8 pb-5'}`}
             style={{ borderColor: 'var(--glass-border)' }}
           >
             {/* Close button */}
@@ -208,13 +216,13 @@ export default function WaermepumpeModal({
           </div>
 
           {/* ── Scrollable content area ── */}
-          <div className="flex-1 overflow-y-auto p-4 xl:p-8">
+          <div className={`flex-1 overflow-y-auto ${isCompact ? 'p-4' : 'p-8'}`}>
 
             {/* Tab: Übersicht */}
             {mainTab === 'overview' && (
               <>
                 {/* Temps + Energy grid — side-by-side from md */}
-                <div className="grid grid-cols-1 items-start gap-4 font-sans md:grid-cols-5">
+                <div className={`grid items-start gap-4 font-sans ${isCompact ? 'grid-cols-5' : 'grid-cols-1 lg:grid-cols-5'}`}>
                   {/* Left: Temperatures */}
                   <div className="space-y-2 md:col-span-3">
                     <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
@@ -289,11 +297,13 @@ export default function WaermepumpeModal({
                     </div>
 
                     {/* COP */}
-                    <div className="popup-surface flex items-center justify-between gap-3 rounded-2xl px-4 py-3 transition-all xl:flex-col xl:justify-center xl:rounded-3xl xl:gap-2 xl:py-8">
+                    <div className={`popup-surface transition-all ${isCompact
+                        ? 'flex items-center justify-between gap-3 rounded-2xl px-4 py-3'
+                        : 'flex flex-col items-center justify-center gap-2 rounded-3xl p-8'}`}>
                       <p className="text-xs font-bold tracking-[0.2em] text-[var(--accent-color)] uppercase">
                         COP
                       </p>
-                      <span className="text-4xl leading-none font-light text-[var(--accent-color)] italic">
+                      <span className={`leading-none font-light text-[var(--accent-color)] italic ${isCompact ? 'text-4xl' : 'text-6xl'}`}>
                         {aktivCop ?? '—'}
                       </span>
                     </div>

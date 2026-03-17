@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.48] — 2026-03-17
+
+### Fixed
+- WärmepumpeModal: Tablet-Erkennung per `window.innerHeight < 900` und `(hover: none) and (pointer: coarse)` statt CSS-Breakpoints. Lenovo P11 Pro (1280×800 Landscape) bekommt jetzt zuverlässig das kompakte Vollbild-Layout.
+
 ## [1.14.47] — 2026-03-17
 
 ### Fixed
