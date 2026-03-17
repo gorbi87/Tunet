@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.46] — 2026-03-17
+
+### Changed
+- WärmepumpeModal Tablet: Temps+Energie ab `md:` nebeneinander (statt erst `lg:`), COP-Box kompakter, Steuerung-Controls in einer Zeile (`flex-wrap`), weniger Abstände — alles auf einmal sichtbar ohne Scrollen.
+
 ## [1.14.45] — 2026-03-17
 
 ### Changed

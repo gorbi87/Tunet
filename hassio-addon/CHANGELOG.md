@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.46
+
+### Changed
+- WärmepumpeModal: compact tablet layout — 2-column grid from md, smaller COP box, controls in one row.
+
 ## 1.14.45
 
 ### Changed
