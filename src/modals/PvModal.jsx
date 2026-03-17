@@ -91,7 +91,7 @@ function fmtBattTime(soc, maxKwh, powerW, charging) {
   return `${charging ? 'voll' : 'leer'} in ${time}`;
 }
 
-function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridExportW, batterySoc, batteryMaxEnergy, pvDaily, compact }) {
+function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridExportW, batterySoc, batteryMaxEnergy, pvDaily }) {
   const solarActive = pvW != null && pvW > 10;
   const battCharge = batteryInW != null && batteryInW > 10;
   const battDischarge = !battCharge && batteryOutW != null && batteryOutW > 10;
@@ -124,7 +124,7 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
   const battIconY = BATT.y + 14;
 
   return (
-    <svg viewBox="0 0 340 226" className="w-full" style={{ fontFamily: 'inherit', maxHeight: compact ? '190px' : undefined }}>
+    <svg viewBox="0 0 340 226" className="w-full" style={{ fontFamily: 'inherit' }}>
       {/* ── Connecting lines + mid-arrows ── */}
 
       {/* Solar → Inverter (down) */}
@@ -585,7 +585,6 @@ export default function PvModal({
                     batterySoc={batterySoc}
                     batteryMaxEnergy={batteryMaxEnergy}
                     pvDaily={pvDaily}
-                    compact={isCompact}
                   />
                 </div>
               </div>

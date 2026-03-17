@@ -473,7 +473,7 @@ export default function LuftungsanlageModal({
                   <svg
                     viewBox="0 0 300 195"
                     className="w-full"
-                    style={{ fontFamily: 'inherit', maxHeight: isCompact ? '220px' : undefined }}
+                    style={{ fontFamily: 'inherit', maxHeight: isCompact ? '270px' : undefined }}
                   >
                     {/* Flow arrows */}
                     {/* Top arrow: AUSSEN → WRG → ZULUFT */}

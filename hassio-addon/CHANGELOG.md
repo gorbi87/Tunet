@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.53
+
+### Fixed
+- WRG diagram: maxHeight 270px. PowerFlow SVG: no maxHeight, scales naturally.
+
 ## 1.14.52
 
 ### Fixed
