@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.44] — 2026-03-17
+
+### Fixed
+- Modals (Lüftungsanlage, Wärmepumpe, PV): Tablet-Responsivität verbessert. Padding/Radius skalieren jetzt stufenweise (`p-4` mobil → `md:p-6` Tablet → `lg:p-10` Desktop), `lg:rounded-[3rem]` statt `md:rounded-[3rem]`.
+
 ## [1.14.43] — 2026-03-16
 
 ### Added

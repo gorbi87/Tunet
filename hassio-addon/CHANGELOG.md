@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.44
+
+### Fixed
+- Modals (Lüftungsanlage, Wärmepumpe, PV): responsive padding/radius for tablets.
+
 ## 1.14.43
 
 ### Added

@@ -121,7 +121,7 @@ export default function WaermepumpeModal({
       titleId={modalTitleId}
       overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName="popup-anim relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border p-6 font-sans backdrop-blur-xl md:rounded-[3rem] md:p-12"
+      panelClassName="popup-anim relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border p-4 font-sans backdrop-blur-xl md:p-6 lg:rounded-[3rem] lg:p-10"
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
