@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.56
+
+### Fixed
+- PV PowerFlow: battery power label moved to the connection line (Batt↔Inverter).
+
 ## 1.14.55
 
 ### Fixed

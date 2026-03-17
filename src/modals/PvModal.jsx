@@ -141,6 +141,19 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
         x2={battCharge ? BATT.x + BATT.w : INV.x} y2={INV.cy}
         color={BATT_COLOR} active={battCharge || battDischarge}
       />
+      {(battCharge || battDischarge) && (() => {
+        const lx = Math.round((BATT.x + BATT.w + INV.x) / 2);
+        const pw = fmt(battCharge ? batteryInW : batteryOutW);
+        return (
+          <>
+            <rect x={lx - 18} y={INV.cy - 14} width={36} height={11} rx="3"
+              fill="var(--card-bg)" opacity="0.85" />
+            <text x={lx} y={INV.cy - 6} textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={socColor}>
+              {battCharge ? '+' : '−'}{pw}
+            </text>
+          </>
+        );
+      })()}
 
       {/* Inverter ↔ Grid: line drawn left→right; import = reverse */}
       <AnimatedLine
@@ -178,13 +191,8 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
         x={battIconX} y={battIconY} w={battIconW} h={battIconH}
         soc={batterySoc} color={socColor} charging={battCharge}
       />
-      {(battCharge || battDischarge) && (
-        <text x={BATT.cx} y={battIconY + battIconH + (battTimeStr ? 9 : 12)} textAnchor="middle" fontSize="9" fontWeight="300" fill={socColor}>
-          {battCharge ? '+' : '−'}{fmt(battCharge ? batteryInW : batteryOutW)}
-        </text>
-      )}
       {battTimeStr && (
-        <text x={BATT.cx} y={BATT.y + BATT.h - 6} textAnchor="middle" fontSize="6.5" fill={socColor} opacity="0.75">
+        <text x={BATT.cx} y={BATT.y + BATT.h - 6} textAnchor="middle" fontSize="7" fill={socColor} opacity="0.8">
           {battTimeStr}
         </text>
       )}
