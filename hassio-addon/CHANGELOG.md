@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.55
+
+### Fixed
+- PV PowerFlow: battery power text positioned below battery icon, not overlapping.
+
 ## 1.14.54
 
 ### Fixed / Added

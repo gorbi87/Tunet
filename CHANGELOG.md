@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.55] — 2026-03-17
+
+### Fixed
+- PV Energiefluss: Batterie-Leistungstext jetzt unterhalb des Batterie-Icons positioniert (war überlagert).
+
 ## [1.14.54] — 2026-03-17
 
 ### Fixed / Added

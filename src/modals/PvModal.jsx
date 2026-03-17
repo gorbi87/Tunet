@@ -179,7 +179,7 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
         soc={batterySoc} color={socColor} charging={battCharge}
       />
       {(battCharge || battDischarge) && (
-        <text x={BATT.cx} y={BATT.y + BATT.h - (battTimeStr ? 17 : 8)} textAnchor="middle" fontSize="9" fontWeight="300" fill={socColor}>
+        <text x={BATT.cx} y={battIconY + battIconH + (battTimeStr ? 9 : 12)} textAnchor="middle" fontSize="9" fontWeight="300" fill={socColor}>
           {battCharge ? '+' : '−'}{fmt(battCharge ? batteryInW : batteryOutW)}
         </text>
       )}
