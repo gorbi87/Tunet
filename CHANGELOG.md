@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.45] — 2026-03-17
+
+### Changed
+- WärmepumpeModal: Vollbild-Layout auf Tablet (< lg). Header + Tabs oben fixiert, nur Inhaltsbereich scrollt. Desktop bleibt zentriertes Popup wie bisher.
+
 ## [1.14.44] — 2026-03-17
 
 ### Fixed

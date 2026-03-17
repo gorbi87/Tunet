@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.45
+
+### Changed
+- WärmepumpeModal: full-screen layout on tablet with sticky header+tabs, scrollable content area.
+
 ## 1.14.44
 
 ### Fixed

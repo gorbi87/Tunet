@@ -96,14 +96,14 @@ export default function WaermepumpeModal({
   const aktivCop = energyTab === 'today' ? copHeute : copMonat;
 
   const TempRow = ({ label, value, color = 'var(--text-primary)' }) => (
-    <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-4">
+    <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3 lg:p-4">
       <p
         className="text-[10px] font-bold tracking-[0.15em] uppercase"
         style={{ color: 'var(--text-muted)' }}
       >
         {label}
       </p>
-      <p className="text-2xl font-light" style={{ color }}>
+      <p className="text-xl font-light lg:text-2xl" style={{ color }}>
         {value != null ? `${value.toFixed(1)} °C` : '—'}
       </p>
     </div>
@@ -119,9 +119,9 @@ export default function WaermepumpeModal({
       open={show}
       onClose={onClose}
       titleId={modalTitleId}
-      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
+      overlayClassName="fixed inset-0 z-50 flex items-stretch lg:items-center lg:justify-center lg:p-6"
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName="popup-anim relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border p-4 font-sans backdrop-blur-xl md:p-6 lg:rounded-[3rem] lg:p-10"
+      panelClassName="popup-anim relative flex flex-col w-full h-full lg:h-auto lg:max-h-[90vh] lg:max-w-4xl overflow-hidden rounded-none lg:rounded-[3rem] border font-sans backdrop-blur-xl"
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -130,246 +130,256 @@ export default function WaermepumpeModal({
     >
       {() => (
         <>
-          {/* Close button */}
-          <div className="absolute top-6 right-6 z-20 md:top-10 md:right-10">
-            <button onClick={onClose} className="modal-close" aria-label={translate('common.close')}>
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Header */}
-          <div className="mb-6 flex items-center gap-4 font-sans">
-            <div
-              className="rounded-2xl p-4 transition-all duration-500"
-              style={{ backgroundColor: 'rgba(234, 88, 12, 0.15)', color: '#fb923c' }}
-            >
-              <Flame className="h-8 w-8" />
+          {/* ── Fixed header: close + icon/title + tabs ── */}
+          <div
+            className="flex-shrink-0 border-b p-4 pb-3 md:p-6 md:pb-4 lg:p-10 lg:pb-6"
+            style={{ borderColor: 'var(--glass-border)' }}
+          >
+            {/* Close button */}
+            <div className="absolute top-4 right-4 z-20 md:top-6 md:right-6 lg:top-8 lg:right-8">
+              <button onClick={onClose} className="modal-close" aria-label={translate('common.close')}>
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <div>
-              <h3
-                id={modalTitleId}
-                className="text-2xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic"
-              >
-                {name}
-              </h3>
+
+            {/* Header row */}
+            <div className="mb-4 flex items-center gap-3 pr-10 font-sans">
               <div
-                className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 transition-all duration-500"
-                style={{
-                  backgroundColor: kompressorAktiv ? 'var(--status-success-bg)' : 'var(--glass-bg)',
-                  borderColor: kompressorAktiv
-                    ? 'var(--status-success-border)'
-                    : 'var(--glass-border)',
-                }}
+                className="rounded-2xl p-3 lg:p-4 transition-all duration-500"
+                style={{ backgroundColor: 'rgba(234, 88, 12, 0.15)', color: '#fb923c' }}
               >
-                <span
-                  className={`h-2 w-2 rounded-full ${kompressorAktiv ? 'bg-[var(--status-success-fg)]' : 'bg-[var(--text-muted)]'}`}
-                />
-                <p
-                  className="text-[10px] font-bold tracking-widest uppercase italic"
+                <Flame className="h-6 w-6 lg:h-8 lg:w-8" />
+              </div>
+              <div>
+                <h3
+                  id={modalTitleId}
+                  className="text-xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic lg:text-2xl"
+                >
+                  {name}
+                </h3>
+                <div
+                  className="mt-1.5 inline-flex items-center gap-2 rounded-full border px-3 py-1 transition-all duration-500"
                   style={{
-                    color: kompressorAktiv ? 'var(--status-success-fg)' : 'var(--text-secondary)',
+                    backgroundColor: kompressorAktiv ? 'var(--status-success-bg)' : 'var(--glass-bg)',
+                    borderColor: kompressorAktiv
+                      ? 'var(--status-success-border)'
+                      : 'var(--glass-border)',
                   }}
                 >
-                  {kompressorAktiv
-                    ? translate('waermepumpe.kompressor.on')
-                    : translate('waermepumpe.kompressor.off')}
-                </p>
+                  <span
+                    className={`h-2 w-2 rounded-full ${kompressorAktiv ? 'bg-[var(--status-success-fg)]' : 'bg-[var(--text-muted)]'}`}
+                  />
+                  <p
+                    className="text-[10px] font-bold tracking-widest uppercase italic"
+                    style={{
+                      color: kompressorAktiv ? 'var(--status-success-fg)' : 'var(--text-secondary)',
+                    }}
+                  >
+                    {kompressorAktiv
+                      ? translate('waermepumpe.kompressor.on')
+                      : translate('waermepumpe.kompressor.off')}
+                  </p>
+                </div>
               </div>
+            </div>
+
+            {/* Main tabs */}
+            <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
+              {mainTabs.map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setMainTab(key)}
+                  className="flex-1 rounded-xl py-2 text-[11px] font-bold tracking-widest uppercase transition-all"
+                  style={
+                    mainTab === key
+                      ? {
+                          backgroundColor: 'var(--accent-bg)',
+                          borderColor: 'var(--accent-color)',
+                          color: 'var(--accent-color)',
+                          border: '1px solid var(--accent-color)',
+                        }
+                      : { color: 'var(--text-secondary)' }
+                  }
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Main tab switcher */}
-          <div className="mb-6 flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
-            {mainTabs.map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setMainTab(key)}
-                className="flex-1 rounded-xl py-2 text-[11px] font-bold tracking-widest uppercase transition-all"
-                style={
-                  mainTab === key
-                    ? {
-                        backgroundColor: 'var(--accent-bg)',
-                        borderColor: 'var(--accent-color)',
-                        color: 'var(--accent-color)',
-                        border: '1px solid var(--accent-color)',
-                      }
-                    : { color: 'var(--text-secondary)' }
-                }
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          {/* ── Scrollable content area ── */}
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10">
 
-          {/* Tab: Übersicht */}
-          {mainTab === 'overview' && (
-            <>
-              {/* Temps + Energy grid */}
-              <div className="grid grid-cols-1 items-start gap-8 font-sans lg:grid-cols-5">
-                {/* Left: Temperatures */}
-                <div className="space-y-4 lg:col-span-3">
-                  <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
-                    {translate('waermepumpe.temperatures')}
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <TempRow label={translate('waermepumpe.warmwasser')} value={wwTemp} color="#fb923c" />
-                    <TempRow label={translate('waermepumpe.aussentemp')} value={aussentemp} />
-                    <TempRow
-                      label={translate('waermepumpe.vorlauf')}
-                      value={vorlauf}
-                      color="var(--status-error-fg)"
-                    />
-                    <TempRow
-                      label={translate('waermepumpe.ruecklauf')}
-                      value={ruecklauf}
-                      color="var(--accent-color)"
-                    />
+            {/* Tab: Übersicht */}
+            {mainTab === 'overview' && (
+              <>
+                {/* Temps + Energy grid */}
+                <div className="grid grid-cols-1 items-start gap-6 font-sans lg:grid-cols-5 lg:gap-8">
+                  {/* Left: Temperatures */}
+                  <div className="space-y-3 lg:col-span-3 lg:space-y-4">
+                    <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
+                      {translate('waermepumpe.temperatures')}
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <TempRow label={translate('waermepumpe.warmwasser')} value={wwTemp} color="#fb923c" />
+                      <TempRow label={translate('waermepumpe.aussentemp')} value={aussentemp} />
+                      <TempRow
+                        label={translate('waermepumpe.vorlauf')}
+                        value={vorlauf}
+                        color="var(--status-error-fg)"
+                      />
+                      <TempRow
+                        label={translate('waermepumpe.ruecklauf')}
+                        value={ruecklauf}
+                        color="var(--accent-color)"
+                      />
+                    </div>
+
+                    {heizstab != null && heizstab > 0 && (
+                      <div
+                        className="flex items-center gap-3 rounded-2xl border p-3"
+                        style={{
+                          backgroundColor: 'var(--status-error-bg)',
+                          borderColor: 'var(--status-error-border)',
+                        }}
+                      >
+                        <Zap className="h-4 w-4 text-[var(--status-error-fg)]" />
+                        <div>
+                          <p className="text-[10px] font-bold tracking-widest text-[var(--status-error-fg)] uppercase">
+                            {translate('waermepumpe.heizstab')}
+                          </p>
+                          <p className="text-sm font-light text-[var(--text-primary)]">
+                            {heizstab} W
+                            {heizstabTaglich != null && (
+                              <span className="ml-2 text-[var(--text-muted)]">
+                                · {heizstabTaglich.toFixed(2)} kWh {translate('waermepumpe.heute')}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {heizstab != null && heizstab > 0 && (
-                    <div
-                      className="flex items-center gap-3 rounded-2xl border p-3"
-                      style={{
-                        backgroundColor: 'var(--status-error-bg)',
-                        borderColor: 'var(--status-error-border)',
-                      }}
-                    >
-                      <Zap className="h-4 w-4 text-[var(--status-error-fg)]" />
-                      <div>
-                        <p className="text-[10px] font-bold tracking-widest text-[var(--status-error-fg)] uppercase">
-                          {translate('waermepumpe.heizstab')}
+                  {/* Right: Energy stats */}
+                  <div className="space-y-3 lg:col-span-2 lg:space-y-4">
+                    {/* Energy tab switcher */}
+                    <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
+                      {['today', 'month'].map((key) => (
+                        <button
+                          key={key}
+                          onClick={() => setEnergyTab(key)}
+                          className="flex-1 rounded-xl py-2 text-[11px] font-bold tracking-widest uppercase transition-all"
+                          style={
+                            energyTab === key
+                              ? {
+                                  backgroundColor: 'var(--accent-bg)',
+                                  borderColor: 'var(--accent-color)',
+                                  color: 'var(--accent-color)',
+                                  border: '1px solid var(--accent-color)',
+                                }
+                              : { color: 'var(--text-secondary)' }
+                          }
+                        >
+                          {key === 'today'
+                            ? translate('waermepumpe.heute')
+                            : translate('waermepumpe.monat')}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* COP */}
+                    <div className="popup-surface flex flex-col items-center gap-2 rounded-3xl p-5 transition-all lg:p-8">
+                      <p className="text-xs font-bold tracking-[0.2em] text-[var(--accent-color)] uppercase">
+                        COP
+                      </p>
+                      <span className="text-5xl leading-none font-light text-[var(--accent-color)] italic lg:text-6xl">
+                        {aktivCop ?? '—'}
+                      </span>
+                    </div>
+
+                    {/* Strom + Wärme */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3 lg:p-4">
+                        <Zap className="h-4 w-4 text-[var(--accent-color)]" />
+                        <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
+                          {translate('waermepumpe.strom')}
                         </p>
-                        <p className="text-sm font-light text-[var(--text-primary)]">
-                          {heizstab} W
-                          {heizstabTaglich != null && (
-                            <span className="ml-2 text-[var(--text-muted)]">
-                              · {heizstabTaglich.toFixed(2)} kWh {translate('waermepumpe.heute')}
-                            </span>
-                          )}
+                        <p className="text-lg font-light text-[var(--text-primary)] lg:text-xl">
+                          {aktivStrom != null ? aktivStrom.toFixed(2) : '—'}
                         </p>
+                        <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
                       </div>
+                      <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3 lg:p-4">
+                        <Thermometer className="h-4 w-4 text-orange-400" />
+                        <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
+                          {translate('waermepumpe.waerme')}
+                        </p>
+                        <p className="text-lg font-light text-[var(--text-primary)] lg:text-xl">
+                          {aktivWaerme != null ? aktivWaerme.toFixed(2) : '—'}
+                        </p>
+                        <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Controls section */}
+                <div
+                  className="mt-6 space-y-4 border-t pt-5 font-sans lg:mt-8 lg:space-y-5 lg:pt-6"
+                  style={{ borderColor: 'var(--glass-border)' }}
+                >
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
+                    {translate('waermepumpe.steuerung')}
+                  </p>
+
+                  {e(WAERMEPUMPE_ENTITY_IDS.betriebsmodus) && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                        {translate('waermepumpe.betriebsmodus')}
+                      </p>
+                      <SelectPills
+                        entityId={WAERMEPUMPE_ENTITY_IDS.betriebsmodus}
+                        entity={e(WAERMEPUMPE_ENTITY_IDS.betriebsmodus)}
+                        onSelect={selectOption}
+                      />
+                    </div>
+                  )}
+
+                  {e(WAERMEPUMPE_ENTITY_IDS.wwSoll) && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                        {translate('waermepumpe.wwSoll')}
+                      </p>
+                      <SelectPills
+                        entityId={WAERMEPUMPE_ENTITY_IDS.wwSoll}
+                        entity={e(WAERMEPUMPE_ENTITY_IDS.wwSoll)}
+                        onSelect={selectOption}
+                      />
+                    </div>
+                  )}
+
+                  {e(WAERMEPUMPE_ENTITY_IDS.heizstabSelect) && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                        {translate('waermepumpe.heizstab')}
+                      </p>
+                      <SelectPills
+                        entityId={WAERMEPUMPE_ENTITY_IDS.heizstabSelect}
+                        entity={e(WAERMEPUMPE_ENTITY_IDS.heizstabSelect)}
+                        onSelect={selectOption}
+                      />
                     </div>
                   )}
                 </div>
+              </>
+            )}
 
-                {/* Right: Energy stats */}
-                <div className="space-y-4 lg:col-span-2">
-                  {/* Energy tab switcher */}
-                  <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
-                    {['today', 'month'].map((key) => (
-                      <button
-                        key={key}
-                        onClick={() => setEnergyTab(key)}
-                        className="flex-1 rounded-xl py-2 text-[11px] font-bold tracking-widest uppercase transition-all"
-                        style={
-                          energyTab === key
-                            ? {
-                                backgroundColor: 'var(--accent-bg)',
-                                borderColor: 'var(--accent-color)',
-                                color: 'var(--accent-color)',
-                                border: '1px solid var(--accent-color)',
-                              }
-                            : { color: 'var(--text-secondary)' }
-                        }
-                      >
-                        {key === 'today'
-                          ? translate('waermepumpe.heute')
-                          : translate('waermepumpe.monat')}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* COP */}
-                  <div className="popup-surface flex flex-col items-center gap-2 rounded-3xl p-8 transition-all">
-                    <p className="text-xs font-bold tracking-[0.2em] text-[var(--accent-color)] uppercase">
-                      COP
-                    </p>
-                    <span className="text-6xl leading-none font-light text-[var(--accent-color)] italic">
-                      {aktivCop ?? '—'}
-                    </span>
-                  </div>
-
-                  {/* Strom + Wärme */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-4">
-                      <Zap className="h-4 w-4 text-[var(--accent-color)]" />
-                      <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-                        {translate('waermepumpe.strom')}
-                      </p>
-                      <p className="text-xl font-light text-[var(--text-primary)]">
-                        {aktivStrom != null ? aktivStrom.toFixed(2) : '—'}
-                      </p>
-                      <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
-                    </div>
-                    <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-4">
-                      <Thermometer className="h-4 w-4 text-orange-400" />
-                      <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-                        {translate('waermepumpe.waerme')}
-                      </p>
-                      <p className="text-xl font-light text-[var(--text-primary)]">
-                        {aktivWaerme != null ? aktivWaerme.toFixed(2) : '—'}
-                      </p>
-                      <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Controls section */}
-              <div
-                className="mt-8 space-y-5 border-t pt-6 font-sans"
-                style={{ borderColor: 'var(--glass-border)' }}
-              >
-                <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
-                  {translate('waermepumpe.steuerung')}
-                </p>
-
-                {e(WAERMEPUMPE_ENTITY_IDS.betriebsmodus) && (
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
-                      {translate('waermepumpe.betriebsmodus')}
-                    </p>
-                    <SelectPills
-                      entityId={WAERMEPUMPE_ENTITY_IDS.betriebsmodus}
-                      entity={e(WAERMEPUMPE_ENTITY_IDS.betriebsmodus)}
-                      onSelect={selectOption}
-                    />
-                  </div>
-                )}
-
-                {e(WAERMEPUMPE_ENTITY_IDS.wwSoll) && (
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
-                      {translate('waermepumpe.wwSoll')}
-                    </p>
-                    <SelectPills
-                      entityId={WAERMEPUMPE_ENTITY_IDS.wwSoll}
-                      entity={e(WAERMEPUMPE_ENTITY_IDS.wwSoll)}
-                      onSelect={selectOption}
-                    />
-                  </div>
-                )}
-
-                {e(WAERMEPUMPE_ENTITY_IDS.heizstabSelect) && (
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
-                      {translate('waermepumpe.heizstab')}
-                    </p>
-                    <SelectPills
-                      entityId={WAERMEPUMPE_ENTITY_IDS.heizstabSelect}
-                      entity={e(WAERMEPUMPE_ENTITY_IDS.heizstabSelect)}
-                      onSelect={selectOption}
-                    />
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {/* Tab: Hydraulik */}
-          {mainTab === 'hydraulik' && (
-            <HpsuHydraulicView entities={entities} />
-          )}
+            {/* Tab: Hydraulik */}
+            {mainTab === 'hydraulik' && (
+              <HpsuHydraulicView entities={entities} />
+            )}
+          </div>
         </>
       )}
     </AccessibleModalShell>
