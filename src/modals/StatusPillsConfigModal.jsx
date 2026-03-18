@@ -939,10 +939,15 @@ export default function StatusPillsConfigModal({
                       {/* Source Logic */}
                       <section className={`${sectionShellClass} space-y-3`}>
                         <h4 className="text-[11px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-                          {pill.type === 'conditional' || pill.type === 'alarm'
+                          {pill.type === 'conditional' || pill.type === 'alarm' || pill.type === 'lights_on'
                             ? t('statusPills.dataSource')
                             : t('statusPills.mediaPlayerSource')}
                         </h4>
+                        {pill.type === 'lights_on' && (
+                          <p className="text-xs text-[var(--text-muted)]">
+                            Optional: Sensor-Entity wählen (z.B. <code>sensor.lichter_an_anzahl</code>). Ohne Auswahl werden alle <code>light.*</code> Entities gezählt.
+                          </p>
+                        )}
 
                         {/* Emby/Sonos Source Type Logic */}
                         {(pill.type === 'emby' || pill.type === 'sonos') && (
@@ -1202,8 +1207,8 @@ export default function StatusPillsConfigModal({
                             </div>
                           )}
 
-                        {/* Standard Entity Select (Conditional) */}
-                        {(pill.type === 'conditional' || pill.type === 'alarm') && (
+                        {/* Standard Entity Select (Conditional / lights_on) */}
+                        {(pill.type === 'conditional' || pill.type === 'alarm' || pill.type === 'lights_on') && (
                           <div className="relative" ref={entityPickerRef}>
                             <input
                               type="text"

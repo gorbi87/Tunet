@@ -426,7 +426,7 @@ const StatusPill = memo(function StatusPill({
     const count = pill._lightsOnCount ?? 0;
     if (count === 0) return null;
 
-    const autoLabel = `${count} Licht${count !== 1 ? 'er' : ''}`;
+    const autoLabel = count === 1 ? '1 Licht an' : `${count} Lichter an`;
     const displayLabel = pill.label ? pill.label.replace('{count}', count) : autoLabel;
     const bgColor = pill.bgColor || 'rgba(255, 255, 255, 0.03)';
     const iconBgColor = pill.iconBgColor || 'rgba(251, 191, 36, 0.15)';

@@ -297,11 +297,9 @@ export default function StatusBar({
             }
 
             if (pill.type === 'lights_on') {
-              const lightIds =
-                Array.isArray(pill.lightEntityIds) && pill.lightEntityIds.length > 0
-                  ? pill.lightEntityIds
-                  : Object.keys(entities).filter((id) => id.startsWith('light.'));
-              const onCount = lightIds.filter((id) => entities[id]?.state === 'on').length;
+              const onCount = pill.entityId && entities[pill.entityId]
+                ? parseInt(entities[pill.entityId].state, 10) || 0
+                : Object.keys(entities).filter((id) => id.startsWith('light.')).filter((id) => entities[id]?.state === 'on').length;
               return (
                 <StatusPill
                   key={pill.id}
