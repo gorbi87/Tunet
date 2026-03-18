@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { getIconComponent } from '../../icons';
-import { Activity, AlertTriangle, Clapperboard, Lock, RefreshCw } from '../../icons';
+import { Activity, AlertTriangle, Clapperboard, Lightbulb, Lock, RefreshCw } from '../../icons';
 import MdiIcon from '@mdi/react';
 import { mdiShieldHome, mdiShieldLock, mdiShieldOff } from '@mdi/js';
 import { evaluateEntityCondition } from '../../utils/conditionUtils';
@@ -417,6 +417,46 @@ const StatusPill = memo(function StatusPill({
             {badge}
           </div>
         )}
+      </Wrapper>
+    );
+  }
+
+  // Lights-on count pill
+  if (pill.type === 'lights_on') {
+    const count = pill._lightsOnCount ?? 0;
+    if (count === 0) return null;
+
+    const autoLabel = `${count} Licht${count !== 1 ? 'er' : ''}`;
+    const displayLabel = pill.label ? pill.label.replace('{count}', count) : autoLabel;
+    const bgColor = pill.bgColor || 'rgba(255, 255, 255, 0.03)';
+    const iconBgColor = pill.iconBgColor || 'rgba(251, 191, 36, 0.15)';
+    const iconColor = pill.iconColor || 'text-amber-400';
+    const labelColor = resolveHeadingColorClass(pill.labelColor);
+    const sublabelColor = pill.sublabelColor || 'text-[var(--text-muted)]';
+    const IconComponent = pill.icon ? getIconComponent(pill.icon) || Lightbulb : Lightbulb;
+    const paddingClass = isMobile ? 'px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
+    const iconPadding = isMobile ? 'p-1' : 'p-1.5';
+    const textSize = isMobile ? 'text-[10px]' : 'text-xs';
+    const Wrapper = onClick ? 'button' : 'div';
+    const wrapperProps = onClick
+      ? { onClick, className: `flex items-center ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95`, style: { backgroundColor: bgColor } }
+      : { className: `flex items-center ${paddingClass} rounded-2xl`, style: { backgroundColor: bgColor } };
+
+    return (
+      <Wrapper {...wrapperProps}>
+        <div className={`${iconPadding} rounded-xl ${iconColor}`} style={{ backgroundColor: iconBgColor }}>
+          <IconComponent className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+        </div>
+        <div className="flex min-w-0 flex-col items-start">
+          <span className={`${textSize} text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}>
+            {displayLabel}
+          </span>
+          {pill.sublabel && (
+            <span className={`${textSize} text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}>
+              {pill.sublabel}
+            </span>
+          )}
+        </div>
       </Wrapper>
     );
   }

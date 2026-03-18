@@ -296,6 +296,24 @@ export default function StatusBar({
               );
             }
 
+            if (pill.type === 'lights_on') {
+              const lightIds =
+                Array.isArray(pill.lightEntityIds) && pill.lightEntityIds.length > 0
+                  ? pill.lightEntityIds
+                  : Object.keys(entities).filter((id) => id.startsWith('light.'));
+              const onCount = lightIds.filter((id) => entities[id]?.state === 'on').length;
+              return (
+                <StatusPill
+                  key={pill.id}
+                  pill={{ ...pill, _lightsOnCount: onCount }}
+                  entity={null}
+                  getA={getA}
+                  t={t}
+                  isMobile={isMobile}
+                />
+              );
+            }
+
             // Default conditional pill
             return (
               <StatusPill

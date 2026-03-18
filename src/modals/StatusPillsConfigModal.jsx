@@ -200,6 +200,7 @@ export default function StatusPillsConfigModal({
       const translated = t('statusPills.typeAlarm');
       return translated === 'statusPills.typeAlarm' ? 'Alarm' : translated;
     }
+    if (pillType === 'lights_on') return 'Lichter an';
     return t('statusPills.typeSonos');
   };
 
@@ -497,6 +498,15 @@ export default function StatusPillsConfigModal({
                     {t('statusPills.typeAlarm') === 'statusPills.typeAlarm'
                       ? 'Alarm'
                       : t('statusPills.typeAlarm')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      addPill('lights_on');
+                      setShowAddMenu(false);
+                    }}
+                    className="flex items-center gap-2 rounded-lg px-4 py-3 text-left text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-white/5"
+                  >
+                    <Activity className="h-4 w-4 text-amber-400" /> Lichter an
                   </button>
                 </div>
               )}
