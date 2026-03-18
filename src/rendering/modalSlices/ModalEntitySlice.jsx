@@ -24,6 +24,7 @@ const VacuumModal = lazy(() => import('../../modals/VacuumModal'));
 const WaermepumpeModal = lazy(() => import('../../modals/WaermepumpeModal'));
 const LuftungsanlageModal = lazy(() => import('../../modals/LuftungsanlageModal'));
 const PvModal = lazy(() => import('../../modals/PvModal'));
+const LightsOnModal = lazy(() => import('../../modals/LightsOnModal'));
 
 export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, resolveCarSettings }) {
   const { entities, conn, activeUrl, authRef, config, t, language } = core;
@@ -72,6 +73,8 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     setShowLuftungsanlageModal,
     showPvModal,
     setShowPvModal,
+    showLightsOnModal,
+    setShowLightsOnModal,
   } = modals;
   const { cardSettings, saveCardSetting, customNames, customIcons, getCardSettingsKey } =
     cardConfig;
@@ -507,6 +510,15 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
               config.authMethod === 'oauth' ? authRef?.current?.accessToken || '' : config.token
             }
             t={t}
+          />
+        </ModalSuspense>
+      )}
+
+      {showLightsOnModal && (
+        <ModalSuspense>
+          <LightsOnModal
+            show={true}
+            onClose={() => setShowLightsOnModal(false)}
           />
         </ModalSuspense>
       )}

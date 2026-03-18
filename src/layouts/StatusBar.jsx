@@ -38,6 +38,7 @@ export default function StatusBar({
     setActiveMediaModal,
     setShowAlarmModal,
     setShowStatusPillsConfig,
+    setShowLightsOnModal,
   } = useModalState();
 
   const isSonosEntity = (entity) => {
@@ -308,6 +309,7 @@ export default function StatusBar({
                   getA={getA}
                   t={t}
                   isMobile={isMobile}
+                  onClick={() => setShowLightsOnModal(true)}
                 />
               );
             }
