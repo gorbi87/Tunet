@@ -522,6 +522,7 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
             entityIds={showEntityCountModal?.entityIds || []}
             activeState={showEntityCountModal?.activeState || 'on'}
             label={showEntityCountModal?.label || ''}
+            singularLabel={showEntityCountModal?.singularLabel || ''}
           />
         </ModalSuspense>
       )}

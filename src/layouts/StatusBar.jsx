@@ -309,7 +309,7 @@ export default function StatusBar({
                   getA={getA}
                   t={t}
                   isMobile={isMobile}
-                  onClick={entityIds.length > 0 ? () => setShowEntityCountModal({ entityIds, activeState, label: pill.label || '' }) : undefined}
+                  onClick={entityIds.length > 0 ? () => setShowEntityCountModal({ entityIds, activeState, label: pill.label || '', singularLabel: pill.singularLabel || '' }) : undefined}
                 />
               );
             }

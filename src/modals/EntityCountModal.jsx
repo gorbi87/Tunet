@@ -3,7 +3,7 @@ import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 import { X, Activity, Power } from '../icons';
 import { callService } from '../services/haClient';
 
-export default function EntityCountModal({ show, onClose, entityIds = [], activeState = 'on', label = '' }) {
+export default function EntityCountModal({ show, onClose, entityIds = [], activeState = 'on', label = '', singularLabel = '' }) {
   const { entities, conn } = useHomeAssistant();
 
   const activeEntities = entityIds
@@ -17,8 +17,12 @@ export default function EntityCountModal({ show, onClose, entityIds = [], active
 
   const count = activeEntities.length;
 
-  const autoLabel = `${count} aktiv`;
-  const heading = label ? label.replace('{count}', count) : autoLabel;
+  const heading =
+    count === 1
+      ? singularLabel || (label ? `1 ${label}` : '1 aktiv')
+      : label
+        ? `${count} ${label}`
+        : `${count} aktiv`;
 
   const deactivate = (entityId) => {
     const domain = entityId.split('.')[0];

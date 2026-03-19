@@ -425,8 +425,14 @@ const StatusPill = memo(function StatusPill({
   if (pill.type === 'entity_count') {
     const count = pill._entityCount ?? 0;
     if (count === 0) return null;
-    const autoLabel = `${count} aktiv`;
-    const displayLabel = pill.label ? pill.label.replace('{count}', count) : autoLabel;
+    const pluralText = pill.label?.trim();
+    const singularText = pill.singularLabel?.trim();
+    const displayLabel =
+      count === 1
+        ? singularText || (pluralText ? `1 ${pluralText}` : '1 aktiv')
+        : pluralText
+          ? `${count} ${pluralText}`
+          : `${count} aktiv`;
     const bgColor = pill.bgColor || 'rgba(255, 255, 255, 0.03)';
     const iconBgColor = pill.iconBgColor || 'rgba(251, 191, 36, 0.15)';
     const iconColor = pill.iconColor || 'text-amber-400';

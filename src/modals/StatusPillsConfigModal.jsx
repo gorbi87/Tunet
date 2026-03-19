@@ -786,27 +786,33 @@ export default function StatusPillsConfigModal({
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div className="space-y-1">
                               <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                                {t('statusPills.heading')}
+                                {pill.type === 'entity_count' ? 'Plural' : t('statusPills.heading')}
                               </label>
                               <input
                                 type="text"
                                 value={pill.label || ''}
                                 onChange={(e) => updatePill(pill.id, { label: e.target.value })}
-                                placeholder={t('statusPills.automatic')}
+                                placeholder={pill.type === 'entity_count' ? 'z.B. Lichter an' : t('statusPills.automatic')}
                                 className="w-full rounded-xl border-0 bg-[var(--glass-bg)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none"
                               />
+                              {pill.type === 'entity_count' && (
+                                <p className="text-[10px] text-[var(--text-muted)]">Zahl wird automatisch vorangestellt</p>
+                              )}
                             </div>
                             <div className="space-y-1">
                               <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                                {t('statusPills.subtitle')}
+                                {pill.type === 'entity_count' ? 'Singular' : t('statusPills.subtitle')}
                               </label>
                               <input
                                 type="text"
-                                value={pill.sublabel || ''}
-                                onChange={(e) => updatePill(pill.id, { sublabel: e.target.value })}
-                                placeholder={t('statusPills.automatic')}
+                                value={pill.type === 'entity_count' ? (pill.singularLabel || '') : (pill.sublabel || '')}
+                                onChange={(e) => updatePill(pill.id, pill.type === 'entity_count' ? { singularLabel: e.target.value } : { sublabel: e.target.value })}
+                                placeholder={pill.type === 'entity_count' ? 'z.B. 1 Licht an' : t('statusPills.automatic')}
                                 className="w-full rounded-xl border-0 bg-[var(--glass-bg)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none"
                               />
+                              {pill.type === 'entity_count' && (
+                                <p className="text-[10px] text-[var(--text-muted)]">Leer: "1 {pill.label || 'aktiv'}"</p>
+                              )}
                             </div>
                             {pill.type === 'conditional' && <div className="space-y-1">
                               <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
