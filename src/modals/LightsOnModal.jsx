@@ -3,17 +3,19 @@ import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 import { X, Lightbulb, Power } from '../icons';
 import { callService } from '../services/haClient';
 
-export default function LightsOnModal({ show, onClose }) {
+export default function LightsOnModal({ show, onClose, lightEntityIds = [] }) {
   const { entities, conn } = useHomeAssistant();
 
-  const activeLights = Object.values(entities)
-    .filter((e) => {
-      if (!e.entity_id.startsWith('light.') || e.state !== 'on') return false;
-      // Exclude group lights — they have an entity_id attribute listing their members
-      const memberIds = e.attributes?.entity_id;
-      if (Array.isArray(memberIds) && memberIds.length > 0) return false;
-      return true;
-    })
+  const activeLights = (
+    lightEntityIds.length > 0
+      ? lightEntityIds.map((id) => entities[id]).filter(Boolean)
+      : Object.values(entities).filter((e) => {
+          if (!e.entity_id.startsWith('light.') || e.state !== 'on') return false;
+          const memberIds = e.attributes?.entity_id;
+          if (Array.isArray(memberIds) && memberIds.length > 0) return false;
+          return true;
+        })
+  ).filter((e) => e.state === 'on')
     .sort((a, b) => {
       const nameA = (a.attributes?.friendly_name || a.entity_id).toLowerCase();
       const nameB = (b.attributes?.friendly_name || b.entity_id).toLowerCase();

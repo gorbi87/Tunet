@@ -38,7 +38,7 @@ const MODAL_DEFAULTS = {
   showHeaderEditModal: false,
   showEditCardModal: null,
   showStatusPillsConfig: false,
-  showLightsOnModal: false,
+  showLightsOnModal: null,
 };
 
 // Keys checked by hasOpenModal

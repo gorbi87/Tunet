@@ -1279,6 +1279,59 @@ export default function StatusPillsConfigModal({
                           </div>
                         )}
 
+                        {/* Light entity picker (lights_on only) */}
+                        {pill.type === 'lights_on' && (
+                          <div className="rounded-xl bg-[var(--glass-bg)] p-3">
+                            <div className="mb-2 flex items-center justify-between">
+                              <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
+                                Lichter im Popup
+                              </label>
+                              {Array.isArray(pill.lightEntityIds) && pill.lightEntityIds.length > 0 && (
+                                <button
+                                  onClick={() => updatePill(pill.id, { lightEntityIds: [] })}
+                                  className="text-[10px] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                                >
+                                  Alle entfernen
+                                </button>
+                              )}
+                            </div>
+                            <p className="mb-2 text-[10px] text-[var(--text-muted)]">
+                              Wähle genau die Lichter die im Popup angezeigt werden. Wenn leer: alle physischen Lichter.
+                            </p>
+                            <div className="custom-scrollbar max-h-48 space-y-1 overflow-y-auto">
+                              {Object.keys(entities)
+                                .filter((id) => id.startsWith('light.'))
+                                .filter((id) => {
+                                  const memberIds = entities[id]?.attributes?.entity_id;
+                                  return !(Array.isArray(memberIds) && memberIds.length > 0);
+                                })
+                                .sort((a, b) => {
+                                  const nA = (entities[a]?.attributes?.friendly_name || a).toLowerCase();
+                                  const nB = (entities[b]?.attributes?.friendly_name || b).toLowerCase();
+                                  return nA.localeCompare(nB);
+                                })
+                                .map((id) => {
+                                  const selected = Array.isArray(pill.lightEntityIds) && pill.lightEntityIds.includes(id);
+                                  const name = entities[id]?.attributes?.friendly_name || id;
+                                  return (
+                                    <button
+                                      key={id}
+                                      onClick={() => {
+                                        const current = Array.isArray(pill.lightEntityIds) ? pill.lightEntityIds : [];
+                                        const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
+                                        updatePill(pill.id, { lightEntityIds: next });
+                                      }}
+                                      className={`w-full rounded-lg px-3 py-1.5 text-left transition-colors ${selected ? 'bg-[var(--accent-bg)] text-[var(--accent-color)]' : 'text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)]'}`}
+                                    >
+                                      <div className="truncate text-xs font-bold">{name}</div>
+                                      <div className="truncate text-[10px] opacity-60">{id}</div>
+                                    </button>
+                                  );
+                                })}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Sessions Sensors (Emby only) */}
                         {pill.type === 'emby' && (
                           <div className="rounded-xl bg-[var(--glass-bg)] p-3">

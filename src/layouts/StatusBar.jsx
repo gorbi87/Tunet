@@ -309,7 +309,7 @@ export default function StatusBar({
                   getA={getA}
                   t={t}
                   isMobile={isMobile}
-                  onClick={() => setShowLightsOnModal(true)}
+                  onClick={() => setShowLightsOnModal(pill.lightEntityIds || [])}
                 />
               );
             }

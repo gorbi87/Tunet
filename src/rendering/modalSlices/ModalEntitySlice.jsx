@@ -514,11 +514,12 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
         </ModalSuspense>
       )}
 
-      {showLightsOnModal && (
+      {showLightsOnModal !== null && (
         <ModalSuspense>
           <LightsOnModal
             show={true}
-            onClose={() => setShowLightsOnModal(false)}
+            onClose={() => setShowLightsOnModal(null)}
+            lightEntityIds={Array.isArray(showLightsOnModal) ? showLightsOnModal : []}
           />
         </ModalSuspense>
       )}
