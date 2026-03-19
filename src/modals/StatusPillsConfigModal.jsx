@@ -97,7 +97,7 @@ export default function StatusPillsConfigModal({
         cancelled = true;
       };
     }
-  }, [show, statusPillsConfig]);
+  }, [show]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!show) return null;
 
@@ -1301,10 +1301,6 @@ export default function StatusPillsConfigModal({
                             <div className="custom-scrollbar max-h-48 space-y-1 overflow-y-auto">
                               {Object.keys(entities)
                                 .filter((id) => id.startsWith('light.'))
-                                .filter((id) => {
-                                  const memberIds = entities[id]?.attributes?.entity_id;
-                                  return !(Array.isArray(memberIds) && memberIds.length > 0);
-                                })
                                 .sort((a, b) => {
                                   const nA = (entities[a]?.attributes?.friendly_name || a).toLowerCase();
                                   const nB = (entities[b]?.attributes?.friendly_name || b).toLowerCase();
