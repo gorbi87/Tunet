@@ -7,7 +7,13 @@ export default function LightsOnModal({ show, onClose }) {
   const { entities, conn } = useHomeAssistant();
 
   const activeLights = Object.values(entities)
-    .filter((e) => e.entity_id.startsWith('light.') && e.state === 'on')
+    .filter((e) => {
+      if (!e.entity_id.startsWith('light.') || e.state !== 'on') return false;
+      // Exclude group lights — they have an entity_id attribute listing their members
+      const memberIds = e.attributes?.entity_id;
+      if (Array.isArray(memberIds) && memberIds.length > 0) return false;
+      return true;
+    })
     .sort((a, b) => {
       const nameA = (a.attributes?.friendly_name || a.entity_id).toLowerCase();
       const nameB = (b.attributes?.friendly_name || b.entity_id).toLowerCase();
