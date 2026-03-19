@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { getIconComponent } from '../../icons';
-import { Activity, AlertTriangle, Clapperboard, Lightbulb, Lock, RefreshCw } from '../../icons';
+import { Activity, AlertTriangle, Clapperboard, Lock, RefreshCw } from '../../icons';
 import MdiIcon from '@mdi/react';
 import { mdiShieldHome, mdiShieldLock, mdiShieldOff } from '@mdi/js';
 import { evaluateEntityCondition } from '../../utils/conditionUtils';
@@ -421,19 +421,18 @@ const StatusPill = memo(function StatusPill({
     );
   }
 
-  // Lights-on count pill
-  if (pill.type === 'lights_on') {
-    const count = pill._lightsOnCount ?? 0;
+  // Entity count pill
+  if (pill.type === 'entity_count') {
+    const count = pill._entityCount ?? 0;
     if (count === 0) return null;
-
-    const autoLabel = count === 1 ? '1 Licht an' : `${count} Lichter an`;
+    const autoLabel = `${count} aktiv`;
     const displayLabel = pill.label ? pill.label.replace('{count}', count) : autoLabel;
     const bgColor = pill.bgColor || 'rgba(255, 255, 255, 0.03)';
     const iconBgColor = pill.iconBgColor || 'rgba(251, 191, 36, 0.15)';
     const iconColor = pill.iconColor || 'text-amber-400';
     const labelColor = resolveHeadingColorClass(pill.labelColor);
     const sublabelColor = pill.sublabelColor || 'text-[var(--text-muted)]';
-    const IconComponent = pill.icon ? getIconComponent(pill.icon) || Lightbulb : Lightbulb;
+    const IconComponent = pill.icon ? getIconComponent(pill.icon) || Activity : Activity;
     const paddingClass = isMobile ? 'px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
     const textSize = isMobile ? 'text-[10px]' : 'text-xs';
@@ -441,7 +440,6 @@ const StatusPill = memo(function StatusPill({
     const wrapperProps = onClick
       ? { onClick, className: `flex items-center ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95`, style: { backgroundColor: bgColor } }
       : { className: `flex items-center ${paddingClass} rounded-2xl`, style: { backgroundColor: bgColor } };
-
     return (
       <Wrapper {...wrapperProps}>
         <div className={`${iconPadding} rounded-xl ${iconColor}`} style={{ backgroundColor: iconBgColor }}>

@@ -38,7 +38,7 @@ const MODAL_DEFAULTS = {
   showHeaderEditModal: false,
   showEditCardModal: null,
   showStatusPillsConfig: false,
-  showLightsOnModal: null,
+  showEntityCountModal: null,
 };
 
 // Keys checked by hasOpenModal
@@ -69,7 +69,7 @@ const OPEN_CHECK_KEYS = [
   'showWaermepumpeModal',
   'showLuftungsanlageModal',
   'showPvModal',
-  'showLightsOnModal',
+  'showEntityCountModal',
 ];
 
 /** @param {ModalState} state @param {{ type: 'SET', key: keyof ModalState, value: ModalState[keyof ModalState] } | { type: 'CLOSE_ALL' }} action */

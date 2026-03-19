@@ -24,7 +24,7 @@ const VacuumModal = lazy(() => import('../../modals/VacuumModal'));
 const WaermepumpeModal = lazy(() => import('../../modals/WaermepumpeModal'));
 const LuftungsanlageModal = lazy(() => import('../../modals/LuftungsanlageModal'));
 const PvModal = lazy(() => import('../../modals/PvModal'));
-const LightsOnModal = lazy(() => import('../../modals/LightsOnModal'));
+const EntityCountModal = lazy(() => import('../../modals/EntityCountModal'));
 
 export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, resolveCarSettings }) {
   const { entities, conn, activeUrl, authRef, config, t, language } = core;
@@ -73,8 +73,8 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     setShowLuftungsanlageModal,
     showPvModal,
     setShowPvModal,
-    showLightsOnModal,
-    setShowLightsOnModal,
+    showEntityCountModal,
+    setShowEntityCountModal,
   } = modals;
   const { cardSettings, saveCardSetting, customNames, customIcons, getCardSettingsKey } =
     cardConfig;
@@ -514,12 +514,14 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
         </ModalSuspense>
       )}
 
-      {showLightsOnModal !== null && (
+      {showEntityCountModal !== null && (
         <ModalSuspense>
-          <LightsOnModal
+          <EntityCountModal
             show={true}
-            onClose={() => setShowLightsOnModal(null)}
-            lightEntityIds={Array.isArray(showLightsOnModal) ? showLightsOnModal : []}
+            onClose={() => setShowEntityCountModal(null)}
+            entityIds={showEntityCountModal?.entityIds || []}
+            activeState={showEntityCountModal?.activeState || 'on'}
+            label={showEntityCountModal?.label || ''}
           />
         </ModalSuspense>
       )}

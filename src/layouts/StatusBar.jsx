@@ -38,7 +38,7 @@ export default function StatusBar({
     setActiveMediaModal,
     setShowAlarmModal,
     setShowStatusPillsConfig,
-    setShowLightsOnModal,
+    setShowEntityCountModal,
   } = useModalState();
 
   const isSonosEntity = (entity) => {
@@ -297,19 +297,19 @@ export default function StatusBar({
               );
             }
 
-            if (pill.type === 'lights_on') {
-              const onCount = pill.entityId && entities[pill.entityId]
-                ? parseInt(entities[pill.entityId].state, 10) || 0
-                : Object.keys(entities).filter((id) => id.startsWith('light.')).filter((id) => entities[id]?.state === 'on').length;
+            if (pill.type === 'entity_count') {
+              const activeState = pill.activeState || 'on';
+              const entityIds = Array.isArray(pill.entityIds) ? pill.entityIds : [];
+              const count = entityIds.filter((id) => entities[id]?.state === activeState).length;
               return (
                 <StatusPill
                   key={pill.id}
-                  pill={{ ...pill, _lightsOnCount: onCount }}
+                  pill={{ ...pill, _entityCount: count }}
                   entity={null}
                   getA={getA}
                   t={t}
                   isMobile={isMobile}
-                  onClick={() => setShowLightsOnModal(pill.lightEntityIds || [])}
+                  onClick={entityIds.length > 0 ? () => setShowEntityCountModal({ entityIds, activeState, label: pill.label || '' }) : undefined}
                 />
               );
             }
