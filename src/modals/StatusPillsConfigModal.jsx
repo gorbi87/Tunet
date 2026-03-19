@@ -776,8 +776,8 @@ export default function StatusPillsConfigModal({
 
                     {/* Main Configuration Grid */}
                     <div className="grid grid-cols-1 gap-4 md:gap-5">
-                      {/* Visuals Group (Only for Conditional) */}
-                      {pill.type === 'conditional' && (
+                      {/* Visuals Group */}
+                      {(pill.type === 'conditional' || pill.type === 'entity_count') && (
                         <section className={`${sectionShellClass} space-y-3`}>
                           <h4 className="text-[11px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                             {t('statusPills.appearance')}
@@ -808,7 +808,7 @@ export default function StatusPillsConfigModal({
                                 className="w-full rounded-xl border-0 bg-[var(--glass-bg)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none"
                               />
                             </div>
-                            <div className="space-y-1">
+                            {pill.type === 'conditional' && <div className="space-y-1">
                               <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
                                 {t('statusPills.unitSource')}
                               </label>
@@ -842,10 +842,10 @@ export default function StatusPillsConfigModal({
                                   {t('statusPills.unitCustom')}
                                 </option>
                               </select>
-                            </div>
+                            </div>}
                           </div>
 
-                          {pill.unitSource === 'custom' && (
+                          {pill.type === 'conditional' && pill.unitSource === 'custom' && (
                             <div className="space-y-1">
                               <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
                                 {t('statusPills.unitOverrideLabel')}
