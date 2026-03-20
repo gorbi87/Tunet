@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.85
+
+### Fixed
+- Add `host_network: true` to addon config — the Tunet container was isolated in the Docker bridge network and couldn't reach go2rtc at the host's LAN IP (502). Host networking gives direct access to all host services including Frigate's embedded go2rtc on port 1984.
+
 ## 1.14.84
 
 ### Fixed
