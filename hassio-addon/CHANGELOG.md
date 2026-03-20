@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.71
+
+### Fixed
+- Smartphone: standard cards back to 82 px row height; only custom cards (Wärmepumpe, Lüftungsanlage, Solar) use 120 px to fit their extra data rows.
+
 ## 1.14.70
 
 ### Fixed

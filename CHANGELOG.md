@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.71] — 2026-03-20
+
+### Fixed
+- Smartphone: Zeilenhöhe für Standard-Karten wieder auf 82 px zurückgesetzt. Nur die Custom-Cards (Wärmepumpe, Lüftungsanlage, Solar) verwenden 120 px, damit deren neu angezeigte Datenbereiche nicht abgeschnitten werden.
+
 ## [1.14.70] — 2026-03-20
 
 ### Fixed
