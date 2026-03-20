@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.84
+
+### Fixed
+- Force rebuild: v1.14.83 container was built before proxy code was on GitHub — go2rtc-proxy route was missing (404). This rebuild pulls the correct code.
+
 ## 1.14.83
 
 ### Fixed
