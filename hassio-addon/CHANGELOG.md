@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.68
+
+### Fixed
+- Touch devices: cards now open modal on first tap. Sticky `:hover` on touch was consuming the first tap — fixed by wrapping hover styles in `@media (hover: hover)` and adding `touch-action: manipulation`.
+
 ## 1.14.67
 
 ### Added

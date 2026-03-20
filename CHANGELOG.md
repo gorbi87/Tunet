@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.68] — 2026-03-20
+
+### Fixed
+- Karten auf Touch-Geräten (Smartphone/Tablet): Popup öffnete sich erst beim 2.–3. Tippen. Ursache: `.touch-feedback:hover` blieb auf Touch-Geräten "kleben" und verschluckte den ersten Tap. Fix: Hover-Animation nur noch bei Geräten mit echtem Mauszeiger (`@media (hover: hover)`), außerdem `touch-action: manipulation` für sofortige Tap-Erkennung ohne 300 ms Verzögerung.
+
 ## [1.14.67] — 2026-03-20
 
 ### Added
