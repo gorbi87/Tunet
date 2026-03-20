@@ -47,6 +47,7 @@ export function useDashboardStateCoordinator(deps) {
     setShowCoverModal: deps.setShowCoverModal,
     setShowAlarmModal: deps.setShowAlarmModal,
     setShowCameraModal: deps.setShowCameraModal,
+    setShowUnifiCameraModal: deps.setShowUnifiCameraModal,
   };
   const mediaActions = mediaModalActions || {
     setActiveMediaModal: deps.setActiveMediaModal,
@@ -76,6 +77,7 @@ export function useDashboardStateCoordinator(deps) {
     setShowCoverModal,
     setShowAlarmModal,
     setShowCameraModal,
+    setShowUnifiCameraModal,
   } = entityActions;
 
   const {
@@ -107,6 +109,7 @@ export function useDashboardStateCoordinator(deps) {
       setShowCoverModal,
       setShowAlarmModal,
       setShowCameraModal,
+      setShowUnifiCameraModal,
       setActiveMediaModal,
       setActiveMediaId,
       setActiveMediaGroupKey,
@@ -132,6 +135,7 @@ export function useDashboardStateCoordinator(deps) {
       setShowCoverModal,
       setShowAlarmModal,
       setShowCameraModal,
+      setShowUnifiCameraModal,
       setActiveMediaModal,
       setActiveMediaId,
       setActiveMediaGroupKey,

@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.78] — 2026-03-20
+
+### Fixed
+- UniFi Camera Karte wurde nach dem Verlassen des Bearbeitungsmodus ausgeblendet. Ursache: `unifi_camera_card_` fehlte in `SPECIAL_CARD_PREFIXES` und `REMOVABLE_PREFIXES` (`cardUtils.js`), wodurch `isCardHiddenByLogic` die Karte als "fehlendes Entity" behandelte. Außerdem fehlte `setShowUnifiCameraModal` im `ctx`-Objekt von `useCardRendering`, `useDashboardStateCoordinator` und `App.jsx`.
+
 ## [1.14.77] — 2026-03-20
 
 ### Added

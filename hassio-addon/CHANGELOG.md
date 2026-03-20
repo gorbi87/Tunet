@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.78
+
+### Fixed
+- UniFi Camera card was hidden after exiting edit mode. Root cause: `unifi_camera_card_` was missing from `SPECIAL_CARD_PREFIXES` and `REMOVABLE_PREFIXES` in `cardUtils.js`, causing `isCardHiddenByLogic` to treat the card as a missing entity. Also wired `setShowUnifiCameraModal` into the card rendering context (`useCardRendering`, `useDashboardStateCoordinator`, `App.jsx`).
+
 ## 1.14.77
 
 ### Added
