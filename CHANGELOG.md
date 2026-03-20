@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.80] — 2026-03-20
+
+### Changed
+- **UniFi Camera** ist jetzt vollständig entity-frei: Kein HA-Entity mehr erforderlich. Die Karte funktioniert rein auf Basis der go2rtc-Konfiguration (URL + Stream-Name).
+  - Hinzufügen über einfachen Add-Button (kein Entity-Picker), Edit-Modal öffnet sich direkt zum Konfigurieren
+  - Modal zeigt Namen aus Custom Name oder Stream-Name, kein Entity-Lookup
+  - Funktioniert auch wenn Frigate/HA-Entities nicht verfügbar sind
+
 ## [1.14.79] — 2026-03-20
 
 ### Changed

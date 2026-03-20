@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.14.80
+
+### Changed
+- **UniFi Camera** is now fully entity-free: no HA entity required. The card works purely from go2rtc config (URL + stream name).
+  - Added via simple one-click add button (no entity picker), Edit modal opens immediately to configure
+  - Modal uses custom name or stream name, no entity lookup
+  - Works even when Frigate / HA camera entities are unavailable
+
 ## 1.14.79
 
 ### Changed

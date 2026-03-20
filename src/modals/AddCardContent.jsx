@@ -355,7 +355,7 @@ function AddCardContent({
       if (addCardTargetPage === 'settings') return !excludedSettings.has(id);
       if (addCardType === 'vacuum') return id.startsWith('vacuum.') && !excludedOnPage.has(id);
       if (addCardType === 'fan') return id.startsWith('fan.') && !excludedOnPage.has(id);
-      if (addCardType === 'camera' || addCardType === 'unifi_camera') return id.startsWith('camera.');
+      if (addCardType === 'camera') return id.startsWith('camera.');
       if (addCardType === 'cover') return id.startsWith('cover.');
       if (addCardType === 'climate') return id.startsWith('climate.');
       if (addCardType === 'alarm') return id.startsWith('alarm_control_panel.');
@@ -934,7 +934,6 @@ function AddCardContent({
     'vacuum',
     'fan',
     'camera',
-    'unifi_camera',
     'climate',
     'cover',
     'alarm',
@@ -1034,7 +1033,7 @@ function AddCardContent({
                 <TypeButton
                   type="unifi_camera"
                   icon={Camera}
-                  label="UniFi Camera (HLS)"
+                  label="UniFi Camera"
                   isActive={addCardType === 'unifi_camera'}
                   onSelect={setAddCardType}
                 />
@@ -1211,6 +1210,8 @@ function AddCardContent({
               )
             ) : addCardType === 'pv' ? (
               renderSimpleAddSection(CloudSun, 'Solar / PV Karte hinzufügen', 'Solar / PV hinzufügen')
+            ) : addCardType === 'unifi_camera' ? (
+              renderSimpleAddSection(Camera, 'UniFi / go2rtc Kamera hinzufügen', 'UniFi Camera hinzufügen')
             ) : addCardType === 'room' ? (
               <RoomSection
                 conn={conn}
@@ -1239,8 +1240,6 @@ function AddCardContent({
                   ? `${t('addCard.add')} ${t('addCard.type.calendar') || 'Calendar'} ${t('addCard.cards')}`
                   : addCardType === 'camera'
                     ? `${t('addCard.add')} ${selectedEntities.length} ${t('addCard.cameraCard') || 'camera cards'}`
-                    : addCardType === 'unifi_camera'
-                    ? `${t('addCard.add')} ${selectedEntities.length} UniFi Camera cards`
                     : `${t('addCard.add')} ${selectedEntities.length} ${t('addCard.cards')}`}
             </button>
           )}

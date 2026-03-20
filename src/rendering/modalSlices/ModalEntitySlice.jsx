@@ -453,21 +453,16 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
           const cameraSettingsKey = getCardSettingsKey(showUnifiCameraModal);
           const cameraSettings =
             cardSettings[cameraSettingsKey] || cardSettings[showUnifiCameraModal] || {};
-          const cameraEntityId = cameraSettings.cameraId;
-          const cameraEntity = cameraEntityId ? entities[cameraEntityId] : null;
-          if (!cameraEntityId || !cameraEntity) return null;
           return (
             <ModalSuspense>
               <UnifiCameraModal
                 show={true}
                 onClose={() => setShowUnifiCameraModal(null)}
-                entityId={cameraEntityId}
-                entity={cameraEntity}
+                cardId={showUnifiCameraModal}
                 customName={customNames?.[showUnifiCameraModal]}
                 customIcon={customIcons?.[showUnifiCameraModal]}
                 go2rtcUrl={cameraSettings.go2rtcUrl || ''}
                 go2rtcStream={cameraSettings.go2rtcStream || ''}
-                getEntityImageUrl={getEntityImageUrl}
                 t={t}
               />
             </ModalSuspense>

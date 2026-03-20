@@ -11,13 +11,10 @@ function toWsUrl(httpUrl) {
 export default function UnifiCameraModal({
   show,
   onClose,
-  entityId,
-  entity,
   customName,
   customIcon,
   go2rtcUrl,
   go2rtcStream,
-  getEntityImageUrl,
   t,
 }) {
   const [loading, setLoading] = useState(true);
@@ -33,21 +30,14 @@ export default function UnifiCameraModal({
   const queueRef = useRef([]);
   const cancelledRef = useRef(false);
 
-  const modalTitleId = `unifi-camera-modal-${(entityId || 'camera').replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+  const modalTitleId = 'unifi-camera-modal';
 
-  const attrs = entity?.attributes || {};
-  const name = customName || attrs.friendly_name || entityId || '';
-  const iconName = customIcon || attrs.icon;
+  const name = customName || go2rtcStream || 'UniFi Kamera';
+  const iconName = customIcon;
   const Icon = iconName ? getIconComponent(iconName) || Camera : Camera;
 
-  // Snapshot: use go2rtc snapshot if configured, else HA proxy
   const snapshotUrl = go2rtcUrl && go2rtcStream
     ? `${go2rtcUrl}/api/snapshot?src=${encodeURIComponent(go2rtcStream)}&_ts=${snapshotTs}`
-    : entityId
-    ? (() => {
-        const accessToken = attrs.access_token || '';
-        return `${getEntityImageUrl(`/api/camera_proxy/${entityId}${accessToken ? `?token=${encodeURIComponent(accessToken)}` : ''}`)}${accessToken ? `&_ts=${snapshotTs}` : `?_ts=${snapshotTs}`}`;
-      })()
     : null;
 
   const stopAll = useCallback(() => {
@@ -224,7 +214,7 @@ export default function UnifiCameraModal({
     if (viewMode === 'stream') startStream();
   };
 
-  if (!show || !entityId || !entity) return null;
+  if (!show) return null;
 
   const isCompact = window.innerWidth < 640 ||
     window.matchMedia('(hover: none) and (pointer: coarse)').matches;
@@ -233,7 +223,7 @@ export default function UnifiCameraModal({
 
   return (
     <AccessibleModalShell
-      open={show && !!entityId && !!entity}
+      open={show}
       onClose={onClose}
       titleId={modalTitleId}
       overlayClassName="fixed inset-0 z-[130] flex items-center justify-center p-3 sm:p-5"
@@ -263,7 +253,7 @@ export default function UnifiCameraModal({
               </div>
               <div className="min-w-0">
                 <p className="truncate text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
-                  {go2rtcStream || entityId}
+                  {go2rtcStream || 'go2rtc'}
                 </p>
                 <h3 id={modalTitleId} className="truncate text-base font-bold text-[var(--text-primary)] sm:text-lg">
                   {name}
