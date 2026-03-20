@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.70
+
+### Fixed
+- Smartphone: increased mobile grid row height from 82 px to 120 px so card content is no longer clipped.
+
 ## 1.14.69
 
 ### Fixed

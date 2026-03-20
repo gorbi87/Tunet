@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.70] — 2026-03-20
+
+### Fixed
+- Smartphone: Karten-Zeilenhöhe von 82 px auf 120 px erhöht, damit die neu sichtbaren Daten (Außentemp, COP, CO₂, Batt-SOC usw.) nicht mehr abgeschnitten werden.
+
 ## [1.14.69] — 2026-03-20
 
 ### Fixed

@@ -162,7 +162,7 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
           if (!cardContent) return null;
 
           const gapPx = isMobile ? 8 : gridGapV;
-          const rowPx = isMobile ? 82 : 100;
+          const rowPx = isMobile ? 120 : 100;
           let cardHeight;
           if (
             id.startsWith('spacer_card_') &&
