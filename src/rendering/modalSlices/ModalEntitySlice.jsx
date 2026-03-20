@@ -12,6 +12,7 @@ const CoverModal = lazy(() => import('../../modals/CoverModal'));
 const AlarmModal = lazy(() => import('../../modals/AlarmModal'));
 const AlarmActionPinModal = lazy(() => import('../../modals/AlarmActionPinModal'));
 const CameraModal = lazy(() => import('../../modals/CameraModal'));
+const UnifiCameraModal = lazy(() => import('../../modals/UnifiCameraModal'));
 const WeatherModal = lazy(() => import('../../modals/WeatherModal'));
 const LeafModal = lazy(() => import('../../modals/LeafModal'));
 const LightModal = lazy(() => import('../../modals/LightModal'));
@@ -63,6 +64,8 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     setShowAlarmActionModal,
     showCameraModal,
     setShowCameraModal,
+    showUnifiCameraModal,
+    setShowUnifiCameraModal,
     showWeatherModal,
     setShowWeatherModal,
     activeVacuumId,
@@ -439,6 +442,31 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
                 customIcon={customIcons?.[showCameraModal]}
                 getEntityImageUrl={getEntityImageUrl}
                 settings={cameraSettings}
+                t={t}
+              />
+            </ModalSuspense>
+          );
+        })()}
+
+      {showUnifiCameraModal &&
+        (() => {
+          const cameraSettingsKey = getCardSettingsKey(showUnifiCameraModal);
+          const cameraSettings =
+            cardSettings[cameraSettingsKey] || cardSettings[showUnifiCameraModal] || {};
+          const cameraEntityId = cameraSettings.cameraId;
+          const cameraEntity = cameraEntityId ? entities[cameraEntityId] : null;
+          if (!cameraEntityId || !cameraEntity) return null;
+          return (
+            <ModalSuspense>
+              <UnifiCameraModal
+                show={true}
+                onClose={() => setShowUnifiCameraModal(null)}
+                entityId={cameraEntityId}
+                entity={cameraEntity}
+                customName={customNames?.[showUnifiCameraModal]}
+                customIcon={customIcons?.[showUnifiCameraModal]}
+                conn={conn}
+                getEntityImageUrl={getEntityImageUrl}
                 t={t}
               />
             </ModalSuspense>

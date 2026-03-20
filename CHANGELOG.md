@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.77] — 2026-03-20
+
+### Added
+- Neue Kartentype **UniFi Camera (HLS)**: Live-Videostream direkt aus UniFi Protect via HLS in einem Modal. Die neue Karte `unifi_camera_card_` ist unabhängig vom bestehenden `camera_card_`-Typ und lässt die original Kamera-Karte unverändert.
+  - Stream wird per WebSocket (`camera/stream`-Nachricht) von Home Assistant abgeholt und mit hls.js (Chrome/Firefox) bzw. nativem HLS (Safari) abgespielt.
+  - Fallback auf Snapshot-Bild, wenn der Stream nicht verfügbar ist.
+  - Toggle zwischen Stream- und Snapshot-Ansicht, Refresh-Button.
+  - Ladeindikator und Fehlermeldung bei Stream-Problemen.
+  - Neue Karte über „Karte hinzufügen" → Typ **UniFi Camera (HLS)** und Kamera-Entity auswählen.
+
 ## [1.14.76] — 2026-03-20
 
 ### Changed

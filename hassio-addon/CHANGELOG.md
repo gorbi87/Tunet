@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.14.77
+
+### Added
+- New card type **UniFi Camera (HLS)**: live video stream from UniFi Protect via HLS in a modal. The new `unifi_camera_card_` type is independent from the existing `camera_card_` and leaves the original camera card unchanged.
+  - Stream is fetched via WebSocket (`camera/stream` message) from Home Assistant and played with hls.js (Chrome/Firefox) or native HLS (Safari).
+  - Fallback to snapshot image if stream is unavailable.
+  - Toggle between stream and snapshot view, refresh button.
+  - Loading indicator and error message on stream failure.
+  - Add via "Add Card" → type **UniFi Camera (HLS)** and select a camera entity.
+
 ## 1.14.76
 
 ### Changed

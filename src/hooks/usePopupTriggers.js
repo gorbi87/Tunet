@@ -51,6 +51,7 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     setShowCoverModal,
     setShowAlarmModal,
     setShowCameraModal,
+    setShowUnifiCameraModal,
     setActiveMediaModal,
     setActiveMediaId,
     setActiveMediaGroupKey,
@@ -159,6 +160,11 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
 
   if (cardId.startsWith('camera_card_')) {
     closeAndOpen(() => setShowCameraModal(cardId));
+    return true;
+  }
+
+  if (cardId.startsWith('unifi_camera_card_')) {
+    closeAndOpen(() => setShowUnifiCameraModal && setShowUnifiCameraModal(cardId));
     return true;
   }
 

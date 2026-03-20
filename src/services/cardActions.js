@@ -53,6 +53,7 @@ export const handleAddSelected = (ctx) => {
       case 'climate':
         return selectedEntities.filter((id) => id.startsWith('climate.'));
       case 'camera':
+      case 'unifi_camera':
         return selectedEntities.filter((id) => id.startsWith('camera.'));
       case 'cover':
         return selectedEntities.filter((id) => id.startsWith('cover.'));
@@ -168,6 +169,22 @@ export const handleAddSelected = (ctx) => {
       const newSettings = { ...cardSettings };
       const newCardIds = cameraEntities.map((entityId) => {
         const cardId = `camera_card_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const settingsKey = getCardSettingsKey(cardId, addCardTargetPage);
+        newSettings[settingsKey] = { ...(newSettings[settingsKey] || {}), cameraId: entityId };
+        return cardId;
+      });
+      persistCardSettings(newSettings);
+      commitCards(newCardIds);
+      setSelectedEntities([]);
+      return;
+    }
+
+    case 'unifi_camera': {
+      const unifiCameraEntities = selectedEntitiesForType();
+      if (unifiCameraEntities.length === 0) return;
+      const newSettings = { ...cardSettings };
+      const newCardIds = unifiCameraEntities.map((entityId) => {
+        const cardId = `unifi_camera_card_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const settingsKey = getCardSettingsKey(cardId, addCardTargetPage);
         newSettings[settingsKey] = { ...(newSettings[settingsKey] || {}), cameraId: entityId };
         return cardId;
