@@ -144,6 +144,23 @@ export default function DashboardLayout(props) {
           t={t}
           isMobile={isMobile}
           sectionSpacing={sectionSpacing}
+          mobileToolbar={isMobile ? (
+            <EditToolbar
+              editMode={editMode}
+              setEditMode={guardedSetEditMode}
+              activePage={activePage}
+              setActivePage={setActivePage}
+              setShowAddCardModal={guardedSetShowAddCardModal}
+              setShowConfigModal={guardedSetShowConfigModal}
+              setConfigTab={setConfigTab}
+              setShowThemeSidebar={guardedSetShowThemeSidebar}
+              setShowLayoutSidebar={guardedSetShowLayoutSidebar}
+              setShowHeaderEditModal={guardedSetShowHeaderEditModal}
+              connected={connected}
+              updateCount={updateCount}
+              t={t}
+            />
+          ) : undefined}
         >
           <div
             className="mt-0 flex w-full flex-wrap items-center justify-between gap-2 font-sans"
@@ -204,21 +221,23 @@ export default function DashboardLayout(props) {
             setEditingPage={setEditingPage}
             t={t}
           />
-          <EditToolbar
-            editMode={editMode}
-            setEditMode={guardedSetEditMode}
-            activePage={activePage}
-            setActivePage={setActivePage}
-            setShowAddCardModal={guardedSetShowAddCardModal}
-            setShowConfigModal={guardedSetShowConfigModal}
-            setConfigTab={setConfigTab}
-            setShowThemeSidebar={guardedSetShowThemeSidebar}
-            setShowLayoutSidebar={guardedSetShowLayoutSidebar}
-            setShowHeaderEditModal={guardedSetShowHeaderEditModal}
-            connected={connected}
-            updateCount={updateCount}
-            t={t}
-          />
+          {!isMobile && (
+            <EditToolbar
+              editMode={editMode}
+              setEditMode={guardedSetEditMode}
+              activePage={activePage}
+              setActivePage={setActivePage}
+              setShowAddCardModal={guardedSetShowAddCardModal}
+              setShowConfigModal={guardedSetShowConfigModal}
+              setConfigTab={setConfigTab}
+              setShowThemeSidebar={guardedSetShowThemeSidebar}
+              setShowLayoutSidebar={guardedSetShowLayoutSidebar}
+              setShowHeaderEditModal={guardedSetShowHeaderEditModal}
+              connected={connected}
+              updateCount={updateCount}
+              t={t}
+            />
+          )}
         </div>
 
         {withProfiler(

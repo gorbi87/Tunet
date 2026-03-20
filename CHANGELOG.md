@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.76] — 2026-03-20
+
+### Changed
+- Smartphone: Stift- und Zahnrad-Button aus der Tab-Zeile entfernt und in die Titelzeile (rechts neben der Uhrzeit) verschoben, damit die Seiten-Tabs nicht mehr verdeckt werden. Auf Tablet und Desktop bleibt alles unverändert.
+
 ## [1.14.75] — 2026-03-20
 
 ### Fixed

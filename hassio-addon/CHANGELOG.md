@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.76
+
+### Changed
+- Smartphone: moved edit pen and settings gear from the tab row into the header row (right of the clock) so page tabs are no longer obscured. Tablet and desktop layouts unchanged.
+
 ## 1.14.75
 
 ### Fixed

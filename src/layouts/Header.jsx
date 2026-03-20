@@ -25,6 +25,7 @@ export default function Header({
   children,
   isMobile,
   sectionSpacing,
+  mobileToolbar,
 }) {
   const { language } = useConfig();
 
@@ -105,9 +106,7 @@ export default function Header({
       )}
 
       {/* Top row: heading (left) and clock (right) aligned only with heading */}
-      <div
-        className="flex items-center justify-between gap-4 leading-none"
-      >
+      <div className="flex items-center justify-between gap-4 leading-none">
         <div className="flex items-center gap-4">
           {headerSettings.showTitle && (
             <h1
@@ -127,18 +126,21 @@ export default function Header({
           )}
         </div>
 
-        {headerSettings.showClock && (!isMobile || showClockOnMobile) && (
-          <h2
-            className="leading-none font-light tracking-[0.1em] select-none"
-            style={{
-              fontSize: clockFontSize,
-              color: 'var(--text-muted)',
-              fontFamily: resolvedFontFamily,
-            }}
-          >
-            {timeStr}
-          </h2>
-        )}
+        <div className="flex items-center gap-3">
+          {headerSettings.showClock && (!isMobile || showClockOnMobile) && (
+            <h2
+              className="leading-none font-light tracking-[0.1em] select-none"
+              style={{
+                fontSize: clockFontSize,
+                color: 'var(--text-muted)',
+                fontFamily: resolvedFontFamily,
+              }}
+            >
+              {timeStr}
+            </h2>
+          )}
+          {isMobile && mobileToolbar}
+        </div>
       </div>
 
       {/* Date row: independent from heading/clock alignment */}
