@@ -1,8 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Hls from 'hls.js';
 import { X, RefreshCw, Video, Camera } from '../icons';
 import { getIconComponent } from '../icons';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
+
+function toWsUrl(httpUrl) {
+  return httpUrl.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
+}
 
 export default function UnifiCameraModal({
   show,
@@ -11,17 +15,24 @@ export default function UnifiCameraModal({
   entity,
   customName,
   customIcon,
-  conn,
+  go2rtcUrl,
+  go2rtcStream,
   getEntityImageUrl,
   t,
 }) {
-  const [hlsUrl, setHlsUrl] = useState(null);
-  const [hlsError, setHlsError] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('stream'); // 'stream' | 'snapshot'
+  const [error, setError] = useState(false);
+  const [viewMode, setViewMode] = useState('stream');
   const [snapshotTs, setSnapshotTs] = useState(Date.now());
+
   const videoRef = useRef(null);
+  const wsRef = useRef(null);
   const hlsRef = useRef(null);
+  const msRef = useRef(null);
+  const sbRef = useRef(null);
+  const queueRef = useRef([]);
+  const cancelledRef = useRef(false);
+
   const modalTitleId = `unifi-camera-modal-${(entityId || 'camera').replace(/[^a-zA-Z0-9_-]/g, '-')}`;
 
   const attrs = entity?.attributes || {};
@@ -29,104 +40,196 @@ export default function UnifiCameraModal({
   const iconName = customIcon || attrs.icon;
   const Icon = iconName ? getIconComponent(iconName) || Camera : Camera;
 
-  const accessToken = attrs.access_token || '';
-  const snapshotBase = entityId
-    ? `${getEntityImageUrl(`/api/camera_proxy/${entityId}${accessToken ? `?token=${encodeURIComponent(accessToken)}` : ''}`)}` +
-      (accessToken ? `&_ts=${snapshotTs}` : `?_ts=${snapshotTs}`)
+  // Snapshot: use go2rtc snapshot if configured, else HA proxy
+  const snapshotUrl = go2rtcUrl && go2rtcStream
+    ? `${go2rtcUrl}/api/snapshot?src=${encodeURIComponent(go2rtcStream)}&_ts=${snapshotTs}`
+    : entityId
+    ? (() => {
+        const accessToken = attrs.access_token || '';
+        return `${getEntityImageUrl(`/api/camera_proxy/${entityId}${accessToken ? `?token=${encodeURIComponent(accessToken)}` : ''}`)}${accessToken ? `&_ts=${snapshotTs}` : `?_ts=${snapshotTs}`}`;
+      })()
     : null;
 
-  // Fetch HLS stream URL via WebSocket
-  useEffect(() => {
-    if (!show || !entityId || !conn || viewMode !== 'stream') return;
-    let cancelled = false;
-    setLoading(true);
-    setHlsError(false);
-    setHlsUrl(null);
-
-    conn
-      .sendMessagePromise({ type: 'camera/stream', entity_id: entityId })
-      .then((res) => {
-        if (cancelled) return;
-        const url = res?.url;
-        if (!url) { setHlsError(true); setLoading(false); return; }
-        setHlsUrl(getEntityImageUrl(url));
-        setLoading(false);
-      })
-      .catch(() => {
-        if (!cancelled) { setHlsError(true); setLoading(false); }
-      });
-
-    return () => { cancelled = true; };
-  }, [show, entityId, conn, viewMode, getEntityImageUrl]);
-
-  // Attach Hls.js (or native) once URL is ready
-  useEffect(() => {
+  const stopAll = useCallback(() => {
+    cancelledRef.current = true;
+    if (wsRef.current) {
+      try { wsRef.current.close(1000); } catch {}
+      wsRef.current = null;
+    }
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
     const video = videoRef.current;
-    if (!video || !hlsUrl || viewMode !== 'stream') return;
+    if (video) {
+      video.pause();
+      video.src = '';
+    }
+    if (msRef.current && msRef.current.readyState === 'open') {
+      try { msRef.current.endOfStream(); } catch {}
+    }
+    msRef.current = null;
+    sbRef.current = null;
+    queueRef.current = [];
+  }, []);
 
-    // Destroy previous instance
-    if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
+  const tryHLS = useCallback((baseUrl, streamName) => {
+    const video = videoRef.current;
+    if (!video || cancelledRef.current) return;
+
+    const hlsUrl = `${baseUrl}/api/stream.m3u8?src=${encodeURIComponent(streamName)}`;
 
     if (Hls.isSupported()) {
       const hls = new Hls({ enableWorker: false, lowLatencyMode: true });
       hlsRef.current = hls;
       hls.loadSource(hlsUrl);
       hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        if (cancelledRef.current) return;
+        setLoading(false);
+        video.play().catch(() => {});
+      });
       hls.on(Hls.Events.ERROR, (_e, data) => {
-        if (data.fatal) { setHlsError(true); hls.destroy(); }
+        if (cancelledRef.current) return;
+        if (data.fatal) { setError(true); setLoading(false); hls.destroy(); }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Safari — native HLS
       video.src = hlsUrl;
+      video.addEventListener('canplay', () => {
+        if (!cancelledRef.current) setLoading(false);
+      }, { once: true });
       video.play().catch(() => {});
     } else {
-      setHlsError(true);
+      setError(true);
+      setLoading(false);
+    }
+  }, []);
+
+  const startStream = useCallback(() => {
+    if (!go2rtcUrl || !go2rtcStream) {
+      setError(true);
+      setLoading(false);
+      return;
     }
 
-    return () => {
-      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-      if (video) { video.pause(); video.src = ''; }
-    };
-  }, [hlsUrl, viewMode]);
+    stopAll();
+    cancelledRef.current = false;
+    setLoading(true);
+    setError(false);
 
-  // Cleanup on close
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Try MSE over WebSocket first
+    if (!window.MediaSource) {
+      tryHLS(go2rtcUrl, go2rtcStream);
+      return;
+    }
+
+    const ms = new MediaSource();
+    msRef.current = ms;
+    const objectUrl = URL.createObjectURL(ms);
+    video.src = objectUrl;
+
+    let firstData = true;
+
+    ms.addEventListener('sourceopen', () => {
+      if (cancelledRef.current) { URL.revokeObjectURL(objectUrl); return; }
+
+      const wsUrl = `${toWsUrl(go2rtcUrl)}/api/ws?src=${encodeURIComponent(go2rtcStream)}`;
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+      ws.binaryType = 'arraybuffer';
+
+      const flushQueue = () => {
+        const sb = sbRef.current;
+        if (!sb || sb.updating || queueRef.current.length === 0) return;
+        try { sb.appendBuffer(queueRef.current.shift()); } catch {}
+      };
+
+      ws.onmessage = (e) => {
+        if (cancelledRef.current) return;
+        if (typeof e.data === 'string') {
+          try {
+            const msg = JSON.parse(e.data);
+            if (msg.type === 'mse' && ms.readyState === 'open') {
+              const sb = ms.addSourceBuffer(msg.value);
+              sb.mode = 'segments';
+              sbRef.current = sb;
+              sb.addEventListener('updateend', flushQueue);
+            }
+          } catch {}
+        } else {
+          const sb = sbRef.current;
+          if (!sb) return;
+          if (!sb.updating) {
+            try {
+              sb.appendBuffer(e.data);
+              if (firstData) {
+                firstData = false;
+                setLoading(false);
+                video.play().catch(() => {});
+              }
+            } catch {}
+          } else {
+            queueRef.current.push(e.data);
+          }
+        }
+      };
+
+      ws.onerror = () => {
+        if (cancelledRef.current) return;
+        URL.revokeObjectURL(objectUrl);
+        msRef.current = null;
+        sbRef.current = null;
+        queueRef.current = [];
+        tryHLS(go2rtcUrl, go2rtcStream);
+      };
+
+      ws.onclose = (e) => {
+        if (cancelledRef.current || e.code === 1000) return;
+        setError(true);
+        setLoading(false);
+      };
+    }, { once: true });
+
+    ms.addEventListener('error', () => {
+      if (cancelledRef.current) return;
+      URL.revokeObjectURL(objectUrl);
+      tryHLS(go2rtcUrl, go2rtcStream);
+    }, { once: true });
+  }, [go2rtcUrl, go2rtcStream, stopAll, tryHLS]);
+
+  // Start/stop stream
+  useEffect(() => {
+    if (!show || viewMode !== 'stream') {
+      if (!show) stopAll();
+      return;
+    }
+    startStream();
+    return stopAll;
+  }, [show, viewMode, startStream, stopAll]);
+
+  // Reset on close
   useEffect(() => {
     if (!show) {
-      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-      const video = videoRef.current;
-      if (video) { video.pause(); video.src = ''; }
-      setHlsUrl(null);
-      setHlsError(false);
       setLoading(true);
+      setError(false);
       setViewMode('stream');
     }
   }, [show]);
 
   const handleRefresh = () => {
     setSnapshotTs(Date.now());
-    if (viewMode === 'stream') {
-      setHlsUrl(null);
-      setHlsError(false);
-      setLoading(true);
-      // Re-trigger the fetch effect by toggling a key — easiest: reset hlsUrl
-      if (conn) {
-        conn
-          .sendMessagePromise({ type: 'camera/stream', entity_id: entityId })
-          .then((res) => {
-            const url = res?.url;
-            if (url) { setHlsUrl(getEntityImageUrl(url)); setLoading(false); }
-            else { setHlsError(true); setLoading(false); }
-          })
-          .catch(() => { setHlsError(true); setLoading(false); });
-      }
-    }
+    if (viewMode === 'stream') startStream();
   };
 
   if (!show || !entityId || !entity) return null;
 
-  const isCompact = window.innerHeight < 900 ||
+  const isCompact = window.innerWidth < 640 ||
     window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+  const notConfigured = !go2rtcUrl || !go2rtcStream;
 
   return (
     <AccessibleModalShell
@@ -160,7 +263,7 @@ export default function UnifiCameraModal({
               </div>
               <div className="min-w-0">
                 <p className="truncate text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
-                  {entityId}
+                  {go2rtcStream || entityId}
                 </p>
                 <h3 id={modalTitleId} className="truncate text-base font-bold text-[var(--text-primary)] sm:text-lg">
                   {name}
@@ -198,8 +301,18 @@ export default function UnifiCameraModal({
           {/* Video area */}
           <div className="relative min-h-[240px] flex-1 overflow-hidden rounded-xl border border-[var(--glass-border)] bg-black">
 
-            {/* HLS stream */}
-            {viewMode === 'stream' && !hlsError && (
+            {/* go2rtc not configured */}
+            {notConfigured && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center">
+                <p className="text-sm font-bold text-amber-400">go2rtc nicht konfiguriert</p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  Bitte go2rtc-URL und Stream-Namen in den Karten-Einstellungen eintragen (Stift-Icon im Bearbeitungsmodus).
+                </p>
+              </div>
+            )}
+
+            {/* Stream video */}
+            {!notConfigured && viewMode === 'stream' && (
               <video
                 ref={videoRef}
                 className="h-full w-full object-contain"
@@ -210,10 +323,10 @@ export default function UnifiCameraModal({
               />
             )}
 
-            {/* Snapshot fallback */}
-            {(viewMode === 'snapshot' || hlsError) && snapshotBase && (
+            {/* Snapshot */}
+            {!notConfigured && viewMode === 'snapshot' && snapshotUrl && (
               <img
-                src={snapshotBase}
+                src={snapshotUrl}
                 alt={name}
                 className="h-full w-full object-contain"
                 referrerPolicy="no-referrer"
@@ -221,17 +334,32 @@ export default function UnifiCameraModal({
             )}
 
             {/* Loading overlay */}
-            {viewMode === 'stream' && loading && !hlsError && (
+            {!notConfigured && viewMode === 'stream' && loading && !error && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent-color)] border-t-transparent" />
                 <p className="text-xs text-[var(--text-secondary)]">Stream wird geladen…</p>
               </div>
             )}
 
-            {/* Error banner */}
-            {viewMode === 'stream' && hlsError && (
-              <div className="absolute inset-x-0 bottom-0 border-t border-amber-500/30 bg-amber-500/10 px-4 py-2 text-center text-xs text-amber-300">
-                Stream nicht verfügbar — Snapshot wird angezeigt
+            {/* Error: stream failed, show snapshot instead */}
+            {!notConfigured && viewMode === 'stream' && error && snapshotUrl && (
+              <>
+                <img
+                  src={snapshotUrl}
+                  alt={name}
+                  className="h-full w-full object-contain"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-x-0 bottom-0 border-t border-amber-500/30 bg-amber-500/10 px-4 py-2 text-center text-xs text-amber-300">
+                  Stream nicht verfügbar — Snapshot wird angezeigt
+                </div>
+              </>
+            )}
+
+            {/* Error without snapshot */}
+            {!notConfigured && viewMode === 'stream' && error && !snapshotUrl && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <p className="text-xs text-amber-400">Stream nicht verfügbar</p>
               </div>
             )}
           </div>

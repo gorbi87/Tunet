@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.79] — 2026-03-20
+
+### Changed
+- UniFi Camera Karte verwendet jetzt **go2rtc** als Stream-Quelle statt dem langsamen HA-`camera/stream`-Endpoint.
+  - Primär: **MSE via WebSocket** (`ws://go2rtcUrl/api/ws?src=stream`) — ~1-2s Latenz, direkt im Browser via MediaSource API
+  - Fallback: **HLS via hls.js** (`/api/stream.m3u8?src=stream`) — für ältere Browser / Safari
+  - Snapshot via go2rtc (`/api/snapshot?src=stream`) statt HA camera proxy
+  - go2rtc-URL und Stream-Name pro Karte konfigurierbar via Edit-Card-Modal (Stift-Icon im Bearbeitungsmodus)
+
 ## [1.14.78] — 2026-03-20
 
 ### Fixed

@@ -732,6 +732,7 @@ export default function EditCardModal({
   isEditCar,
   isEditSpacer,
   isEditCamera,
+  isEditUnifiCamera,
   isEditRoom,
   isEditAndroidTV,
   isEditFan,
@@ -1782,6 +1783,41 @@ export default function EditCardModal({
                 </div>
               );
             })()}
+
+          {isEditUnifiCamera && editSettingsKey && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="ml-1 text-xs font-bold text-[var(--text-muted)] uppercase">
+                  go2rtc URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="http://192.168.1.x:1984"
+                  value={editSettings.go2rtcUrl || ''}
+                  onChange={(e) => saveCardSetting(editSettingsKey, 'go2rtcUrl', e.target.value.trim())}
+                  className="w-full rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]"
+                />
+                <p className="ml-1 text-[10px] text-[var(--text-muted)]">
+                  Basis-URL der go2rtc-Instanz (z.B. Frigate-Host Port 1984)
+                </p>
+              </div>
+              <div className="space-y-2">
+                <label className="ml-1 text-xs font-bold text-[var(--text-muted)] uppercase">
+                  Stream-Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="carport"
+                  value={editSettings.go2rtcStream || ''}
+                  onChange={(e) => saveCardSetting(editSettingsKey, 'go2rtcStream', e.target.value.trim())}
+                  className="w-full rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]"
+                />
+                <p className="ml-1 text-[10px] text-[var(--text-muted)]">
+                  Name des Streams in go2rtc (entspricht dem Frigate-Kameranamen)
+                </p>
+              </div>
+            </div>
+          )}
 
           {isEditTodo && editSettingsKey && (
             <div className="space-y-3">

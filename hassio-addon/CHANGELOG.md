@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.14.79
+
+### Changed
+- UniFi Camera card now uses **go2rtc** as stream source instead of the slow HA `camera/stream` endpoint.
+  - Primary: **MSE over WebSocket** (`ws://go2rtcUrl/api/ws?src=stream`) — ~1-2s latency, native MediaSource API
+  - Fallback: **HLS via hls.js** (`/api/stream.m3u8?src=stream`) — for older browsers / Safari
+  - Snapshot via go2rtc `/api/snapshot?src=stream`
+  - go2rtc URL and stream name configurable per card via Edit Card modal (pencil icon in edit mode)
+
 ## 1.14.78
 
 ### Fixed
