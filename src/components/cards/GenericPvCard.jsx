@@ -168,7 +168,7 @@ const GenericPvCard = memo(function GenericPvCard({
             </span>
             <span className="ml-1 text-sm font-medium text-[var(--text-muted)]">W</span>
           </div>
-          {pvDaily != null && !isDenseMobile && (
+          {pvDaily != null && (
             <div className="flex items-baseline gap-1 text-right leading-none">
               <span className="text-xl font-light text-[var(--text-secondary)]">
                 {pvDaily.toFixed(1)}
@@ -179,22 +179,20 @@ const GenericPvCard = memo(function GenericPvCard({
         </div>
 
         {/* Bottom: battery SOC + grid */}
-        {!isDenseMobile && (
-          <div className="mt-4 flex items-center gap-4 border-t border-[var(--glass-border)] pt-3">
-            {batterySoc != null && (
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">Batt</span>
-                <span className="text-lg font-light" style={{ color: socColor }}>{batterySoc.toFixed(0)}%</span>
-              </div>
-            )}
+        <div className="mt-4 flex items-center gap-4 border-t border-[var(--glass-border)] pt-3">
+          {batterySoc != null && (
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">Netz</span>
-              <span className="text-lg font-light" style={{ color: netGrid > 0 ? '#4ade80' : netGrid < -50 ? '#f87171' : 'var(--text-primary)' }}>
-                {netGrid > 0 ? '+' : ''}{Math.round(netGrid)} W
-              </span>
+              <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">Batt</span>
+              <span className="text-lg font-light" style={{ color: socColor }}>{batterySoc.toFixed(0)}%</span>
             </div>
+          )}
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">Netz</span>
+            <span className="text-lg font-light" style={{ color: netGrid > 0 ? '#4ade80' : netGrid < -50 ? '#f87171' : 'var(--text-primary)' }}>
+              {netGrid > 0 ? '+' : ''}{Math.round(netGrid)} W
+            </span>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

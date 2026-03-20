@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.69
+
+### Fixed
+- Custom cards (Wärmepumpe, Lüftungsanlage, Solar): secondary data (outdoor temp, COP, CO₂, battery SOC, grid power) now visible on smartphones — was hidden by `isDenseMobile` guard.
+
 ## 1.14.68
 
 ### Fixed

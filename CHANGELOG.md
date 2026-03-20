@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.69] — 2026-03-20
+
+### Fixed
+- Wärmepumpe-Karte: Außentemperatur und COP/Strom-Zeile werden auch auf Smartphones angezeigt (waren durch `isDenseMobile`-Guard versteckt).
+- Lüftungsanlage-Karte: CO₂-Wert wird auch auf Smartphones angezeigt.
+- Solar-Karte: Tagesertrag (kWh), Batterie-SOC und Netzleistung werden auch auf Smartphones angezeigt.
+
 ## [1.14.68] — 2026-03-20
 
 ### Fixed

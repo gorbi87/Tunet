@@ -188,7 +188,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
             </span>
             <span className="ml-1 text-sm font-medium text-[var(--text-muted)]">°C WW</span>
           </div>
-          {aussenTemp != null && !isDenseMobile && (
+          {aussenTemp != null && (
             <div className="flex items-baseline gap-1 text-right leading-none">
               <span className="text-xl font-light text-[var(--text-secondary)]">
                 {aussenTemp.toFixed(1)}
@@ -199,8 +199,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
         </div>
 
         {/* Bottom row: COP + Strom */}
-        {!isDenseMobile && (
-          <div className="mt-4 flex items-center gap-4 border-t border-[var(--glass-border)] pt-3">
+        <div className="mt-4 flex items-center gap-4 border-t border-[var(--glass-border)] pt-3">
             {cop != null && (
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
@@ -220,7 +219,6 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
               </div>
             )}
           </div>
-        )}
       </div>
     </div>
   );

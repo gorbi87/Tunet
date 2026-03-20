@@ -192,20 +192,18 @@ const GenericLuftungsanlageCard = memo(function GenericLuftungsanlageCard({
         </div>
 
         {/* Bottom row: CO2 */}
-        {!isDenseMobile && (
-          <div className="mt-4 flex items-center gap-4 border-t border-[var(--glass-border)] pt-3">
-            {co2Ppm != null && (
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-                  {translate('luftungsanlage.co2') || 'CO₂'}
-                </span>
-                <span className="text-lg font-light" style={{ color: co2Color }}>
-                  {co2Ppm.toFixed(0)} ppm
-                </span>
-              </div>
-            )}
-          </div>
-        )}
+        <div className="mt-4 flex items-center gap-4 border-t border-[var(--glass-border)] pt-3">
+          {co2Ppm != null && (
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
+                {translate('luftungsanlage.co2') || 'CO₂'}
+              </span>
+              <span className="text-lg font-light" style={{ color: co2Color }}>
+                {co2Ppm.toFixed(0)} ppm
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
