@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.83
+
+### Fixed
+- Dockerfile: broken tarball fallback logic — empty file from failed `curl -f` on non-existent tag skipped the main-branch download. Simplified to always pull from `main` branch; `BUILD_VERSION` is used solely to bust Docker layer cache
+
 ## 1.14.82
 
 ### Fixed

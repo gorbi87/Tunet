@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.83] — 2026-03-20
+
+### Fixed
+- Dockerfile: Fallback-Logik für Tarball-Download war fehlerhaft (leere Datei nach gescheitertem `curl -f` auf nicht-existierenden Tag verhinderte Main-Branch-Download). Simplified: immer von `main`-Branch laden, `BUILD_VERSION` nur für Docker-Cache-Invalidierung
+
 ## [1.14.82] — 2026-03-20
 
 ### Fixed

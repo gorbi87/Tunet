@@ -5,17 +5,8 @@ FROM node:20-alpine AS builder
 ARG BUILD_VERSION
 RUN apk add --no-cache curl tar \
  && set -eux \
- && REF="${BUILD_VERSION:-}" \
- && URL="" \
- && if [ -n "$REF" ]; then URL="https://codeload.github.com/gorbi87/Tunet/tar.gz/refs/tags/v${REF}"; fi \
- && if [ -n "$URL" ] && ! curl -fsSL "$URL" -o /tmp/tunet.tar.gz; then \
-			URL="https://codeload.github.com/gorbi87/Tunet/tar.gz/refs/tags/${REF}"; \
-		fi \
- && if [ -n "$URL" ] && ! curl -fsSL "$URL" -o /tmp/tunet.tar.gz; then \
-			URL="https://codeload.github.com/gorbi87/Tunet/tar.gz/refs/heads/main"; \
-		fi \
- && if [ -z "$URL" ]; then URL="https://codeload.github.com/gorbi87/Tunet/tar.gz/refs/heads/main"; fi \
- && if [ ! -f /tmp/tunet.tar.gz ]; then curl -fsSL "$URL" -o /tmp/tunet.tar.gz; fi \
+ && echo "Building Tunet version ${BUILD_VERSION}" \
+ && curl -fsSL "https://codeload.github.com/gorbi87/Tunet/tar.gz/refs/heads/main" -o /tmp/tunet.tar.gz \
  && mkdir -p /src \
  && tar -xzf /tmp/tunet.tar.gz --strip-components=1 -C /src \
  && cd /src \
