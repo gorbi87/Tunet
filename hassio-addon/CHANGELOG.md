@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.14.73
+
+### Changed
+- Wärmepumpe modal: Betriebsmodus and WW-Soll now use a dropdown instead of pill buttons.
+- Wärmepumpe modal: single-column stacked layout on phones (< 640 px).
+- Header: person indicators and status pills always on the same row (including mobile).
+
 ## 1.14.72
 
 ### Fixed

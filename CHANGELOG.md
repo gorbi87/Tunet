@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.73] — 2026-03-20
+
+### Changed
+- Wärmepumpe-Popup: Betriebsmodus und WW-Solltemperatur werden jetzt als Dropdown (`<select>`) statt als Pill-Buttons dargestellt — kompakter und mobil-freundlicher.
+- Wärmepumpe-Popup: Smartphone-Ansicht (< 640 px) nutzt einspaltige gestapelte Darstellung statt dem 5-Spalten-Layout, das auf Phone-Breiten überlappte.
+- Header: Personen-Indikatoren und Status-Pills erscheinen jetzt immer in einer gemeinsamen Zeile (auch auf Mobile).
+
 ## [1.14.72] — 2026-03-20
 
 ### Fixed

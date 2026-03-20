@@ -4,40 +4,28 @@ import { WAERMEPUMPE_ENTITY_IDS } from '../components/cards/GenericWaermepumpeCa
 import { HpsuHydraulicView } from '../components/HpsuHydraulicView';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 
-function SelectPills({ entityId, entity, onSelect }) {
+function SelectDropdown({ entityId, entity, onSelect }) {
   if (!entity) return null;
   const current = entity.state;
   const options = entity.attributes?.options || [];
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((opt) => {
-        const isActive = opt === current;
-        return (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => onSelect(entityId, opt)}
-            className="rounded-full border px-3 py-1.5 text-[11px] font-bold tracking-wider uppercase transition-all"
-            style={
-              isActive
-                ? {
-                    backgroundColor: 'var(--accent-bg)',
-                    borderColor: 'var(--accent-color)',
-                    color: 'var(--accent-color)',
-                  }
-                : {
-                    backgroundColor: 'var(--glass-bg)',
-                    borderColor: 'var(--glass-border)',
-                    color: 'var(--text-secondary)',
-                  }
-            }
-          >
-            {opt}
-          </button>
-        );
-      })}
-    </div>
+    <select
+      value={current}
+      onChange={(e) => onSelect(entityId, e.target.value)}
+      className="w-full rounded-xl border px-3 py-2 text-sm font-medium transition-all"
+      style={{
+        backgroundColor: 'var(--glass-bg)',
+        borderColor: 'var(--glass-border)',
+        color: 'var(--text-primary)',
+      }}
+    >
+      {options.map((opt) => (
+        <option key={opt} value={opt} style={{ backgroundColor: 'var(--card-bg)' }}>
+          {opt}
+        </option>
+      ))}
+    </select>
   );
 }
 
@@ -114,9 +102,11 @@ export default function WaermepumpeModal({
     { key: 'hydraulik', label: translate('waermepumpe.tab.hydraulik') || 'Hydraulik' },
   ];
 
-  // Compact mode: small screen height (tablet landscape) or touch device
+  // Compact mode: tablet/touch device or small height
   const isCompact = window.innerHeight < 900 ||
     window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  // Phone: narrow viewport (smartphone, not tablet)
+  const isPhone = window.innerWidth < 640;
 
   return (
     <AccessibleModalShell
@@ -222,9 +212,9 @@ export default function WaermepumpeModal({
             {mainTab === 'overview' && (
               <>
                 {/* Temps + Energy grid — side-by-side from md */}
-                <div className={`grid items-start gap-4 font-sans ${isCompact ? 'grid-cols-5' : 'grid-cols-1 lg:grid-cols-5'}`}>
+                <div className={`grid items-start gap-4 font-sans ${isPhone ? 'grid-cols-1' : isCompact ? 'grid-cols-5' : 'grid-cols-1 lg:grid-cols-5'}`}>
                   {/* Left: Temperatures */}
-                  <div className="space-y-2 md:col-span-3">
+                  <div className={`space-y-2 ${isPhone ? '' : 'md:col-span-3'}`}>
                     <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
                       {translate('waermepumpe.temperatures')}
                     </p>
@@ -270,7 +260,7 @@ export default function WaermepumpeModal({
                   </div>
 
                   {/* Right: Energy stats */}
-                  <div className="space-y-2 md:col-span-2">
+                  <div className={`space-y-2 ${isPhone ? '' : 'md:col-span-2'}`}>
                     {/* Energy tab switcher */}
                     <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
                       {['today', 'month'].map((key) => (
@@ -348,7 +338,7 @@ export default function WaermepumpeModal({
                         <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
                           {translate('waermepumpe.betriebsmodus')}
                         </p>
-                        <SelectPills
+                        <SelectDropdown
                           entityId={WAERMEPUMPE_ENTITY_IDS.betriebsmodus}
                           entity={e(WAERMEPUMPE_ENTITY_IDS.betriebsmodus)}
                           onSelect={selectOption}
@@ -360,7 +350,7 @@ export default function WaermepumpeModal({
                         <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
                           {translate('waermepumpe.wwSoll')}
                         </p>
-                        <SelectPills
+                        <SelectDropdown
                           entityId={WAERMEPUMPE_ENTITY_IDS.wwSoll}
                           entity={e(WAERMEPUMPE_ENTITY_IDS.wwSoll)}
                           onSelect={selectOption}
@@ -372,7 +362,7 @@ export default function WaermepumpeModal({
                         <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
                           {translate('waermepumpe.heizstab')}
                         </p>
-                        <SelectPills
+                        <SelectDropdown
                           entityId={WAERMEPUMPE_ENTITY_IDS.heizstabSelect}
                           entity={e(WAERMEPUMPE_ENTITY_IDS.heizstabSelect)}
                           onSelect={selectOption}
