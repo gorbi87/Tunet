@@ -166,7 +166,7 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
             id.startsWith('waermepumpe_card_') ||
             id.startsWith('luftungsanlage_card_') ||
             id.startsWith('pv_card_');
-          const rowPx = isMobile ? (isCustomCard ? 120 : 82) : 100;
+          const rowPx = isMobile ? (isCustomCard ? 100 : 82) : 100;
           let cardHeight;
           if (
             id.startsWith('spacer_card_') &&

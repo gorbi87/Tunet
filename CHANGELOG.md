@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.72] — 2026-03-20
+
+### Fixed
+- Smartphone: Custom-Card-Zeilenhöhe von 120 px auf 100 px reduziert.
+
 ## [1.14.71] — 2026-03-20
 
 ### Fixed

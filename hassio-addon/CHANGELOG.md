@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.72
+
+### Fixed
+- Smartphone: custom card row height reduced from 120 px to 100 px.
+
 ## 1.14.71
 
 ### Fixed
