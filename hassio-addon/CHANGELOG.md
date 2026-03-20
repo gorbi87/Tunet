@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.74
+
+### Fixed
+- Smartphone: cards needed 2 taps to open. Root cause: the `transform: scale(0.97)` active animation plays back during touchend and iOS fires click mid-animation, failing the hit test. On touch devices, the active state now uses `brightness` only (no transform), so the element doesn't move and click always registers on first tap.
+
 ## 1.14.73
 
 ### Changed
