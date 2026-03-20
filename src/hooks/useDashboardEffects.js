@@ -77,6 +77,44 @@ export function useDashboardEffects({
     return () => document.removeEventListener('pointerdown', handler);
   }, []);
 
+  // ── Touch-to-click: fire click immediately on touchend for card elements ──
+  // iOS Safari delays or misses click events on <div> after CSS transforms.
+  // We fire click synchronously on touchend and block the ghost click.
+  useEffect(() => {
+    let touchMoved = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    const onTouchStart = (e) => {
+      touchMoved = false;
+      const t = e.touches[0];
+      if (t) { touchStartX = t.clientX; touchStartY = t.clientY; }
+    };
+    const onTouchMove = (e) => {
+      const t = e.touches[0];
+      if (!t) return;
+      const dx = Math.abs(t.clientX - touchStartX);
+      const dy = Math.abs(t.clientY - touchStartY);
+      if (dx > 8 || dy > 8) touchMoved = true;
+    };
+    const onTouchEnd = (e) => {
+      if (touchMoved) return;
+      const target = e.target?.closest?.('[data-haptic]');
+      if (!target) return;
+      e.preventDefault(); // block iOS ghost click (300 ms delayed synthetic click)
+      target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    };
+
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    document.addEventListener('touchend', onTouchEnd, { passive: false });
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+  }, []);
+
   // ── Document title, favicon & viewport meta ────────────────────────────
   useEffect(() => {
     document.title = resolvedHeaderTitle;

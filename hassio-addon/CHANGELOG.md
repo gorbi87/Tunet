@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.75
+
+### Fixed
+- Smartphone: cards required 2–3 taps to open modal. Root fix: global touchend handler fires click immediately on [data-haptic] elements and blocks iOS's delayed ghost click via preventDefault. Scroll gestures are distinguished from taps by an 8 px movement threshold.
+
 ## 1.14.74
 
 ### Fixed

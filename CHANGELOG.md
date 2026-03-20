@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.75] — 2026-03-20
+
+### Fixed
+- Smartphone: Karten öffneten das Popup erst beim 2.–3. Tippen. Grundlegende Lösung: Globaler `touchend`-Handler feuert das `click`-Event sofort beim Loslassen (statt auf iOS' verzögerten Ghost-Click zu warten) und blockiert den anschließenden Ghost-Click mit `e.preventDefault()`. Scroll-Gesten werden anhand einer 8 px-Bewegungsschwelle von echten Taps unterschieden.
+
 ## [1.14.74] — 2026-03-20
 
 ### Fixed
