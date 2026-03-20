@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.81] — 2026-03-20
+
+### Fixed
+- UniFi Camera: Stream-Name wird jetzt automatisch aus der alten `cameraId` abgeleitet (z.B. `camera.terasse` → `terasse`), sodass bestehende Karten nach der Migration keine manuelle Eingabe des Stream-Namens mehr brauchen — nur noch die go2rtc-URL muss eingetragen werden
+- Nicht konfigurierte Karten öffnen beim Tippen direkt das Edit-Modal (statt das nutzlose Camera-Modal), damit die Einstellungen leichter erreichbar sind
+
 ## [1.14.80] — 2026-03-20
 
 ### Changed

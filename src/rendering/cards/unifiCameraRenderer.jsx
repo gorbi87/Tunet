@@ -13,18 +13,21 @@ const UnifiCameraCard = memo(function UnifiCameraCard({
   customIcons,
   settings,
   onOpen,
+  onEdit,
   t,
 }) {
   const [imgError, setImgError] = useState(false);
 
-  const name = customNames?.[cardId] || settings.go2rtcStream || 'UniFi Kamera';
+  // Auto-derive stream name from old cameraId (e.g. camera.terasse → terasse)
+  const go2rtcStream = settings.go2rtcStream ||
+    (settings.cameraId ? settings.cameraId.replace(/^camera\./, '') : '');
+  const go2rtcUrl = (settings.go2rtcUrl || '').replace(/\/$/, '');
+  const hasConfig = !!go2rtcUrl && !!go2rtcStream;
+
+  const name = customNames?.[cardId] || go2rtcStream || 'UniFi Kamera';
   const iconName = customIcons?.[cardId];
   const Icon = iconName ? getIconComponent(iconName) || Camera : Camera;
   const isSmall = settings.size === 'small';
-
-  const go2rtcUrl = (settings.go2rtcUrl || '').replace(/\/$/, '');
-  const go2rtcStream = settings.go2rtcStream || '';
-  const hasConfig = !!go2rtcUrl && !!go2rtcStream;
   const snapshotUrl = hasConfig
     ? `${go2rtcUrl}/api/snapshot?src=${encodeURIComponent(go2rtcStream)}`
     : null;
@@ -38,7 +41,7 @@ const UnifiCameraCard = memo(function UnifiCameraCard({
         data-haptic={editMode ? undefined : 'card'}
         className="glass-texture touch-feedback group relative flex h-full items-center gap-4 overflow-hidden rounded-3xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 pl-5 font-sans backdrop-blur-xl transition-all duration-300"
         style={cardStyle}
-        onClick={(e) => { e.stopPropagation(); if (!editMode) onOpen?.(); }}
+        onClick={(e) => { e.stopPropagation(); if (!editMode) { if (hasConfig) onOpen?.(); else onEdit?.(); } }}
       >
         {controls}
         <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-2xl bg-[var(--glass-bg)]">
@@ -73,7 +76,7 @@ const UnifiCameraCard = memo(function UnifiCameraCard({
       data-haptic={editMode ? undefined : 'card'}
       className={`glass-texture touch-feedback group relative h-full overflow-hidden rounded-3xl border bg-[var(--card-bg)] transition-all duration-500 ${editMode ? 'cursor-move' : 'cursor-pointer active:scale-[0.98]'}`}
       style={cardStyle}
-      onClick={(e) => { e.stopPropagation(); if (!editMode) onOpen?.(); }}
+      onClick={(e) => { e.stopPropagation(); if (!editMode) { if (hasConfig) onOpen?.(); else onEdit?.(); } }}
     >
       {controls}
 
@@ -94,8 +97,9 @@ const UnifiCameraCard = memo(function UnifiCameraCard({
               <>
                 <AlertCircle className="h-10 w-10" />
                 <p className="text-xs font-bold tracking-widest uppercase">
-                  go2rtc konfigurieren
+                  go2rtc-URL eintragen
                 </p>
+                <p className="text-[10px] opacity-60">Tippen zum Öffnen</p>
               </>
             )}
           </div>
@@ -131,6 +135,8 @@ export function renderUnifiCameraCard(cardId, dragProps, getControls, cardStyle,
     customNames,
     customIcons,
     setShowUnifiCameraModal,
+    setShowEditCardModal,
+    setEditCardSettingsKey,
     t,
   } = ctx;
   const settings = getSettings(cardSettings, settingsKey, cardId);
@@ -147,6 +153,12 @@ export function renderUnifiCameraCard(cardId, dragProps, getControls, cardStyle,
       customIcons={customIcons}
       settings={settings}
       onOpen={() => setShowUnifiCameraModal && setShowUnifiCameraModal(cardId)}
+      onEdit={() => {
+        if (setShowEditCardModal && setEditCardSettingsKey) {
+          setEditCardSettingsKey(settingsKey);
+          setShowEditCardModal(cardId);
+        }
+      }}
       t={t}
     />
   );

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.81
+
+### Fixed
+- UniFi Camera: stream name is now auto-derived from legacy `cameraId` (e.g. `camera.terasse` → `terasse`), so existing cards only need go2rtcUrl configured — stream name no longer needs manual entry
+- Unconfigured cards now open the Edit modal on tap (instead of the camera modal) for easier setup
+
 ## 1.14.80
 
 ### Changed

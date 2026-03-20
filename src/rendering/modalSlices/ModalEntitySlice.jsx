@@ -462,7 +462,7 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
                 customName={customNames?.[showUnifiCameraModal]}
                 customIcon={customIcons?.[showUnifiCameraModal]}
                 go2rtcUrl={cameraSettings.go2rtcUrl || ''}
-                go2rtcStream={cameraSettings.go2rtcStream || ''}
+                go2rtcStream={cameraSettings.go2rtcStream || (cameraSettings.cameraId ? cameraSettings.cameraId.replace(/^camera\./, '') : '')}
                 t={t}
               />
             </ModalSuspense>
