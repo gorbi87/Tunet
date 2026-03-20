@@ -78,8 +78,12 @@ export default function Header({
     : { hour: '2-digit', minute: '2-digit', hour12: false };
 
   const timeStr = now.toLocaleTimeString(locale, timeOptions);
-  const headingFontSize = `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale})`;
-  const clockFontSize = `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale} * ${clockScale})`;
+  const headingFontSize = isMobile
+    ? `calc(clamp(1.25rem, 5vw, 1.5rem) * ${headerScale})`
+    : `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale})`;
+  const clockFontSize = isMobile
+    ? `calc(clamp(1.25rem, 5vw, 1.5rem) * ${headerScale} * ${clockScale})`
+    : `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale} * ${clockScale})`;
 
   return (
     <header
@@ -102,9 +106,9 @@ export default function Header({
 
       {/* Top row: heading (left) and clock (right) aligned only with heading */}
       <div
-        className={`flex items-start justify-between gap-10 leading-none ${isMobile ? 'flex-col items-center text-center' : ''}`}
+        className="flex items-center justify-between gap-4 leading-none"
       >
-        <div className={`flex items-center gap-4 ${isMobile ? 'w-full justify-center' : ''}`}>
+        <div className="flex items-center gap-4">
           {headerSettings.showTitle && (
             <h1
               className="leading-none select-none"
@@ -123,22 +127,9 @@ export default function Header({
           )}
         </div>
 
-        {headerSettings.showClock && !isMobile && (
+        {headerSettings.showClock && (!isMobile || showClockOnMobile) && (
           <h2
             className="leading-none font-light tracking-[0.1em] select-none"
-            style={{
-              fontSize: clockFontSize,
-              color: 'var(--text-muted)',
-              fontFamily: resolvedFontFamily,
-            }}
-          >
-            {timeStr}
-          </h2>
-        )}
-
-        {headerSettings.showClock && isMobile && showClockOnMobile && (
-          <h2
-            className="leading-none font-light tracking-[0.08em] select-none"
             style={{
               fontSize: clockFontSize,
               color: 'var(--text-muted)',
@@ -164,7 +155,7 @@ export default function Header({
       )}
 
       {/* Children (content below heading & clock) */}
-      <div className="flex w-full flex-col gap-6 pt-6 md:gap-3 md:pt-3">{children}</div>
+      <div className={`flex w-full flex-col ${isMobile ? 'gap-2 pt-2' : 'gap-6 pt-6 md:gap-3 md:pt-3'}`}>{children}</div>
     </header>
   );
 }

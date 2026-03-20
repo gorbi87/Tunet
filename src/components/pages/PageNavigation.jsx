@@ -92,9 +92,9 @@ export default function PageNavigation({
             } ${editMode && isHidden ? 'scale-95 border-gray-500 opacity-50' : ''} ${editMode ? 'cursor-move' : ''} ${isDragOver ? 'border-[var(--accent-color)]' : ''}`}
           >
             <Icon className={`h-4 w-4 ${editMode && isHidden ? 'animate-pulse' : ''}`} />
-            <span className="hidden sm:inline">{label}</span>
+            <span>{label}</span>
             {editMode && (
-              <Edit2 className="ml-1 hidden h-4 w-4 text-[var(--accent-color)] sm:inline" />
+              <Edit2 className="ml-1 h-4 w-4 text-[var(--accent-color)]" />
             )}
           </button>
         );
@@ -107,7 +107,7 @@ export default function PageNavigation({
           className="flex items-center gap-1.5 rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1 text-[10px] font-bold tracking-[0.2em] whitespace-nowrap text-[var(--text-primary)] uppercase transition-all hover:bg-[var(--glass-bg-hover)] sm:rounded-full"
         >
           <Plus className="h-3 w-3" />
-          <span className="hidden sm:inline">{t('nav.addPage')}</span>
+          <span>{t('nav.addPage')}</span>
         </button>
       )}
     </div>

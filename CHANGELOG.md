@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.67] — 2026-03-20
+
+### Added
+- Smartphone-Layout: Header-Titel und Uhrzeit werden nebeneinander (statt übereinander) angezeigt und nutzen eine deutlich kleinere Schrift (`clamp(1.25rem, 5vw, 1.5rem)` statt `clamp(3rem, ...)`).
+- Tab-Navigation: Bezeichnungen werden auch auf Smartphones (< 480 px) angezeigt — nicht mehr nur Icons.
+- Weniger vertikaler Abstand unter dem Header auf Smartphones für kompaktere Darstellung.
+
 ## [1.14.56] — 2026-03-17
 
 ### Fixed

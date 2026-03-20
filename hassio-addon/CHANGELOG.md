@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.67
+
+### Added
+- Smartphone layout: header title and clock now side-by-side with smaller font size; tab labels visible on small screens.
+
 ## 1.14.56
 
 ### Fixed
