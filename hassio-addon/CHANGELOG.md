@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.14.82
+
+### Fixed
+- **UniFi Camera mixed-content fix**: Tunet's backend now proxies all go2rtc traffic (snapshot, HLS, WebSocket). This fixes the camera when Tunet is served over HTTPS (HA Ingress) and go2rtcUrl is a local HTTP address.
+  - Card thumbnail / snapshot loads correctly again
+  - MSE WebSocket stream now connects via `wss://` through Tunet's server — no more mixed-content blocking
+- Layout bug in camera popup fixed: video element and snapshot fallback were stacking vertically instead of overlapping
+
 ## 1.14.81
 
 ### Fixed

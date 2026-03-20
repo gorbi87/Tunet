@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.82] — 2026-03-20
+
+### Fixed
+- **UniFi Camera Mixed-Content Fix**: Tunet's eigener Backend-Server proxied jetzt alle go2rtc-Requests (Snapshot, HLS, WebSocket). Damit funktioniert die Kamera auch wenn Tunet über HTTPS (HA Ingress) erreichbar ist und die go2rtcUrl eine lokale HTTP-Adresse ist.
+  - Snapshot und Karten-Thumbnail laden wieder
+  - MSE-WebSocket-Stream läuft über `wss://` durch Tunet's Server → kein Mixed-Content mehr
+- Layout-Bug im Popup behoben: Video-Element und Snapshot-Fallback wurden gleichzeitig angezeigt und gestapelt — jetzt löst Snapshot den Video-Player korrekt ab
+
 ## [1.14.81] — 2026-03-20
 
 ### Fixed

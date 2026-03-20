@@ -3,6 +3,11 @@ import rateLimit from 'express-rate-limit';
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join, dirname, extname, basename } from 'path';
 import { fileURLToPath } from 'url';
+import { createServer } from 'http';
+import { request as httpRequest } from 'http';
+import { request as httpsRequest } from 'https';
+import { URL } from 'url';
+import { WebSocket, WebSocketServer } from 'ws';
 import profilesRouter from './routes/profiles.js';
 import iconsRouter from './routes/icons.js';
 import settingsRouter from './routes/settings.js';
@@ -58,6 +63,24 @@ app.use('/api/settings', homeAssistantAuth, settingsRouter);
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', version: appVersion });
+});
+
+// go2rtc HTTP proxy — avoids mixed-content blocking when Tunet is served over HTTPS
+app.get('/api/go2rtc-proxy', (req, res) => {
+  const { url: targetUrl } = req.query;
+  if (!targetUrl) return res.status(400).end();
+  let target;
+  try { target = new URL(targetUrl); } catch { return res.status(400).end(); }
+  const lib = target.protocol === 'https:' ? httpsRequest : httpRequest;
+  const proxyReq = lib(target.href, { timeout: 10000 }, (proxyRes) => {
+    res.status(proxyRes.statusCode || 200);
+    for (const [k, v] of Object.entries(proxyRes.headers)) {
+      if (!['transfer-encoding', 'connection'].includes(k.toLowerCase())) res.setHeader(k, v);
+    }
+    proxyRes.pipe(res);
+  });
+  proxyReq.on('error', () => { try { res.status(502).end(); } catch {} });
+  proxyReq.end();
 });
 
 // Serve static frontend files in production
@@ -157,7 +180,48 @@ if (isProduction) {
   }
 }
 
-app.listen(PORT, '0.0.0.0', () => {
+// WebSocket proxy for go2rtc — lets browser connect via WSS through Tunet's HTTPS server
+const httpServer = createServer(app);
+const wss = new WebSocketServer({ noServer: true });
+
+wss.on('connection', (clientWs, _req, { base, src }) => {
+  const wsBase = base.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://').replace(/\/$/, '');
+  const targetUrl = `${wsBase}/api/ws?src=${encodeURIComponent(src)}`;
+  const targetWs = new WebSocket(targetUrl);
+  targetWs.binaryType = 'arraybuffer';
+
+  targetWs.on('message', (data, isBinary) => {
+    if (clientWs.readyState === WebSocket.OPEN) clientWs.send(data, { binary: isBinary });
+  });
+  targetWs.on('close', () => { try { clientWs.close(); } catch {} });
+  targetWs.on('error', () => { try { clientWs.close(); } catch {} });
+
+  clientWs.on('message', (data, isBinary) => {
+    if (targetWs.readyState === WebSocket.OPEN) targetWs.send(data, { binary: isBinary });
+  });
+  clientWs.on('close', () => { try { targetWs.close(); } catch {} });
+  clientWs.on('error', () => { try { targetWs.close(); } catch {} });
+});
+
+httpServer.on('upgrade', (req, socket, head) => {
+  const ingressPath = req.headers['x-ingress-path'];
+  let url = req.url;
+  if (ingressPath && url.startsWith(ingressPath)) url = url.slice(ingressPath.length) || '/';
+
+  if (!url.startsWith('/api/go2rtc-ws')) { socket.destroy(); return; }
+
+  let params;
+  try { params = new URL(url, 'http://localhost').searchParams; } catch { socket.destroy(); return; }
+  const base = params.get('base');
+  const src = params.get('src');
+  if (!base || !src) { socket.destroy(); return; }
+
+  wss.handleUpgrade(req, socket, head, (ws) => {
+    wss.emit('connection', ws, req, { base, src });
+  });
+});
+
+httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(
     `[server] Tunet backend running on port ${PORT} (${isProduction ? 'production' : 'development'})`
   );

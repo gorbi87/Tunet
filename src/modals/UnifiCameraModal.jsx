@@ -4,8 +4,17 @@ import { X, RefreshCw, Video, Camera } from '../icons';
 import { getIconComponent } from '../icons';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 
-function toWsUrl(httpUrl) {
-  return httpUrl.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
+// Proxy helpers — route go2rtc traffic through Tunet's own server to avoid mixed-content blocking
+function makeHttpProxyUrl(targetUrl) {
+  return `./api/go2rtc-proxy?url=${encodeURIComponent(targetUrl)}`;
+}
+
+function makeWsProxyUrl(base, src) {
+  const url = new URL('./api/go2rtc-ws', document.baseURI);
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+  url.searchParams.set('base', base);
+  url.searchParams.set('src', src);
+  return url.toString();
 }
 
 export default function UnifiCameraModal({
@@ -37,7 +46,7 @@ export default function UnifiCameraModal({
   const Icon = iconName ? getIconComponent(iconName) || Camera : Camera;
 
   const snapshotUrl = go2rtcUrl && go2rtcStream
-    ? `${go2rtcUrl}/api/snapshot?src=${encodeURIComponent(go2rtcStream)}&_ts=${snapshotTs}`
+    ? makeHttpProxyUrl(`${go2rtcUrl}/api/snapshot?src=${encodeURIComponent(go2rtcStream)}&_ts=${snapshotTs}`)
     : null;
 
   const stopAll = useCallback(() => {
@@ -67,7 +76,7 @@ export default function UnifiCameraModal({
     const video = videoRef.current;
     if (!video || cancelledRef.current) return;
 
-    const hlsUrl = `${baseUrl}/api/stream.m3u8?src=${encodeURIComponent(streamName)}`;
+    const hlsUrl = makeHttpProxyUrl(`${baseUrl}/api/stream.m3u8?src=${encodeURIComponent(streamName)}`);
 
     if (Hls.isSupported()) {
       const hls = new Hls({ enableWorker: false, lowLatencyMode: true });
@@ -126,8 +135,7 @@ export default function UnifiCameraModal({
     ms.addEventListener('sourceopen', () => {
       if (cancelledRef.current) { URL.revokeObjectURL(objectUrl); return; }
 
-      const wsUrl = `${toWsUrl(go2rtcUrl)}/api/ws?src=${encodeURIComponent(go2rtcStream)}`;
-      const ws = new WebSocket(wsUrl);
+      const ws = new WebSocket(makeWsProxyUrl(go2rtcUrl, go2rtcStream));
       wsRef.current = ws;
       ws.binaryType = 'arraybuffer';
 
@@ -301,11 +309,11 @@ export default function UnifiCameraModal({
               </div>
             )}
 
-            {/* Stream video */}
-            {!notConfigured && viewMode === 'stream' && (
+            {/* Stream video — hidden when error+snapshot fallback is active */}
+            {!notConfigured && viewMode === 'stream' && !(error && snapshotUrl) && (
               <video
                 ref={videoRef}
-                className="h-full w-full object-contain"
+                className="absolute inset-0 h-full w-full object-contain"
                 autoPlay
                 playsInline
                 muted
