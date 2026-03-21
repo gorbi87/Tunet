@@ -319,7 +319,7 @@ export default function UnifiCameraModal({
             {!notConfigured && viewMode === 'stream' && !(error && snapshotUrl) && (
               <video
                 ref={videoRef}
-                className="absolute inset-0 h-full w-full object-contain"
+                className="absolute inset-0 h-full w-full object-cover"
                 autoPlay
                 playsInline
                 muted
