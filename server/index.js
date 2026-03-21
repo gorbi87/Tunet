@@ -66,55 +66,22 @@ app.get('/api/health', (_req, res) => {
 });
 
 // go2rtc HTTP proxy — avoids mixed-content blocking when Tunet is served over HTTPS.
-// Primary path: HA supervisor camera proxy (works inside HAOS regardless of Docker networking).
-// Fallback: direct go2rtc request (works for standalone go2rtc accessible from the container).
 app.get('/api/go2rtc-proxy', (req, res) => {
   const { url: targetUrl } = req.query;
   if (!targetUrl) return res.status(400).end();
 
-  // Extract go2rtc stream name (src=…) to derive the HA camera entity ID
-  let streamName = null;
-  try { streamName = new URL(targetUrl).searchParams.get('src') || null; } catch {}
-
-  const directGoRtc = () => {
-    let target;
-    try { target = new URL(targetUrl); } catch { return res.status(400).end(); }
-    const lib = target.protocol === 'https:' ? httpsRequest : httpRequest;
-    const proxyReq = lib(target.href, { timeout: 8000 }, (proxyRes) => {
-      res.status(proxyRes.statusCode || 200);
-      for (const [k, v] of Object.entries(proxyRes.headers)) {
-        if (!['transfer-encoding', 'connection'].includes(k.toLowerCase())) res.setHeader(k, v);
-      }
-      proxyRes.pipe(res);
-    });
-    proxyReq.on('error', () => { try { res.status(502).end(); } catch {} });
-    proxyReq.end();
-  };
-
-  // Try HA supervisor camera proxy first — entity ID derived from stream name (e.g. "carport" → camera.carport)
-  const supervisorToken = process.env.SUPERVISOR_TOKEN;
-  if (streamName && supervisorToken) {
-    const entityId = `camera.${streamName.toLowerCase()}`;
-    const haReq = httpRequest({
-      hostname: 'supervisor',
-      path: `/core/api/camera_proxy/${entityId}`,
-      headers: { Authorization: `Bearer ${supervisorToken}` },
-      timeout: 6000,
-    }, (haRes) => {
-      if (haRes.statusCode >= 400) { haRes.resume(); directGoRtc(); return; }
-      res.status(haRes.statusCode || 200);
-      for (const [k, v] of Object.entries(haRes.headers)) {
-        if (!['transfer-encoding', 'connection'].includes(k.toLowerCase())) res.setHeader(k, v);
-      }
-      haRes.pipe(res);
-    });
-    haReq.on('error', directGoRtc);
-    haReq.on('timeout', () => { haReq.destroy(); directGoRtc(); });
-    haReq.end();
-    return;
-  }
-
-  directGoRtc();
+  let target;
+  try { target = new URL(targetUrl); } catch { return res.status(400).end(); }
+  const lib = target.protocol === 'https:' ? httpsRequest : httpRequest;
+  const proxyReq = lib(target.href, { timeout: 8000 }, (proxyRes) => {
+    res.status(proxyRes.statusCode || 200);
+    for (const [k, v] of Object.entries(proxyRes.headers)) {
+      if (!['transfer-encoding', 'connection'].includes(k.toLowerCase())) res.setHeader(k, v);
+    }
+    proxyRes.pipe(res);
+  });
+  proxyReq.on('error', () => { try { res.status(502).end(); } catch {} });
+  proxyReq.end();
 });
 
 // Serve static frontend files in production
