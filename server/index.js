@@ -195,7 +195,14 @@ wss.on('connection', (clientWs, _req, { base, src }) => {
   const connectTimer = setTimeout(() => {
     if (targetWs.readyState === WebSocket.CONNECTING) targetWs.terminate();
   }, 5000);
-  targetWs.on('open', () => clearTimeout(connectTimer));
+  const pendingToTarget = [];
+  targetWs.on('open', () => {
+    clearTimeout(connectTimer);
+    for (const { data, isBinary } of pendingToTarget) {
+      try { targetWs.send(data, { binary: isBinary }); } catch {}
+    }
+    pendingToTarget.length = 0;
+  });
 
   targetWs.on('message', (data, isBinary) => {
     if (clientWs.readyState === WebSocket.OPEN) clientWs.send(data, { binary: isBinary });
@@ -206,6 +213,7 @@ wss.on('connection', (clientWs, _req, { base, src }) => {
 
   clientWs.on('message', (data, isBinary) => {
     if (targetWs.readyState === WebSocket.OPEN) targetWs.send(data, { binary: isBinary });
+    else if (targetWs.readyState === WebSocket.CONNECTING) pendingToTarget.push({ data, isBinary });
   });
   clientWs.on('close', () => { try { targetWs.close(); } catch {} });
   clientWs.on('error', () => { try { targetWs.close(); } catch {} });
