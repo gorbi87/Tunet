@@ -139,6 +139,12 @@ export default function UnifiCameraModal({
       wsRef.current = ws;
       ws.binaryType = 'arraybuffer';
 
+      ws.onopen = () => {
+        if (!cancelledRef.current) {
+          ws.send(JSON.stringify({ type: 'mse', value: 'video/mp4; codecs="avc1.640029,mp4a.40.2"' }));
+        }
+      };
+
       const flushQueue = () => {
         const sb = sbRef.current;
         if (!sb || sb.updating || queueRef.current.length === 0) return;
