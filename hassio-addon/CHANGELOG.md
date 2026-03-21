@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.14.86
+
+### Fixed
+- **Camera snapshot now works via HA supervisor proxy**: Frigate's go2rtc port 1984 is not exposed to the Docker host, so the direct proxy always returned 502. The server now uses HA's internal camera proxy (`http://supervisor/core/api/camera_proxy/camera.{stream}`) as primary path and direct go2rtc as fallback. No Docker networking issues.
+- Removed `host_network: true` (was added in 1.14.85 to work around Docker isolation — unnecessary with the supervisor-proxy approach and caused internal hostname resolution to break).
+- WebSocket close code fixed: when upstream go2rtc is unreachable, the server now closes the client WebSocket with code 1011 (not 1000). Code 1000 was treated as "normal close" by the popup, leaving it stuck in the loading spinner. With 1011, the error state is set and the snapshot fallback is shown.
+
 ## 1.14.85
 
 ### Fixed
