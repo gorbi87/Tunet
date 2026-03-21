@@ -224,12 +224,18 @@ wss.on('connection', (clientWs, _req, { base, src }) => {
   const targetWs = new WebSocket(targetUrl);
   targetWs.binaryType = 'arraybuffer';
 
+  // Abort if go2rtc doesn't connect within 5 s — prevents infinite spinner in the popup
+  const connectTimer = setTimeout(() => {
+    if (targetWs.readyState === WebSocket.CONNECTING) targetWs.terminate();
+  }, 5000);
+  targetWs.on('open', () => clearTimeout(connectTimer));
+
   targetWs.on('message', (data, isBinary) => {
     if (clientWs.readyState === WebSocket.OPEN) clientWs.send(data, { binary: isBinary });
   });
-  targetWs.on('close', () => { try { clientWs.close(); } catch {} });
+  targetWs.on('close', () => { clearTimeout(connectTimer); try { clientWs.close(); } catch {} });
   // Use 1011 (internal error) so the browser knows it's not a normal close and can show the error/snapshot fallback
-  targetWs.on('error', () => { try { clientWs.close(1011, 'upstream error'); } catch {} });
+  targetWs.on('error', () => { clearTimeout(connectTimer); try { clientWs.close(1011, 'upstream error'); } catch {} });
 
   clientWs.on('message', (data, isBinary) => {
     if (targetWs.readyState === WebSocket.OPEN) targetWs.send(data, { binary: isBinary });
