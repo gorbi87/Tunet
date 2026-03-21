@@ -29,7 +29,7 @@ const UnifiCameraCard = memo(function UnifiCameraCard({
   const Icon = iconName ? getIconComponent(iconName) || Camera : Camera;
   const isSmall = settings.size === 'small';
   const snapshotUrl = hasConfig
-    ? `./api/go2rtc-proxy?url=${encodeURIComponent(`${go2rtcUrl}/api/snapshot?src=${encodeURIComponent(go2rtcStream)}`)}`
+    ? `./api/go2rtc-proxy?url=${encodeURIComponent(`${go2rtcUrl}/api/frame.jpeg?src=${encodeURIComponent(go2rtcStream)}`)}`
     : null;
 
   const showSnapshot = hasConfig && snapshotUrl && !imgError;

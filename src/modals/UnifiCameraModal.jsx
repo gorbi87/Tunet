@@ -46,7 +46,7 @@ export default function UnifiCameraModal({
   const Icon = iconName ? getIconComponent(iconName) || Camera : Camera;
 
   const snapshotUrl = go2rtcUrl && go2rtcStream
-    ? makeHttpProxyUrl(`${go2rtcUrl}/api/snapshot?src=${encodeURIComponent(go2rtcStream)}&_ts=${snapshotTs}`)
+    ? makeHttpProxyUrl(`${go2rtcUrl}/api/frame.jpeg?src=${encodeURIComponent(go2rtcStream)}&_ts=${snapshotTs}`)
     : null;
 
   const stopAll = useCallback(() => {
