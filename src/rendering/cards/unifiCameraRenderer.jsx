@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Camera, AlertCircle } from '../../icons';
 import { getIconComponent } from '../../icons';
 import { getSettings } from '../helpers';
@@ -17,6 +17,7 @@ const UnifiCameraCard = memo(function UnifiCameraCard({
   t,
 }) {
   const [imgError, setImgError] = useState(false);
+  const [snapshotTs, setSnapshotTs] = useState(() => Date.now());
 
   // Auto-derive stream name from old cameraId (e.g. camera.terasse → terasse)
   const go2rtcStream = settings.go2rtcStream ||
@@ -24,12 +25,18 @@ const UnifiCameraCard = memo(function UnifiCameraCard({
   const go2rtcUrl = (settings.go2rtcUrl || '').replace(/\/$/, '');
   const hasConfig = !!go2rtcUrl && !!go2rtcStream;
 
+  useEffect(() => {
+    if (!hasConfig) return;
+    const id = setInterval(() => setSnapshotTs(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, [hasConfig]);
+
   const name = customNames?.[cardId] || go2rtcStream || 'UniFi Kamera';
   const iconName = customIcons?.[cardId];
   const Icon = iconName ? getIconComponent(iconName) || Camera : Camera;
   const isSmall = settings.size === 'small';
   const snapshotUrl = hasConfig
-    ? `./api/go2rtc-proxy?url=${encodeURIComponent(`${go2rtcUrl}/api/frame.jpeg?src=${encodeURIComponent(go2rtcStream)}`)}`
+    ? `./api/go2rtc-proxy?url=${encodeURIComponent(`${go2rtcUrl}/api/frame.jpeg?src=${encodeURIComponent(go2rtcStream)}&_ts=${snapshotTs}`)}`
     : null;
 
   const showSnapshot = hasConfig && snapshotUrl && !imgError;
