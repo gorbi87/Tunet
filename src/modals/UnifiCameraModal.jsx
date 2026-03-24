@@ -303,7 +303,7 @@ export default function UnifiCameraModal({
           </div>
 
           {/* Video area */}
-          <div className="relative min-h-[240px] flex-1 overflow-hidden rounded-xl border border-[var(--glass-border)] bg-black">
+          <div className="relative w-full aspect-video overflow-hidden rounded-xl border border-[var(--glass-border)] bg-black">
 
             {/* go2rtc not configured */}
             {notConfigured && (
