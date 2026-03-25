@@ -28,6 +28,7 @@ const MODAL_DEFAULTS = {
   showWaermepumpeModal: null,
   showLuftungsanlageModal: null,
   showPvModal: null,
+  showBeregnungModal: null,
   activeMediaModal: null,
   activeMediaGroupKey: null,
   activeMediaGroupIds: null,
@@ -71,6 +72,7 @@ const OPEN_CHECK_KEYS = [
   'showWaermepumpeModal',
   'showLuftungsanlageModal',
   'showPvModal',
+  'showBeregnungModal',
   'showEntityCountModal',
 ];
 
@@ -134,6 +136,7 @@ export function useModals() {
       setShowWaermepumpeModal: setters.setShowWaermepumpeModal,
       setShowLuftungsanlageModal: setters.setShowLuftungsanlageModal,
       setShowPvModal: setters.setShowPvModal,
+      setShowBeregnungModal: setters.setShowBeregnungModal,
     }),
     [setters]
   );

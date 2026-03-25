@@ -27,6 +27,7 @@ import {
   renderCameraCard,
   renderSpacerCard,
   renderUnifiCameraCard,
+  renderBeregnungCard,
 } from './cards';
 
 /**
@@ -59,6 +60,7 @@ export const CARD_REGISTRY = [
   { prefix: 'unifi_camera_card_', renderer: renderUnifiCameraCard },
   { prefix: 'alarm_card_', renderer: renderAlarmCard },
   { prefix: 'spacer_card_', renderer: renderSpacerCard },
+  { prefix: 'beregnung_card_', renderer: renderBeregnungCard },
 ];
 
 export function dispatchCardRender(cardId, dragProps, getControls, cardStyle, settingsKey, ctx) {
