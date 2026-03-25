@@ -124,6 +124,7 @@ export function useCardRendering({
     setShowWaermepumpeModal,
     setShowLuftungsanlageModal,
     setShowPvModal,
+    setShowBeregnungModal,
   } = resolvedEntityModalActions;
   const { setActiveMediaId, setActiveMediaGroupKey, setActiveMediaGroupIds, setActiveMediaModal } =
     resolvedMediaModalActions;
