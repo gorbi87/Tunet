@@ -47,7 +47,7 @@ const BeregnungCard = memo(function BeregnungCard({
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase leading-none">
-              {t?.('beregnung.title') || 'Beregnung'}
+              Garten
             </p>
             <p className="text-sm font-bold text-[var(--text-primary)] leading-tight">{name}</p>
           </div>
