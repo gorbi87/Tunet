@@ -35,6 +35,7 @@ const REMOVABLE_PREFIXES = [
   'waermepumpe_card_',
   'luftungsanlage_card_',
   'pv_card_',
+  'beregnung_card_',
   'fan.',
 ];
 
@@ -60,6 +61,7 @@ const SPECIAL_CARD_PREFIXES = [
   'waermepumpe_card_',
   'luftungsanlage_card_',
   'pv_card_',
+  'beregnung_card_',
 ];
 
 /**

@@ -273,6 +273,12 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
+    case 'beregnung': {
+      const beregnungCardId = `beregnung_card_${Date.now()}`;
+      commitSingleCard(beregnungCardId, {});
+      return;
+    }
+
     case 'car': {
       const cardId = `car_card_${Date.now()}`;
       commitSingleCard(cardId, { type: 'car', size: 'large' }, { openEdit: true });

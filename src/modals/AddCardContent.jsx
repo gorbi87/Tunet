@@ -7,6 +7,7 @@ import {
   Check,
   CloudSun,
   Coins,
+  Droplets,
   Fan,
   Flame,
   Gamepad2,
@@ -1038,6 +1039,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="beregnung"
+                  icon={Droplets}
+                  label="Beregnung"
+                  isActive={addCardType === 'beregnung'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="climate"
                   icon={Thermometer}
                   label={t('addCard.type.climate')}
@@ -1212,6 +1220,8 @@ function AddCardContent({
               renderSimpleAddSection(CloudSun, 'Solar / PV Karte hinzufügen', 'Solar / PV hinzufügen')
             ) : addCardType === 'unifi_camera' ? (
               renderSimpleAddSection(Camera, 'UniFi / go2rtc Kamera hinzufügen', 'UniFi Camera hinzufügen')
+            ) : addCardType === 'beregnung' ? (
+              renderSimpleAddSection(Droplets, 'Beregnung Karte hinzufügen', 'Beregnung hinzufügen')
             ) : addCardType === 'room' ? (
               <RoomSection
                 conn={conn}

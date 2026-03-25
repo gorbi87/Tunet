@@ -60,6 +60,7 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     setShowWaermepumpeModal,
     setShowLuftungsanlageModal,
     setShowPvModal,
+    setShowBeregnungModal,
   } = modalActions;
 
   if (typeof cardId !== 'string' || !cardId.trim()) return false;
@@ -140,6 +141,11 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
 
   if (cardId.startsWith('pv_card_')) {
     closeAndOpen(() => setShowPvModal && setShowPvModal(cardId));
+    return true;
+  }
+
+  if (cardId.startsWith('beregnung_card_')) {
+    closeAndOpen(() => setShowBeregnungModal && setShowBeregnungModal(cardId));
     return true;
   }
 
