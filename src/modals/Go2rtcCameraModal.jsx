@@ -123,9 +123,7 @@ export default function Go2rtcCameraModal({
     const video = videoRef.current;
     if (!video) return;
 
-    // Mobile / touch devices: skip MSE, go directly to HLS (more reliable)
-    const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    if (!window.MediaSource || isTouchDevice) {
+    if (!window.MediaSource) {
       tryHLS(go2rtcUrl, go2rtcStream);
       return;
     }
@@ -146,7 +144,11 @@ export default function Go2rtcCameraModal({
 
       ws.onopen = () => {
         if (!cancelledRef.current) {
-          ws.send(JSON.stringify({ type: 'mse', value: 'video/mp4; codecs="avc1.640029,mp4a.40.2"' }));
+          // Prefer video+audio; iOS MSE often only supports baseline video codec
+          const mseCodec = MediaSource.isTypeSupported('video/mp4; codecs="avc1.640029,mp4a.40.2"')
+            ? 'video/mp4; codecs="avc1.640029,mp4a.40.2"'
+            : 'video/mp4; codecs="avc1.42E01E"';
+          ws.send(JSON.stringify({ type: 'mse', value: mseCodec }));
         }
       };
 
