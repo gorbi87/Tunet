@@ -214,8 +214,8 @@ const WeatherTempCard = memo(function WeatherTempCard({
             )}
           </div>
           <div className="flex flex-col items-end gap-1.5">
-            <div className={`flex items-center gap-1 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] ${isTwoColMobile ? 'px-1.5 py-0.5' : 'px-3 py-1 gap-1.5'}`}>
-              <span className={`font-bold uppercase ${isTwoColMobile ? 'text-[9px] tracking-wide' : 'text-xs tracking-widest'}`}>{info.label}</span>
+            <div className={`flex items-center gap-1 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] ${isTwoColMobile ? 'max-w-[90px] overflow-hidden px-1.5 py-0.5' : 'px-3 py-1 gap-1.5'}`}>
+              <span className={`block truncate font-bold uppercase ${isTwoColMobile ? 'text-[9px] tracking-wide' : 'text-xs tracking-widest'}`}>{info.label}</span>
             </div>
             <span className={`leading-none font-thin text-[var(--text-primary)] ${isTwoColMobile ? 'text-2xl' : 'text-4xl'}`}>
               {formatUnitValue(displayTempValue, { fallback: '--' })}

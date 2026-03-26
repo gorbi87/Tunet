@@ -37,6 +37,7 @@ const SensorCard = memo(function SensorCard({
   controls,
   onControl,
   onOpen,
+  isTwoColMobile = false,
   t,
 }) {
   const translate = t || ((key) => key);
@@ -619,18 +620,20 @@ const SensorCard = memo(function SensorCard({
       onClick={(e) => {
         if (!editMode) onOpen?.(e);
       }}
-      className={`touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-7 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer' : 'cursor-move'}`}
+      className={`touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isTwoColMobile ? 'p-3' : 'p-7'} ${!editMode ? 'cursor-pointer' : 'cursor-move'}`}
       style={cardStyle}
     >
       {controls}
 
-      <div className="pointer-events-none absolute -right-4 -bottom-4 text-[var(--glass-border)] opacity-[0.03]">
-        {Icon && <Icon size={140} />}
-      </div>
+      {!isTwoColMobile && (
+        <div className="pointer-events-none absolute -right-4 -bottom-4 text-[var(--glass-border)] opacity-[0.03]">
+          {Icon && <Icon size={140} />}
+        </div>
+      )}
 
       {showGraph && history.length > 0 && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24">
-          <SparkLine data={history} height={96} currentIndex={history.length - 1} fade />
+        <div className={`pointer-events-none absolute inset-x-0 bottom-0 z-0 ${isTwoColMobile ? 'h-16' : 'h-24'}`}>
+          <SparkLine data={history} height={isTwoColMobile ? 64 : 96} currentIndex={history.length - 1} fade />
         </div>
       )}
 
@@ -638,32 +641,32 @@ const SensorCard = memo(function SensorCard({
         <div className="flex min-w-0 flex-col items-start">
           {showIcon ? (
             <div
-              className={`flex h-11 w-11 items-center justify-center rounded-2xl ${iconToneClass} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}
+              className={`flex items-center justify-center ${isTwoColMobile ? 'h-8 w-8 rounded-xl' : 'h-11 w-11 rounded-2xl'} ${iconToneClass} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}
             >
               {Icon ? (
-                <Icon className="h-5 w-5 stroke-[1.5px]" />
+                <Icon className={`stroke-[1.5px] ${isTwoColMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
               ) : (
-                <Activity className="h-5 w-5" />
+                <Activity className={isTwoColMobile ? 'h-4 w-4' : 'h-5 w-5'} />
               )}
             </div>
           ) : (
-            <div className="h-11 w-11" />
+            <div className={isTwoColMobile ? 'h-8 w-8' : 'h-11 w-11'} />
           )}
 
           {showName && (
-            <p className="mt-2 w-full truncate text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
+            <p className={`w-full truncate font-bold tracking-wide text-[var(--text-secondary)] uppercase opacity-60 ${isTwoColMobile ? 'mt-1 text-[9px]' : 'mt-2 text-xs tracking-widest'}`}>
               {String(name)}
             </p>
           )}
         </div>
 
         {domain !== 'input_number' && showStatus && isNumeric && (
-          <div className="flex items-baseline gap-1.5 text-right">
-            <span className="text-3xl leading-none font-thin text-[var(--text-primary)]">
+          <div className="flex items-baseline gap-1 text-right">
+            <span className={`leading-none font-thin text-[var(--text-primary)] ${isTwoColMobile ? 'text-2xl' : 'text-3xl'}`}>
               {chartDisplayValue ?? displayState}
             </span>
             {displayNumericUnit && valueMode !== 'percent' && (
-              <span className="text-sm font-medium tracking-wider text-[var(--text-secondary)] uppercase">
+              <span className={`font-medium tracking-wider text-[var(--text-secondary)] uppercase ${isTwoColMobile ? 'text-xs' : 'text-sm'}`}>
                 {displayNumericUnit}
               </span>
             )}
