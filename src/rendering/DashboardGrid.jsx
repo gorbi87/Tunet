@@ -162,11 +162,16 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
           if (!cardContent) return null;
 
           const gapPx = isMobile ? 8 : gridGapV;
+          const isTwoColMobile = isMobile && gridColCount >= 2;
           const isCustomCard =
             id.startsWith('waermepumpe_card_') ||
             id.startsWith('luftungsanlage_card_') ||
             id.startsWith('pv_card_');
-          const rowPx = isMobile ? (isCustomCard ? 100 : 82) : 100;
+          const rowPx = isTwoColMobile
+            ? (isCustomCard ? 72 : 82)
+            : isMobile
+              ? (isCustomCard ? 100 : 82)
+              : 100;
           let cardHeight;
           if (
             id.startsWith('spacer_card_') &&

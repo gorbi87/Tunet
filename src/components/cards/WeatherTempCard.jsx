@@ -50,6 +50,7 @@ const WeatherTempCard = memo(function WeatherTempCard({
   outsideTempId,
   weatherEntityId,
   editMode,
+  isTwoColMobile = false,
   onOpen,
   t,
 }) {
@@ -197,33 +198,38 @@ const WeatherTempCard = memo(function WeatherTempCard({
         e.stopPropagation();
         if (!editMode && onOpen) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-7 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isTwoColMobile ? 'p-4' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'}`}
       style={cardStyle}
     >
       {getControls(cardId)}
       {showEffects && <WeatherEffects condition={state} />}
-      <div className="relative z-10 flex flex-col gap-3">
+      <div className="relative z-10 flex flex-col gap-2">
         <div className="flex items-start justify-between">
-          <div className="-mt-2 -ml-2 h-20 w-20 drop-shadow-lg filter transition-transform duration-500 group-hover:scale-110">
+          <div className={`drop-shadow-lg filter transition-transform duration-500 group-hover:scale-110 ${isTwoColMobile ? '-mt-1 -ml-1 h-12 w-12' : '-mt-2 -ml-2 h-20 w-20'}`}>
             <img src={iconUrl} alt={info.label} className="h-full w-full object-contain" />
-            {subtitle && (
+            {subtitle && !isTwoColMobile && (
               <p className="mt-0.5 truncate text-center text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
                 {subtitle}
               </p>
             )}
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1 text-[var(--text-secondary)]">
-              <span className="text-xs font-bold tracking-widest uppercase">{info.label}</span>
+          <div className="flex flex-col items-end gap-1.5">
+            <div className={`flex items-center gap-1 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] ${isTwoColMobile ? 'px-1.5 py-0.5' : 'px-3 py-1 gap-1.5'}`}>
+              <span className={`font-bold uppercase ${isTwoColMobile ? 'text-[9px] tracking-wide' : 'text-xs tracking-widest'}`}>{info.label}</span>
             </div>
-            <span className="text-4xl leading-none font-thin text-[var(--text-primary)]">
+            <span className={`leading-none font-thin text-[var(--text-primary)] ${isTwoColMobile ? 'text-2xl' : 'text-4xl'}`}>
               {formatUnitValue(displayTempValue, { fallback: '--' })}
               {displayTempUnit}
             </span>
+            {subtitle && isTwoColMobile && (
+              <p className="truncate text-[9px] font-bold tracking-wide text-[var(--text-secondary)] uppercase opacity-60">
+                {subtitle}
+              </p>
+            )}
           </div>
         </div>
       </div>
-      <div className="relative z-0 -mx-7 mt-auto -mb-7 h-32 overflow-hidden rounded-b-3xl opacity-80">
+      <div className={`relative z-0 mt-auto overflow-hidden rounded-b-3xl opacity-80 ${isTwoColMobile ? '-mx-4 -mb-4 h-20' : '-mx-7 -mb-7 h-32'}`}>
         <WeatherGraph
           history={historyForDisplay}
           currentTemp={displayTempValue}

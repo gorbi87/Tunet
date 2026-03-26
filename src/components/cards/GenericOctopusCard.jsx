@@ -14,6 +14,7 @@ const GenericOctopusCard = memo(function GenericOctopusCard({
   customIcons,
   onOpen,
   isMobile,
+  isTwoColMobile = false,
   t,
   settings = {},
 }) {
@@ -24,6 +25,7 @@ const GenericOctopusCard = memo(function GenericOctopusCard({
   const name = customNames?.[cardId] || entity.attributes?.friendly_name || cardId;
   const decimals = settings.decimals ?? 4;
   const Icon = customIcons?.[cardId] ? getIconComponent(customIcons[cardId]) || Zap : Zap;
+  const isUltraCompact = isTwoColMobile && settings.size !== 'small';
   const isDenseMobile = isMobile && settings.size !== 'small';
 
   // Extract rates from sensor attributes
@@ -148,27 +150,27 @@ const GenericOctopusCard = memo(function GenericOctopusCard({
         e.stopPropagation();
         if (!editMode && onOpen) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isUltraCompact ? 'p-3' : isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
       style={cardStyle}
     >
       {controls}
-      <div className={`relative z-10 ${isDenseMobile ? 'pb-16' : 'pb-20'}`}>
+      <div className={`relative z-10 ${isUltraCompact ? 'pb-12' : isDenseMobile ? 'pb-16' : 'pb-20'}`}>
         <div className="flex items-start justify-between">
           <div
-            className={`text-amber-400 transition-transform duration-500 group-hover:scale-110 ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
+            className={`text-amber-400 transition-transform duration-500 group-hover:scale-110 ${isUltraCompact ? 'rounded-lg p-2' : isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
             style={{ backgroundColor: 'rgba(217, 119, 6, 0.1)' }}
           >
             <Icon
-              className={isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'}
+              className={isUltraCompact ? 'h-3 w-3' : isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'}
               style={{ strokeWidth: 1.5 }}
             />
           </div>
-          {isDenseMobile ? (
-            <div className="flex items-end gap-1 leading-none">
-              <span className="text-2xl leading-none font-light text-[var(--text-primary)]">
+          {isUltraCompact || isDenseMobile ? (
+            <div className="flex items-end gap-0.5 leading-none">
+              <span className={`leading-none font-light text-[var(--text-primary)] ${isUltraCompact ? 'text-xl' : 'text-2xl'}`}>
                 {String(priceDisplay)}
               </span>
-              <span className="text-[11px] font-medium text-[var(--text-muted)]">{unit}</span>
+              <span className="text-[10px] font-medium text-[var(--text-muted)]">{unit}</span>
             </div>
           ) : (
             <div
@@ -181,15 +183,15 @@ const GenericOctopusCard = memo(function GenericOctopusCard({
             </div>
           )}
         </div>
-        <div className={isDenseMobile ? 'mt-3' : 'mt-2'}>
+        <div className={isUltraCompact ? 'mt-1.5' : isDenseMobile ? 'mt-3' : 'mt-2'}>
           <p
-            className={`${isDenseMobile ? 'mb-1 text-[10px]' : 'mb-0.5 text-xs'} leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60`}
+            className={`${isUltraCompact ? 'mb-0.5 text-[9px]' : isDenseMobile ? 'mb-1 text-[10px]' : 'mb-0.5 text-xs'} leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60`}
             style={{ letterSpacing: '0.05em' }}
           >
             {name}
           </p>
-          {isDenseMobile ? (
-            <span className={`text-[10px] font-bold tracking-widest uppercase ${levelColor}`}>
+          {isUltraCompact || isDenseMobile ? (
+            <span className={`font-bold tracking-wide uppercase ${isUltraCompact ? 'text-[9px]' : 'text-[10px] tracking-widest'} ${levelColor}`}>
               {levelText}
             </span>
           ) : (
@@ -206,7 +208,7 @@ const GenericOctopusCard = memo(function GenericOctopusCard({
         <SparkLine
           data={fullPriceData}
           currentIndex={currentPriceIndex}
-          height={isDenseMobile ? 72 : 84}
+          height={isUltraCompact ? 56 : isDenseMobile ? 72 : 84}
           variant={settings.graphStyle === 'bar' ? 'bar' : 'line'}
         />
       </div>

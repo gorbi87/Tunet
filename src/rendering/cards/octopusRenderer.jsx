@@ -9,6 +9,7 @@ export function renderOctopusCard(cardId, dragProps, getControls, cardStyle, set
     customNames,
     customIcons,
     isMobile,
+    isTwoColMobile,
     saveCardSetting,
     setShowNordpoolModal,
     t,
@@ -38,6 +39,7 @@ export function renderOctopusCard(cardId, dragProps, getControls, cardStyle, set
       customIcons={customIcons}
       onOpen={() => setShowNordpoolModal(cardId)}
       isMobile={isMobile}
+      isTwoColMobile={isTwoColMobile}
       settings={settings}
       saveCardSetting={saveCardSetting}
       t={t}
