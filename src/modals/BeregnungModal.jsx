@@ -95,9 +95,10 @@ function parseZoneMinutesByDay(histData, days) {
   for (const item of histData) {
     const t = getTs(item);
     if (isNaN(t.getTime())) continue;
-    if (item.state === 'on') {
+    const state = item.state ?? item.s;
+    if (state === 'on') {
       onTime = t;
-    } else if (item.state === 'off' && onTime) {
+    } else if (state === 'off' && onTime) {
       const dMin = (t - onTime) / 60000;
       const d = new Date(onTime);
       d.setHours(0, 0, 0, 0);
@@ -118,7 +119,7 @@ function parseRainByDay(histData, days) {
   days.forEach((d) => { byDate[d.toDateString()] = null; });
   if (!Array.isArray(histData) || !histData.length) return byDate;
   for (const item of histData) {
-    const val = parseFloat(item.state);
+    const val = parseFloat(item.state ?? item.s);
     if (isNaN(val)) continue;
     const t = getTs(item);
     if (isNaN(t.getTime())) continue;
