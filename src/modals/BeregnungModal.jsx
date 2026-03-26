@@ -37,8 +37,8 @@ const ZONES = [
 ];
 
 const MAIN_TABS = [
-  { key: 'zonen', label: 'Zonen' },
   { key: 'regen', label: 'Regen' },
+  { key: 'zonen', label: 'Zonen' },
   { key: 'verlauf', label: 'Verlauf' },
   { key: 'ventile', label: 'Ventile' },
 ];
@@ -490,7 +490,7 @@ function VentileTab({ entities, callService }) {
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 
 export default function BeregnungModal({ show, onClose, entities, callService, conn, haUrl, haToken }) {
-  const [mainTab, setMainTab] = useState('zonen');
+  const [mainTab, setMainTab] = useState('regen');
   const [zoneData, setZoneData] = useState({ z1: {}, z2: {}, z3: {} });
   const [rainHistory, setRainHistory] = useState({});
   const [histLoading, setHistLoading] = useState(false);
@@ -511,8 +511,9 @@ export default function BeregnungModal({ show, onClose, entities, callService, c
   };
 
   useEffect(() => {
-    if (!show || (mainTab !== 'regen' && mainTab !== 'verlauf')) return;
-    if (!conn && !haUrl) return;
+    if (!show) return;
+    if (mainTab !== 'regen' && mainTab !== 'verlauf') return;
+    if (!haUrl && !conn) return;
 
     const start = new Date();
     start.setDate(start.getDate() - HIST_DAYS);
