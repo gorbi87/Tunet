@@ -41,7 +41,7 @@ export default function UnifiCameraModal({
 
   const modalTitleId = 'unifi-camera-modal';
 
-  const name = customName || go2rtcStream || 'UniFi Kamera';
+  const name = customName || go2rtcStream || 'go2rtc Kamera';
   const iconName = customIcon;
   const Icon = iconName ? getIconComponent(iconName) || Camera : Camera;
 
@@ -119,8 +119,9 @@ export default function UnifiCameraModal({
     const video = videoRef.current;
     if (!video) return;
 
-    // Try MSE over WebSocket first
-    if (!window.MediaSource) {
+    // Mobile / touch devices: skip MSE, go directly to HLS (more reliable)
+    const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    if (!window.MediaSource || isTouchDevice) {
       tryHLS(go2rtcUrl, go2rtcStream);
       return;
     }
@@ -192,8 +193,11 @@ export default function UnifiCameraModal({
 
       ws.onclose = (e) => {
         if (cancelledRef.current || e.code === 1000) return;
-        setError(true);
-        setLoading(false);
+        URL.revokeObjectURL(objectUrl);
+        msRef.current = null;
+        sbRef.current = null;
+        queueRef.current = [];
+        tryHLS(go2rtcUrl, go2rtcStream);
       };
     }, { once: true });
 

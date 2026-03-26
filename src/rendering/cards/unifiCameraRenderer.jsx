@@ -31,7 +31,7 @@ const UnifiCameraCard = memo(function UnifiCameraCard({
     return () => clearInterval(id);
   }, [hasConfig]);
 
-  const name = customNames?.[cardId] || go2rtcStream || 'UniFi Kamera';
+  const name = customNames?.[cardId] || go2rtcStream || 'go2rtc Kamera';
   const iconName = customIcons?.[cardId];
   const Icon = iconName ? getIconComponent(iconName) || Camera : Camera;
   const isSmall = settings.size === 'small';
