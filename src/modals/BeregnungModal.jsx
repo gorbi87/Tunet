@@ -133,93 +133,142 @@ function parseRainByDay(histData, days) {
 
 // ─── SVG Charts ──────────────────────────────────────────────────────────────
 
-function BarChart({ days, valuesByDay, color, height = 160 }) {
-  const W = 400, H = height;
-  const PAD = { top: 10, right: 6, bottom: 20, left: 28 };
-  const GW = W - PAD.left - PAD.right;
-  const GH = H - PAD.top - PAD.bottom;
+function BarChart({ days, valuesByDay, color }) {
+  const VBW = 600, VBH = 180;
+  const PAD = { top: 24, right: 8, bottom: 28, left: 36 };
+  const GW = VBW - PAD.left - PAD.right;
+  const GH = VBH - PAD.top - PAD.bottom;
   const vals = days.map((d) => valuesByDay[d.toDateString()] ?? 0);
-  const maxVal = Math.max(...vals, 0.1);
+  const maxVal = Math.max(...vals, 0.5);
   const step = GW / days.length;
-  const barW = Math.max(1, step - 2);
+  const barW = Math.max(2, step * 0.65);
   const toX = (i) => PAD.left + i * step + (step - barW) / 2;
   const toY = (v) => PAD.top + GH - (v / maxVal) * GH;
-  const labelStep = Math.ceil(days.length / 6);
+  const gridVals = [0, maxVal / 2, maxVal];
+  const labelStep = Math.ceil(days.length / 7);
+  const gradId = 'rainGrad';
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }}>
-      {[0, maxVal / 2, maxVal].map((v, i) => (
-        <g key={i}>
-          <line x1={PAD.left} y1={toY(v)} x2={W - PAD.right} y2={toY(v)}
-            stroke="currentColor" strokeOpacity="0.07" strokeDasharray="3 3" />
-          <text x={PAD.left - 3} y={toY(v) + 3} textAnchor="end" fontSize="7" fill="currentColor" opacity="0.4">
-            {v >= 10 ? v.toFixed(0) : v.toFixed(1)}
-          </text>
-        </g>
-      ))}
-      {days.map((d, i) => {
-        const v = vals[i];
-        const bH = Math.max(v > 0 ? 2 : 0, (v / maxVal) * GH);
-        return <rect key={i} x={toX(i)} y={toY(v)} width={barW} height={bH} fill={color} opacity={0.75} rx="1" />;
-      })}
-      {days.map((d, i) => {
-        if (i % labelStep !== 0 && i !== days.length - 1) return null;
-        return (
-          <text key={i} x={toX(i) + barW / 2} y={H - 3} textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.45">
-            {fmtDay(d)}
-          </text>
-        );
-      })}
-    </svg>
+    <div className="relative w-full select-none" style={{ height: 180 }}>
+      <svg viewBox={`0 0 ${VBW} ${VBH}`} className="h-full w-full overflow-visible" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.9" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.25" />
+          </linearGradient>
+        </defs>
+        {/* Grid lines */}
+        {gridVals.map((v, i) => (
+          <g key={i}>
+            <line x1={PAD.left} y1={toY(v)} x2={VBW - PAD.right} y2={toY(v)}
+              stroke="currentColor" strokeOpacity={i === 0 ? 0.12 : 0.05} strokeDasharray={i === 0 ? 'none' : '4 4'} />
+            <text x={PAD.left - 4} y={toY(v) + 4} textAnchor="end" fontSize="9" fill="currentColor" opacity="0.4">
+              {v >= 10 ? v.toFixed(0) : v.toFixed(1)}
+            </text>
+          </g>
+        ))}
+        {/* Bars */}
+        {days.map((d, i) => {
+          const v = vals[i];
+          if (v <= 0) return null;
+          const bH = Math.max(3, (v / maxVal) * GH);
+          const rx = Math.min(4, barW / 2);
+          return (
+            <g key={i}>
+              <rect x={toX(i)} y={toY(v)} width={barW} height={bH} fill={`url(#${gradId})`} rx={rx} />
+              {v >= maxVal * 0.15 && (
+                <text x={toX(i) + barW / 2} y={toY(v) - 4} textAnchor="middle" fontSize="9" fill={color} opacity="0.8">
+                  {v >= 10 ? v.toFixed(0) : v.toFixed(1)}
+                </text>
+              )}
+            </g>
+          );
+        })}
+        {/* X labels */}
+        {days.map((d, i) => {
+          if (i % labelStep !== 0 && i !== days.length - 1) return null;
+          return (
+            <text key={i} x={toX(i) + barW / 2} y={VBH - 6} textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.4">
+              {fmtDay(d)}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
-function StackedBarChart({ days, zoneData, height = 160 }) {
-  const W = 400, H = height;
-  const PAD = { top: 10, right: 6, bottom: 20, left: 32 };
-  const GW = W - PAD.left - PAD.right;
-  const GH = H - PAD.top - PAD.bottom;
+function StackedBarChart({ days, zoneData }) {
+  const VBW = 600, VBH = 180;
+  const PAD = { top: 24, right: 8, bottom: 28, left: 36 };
+  const GW = VBW - PAD.left - PAD.right;
+  const GH = VBH - PAD.top - PAD.bottom;
   const totals = days.map((d) =>
     ZONES.reduce((s, z) => s + (zoneData[z.key]?.[d.toDateString()] ?? 0), 0)
   );
   const maxVal = Math.max(...totals, 1);
   const step = GW / days.length;
-  const barW = Math.max(1, step - 2);
+  const barW = Math.max(2, step * 0.65);
   const toX = (i) => PAD.left + i * step + (step - barW) / 2;
-  const labelStep = Math.ceil(days.length / 6);
+  const gridVals = [0, maxVal / 2, maxVal];
+  const labelStep = Math.ceil(days.length / 7);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }}>
-      {[0, maxVal / 2, maxVal].map((v, i) => (
-        <g key={i}>
-          <line x1={PAD.left} y1={PAD.top + GH * (1 - v / maxVal)} x2={W - PAD.right} y2={PAD.top + GH * (1 - v / maxVal)}
-            stroke="currentColor" strokeOpacity="0.07" strokeDasharray="3 3" />
-          <text x={PAD.left - 3} y={PAD.top + GH * (1 - v / maxVal) + 3} textAnchor="end" fontSize="7" fill="currentColor" opacity="0.4">
-            {v.toFixed(0)}
-          </text>
-        </g>
-      ))}
-      {days.map((d, i) => {
-        const key = d.toDateString();
-        let cumMin = 0;
-        return ZONES.map((z) => {
-          const v = zoneData[z.key]?.[key] ?? 0;
-          if (v <= 0) return null;
-          const bH = Math.max(2, (v / maxVal) * GH);
-          const y = PAD.top + GH - ((cumMin + v) / maxVal) * GH;
-          cumMin += v;
-          return <rect key={z.key} x={toX(i)} y={y} width={barW} height={bH} fill={z.color} opacity={0.8} rx="1" />;
-        });
-      })}
-      {days.map((d, i) => {
-        if (i % labelStep !== 0 && i !== days.length - 1) return null;
-        return (
-          <text key={i} x={toX(i) + barW / 2} y={H - 3} textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.45">
-            {fmtDay(d)}
-          </text>
-        );
-      })}
-    </svg>
+    <div className="relative w-full select-none" style={{ height: 180 }}>
+      <svg viewBox={`0 0 ${VBW} ${VBH}`} className="h-full w-full overflow-visible" preserveAspectRatio="none">
+        <defs>
+          {ZONES.map((z) => (
+            <linearGradient key={z.key} id={`zGrad_${z.key}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={z.color} stopOpacity="0.9" />
+              <stop offset="100%" stopColor={z.color} stopOpacity="0.35" />
+            </linearGradient>
+          ))}
+        </defs>
+        {/* Grid lines */}
+        {gridVals.map((v, i) => (
+          <g key={i}>
+            <line x1={PAD.left} y1={PAD.top + GH * (1 - v / maxVal)} x2={VBW - PAD.right} y2={PAD.top + GH * (1 - v / maxVal)}
+              stroke="currentColor" strokeOpacity={i === 0 ? 0.12 : 0.05} strokeDasharray={i === 0 ? 'none' : '4 4'} />
+            <text x={PAD.left - 4} y={PAD.top + GH * (1 - v / maxVal) + 4} textAnchor="end" fontSize="9" fill="currentColor" opacity="0.4">
+              {v.toFixed(0)}
+            </text>
+          </g>
+        ))}
+        {/* Stacked bars */}
+        {days.map((d, i) => {
+          const key = d.toDateString();
+          const total = totals[i];
+          let cumMin = 0;
+          const rx = Math.min(4, barW / 2);
+          return (
+            <g key={i}>
+              {ZONES.map((z) => {
+                const v = zoneData[z.key]?.[key] ?? 0;
+                if (v <= 0) return null;
+                const bH = Math.max(3, (v / maxVal) * GH);
+                const y = PAD.top + GH - ((cumMin + v) / maxVal) * GH;
+                cumMin += v;
+                return <rect key={z.key} x={toX(i)} y={y} width={barW} height={bH} fill={`url(#zGrad_${z.key})`} rx={rx} />;
+              })}
+              {total >= maxVal * 0.15 && (
+                <text x={toX(i) + barW / 2} y={PAD.top + GH * (1 - total / maxVal) - 4} textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.5">
+                  {total.toFixed(0)}
+                </text>
+              )}
+            </g>
+          );
+        })}
+        {/* X labels */}
+        {days.map((d, i) => {
+          if (i % labelStep !== 0 && i !== days.length - 1) return null;
+          return (
+            <text key={i} x={toX(i) + barW / 2} y={VBH - 6} textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.4">
+              {fmtDay(d)}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
@@ -364,9 +413,9 @@ function RegenTab({ entities, rainHistory, days, loading, isPhone }) {
             14-Tage-Verlauf
           </p>
           {loading ? (
-            <div className="flex h-20 items-center justify-center text-xs" style={{ color: 'var(--text-secondary)' }}>Lade…</div>
+            <div className="flex h-[180px] items-center justify-center text-xs" style={{ color: 'var(--text-secondary)' }}>Lade…</div>
           ) : (
-            <BarChart days={days} valuesByDay={rainHistory} color="#60a5fa" height={160} />
+            <BarChart days={days} valuesByDay={rainHistory} color="#60a5fa" />
           )}
         </div>
       </div>
@@ -417,13 +466,13 @@ function VerlaufTab({ zoneData, days, loading }) {
         </p>
         <div className="popup-surface rounded-2xl p-4">
           {loading ? (
-            <div className="flex h-28 items-center justify-center text-xs" style={{ color: 'var(--text-secondary)' }}>Lade…</div>
+            <div className="flex h-[180px] items-center justify-center text-xs" style={{ color: 'var(--text-secondary)' }}>Lade…</div>
           ) : !hasData ? (
-            <div className="flex h-28 items-center justify-center text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <div className="flex h-[180px] items-center justify-center text-xs" style={{ color: 'var(--text-secondary)' }}>
               Keine Daten für die letzten 14 Tage
             </div>
           ) : (
-            <StackedBarChart days={days} zoneData={zoneData} height={160} />
+            <StackedBarChart days={days} zoneData={zoneData} />
           )}
         </div>
         <div className="mt-2 flex gap-4 flex-wrap">
