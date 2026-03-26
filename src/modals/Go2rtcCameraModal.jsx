@@ -135,7 +135,27 @@ export default function Go2rtcCameraModal({
 
     let firstData = true;
 
+    // Fallback: if sourceopen never fires (iOS quirk), switch to HLS after 4 s
+    const mseTimeoutId = setTimeout(() => {
+      if (cancelledRef.current || sbRef.current) return;
+      URL.revokeObjectURL(objectUrl);
+      msRef.current = null;
+      tryHLS(go2rtcUrl, go2rtcStream);
+    }, 4000);
+
+    const fallbackToHLS = () => {
+      clearTimeout(mseTimeoutId);
+      if (cancelledRef.current) return;
+      if (wsRef.current) { try { wsRef.current.close(1000); } catch {} wsRef.current = null; }
+      URL.revokeObjectURL(objectUrl);
+      msRef.current = null;
+      sbRef.current = null;
+      queueRef.current = [];
+      tryHLS(go2rtcUrl, go2rtcStream);
+    };
+
     ms.addEventListener('sourceopen', () => {
+      clearTimeout(mseTimeoutId);
       if (cancelledRef.current) { URL.revokeObjectURL(objectUrl); return; }
 
       const ws = new WebSocket(makeWsProxyUrl(go2rtcUrl, go2rtcStream));
@@ -144,11 +164,7 @@ export default function Go2rtcCameraModal({
 
       ws.onopen = () => {
         if (!cancelledRef.current) {
-          // Prefer video+audio; iOS MSE often only supports baseline video codec
-          const mseCodec = MediaSource.isTypeSupported('video/mp4; codecs="avc1.640029,mp4a.40.2"')
-            ? 'video/mp4; codecs="avc1.640029,mp4a.40.2"'
-            : 'video/mp4; codecs="avc1.42E01E"';
-          ws.send(JSON.stringify({ type: 'mse', value: mseCodec }));
+          ws.send(JSON.stringify({ type: 'mse', value: 'video/mp4; codecs="avc1.640029,mp4a.40.2"' }));
         }
       };
 
@@ -169,7 +185,10 @@ export default function Go2rtcCameraModal({
               sbRef.current = sb;
               sb.addEventListener('updateend', flushQueue);
             }
-          } catch {}
+          } catch {
+            // addSourceBuffer failed (unsupported codec on this device) → HLS
+            fallbackToHLS();
+          }
         } else {
           const sb = sbRef.current;
           if (!sb) return;
@@ -188,23 +207,8 @@ export default function Go2rtcCameraModal({
         }
       };
 
-      ws.onerror = () => {
-        if (cancelledRef.current) return;
-        URL.revokeObjectURL(objectUrl);
-        msRef.current = null;
-        sbRef.current = null;
-        queueRef.current = [];
-        tryHLS(go2rtcUrl, go2rtcStream);
-      };
-
-      ws.onclose = (e) => {
-        if (cancelledRef.current || e.code === 1000) return;
-        URL.revokeObjectURL(objectUrl);
-        msRef.current = null;
-        sbRef.current = null;
-        queueRef.current = [];
-        tryHLS(go2rtcUrl, go2rtcStream);
-      };
+      ws.onerror = () => { fallbackToHLS(); };
+      ws.onclose = (e) => { if (!cancelledRef.current && e.code !== 1000) fallbackToHLS(); };
     }, { once: true });
 
     ms.addEventListener('error', () => {
