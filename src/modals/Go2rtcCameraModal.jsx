@@ -63,6 +63,7 @@ export default function Go2rtcCameraModal({
     if (video) {
       video.pause();
       video.src = '';
+      video.srcObject = null;
     }
     if (msRef.current && msRef.current.readyState === 'open') {
       try { msRef.current.endOfStream(); } catch {}
@@ -123,40 +124,47 @@ export default function Go2rtcCameraModal({
     const video = videoRef.current;
     if (!video) return;
 
-    if (!window.MediaSource) {
+    // Safari 17+ / iOS 17+ uses ManagedMediaSource with srcObject assignment.
+    // Older browsers use regular MediaSource with URL.createObjectURL.
+    const hasManagedMS = 'ManagedMediaSource' in window;
+    const hasMS = hasManagedMS || ('MediaSource' in window);
+    if (!hasMS) {
       tryHLS(go2rtcUrl, go2rtcStream);
       return;
     }
 
-    const ms = new MediaSource();
+    const MS = hasManagedMS ? window.ManagedMediaSource : window.MediaSource;
+    const ms = new MS();
     msRef.current = ms;
-    const objectUrl = URL.createObjectURL(ms);
-    video.src = objectUrl;
 
-    let firstData = true;
+    let objectUrl = null;
+    if (hasManagedMS) {
+      video.disableRemotePlayback = true;
+      video.srcObject = ms;
+    } else {
+      objectUrl = URL.createObjectURL(ms);
+      video.src = objectUrl;
+    }
 
-    // Fallback: if sourceopen never fires (iOS quirk), switch to HLS after 4 s
-    const mseTimeoutId = setTimeout(() => {
-      if (cancelledRef.current || sbRef.current) return;
-      URL.revokeObjectURL(objectUrl);
-      msRef.current = null;
-      tryHLS(go2rtcUrl, go2rtcStream);
-    }, 4000);
+    const cleanupUrl = () => {
+      if (objectUrl) { try { URL.revokeObjectURL(objectUrl); } catch {} objectUrl = null; }
+    };
 
     const fallbackToHLS = () => {
-      clearTimeout(mseTimeoutId);
       if (cancelledRef.current) return;
       if (wsRef.current) { try { wsRef.current.close(1000); } catch {} wsRef.current = null; }
-      URL.revokeObjectURL(objectUrl);
+      cleanupUrl();
+      if (hasManagedMS) video.srcObject = null;
       msRef.current = null;
       sbRef.current = null;
       queueRef.current = [];
       tryHLS(go2rtcUrl, go2rtcStream);
     };
 
+    let firstData = true;
+
     ms.addEventListener('sourceopen', () => {
-      clearTimeout(mseTimeoutId);
-      if (cancelledRef.current) { URL.revokeObjectURL(objectUrl); return; }
+      if (cancelledRef.current) { cleanupUrl(); return; }
 
       const ws = new WebSocket(makeWsProxyUrl(go2rtcUrl, go2rtcStream));
       wsRef.current = ws;
@@ -186,7 +194,7 @@ export default function Go2rtcCameraModal({
               sb.addEventListener('updateend', flushQueue);
             }
           } catch {
-            // addSourceBuffer failed (unsupported codec on this device) → HLS
+            // addSourceBuffer threw (unsupported codec) → HLS
             fallbackToHLS();
           }
         } else {
@@ -213,8 +221,8 @@ export default function Go2rtcCameraModal({
 
     ms.addEventListener('error', () => {
       if (cancelledRef.current) return;
-      URL.revokeObjectURL(objectUrl);
-      tryHLS(go2rtcUrl, go2rtcStream);
+      cleanupUrl();
+      fallbackToHLS();
     }, { once: true });
   }, [go2rtcUrl, go2rtcStream, stopAll, tryHLS]);
 
