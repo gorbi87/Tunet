@@ -65,18 +65,26 @@ function fmtDay(date) {
 async function fetchEntityHistory(conn, haUrl, haToken, entityId, start) {
   const end = new Date();
   const opts = { entityId, start, end, minimal_response: false, no_attributes: true, significant_changes_only: false };
-  try {
-    const data = await getHistoryRest(haUrl, haToken, opts);
-    const raw = Array.isArray(data?.[0]) ? data[0] : Array.isArray(data) ? data : [];
-    return raw;
-  } catch (_e) {
+  // Try WebSocket first (always available), fall back to REST
+  if (conn) {
     try {
       const wsData = await getHistory(conn, opts);
-      return Array.isArray(wsData?.[0]) ? wsData[0] : Array.isArray(wsData) ? wsData : [];
-    } catch (_e2) {
-      return [];
-    }
+      const raw = Array.isArray(wsData?.[0]) ? wsData[0] : Array.isArray(wsData) ? wsData : [];
+      if (raw.length > 0) return raw;
+    } catch (_e) {}
   }
+  try {
+    const data = await getHistoryRest(haUrl, haToken, opts);
+    return Array.isArray(data?.[0]) ? data[0] : Array.isArray(data) ? data : [];
+  } catch (_e2) {
+    return [];
+  }
+}
+
+function getTs(item) {
+  const ts = item.last_changed ?? item.lu ?? item.lc ?? item.last_updated;
+  if (typeof ts === 'number') return new Date(ts * 1000);
+  return new Date(ts);
 }
 
 function parseZoneMinutesByDay(histData, days) {
@@ -85,7 +93,7 @@ function parseZoneMinutesByDay(histData, days) {
   if (!Array.isArray(histData) || !histData.length) return byDate;
   let onTime = null;
   for (const item of histData) {
-    const t = new Date(item.last_changed || item.lu || item.lc || item.last_updated);
+    const t = getTs(item);
     if (isNaN(t.getTime())) continue;
     if (item.state === 'on') {
       onTime = t;
@@ -112,7 +120,7 @@ function parseRainByDay(histData, days) {
   for (const item of histData) {
     const val = parseFloat(item.state);
     if (isNaN(val)) continue;
-    const t = new Date(item.last_changed || item.lu || item.lc || item.last_updated);
+    const t = getTs(item);
     if (isNaN(t.getTime())) continue;
     const d = new Date(t);
     d.setHours(0, 0, 0, 0);
