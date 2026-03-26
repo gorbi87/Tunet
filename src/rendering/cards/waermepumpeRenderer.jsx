@@ -10,6 +10,7 @@ export function renderWaermepumpeCard(cardId, dragProps, getControls, cardStyle,
     customNames,
     customIcons,
     isMobile,
+    isTwoColMobile,
     saveCardSetting,
     setShowWaermepumpeModal,
     t,
@@ -41,6 +42,7 @@ export function renderWaermepumpeCard(cardId, dragProps, getControls, cardStyle,
       customIcons={customIcons}
       onOpen={() => setShowWaermepumpeModal && setShowWaermepumpeModal(cardId)}
       isMobile={isMobile}
+      isTwoColMobile={isTwoColMobile}
       settings={settings}
       saveCardSetting={saveCardSetting}
       t={t}

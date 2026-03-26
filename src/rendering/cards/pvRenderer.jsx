@@ -10,6 +10,7 @@ export function renderPvCard(cardId, dragProps, getControls, cardStyle, settings
     customNames,
     customIcons,
     isMobile,
+    isTwoColMobile,
     saveCardSetting,
     setShowPvModal,
     t,
@@ -40,6 +41,7 @@ export function renderPvCard(cardId, dragProps, getControls, cardStyle, settings
       customIcons={customIcons}
       onOpen={() => setShowPvModal && setShowPvModal(cardId)}
       isMobile={isMobile}
+      isTwoColMobile={isTwoColMobile}
       settings={settings}
       saveCardSetting={saveCardSetting}
       t={t}

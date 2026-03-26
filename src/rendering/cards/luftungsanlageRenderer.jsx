@@ -10,6 +10,7 @@ export function renderLuftungsanlageCard(cardId, dragProps, getControls, cardSty
     customNames,
     customIcons,
     isMobile,
+    isTwoColMobile,
     saveCardSetting,
     setShowLuftungsanlageModal,
     t,
@@ -41,6 +42,7 @@ export function renderLuftungsanlageCard(cardId, dragProps, getControls, cardSty
       customIcons={customIcons}
       onOpen={() => setShowLuftungsanlageModal && setShowLuftungsanlageModal(cardId)}
       isMobile={isMobile}
+      isTwoColMobile={isTwoColMobile}
       settings={settings}
       saveCardSetting={saveCardSetting}
       t={t}

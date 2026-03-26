@@ -52,12 +52,14 @@ const GenericLuftungsanlageCard = memo(function GenericLuftungsanlageCard({
   customIcons,
   onOpen,
   isMobile,
+  isTwoColMobile = false,
   settings = {},
   t,
 }) {
   const translate = t || ((key) => key);
   const name = customNames?.[cardId] || translate('luftungsanlage.title');
   const Icon = customIcons?.[cardId] ? getIconComponent(customIcons[cardId]) || Fan : Fan;
+  const isUltraCompact = isTwoColMobile && settings.size !== 'small';
   const isDenseMobile = isMobile && settings.size !== 'small';
 
   const climateEntity = entities?.[LUFTUNGSANLAGE_ENTITY_IDS.climate];
@@ -140,7 +142,7 @@ const GenericLuftungsanlageCard = memo(function GenericLuftungsanlageCard({
         e.stopPropagation();
         if (!editMode && onOpen) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isUltraCompact ? 'p-3' : isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
       style={cardStyle}
     >
       {controls}
@@ -148,29 +150,29 @@ const GenericLuftungsanlageCard = memo(function GenericLuftungsanlageCard({
         {/* Top row: icon + status badge */}
         <div className="flex items-start justify-between">
           <div
-            className={`transition-transform duration-500 group-hover:scale-110 ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
+            className={`transition-transform duration-500 group-hover:scale-110 ${isUltraCompact ? 'rounded-lg p-2' : isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
             style={{ backgroundColor: iconBg, color: iconColor }}
           >
             <Icon
-              className={isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'}
+              className={isUltraCompact ? 'h-3 w-3' : isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'}
               style={{ strokeWidth: 1.5 }}
             />
           </div>
           <div
-            className="flex items-center gap-1.5 rounded-full border px-3 py-1"
+            className={`flex items-center gap-1 rounded-full border ${isUltraCompact ? 'px-1.5 py-0.5' : 'px-3 py-1'}`}
             style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
           >
-            <span className={`h-2 w-2 rounded-full ${statusDotColor}`} />
-            <span className="text-xs font-bold tracking-widest uppercase text-[var(--text-secondary)]">
+            <span className={`rounded-full ${isUltraCompact ? 'h-1.5 w-1.5' : 'h-2 w-2'} ${statusDotColor}`} />
+            <span className={`font-bold uppercase text-[var(--text-secondary)] ${isUltraCompact ? 'text-[9px] tracking-wide' : 'text-xs tracking-widest'}`}>
               {statusLabel}
             </span>
           </div>
         </div>
 
         {/* Card name */}
-        <div className={isDenseMobile ? 'mt-3' : 'mt-2'}>
+        <div className={isUltraCompact ? 'mt-1.5' : isDenseMobile ? 'mt-3' : 'mt-2'}>
           <p
-            className={`${isDenseMobile ? 'mb-1 text-[10px]' : 'mb-0.5 text-xs'} leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60`}
+            className={`${isUltraCompact ? 'mb-0.5 text-[9px]' : isDenseMobile ? 'mb-1 text-[10px]' : 'mb-0.5 text-xs'} leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60`}
             style={{ letterSpacing: '0.05em' }}
           >
             {name}
@@ -178,27 +180,27 @@ const GenericLuftungsanlageCard = memo(function GenericLuftungsanlageCard({
         </div>
 
         {/* Zuluft temp (large) */}
-        <div className={`flex items-end justify-between ${isDenseMobile ? 'mt-2' : 'mt-3'}`}>
+        <div className={`flex items-end justify-between ${isUltraCompact ? 'mt-1' : isDenseMobile ? 'mt-2' : 'mt-3'}`}>
           <div className="flex items-baseline gap-1 leading-none">
             <span
-              className={`leading-none font-thin text-[var(--text-primary)] ${isDenseMobile ? 'text-3xl' : 'text-4xl'}`}
+              className={`leading-none font-thin text-[var(--text-primary)] ${isUltraCompact ? 'text-2xl' : isDenseMobile ? 'text-3xl' : 'text-4xl'}`}
             >
               {zuluftTemp != null ? zuluftTemp.toFixed(1) : '—'}
             </span>
-            <span className="ml-1 text-sm font-medium text-[var(--text-muted)]">
+            <span className={`ml-0.5 font-medium text-[var(--text-muted)] ${isUltraCompact ? 'text-xs' : 'text-sm'}`}>
               °C {translate('luftungsanlage.zuluft') || 'Zuluft'}
             </span>
           </div>
         </div>
 
         {/* Bottom row: CO2 */}
-        <div className="mt-4 flex items-center gap-4 border-t border-[var(--glass-border)] pt-3">
+        <div className={`flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'mt-2 pt-2' : 'mt-4 pt-3'}`}>
           {co2Ppm != null && (
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
+              <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">
                 {translate('luftungsanlage.co2') || 'CO₂'}
               </span>
-              <span className="text-lg font-light" style={{ color: co2Color }}>
+              <span className={`font-light ${isUltraCompact ? 'text-sm' : 'text-lg'}`} style={{ color: co2Color }}>
                 {co2Ppm.toFixed(0)} ppm
               </span>
             </div>
