@@ -169,6 +169,10 @@ export default function Go2rtcCameraModal({
     ms.addEventListener('sourceopen', () => {
       if (cancelledRef.current) { cleanupUrl(); return; }
 
+      // Call play() here while still close to the user interaction that opened
+      // the modal — browsers block play() called from async WS message callbacks
+      video.play().catch(() => {});
+
       const ws = new WebSocket(makeWsProxyUrl(go2rtcUrl, go2rtcStream));
       wsRef.current = ws;
       ws.binaryType = 'arraybuffer';
@@ -209,7 +213,6 @@ export default function Go2rtcCameraModal({
               if (firstData) {
                 firstData = false;
                 setLoading(false);
-                if (!hasManagedMS) video.play().catch(() => {});
               }
             } catch {}
           } else {
