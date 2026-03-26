@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { X, Droplets, Play, Pause, CloudRain } from '../icons';
+import { useState, useEffect } from 'react';
+import { X, Droplets, Play, Pause } from '../icons';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
+import { getHistoryRest, getHistory } from '../services/haClient';
 
 const ZONES = [
   {
@@ -10,6 +11,7 @@ const ZONES = [
     sensorId: 'binary_sensor.irrigation_unlimited_c1_z1',
     minutesId: 'input_number.manual_irrigation_z1_minutes',
     smartMinId: 'sensor.smart_irrigation_terrasse_rechts_min',
+    color: '#34d399',
   },
   {
     key: 'z3',
@@ -18,6 +20,7 @@ const ZONES = [
     sensorId: 'binary_sensor.irrigation_unlimited_c1_z3',
     minutesId: 'input_number.manual_irrigation_z3_minutes',
     smartMinId: 'sensor.smart_irrigation_terrasse_links_min',
+    color: '#60a5fa',
   },
   {
     key: 'z2',
@@ -26,28 +29,198 @@ const ZONES = [
     sensorId: 'binary_sensor.irrigation_unlimited_c1_z2',
     minutesId: 'input_number.manual_irrigation_z2_minutes',
     smartMinId: 'sensor.smart_irrigation_rasenflache_min',
+    color: '#a78bfa',
   },
 ];
 
-const TABS = ['Zonen', 'Regen', 'Ventile'];
+const TABS = ['Zonen', 'Regen', 'Verlauf', 'Ventile'];
+const HIST_DAYS = 14;
 
-function StatChip({ label, value, unit, color }) {
+function getLastNDays(n) {
+  const days = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+  return days;
+}
+
+function fmtDay(date) {
+  return `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+async function fetchEntityHistory(conn, haUrl, haToken, entityId, start) {
+  const end = new Date();
+  const opts = { entityId, start, end, minimal_response: false, no_attributes: true, significant_changes_only: false };
+  try {
+    const data = await getHistoryRest(haUrl, haToken, opts);
+    const raw = Array.isArray(data?.[0]) ? data[0] : Array.isArray(data) ? data : [];
+    return raw;
+  } catch (_e) {
+    try {
+      const wsData = await getHistory(conn, opts);
+      return Array.isArray(wsData?.[0]) ? wsData[0] : Array.isArray(wsData) ? wsData : [];
+    } catch (_e2) {
+      return [];
+    }
+  }
+}
+
+function parseZoneMinutesByDay(histData, days) {
+  const byDate = {};
+  days.forEach((d) => { byDate[d.toDateString()] = 0; });
+  if (!Array.isArray(histData) || !histData.length) return byDate;
+  let onTime = null;
+  for (const item of histData) {
+    const t = new Date(item.last_changed || item.lu || item.lc || item.last_updated);
+    if (isNaN(t.getTime())) continue;
+    if (item.state === 'on') {
+      onTime = t;
+    } else if (item.state === 'off' && onTime) {
+      const dMin = (t - onTime) / 60000;
+      const d = new Date(onTime);
+      d.setHours(0, 0, 0, 0);
+      if (byDate[d.toDateString()] !== undefined) byDate[d.toDateString()] += dMin;
+      onTime = null;
+    }
+  }
+  if (onTime) {
+    const dMin = (new Date() - onTime) / 60000;
+    const d = new Date(onTime);
+    d.setHours(0, 0, 0, 0);
+    if (byDate[d.toDateString()] !== undefined) byDate[d.toDateString()] += dMin;
+  }
+  return byDate;
+}
+
+function parseRainByDay(histData, days) {
+  const byDate = {};
+  days.forEach((d) => { byDate[d.toDateString()] = null; });
+  if (!Array.isArray(histData) || !histData.length) return byDate;
+  for (const item of histData) {
+    const val = parseFloat(item.state);
+    if (isNaN(val)) continue;
+    const t = new Date(item.last_changed || item.lu || item.lc || item.last_updated);
+    if (isNaN(t.getTime())) continue;
+    const d = new Date(t);
+    d.setHours(0, 0, 0, 0);
+    const key = d.toDateString();
+    if (key in byDate) byDate[key] = Math.max(byDate[key] ?? 0, val);
+  }
+  return byDate;
+}
+
+// ─── SVG Charts ────────────────────────────────────────────────────────────
+
+function BarChart({ days, valuesByDay, color, height = 90 }) {
+  const W = 400;
+  const H = height;
+  const PAD = { top: 10, right: 6, bottom: 20, left: 28 };
+  const GW = W - PAD.left - PAD.right;
+  const GH = H - PAD.top - PAD.bottom;
+  const vals = days.map((d) => valuesByDay[d.toDateString()] ?? 0);
+  const maxVal = Math.max(...vals, 0.1);
+  const step = GW / days.length;
+  const barW = Math.max(1, step - 2);
+  const toX = (i) => PAD.left + i * step + (step - barW) / 2;
+  const toY = (v) => PAD.top + GH - (v / maxVal) * GH;
+  const labelStep = Math.ceil(days.length / 6);
+
   return (
-    <div
-      className="flex flex-col items-center rounded-2xl border p-3 gap-0.5"
-      style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
-    >
-      <p className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">{label}</p>
-      <p className="text-lg font-bold" style={{ color: color || 'var(--text-primary)' }}>
-        {value ?? '—'}
-      </p>
-      {unit && <p className="text-[10px] text-[var(--text-secondary)]">{unit}</p>}
-    </div>
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }}>
+      {[0, maxVal / 2, maxVal].map((v, i) => (
+        <g key={i}>
+          <line
+            x1={PAD.left} y1={toY(v)} x2={W - PAD.right} y2={toY(v)}
+            stroke="currentColor" strokeOpacity="0.07" strokeDasharray="3 3"
+          />
+          <text x={PAD.left - 3} y={toY(v) + 3} textAnchor="end" fontSize="7" fill="currentColor" opacity="0.4">
+            {v >= 10 ? v.toFixed(0) : v.toFixed(1)}
+          </text>
+        </g>
+      ))}
+      {days.map((d, i) => {
+        const v = vals[i];
+        const bH = Math.max(v > 0 ? 2 : 0, (v / maxVal) * GH);
+        return (
+          <rect key={i} x={toX(i)} y={toY(v)} width={barW} height={bH} fill={color} opacity={0.75} rx="1" />
+        );
+      })}
+      {days.map((d, i) => {
+        if (i % labelStep !== 0 && i !== days.length - 1) return null;
+        return (
+          <text key={i} x={toX(i) + barW / 2} y={H - 3} textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.45">
+            {fmtDay(d)}
+          </text>
+        );
+      })}
+    </svg>
   );
 }
 
+function StackedBarChart({ days, zoneData, height = 120 }) {
+  const W = 400;
+  const H = height;
+  const PAD = { top: 10, right: 6, bottom: 20, left: 32 };
+  const GW = W - PAD.left - PAD.right;
+  const GH = H - PAD.top - PAD.bottom;
+  const totals = days.map((d) =>
+    ZONES.reduce((s, z) => s + (zoneData[z.key]?.[d.toDateString()] ?? 0), 0)
+  );
+  const maxVal = Math.max(...totals, 1);
+  const step = GW / days.length;
+  const barW = Math.max(1, step - 2);
+  const toX = (i) => PAD.left + i * step + (step - barW) / 2;
+  const labelStep = Math.ceil(days.length / 6);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }}>
+      {[0, maxVal / 2, maxVal].map((v, i) => (
+        <g key={i}>
+          <line
+            x1={PAD.left} y1={PAD.top + GH * (1 - v / maxVal)}
+            x2={W - PAD.right} y2={PAD.top + GH * (1 - v / maxVal)}
+            stroke="currentColor" strokeOpacity="0.07" strokeDasharray="3 3"
+          />
+          <text
+            x={PAD.left - 3} y={PAD.top + GH * (1 - v / maxVal) + 3}
+            textAnchor="end" fontSize="7" fill="currentColor" opacity="0.4"
+          >
+            {v.toFixed(0)}
+          </text>
+        </g>
+      ))}
+      {days.map((d, i) => {
+        const key = d.toDateString();
+        let cumMin = 0;
+        return ZONES.map((z) => {
+          const v = zoneData[z.key]?.[key] ?? 0;
+          if (v <= 0) return null;
+          const bH = Math.max(2, (v / maxVal) * GH);
+          const y = PAD.top + GH - ((cumMin + v) / maxVal) * GH;
+          cumMin += v;
+          return (
+            <rect key={z.key} x={toX(i)} y={y} width={barW} height={bH} fill={z.color} opacity={0.8} rx="1" />
+          );
+        });
+      })}
+      {days.map((d, i) => {
+        if (i % labelStep !== 0 && i !== days.length - 1) return null;
+        return (
+          <text key={i} x={toX(i) + barW / 2} y={H - 3} textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.45">
+            {fmtDay(d)}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ─── Zone Card ──────────────────────────────────────────────────────────────
+
 function ZoneCard({ zone, entities, callService }) {
-  const sw = entities?.[zone.switchId];
   const sensor = entities?.[zone.sensorId];
   const minutesEntity = entities?.[zone.minutesId];
   const smartEntity = entities?.[zone.smartMinId];
@@ -66,19 +239,27 @@ function ZoneCard({ zone, entities, callService }) {
 
   return (
     <div
-      className="rounded-2xl border p-4 flex flex-col gap-3"
-      style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
+      className="rounded-2xl border p-4 flex flex-col gap-3 transition-colors"
+      style={{
+        borderColor: isRunning ? `${zone.color}50` : 'var(--glass-border)',
+        backgroundColor: isRunning ? `${zone.color}0d` : 'var(--glass-bg)',
+      }}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">
             {isRunning && (
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <span
+                className="h-2 w-2 rounded-full animate-pulse shrink-0"
+                style={{ backgroundColor: zone.color }}
+              />
             )}
             <p className="text-sm font-bold text-[var(--text-primary)]">{zone.name}</p>
           </div>
           {isRunning && timeRemaining && (
-            <p className="text-xs text-emerald-400 mt-0.5">Läuft noch {timeRemaining}</p>
+            <p className="text-xs mt-0.5" style={{ color: zone.color }}>
+              Läuft noch {timeRemaining}
+            </p>
           )}
         </div>
         {isRunning ? (
@@ -91,7 +272,8 @@ function ZoneCard({ zone, entities, callService }) {
         ) : (
           <button
             onClick={start}
-            className="shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+            className="shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border transition-all"
+            style={{ backgroundColor: `${zone.color}20`, color: zone.color, borderColor: `${zone.color}50` }}
           >
             <Play className="h-3 w-3" /> Start
           </button>
@@ -124,47 +306,18 @@ function ZoneCard({ zone, entities, callService }) {
   );
 }
 
-function ZonenTab({ entities, callService }) {
-  const masterActive = entities?.['binary_sensor.beregung_master_status']?.state === 'on';
-  const totalMin = entities?.['sensor.beregnung_gesamtzeit_minuten']?.state;
+// ─── Tab: Zonen ─────────────────────────────────────────────────────────────
 
-  const stopAll = () =>
-    callService?.('irrigation_unlimited', 'cancel', {
-      entity_id: 'irrigation_unlimited.coordinator',
-    });
+function ZonenTab({ entities, callService }) {
+  const totalMin = entities?.['sensor.beregnung_gesamtzeit_minuten']?.state;
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${
-              masterActive
-                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
-                : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)]'
-            }`}
-          >
-            <span
-              className={`h-2 w-2 rounded-full ${masterActive ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'}`}
-            />
-            {masterActive ? 'Aktiv' : 'Inaktiv'}
-          </span>
-          {totalMin != null && Number(totalMin) > 0 && (
-            <span className="rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-bold text-orange-400">
-              {totalMin} min gesamt
-            </span>
-          )}
-        </div>
-        {masterActive && (
-          <button
-            onClick={stopAll}
-            className="flex items-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/20 px-3 py-1.5 text-xs font-bold text-red-400"
-          >
-            <Pause className="h-3 w-3" /> Alle stoppen
-          </button>
-        )}
-      </div>
-
+      {totalMin != null && Number(totalMin) > 0 && (
+        <span className="self-start rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-bold text-orange-400">
+          {totalMin} min gesamt
+        </span>
+      )}
       {ZONES.map((zone) => (
         <ZoneCard key={zone.key} zone={zone} entities={entities} callService={callService} />
       ))}
@@ -172,7 +325,9 @@ function ZonenTab({ entities, callService }) {
   );
 }
 
-function RegenTab({ entities }) {
+// ─── Tab: Regen ──────────────────────────────────────────────────────────────
+
+function RegenTab({ entities, rainHistory, days, loading }) {
   const daily = entities?.['sensor.gw2000a_daily_rain']?.state;
   const hourly = entities?.['sensor.gw2000a_hourly_rain']?.state;
   const weekly = entities?.['sensor.gw2000a_weekly_rain']?.state;
@@ -180,6 +335,13 @@ function RegenTab({ entities }) {
   const rate = entities?.['sensor.gw2000a_rain_rate']?.state;
   const bucket = entities?.['sensor.rasenflache_bucket']?.state;
   const water = entities?.['sensor.wasserzaehler_value']?.state;
+
+  const statItems = [
+    { label: 'Rate', value: rate, unit: 'mm/h', color: Number(rate) > 0 ? '#60a5fa' : undefined },
+    { label: 'Täglich', value: daily, unit: 'mm', color: '#60a5fa' },
+    { label: 'Wöchentl.', value: weekly, unit: 'mm', color: '#60a5fa' },
+    { label: 'Jährlich', value: yearly, unit: 'mm', color: '#60a5fa' },
+  ];
 
   const smartZones = [
     { name: 'T. rechts', id: 'sensor.smart_irrigation_terrasse_rechts_min' },
@@ -190,35 +352,56 @@ function RegenTab({ entities }) {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
           Niederschlag
         </p>
-        <div className="grid grid-cols-4 gap-2">
-          <StatChip
-            label="Rate"
-            value={rate}
-            unit="mm/h"
-            color={Number(rate) > 0 ? '#60a5fa' : undefined}
-          />
-          <StatChip label="Täglich" value={daily} unit="mm" color="#60a5fa" />
-          <StatChip label="Wöchentl." value={weekly} unit="mm" color="#60a5fa" />
-          <StatChip label="Jährlich" value={yearly} unit="mm" color="#60a5fa" />
+        <div className="grid grid-cols-4 gap-2 mb-3">
+          {statItems.map((item) => (
+            <div
+              key={item.label}
+              className="flex flex-col items-center rounded-2xl border p-2.5 gap-0.5"
+              style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
+            >
+              <p className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">{item.label}</p>
+              <p className="text-base font-bold" style={{ color: item.color || 'var(--text-primary)' }}>
+                {item.value ?? '—'}
+              </p>
+              <p className="text-[10px] text-[var(--text-secondary)]">{item.unit}</p>
+            </div>
+          ))}
+        </div>
+        <div
+          className="rounded-2xl border p-3"
+          style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
+        >
+          <p className="mb-1.5 text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">
+            14 Tage Verlauf
+          </p>
+          {loading ? (
+            <div className="flex h-20 items-center justify-center text-xs text-[var(--text-secondary)]">
+              Lade…
+            </div>
+          ) : (
+            <BarChart days={days} valuesByDay={rainHistory} color="#60a5fa" height={90} />
+          )}
         </div>
       </div>
 
       <div>
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
           Smart Irrigation
         </p>
         <div className="grid grid-cols-3 gap-2">
           {smartZones.map((z) => (
-            <StatChip
+            <div
               key={z.id}
-              label={z.name}
-              value={entities?.[z.id]?.state ?? '—'}
-              unit="min"
-              color="#4ade80"
-            />
+              className="flex flex-col items-center rounded-2xl border p-2.5 gap-0.5"
+              style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
+            >
+              <p className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">{z.name}</p>
+              <p className="text-base font-bold text-green-400">{entities?.[z.id]?.state ?? '—'}</p>
+              <p className="text-[10px] text-[var(--text-secondary)]">min</p>
+            </div>
           ))}
         </div>
         {bucket != null && (
@@ -234,7 +417,7 @@ function RegenTab({ entities }) {
 
       {water != null && (
         <div>
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
             Wasserzähler
           </p>
           <div
@@ -252,6 +435,75 @@ function RegenTab({ entities }) {
   );
 }
 
+// ─── Tab: Verlauf ────────────────────────────────────────────────────────────
+
+function VerlaufTab({ zoneData, days, loading }) {
+  const hasData = ZONES.some((z) =>
+    Object.values(zoneData[z.key] ?? {}).some((v) => v > 0)
+  );
+  const todayKey = new Date().toDateString();
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+          Bewässerung pro Tag (min)
+        </p>
+        <div
+          className="rounded-2xl border p-3"
+          style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
+        >
+          {loading ? (
+            <div className="flex h-28 items-center justify-center text-xs text-[var(--text-secondary)]">
+              Lade…
+            </div>
+          ) : !hasData ? (
+            <div className="flex h-28 items-center justify-center text-xs text-[var(--text-secondary)]">
+              Keine Daten für die letzten 14 Tage
+            </div>
+          ) : (
+            <StackedBarChart days={days} zoneData={zoneData} height={120} />
+          )}
+        </div>
+        <div className="mt-2 flex gap-3 flex-wrap">
+          {ZONES.map((z) => (
+            <div key={z.key} className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: z.color }} />
+              {z.name}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+          Heute
+        </p>
+        <div className="flex flex-col gap-2">
+          {ZONES.map((z) => {
+            const todayMin = zoneData[z.key]?.[todayKey] ?? 0;
+            return (
+              <div
+                key={z.key}
+                className="flex items-center gap-3 rounded-2xl border px-4 py-2.5"
+                style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
+              >
+                <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: z.color }} />
+                <p className="flex-1 text-sm text-[var(--text-primary)]">{z.name}</p>
+                <p className="text-sm font-bold" style={{ color: todayMin > 0 ? z.color : 'var(--text-secondary)' }}>
+                  {todayMin > 0 ? `${todayMin.toFixed(0)} min` : '—'}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab: Ventile ────────────────────────────────────────────────────────────
+
 function VentileTab({ entities, callService }) {
   const ventile = [
     { id: 'switch.irrigation_manual_zone_1', name: 'Terrasse rechts' },
@@ -259,30 +511,8 @@ function VentileTab({ entities, callService }) {
     { id: 'switch.irrigation_manual_zone_3', name: 'Terrasse links' },
   ];
 
-  const masterBs = entities?.['binary_sensor.irrigation_unlimited_c1_m'];
-  const coordinator = entities?.['irrigation_unlimited.coordinator'];
-
   return (
     <div className="flex flex-col gap-3">
-      <div
-        className="flex items-center justify-between rounded-2xl border px-4 py-3"
-        style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
-      >
-        <div>
-          <p className="text-sm font-bold text-[var(--text-primary)]">Irrigation Unlimited</p>
-          <p className="text-xs text-[var(--text-secondary)]">System-Status</p>
-        </div>
-        <span
-          className={`text-xs font-bold px-2 py-1 rounded-full border ${
-            masterBs?.state === 'on'
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/40'
-              : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] border-[var(--glass-border)]'
-          }`}
-        >
-          {coordinator?.state ?? masterBs?.state ?? '—'}
-        </span>
-      </div>
-
       {ventile.map((v) => {
         const sw = entities?.[v.id];
         const isOn = sw?.state === 'on';
@@ -316,9 +546,57 @@ function VentileTab({ entities, callService }) {
   );
 }
 
-export default function BeregnungModal({ show, onClose, entities, callService }) {
+// ─── Main Modal ──────────────────────────────────────────────────────────────
+
+export default function BeregnungModal({ show, onClose, entities, callService, conn, haUrl, haToken }) {
   const [activeTab, setActiveTab] = useState(0);
+  const [zoneData, setZoneData] = useState({ z1: {}, z2: {}, z3: {} });
+  const [rainHistory, setRainHistory] = useState({});
+  const [histLoading, setHistLoading] = useState(false);
+
+  const days = getLastNDays(HIST_DAYS);
+  const masterActive = entities?.['binary_sensor.beregung_master_status']?.state === 'on';
+
+  useEffect(() => {
+    if (!show || (activeTab !== 1 && activeTab !== 2)) return;
+    if (!conn && !haUrl) return;
+
+    const start = new Date();
+    start.setDate(start.getDate() - HIST_DAYS);
+    start.setHours(0, 0, 0, 0);
+
+    setHistLoading(true);
+
+    if (activeTab === 2) {
+      Promise.all(
+        ZONES.map((z) =>
+          fetchEntityHistory(conn, haUrl, haToken, z.sensorId, start).then((data) => ({
+            key: z.key,
+            data,
+          }))
+        )
+      )
+        .then((results) => {
+          const newZoneData = {};
+          results.forEach(({ key, data }) => {
+            newZoneData[key] = parseZoneMinutesByDay(data, days);
+          });
+          setZoneData(newZoneData);
+        })
+        .catch(() => {})
+        .finally(() => setHistLoading(false));
+    } else {
+      fetchEntityHistory(conn, haUrl, haToken, 'sensor.gw2000a_daily_rain', start)
+        .then((data) => setRainHistory(parseRainByDay(data, days)))
+        .catch(() => {})
+        .finally(() => setHistLoading(false));
+    }
+  }, [show, activeTab, conn, haUrl, haToken]);
+
   if (!show) return null;
+
+  const stopAll = () =>
+    callService?.('irrigation_unlimited', 'cancel', { entity_id: 'irrigation_unlimited.coordinator' });
 
   return (
     <AccessibleModalShell
@@ -336,31 +614,52 @@ export default function BeregnungModal({ show, onClose, entities, callService })
     >
       {() => (
         <>
+          {/* Header */}
           <div className="flex items-center justify-between gap-3 p-4 pb-3 shrink-0">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)]">
-                <Droplets className="h-4 w-4 text-cyan-400" />
+                <Droplets className={`h-4 w-4 ${masterActive ? 'text-cyan-400' : 'text-[var(--text-secondary)]'}`} />
               </div>
               <div>
                 <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
                   Garten
                 </p>
-                <h3
-                  id="beregnung-modal-title"
-                  className="text-base font-bold text-[var(--text-primary)]"
-                >
+                <h3 id="beregnung-modal-title" className="text-base font-bold text-[var(--text-primary)]">
                   Beregnung
                 </h3>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1.5 text-[var(--text-secondary)]"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              {masterActive && (
+                <button
+                  onClick={stopAll}
+                  className="flex items-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/20 px-3 py-1.5 text-xs font-bold text-red-400"
+                >
+                  <Pause className="h-3 w-3" /> Alle stoppen
+                </button>
+              )}
+              <span
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${
+                  masterActive
+                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+                    : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)]'
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${masterActive ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'}`}
+                />
+                {masterActive ? 'Aktiv' : 'Inaktiv'}
+              </span>
+              <button
+                onClick={onClose}
+                className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1.5 text-[var(--text-secondary)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
+          {/* Tabs */}
           <div className="flex gap-1 px-4 pb-3 shrink-0">
             {TABS.map((tab, i) => (
               <button
@@ -377,10 +676,21 @@ export default function BeregnungModal({ show, onClose, entities, callService })
             ))}
           </div>
 
+          {/* Content */}
           <div className="flex-1 overflow-y-auto px-4 pb-4">
             {activeTab === 0 && <ZonenTab entities={entities} callService={callService} />}
-            {activeTab === 1 && <RegenTab entities={entities} />}
-            {activeTab === 2 && <VentileTab entities={entities} callService={callService} />}
+            {activeTab === 1 && (
+              <RegenTab
+                entities={entities}
+                rainHistory={rainHistory}
+                days={days}
+                loading={histLoading}
+              />
+            )}
+            {activeTab === 2 && (
+              <VerlaufTab zoneData={zoneData} days={days} loading={histLoading} />
+            )}
+            {activeTab === 3 && <VentileTab entities={entities} callService={callService} />}
           </div>
         </>
       )}

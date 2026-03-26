@@ -548,6 +548,11 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
             onClose={() => setShowBeregnungModal(null)}
             entities={entities}
             callService={callService}
+            conn={conn}
+            haUrl={activeUrl}
+            haToken={
+              config.authMethod === 'oauth' ? authRef?.current?.accessToken || '' : config.token
+            }
           />
         </ModalSuspense>
       )}
