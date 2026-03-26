@@ -26,7 +26,7 @@ import {
   renderRoomCard,
   renderCameraCard,
   renderSpacerCard,
-  renderUnifiCameraCard,
+  renderGo2rtcCameraCard,
   renderBeregnungCard,
 } from './cards';
 
@@ -57,7 +57,7 @@ export const CARD_REGISTRY = [
   { prefix: 'cover_card_', renderer: renderCoverCard },
   { prefix: 'room_card_', renderer: renderRoomCard },
   { prefix: 'camera_card_', renderer: renderCameraCard },
-  { prefix: 'unifi_camera_card_', renderer: renderUnifiCameraCard },
+  { prefix: 'go2rtc_camera_card_', renderer: renderGo2rtcCameraCard },
   { prefix: 'alarm_card_', renderer: renderAlarmCard },
   { prefix: 'spacer_card_', renderer: renderSpacerCard },
   { prefix: 'beregnung_card_', renderer: renderBeregnungCard },

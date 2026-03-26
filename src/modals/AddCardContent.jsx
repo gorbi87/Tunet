@@ -1032,10 +1032,10 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
-                  type="unifi_camera"
+                  type="go2rtc_camera"
                   icon={Camera}
                   label="go2rtc Kamera"
-                  isActive={addCardType === 'unifi_camera'}
+                  isActive={addCardType === 'go2rtc_camera'}
                   onSelect={setAddCardType}
                 />
                 <TypeButton
@@ -1218,7 +1218,7 @@ function AddCardContent({
               )
             ) : addCardType === 'pv' ? (
               renderSimpleAddSection(CloudSun, 'Solar / PV Karte hinzufügen', 'Solar / PV hinzufügen')
-            ) : addCardType === 'unifi_camera' ? (
+            ) : addCardType === 'go2rtc_camera' ? (
               renderSimpleAddSection(Camera, 'go2rtc Kamera hinzufügen', 'go2rtc Kamera hinzufügen')
             ) : addCardType === 'beregnung' ? (
               renderSimpleAddSection(Droplets, 'Beregnung Karte hinzufügen', 'Beregnung hinzufügen')

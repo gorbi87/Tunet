@@ -178,8 +178,8 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
-    case 'unifi_camera': {
-      const cardId = `unifi_camera_card_${Date.now()}`;
+    case 'go2rtc_camera': {
+      const cardId = `go2rtc_camera_card_${Date.now()}`;
       commitSingleCard(cardId, {}, { openEdit: true });
       return;
     }

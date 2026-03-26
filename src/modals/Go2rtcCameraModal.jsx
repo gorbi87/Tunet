@@ -17,7 +17,7 @@ function makeWsProxyUrl(base, src) {
   return url.toString();
 }
 
-export default function UnifiCameraModal({
+export default function Go2rtcCameraModal({
   show,
   onClose,
   customName,
@@ -39,7 +39,7 @@ export default function UnifiCameraModal({
   const queueRef = useRef([]);
   const cancelledRef = useRef(false);
 
-  const modalTitleId = 'unifi-camera-modal';
+  const modalTitleId = 'go2rtc-camera-modal';
 
   const name = customName || go2rtcStream || 'go2rtc Kamera';
   const iconName = customIcon;

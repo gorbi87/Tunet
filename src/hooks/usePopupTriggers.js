@@ -51,7 +51,7 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     setShowCoverModal,
     setShowAlarmModal,
     setShowCameraModal,
-    setShowUnifiCameraModal,
+    setShowGo2rtcCameraModal,
     setActiveMediaModal,
     setActiveMediaId,
     setActiveMediaGroupKey,
@@ -169,8 +169,8 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     return true;
   }
 
-  if (cardId.startsWith('unifi_camera_card_')) {
-    closeAndOpen(() => setShowUnifiCameraModal && setShowUnifiCameraModal(cardId));
+  if (cardId.startsWith('go2rtc_camera_card_')) {
+    closeAndOpen(() => setShowGo2rtcCameraModal && setShowGo2rtcCameraModal(cardId));
     return true;
   }
 

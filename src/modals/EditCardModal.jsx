@@ -732,7 +732,7 @@ export default function EditCardModal({
   isEditCar,
   isEditSpacer,
   isEditCamera,
-  isEditUnifiCamera,
+  isEditGo2rtcCamera,
   isEditRoom,
   isEditAndroidTV,
   isEditFan,
@@ -1784,7 +1784,7 @@ export default function EditCardModal({
               );
             })()}
 
-          {isEditUnifiCamera && editSettingsKey && (
+          {isEditGo2rtcCamera && editSettingsKey && (
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="ml-1 text-xs font-bold text-[var(--text-muted)] uppercase">

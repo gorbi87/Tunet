@@ -22,5 +22,5 @@ export { renderSpacerCard } from './spacerRenderer';
 export { renderWaermepumpeCard } from './waermepumpeRenderer';
 export { renderLuftungsanlageCard } from './luftungsanlageRenderer';
 export { renderPvCard } from './pvRenderer';
-export { renderUnifiCameraCard } from './unifiCameraRenderer';
+export { renderGo2rtcCameraCard } from './go2rtcCameraRenderer';
 export { renderBeregnungCard } from './beregnungRenderer';

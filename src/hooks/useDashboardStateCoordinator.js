@@ -47,7 +47,7 @@ export function useDashboardStateCoordinator(deps) {
     setShowCoverModal: deps.setShowCoverModal,
     setShowAlarmModal: deps.setShowAlarmModal,
     setShowCameraModal: deps.setShowCameraModal,
-    setShowUnifiCameraModal: deps.setShowUnifiCameraModal,
+    setShowGo2rtcCameraModal: deps.setShowGo2rtcCameraModal,
   };
   const mediaActions = mediaModalActions || {
     setActiveMediaModal: deps.setActiveMediaModal,
@@ -77,7 +77,7 @@ export function useDashboardStateCoordinator(deps) {
     setShowCoverModal,
     setShowAlarmModal,
     setShowCameraModal,
-    setShowUnifiCameraModal,
+    setShowGo2rtcCameraModal,
   } = entityActions;
 
   const {
@@ -109,7 +109,7 @@ export function useDashboardStateCoordinator(deps) {
       setShowCoverModal,
       setShowAlarmModal,
       setShowCameraModal,
-      setShowUnifiCameraModal,
+      setShowGo2rtcCameraModal,
       setActiveMediaModal,
       setActiveMediaId,
       setActiveMediaGroupKey,
@@ -135,7 +135,7 @@ export function useDashboardStateCoordinator(deps) {
       setShowCoverModal,
       setShowAlarmModal,
       setShowCameraModal,
-      setShowUnifiCameraModal,
+      setShowGo2rtcCameraModal,
       setActiveMediaModal,
       setActiveMediaId,
       setActiveMediaGroupKey,

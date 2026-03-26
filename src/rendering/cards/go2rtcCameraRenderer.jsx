@@ -3,7 +3,7 @@ import { Camera, AlertCircle } from '../../icons';
 import { getIconComponent } from '../../icons';
 import { getSettings } from '../helpers';
 
-const UnifiCameraCard = memo(function UnifiCameraCard({
+const Go2rtcCameraCard = memo(function Go2rtcCameraCard({
   cardId,
   dragProps,
   controls,
@@ -135,13 +135,13 @@ const UnifiCameraCard = memo(function UnifiCameraCard({
   );
 });
 
-export function renderUnifiCameraCard(cardId, dragProps, getControls, cardStyle, settingsKey, ctx) {
+export function renderGo2rtcCameraCard(cardId, dragProps, getControls, cardStyle, settingsKey, ctx) {
   const {
     editMode,
     cardSettings,
     customNames,
     customIcons,
-    setShowUnifiCameraModal,
+    setShowGo2rtcCameraModal,
     setShowEditCardModal,
     setEditCardSettingsKey,
     t,
@@ -149,7 +149,7 @@ export function renderUnifiCameraCard(cardId, dragProps, getControls, cardStyle,
   const settings = getSettings(cardSettings, settingsKey, cardId);
 
   return (
-    <UnifiCameraCard
+    <Go2rtcCameraCard
       key={cardId}
       cardId={cardId}
       dragProps={dragProps}
@@ -159,7 +159,7 @@ export function renderUnifiCameraCard(cardId, dragProps, getControls, cardStyle,
       customNames={customNames}
       customIcons={customIcons}
       settings={settings}
-      onOpen={() => setShowUnifiCameraModal && setShowUnifiCameraModal(cardId)}
+      onOpen={() => setShowGo2rtcCameraModal && setShowGo2rtcCameraModal(cardId)}
       onEdit={() => {
         if (setShowEditCardModal && setEditCardSettingsKey) {
           setEditCardSettingsKey(settingsKey);
