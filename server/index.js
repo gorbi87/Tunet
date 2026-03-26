@@ -66,6 +66,9 @@ app.get('/api/health', (_req, res) => {
 });
 
 // go2rtc HTTP proxy — avoids mixed-content blocking when Tunet is served over HTTPS.
+// For m3u8 playlists the proxy rewrites segment URLs so the browser can fetch
+// them through this same proxy (native HLS players resolve segments relative
+// to the playlist URL, which would otherwise break).
 app.get('/api/go2rtc-proxy', (req, res) => {
   const { url: targetUrl } = req.query;
   if (!targetUrl) return res.status(400).end();
@@ -74,11 +77,36 @@ app.get('/api/go2rtc-proxy', (req, res) => {
   try { target = new URL(targetUrl); } catch { return res.status(400).end(); }
   const lib = target.protocol === 'https:' ? httpsRequest : httpRequest;
   const proxyReq = lib(target.href, { timeout: 8000 }, (proxyRes) => {
-    res.status(proxyRes.statusCode || 200);
-    for (const [k, v] of Object.entries(proxyRes.headers)) {
-      if (!['transfer-encoding', 'connection'].includes(k.toLowerCase())) res.setHeader(k, v);
+    const contentType = (proxyRes.headers['content-type'] || '').toLowerCase();
+    const isM3u8 = contentType.includes('mpegurl') || target.pathname.endsWith('.m3u8');
+
+    if (isM3u8) {
+      // Buffer and rewrite segment URLs so they go through this proxy
+      let body = '';
+      proxyRes.setEncoding('utf8');
+      proxyRes.on('data', (chunk) => { body += chunk; });
+      proxyRes.on('end', () => {
+        const rewritten = body.split('\n').map((line) => {
+          const t = line.trim();
+          if (!t || t.startsWith('#')) return line;
+          try {
+            const abs = new URL(t, target.href).href;
+            return `/api/go2rtc-proxy?url=${encodeURIComponent(abs)}`;
+          } catch { return line; }
+        }).join('\n');
+        res.status(proxyRes.statusCode || 200)
+          .setHeader('content-type', 'application/vnd.apple.mpegurl')
+          .setHeader('access-control-allow-origin', '*')
+          .send(rewritten);
+      });
+      proxyRes.on('error', () => { try { res.status(502).end(); } catch {} });
+    } else {
+      res.status(proxyRes.statusCode || 200);
+      for (const [k, v] of Object.entries(proxyRes.headers)) {
+        if (!['transfer-encoding', 'connection'].includes(k.toLowerCase())) res.setHeader(k, v);
+      }
+      proxyRes.pipe(res);
     }
-    proxyRes.pipe(res);
   });
   proxyReq.on('error', () => { try { res.status(502).end(); } catch {} });
   proxyReq.end();
