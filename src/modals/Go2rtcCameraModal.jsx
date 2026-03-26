@@ -93,9 +93,14 @@ export default function Go2rtcCameraModal({
         if (data.fatal) { setError(true); setLoading(false); hls.destroy(); }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = hlsUrl;
+      // Native HLS (iOS Safari): use direct URL — proxy breaks relative segment resolution
+      const directHlsUrl = `${baseUrl}/api/stream.m3u8?src=${encodeURIComponent(streamName)}`;
+      video.src = directHlsUrl;
       video.addEventListener('canplay', () => {
         if (!cancelledRef.current) setLoading(false);
+      }, { once: true });
+      video.addEventListener('error', () => {
+        if (!cancelledRef.current) { setError(true); setLoading(false); }
       }, { once: true });
       video.play().catch(() => {});
     } else {
