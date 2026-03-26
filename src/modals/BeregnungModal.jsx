@@ -133,7 +133,7 @@ function parseRainByDay(histData, days) {
 
 // ─── SVG Charts ──────────────────────────────────────────────────────────────
 
-function BarChart({ days, valuesByDay, color, height = 90 }) {
+function BarChart({ days, valuesByDay, color, height = 160 }) {
   const W = 400, H = height;
   const PAD = { top: 10, right: 6, bottom: 20, left: 28 };
   const GW = W - PAD.left - PAD.right;
@@ -174,7 +174,7 @@ function BarChart({ days, valuesByDay, color, height = 90 }) {
   );
 }
 
-function StackedBarChart({ days, zoneData, height = 120 }) {
+function StackedBarChart({ days, zoneData, height = 160 }) {
   const W = 400, H = height;
   const PAD = { top: 10, right: 6, bottom: 20, left: 32 };
   const GW = W - PAD.left - PAD.right;
@@ -366,7 +366,7 @@ function RegenTab({ entities, rainHistory, days, loading, isPhone }) {
           {loading ? (
             <div className="flex h-20 items-center justify-center text-xs" style={{ color: 'var(--text-secondary)' }}>Lade…</div>
           ) : (
-            <BarChart days={days} valuesByDay={rainHistory} color="#60a5fa" height={90} />
+            <BarChart days={days} valuesByDay={rainHistory} color="#60a5fa" height={160} />
           )}
         </div>
       </div>
@@ -423,7 +423,7 @@ function VerlaufTab({ zoneData, days, loading }) {
               Keine Daten für die letzten 14 Tage
             </div>
           ) : (
-            <StackedBarChart days={days} zoneData={zoneData} height={120} />
+            <StackedBarChart days={days} zoneData={zoneData} height={160} />
           )}
         </div>
         <div className="mt-2 flex gap-4 flex-wrap">
