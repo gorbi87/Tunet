@@ -14,7 +14,6 @@ export function getMaxGridColumnsForWidth(width) {
 }
 
 export function getAutoGridColumnsForWidth(width) {
-  if (width < 420) return 1;
   if (width < 640) return 2;
   if (width < 1100) return 3;
   return 4;
