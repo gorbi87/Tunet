@@ -3,6 +3,9 @@ import { X, Droplets, Play, Pause } from '../icons';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 import { getHistoryRest, getHistory } from '../services/haClient';
 
+const MASTER_ENTITY = 'binary_sensor.irrigation_unlimited_c1_m';
+const MASTER_STATUS = 'binary_sensor.beregung_master_status';
+
 const ZONES = [
   {
     key: 'z1',
@@ -33,8 +36,16 @@ const ZONES = [
   },
 ];
 
-const TABS = ['Zonen', 'Regen', 'Verlauf', 'Ventile'];
+const MAIN_TABS = [
+  { key: 'zonen', label: 'Zonen' },
+  { key: 'regen', label: 'Regen' },
+  { key: 'verlauf', label: 'Verlauf' },
+  { key: 'ventile', label: 'Ventile' },
+];
+
 const HIST_DAYS = 14;
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function getLastNDays(n) {
   const days = [];
@@ -87,10 +98,9 @@ function parseZoneMinutesByDay(histData, days) {
     }
   }
   if (onTime) {
-    const dMin = (new Date() - onTime) / 60000;
     const d = new Date(onTime);
     d.setHours(0, 0, 0, 0);
-    if (byDate[d.toDateString()] !== undefined) byDate[d.toDateString()] += dMin;
+    if (byDate[d.toDateString()] !== undefined) byDate[d.toDateString()] += (new Date() - onTime) / 60000;
   }
   return byDate;
 }
@@ -112,11 +122,10 @@ function parseRainByDay(histData, days) {
   return byDate;
 }
 
-// ─── SVG Charts ────────────────────────────────────────────────────────────
+// ─── SVG Charts ──────────────────────────────────────────────────────────────
 
 function BarChart({ days, valuesByDay, color, height = 90 }) {
-  const W = 400;
-  const H = height;
+  const W = 400, H = height;
   const PAD = { top: 10, right: 6, bottom: 20, left: 28 };
   const GW = W - PAD.left - PAD.right;
   const GH = H - PAD.top - PAD.bottom;
@@ -132,10 +141,8 @@ function BarChart({ days, valuesByDay, color, height = 90 }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }}>
       {[0, maxVal / 2, maxVal].map((v, i) => (
         <g key={i}>
-          <line
-            x1={PAD.left} y1={toY(v)} x2={W - PAD.right} y2={toY(v)}
-            stroke="currentColor" strokeOpacity="0.07" strokeDasharray="3 3"
-          />
+          <line x1={PAD.left} y1={toY(v)} x2={W - PAD.right} y2={toY(v)}
+            stroke="currentColor" strokeOpacity="0.07" strokeDasharray="3 3" />
           <text x={PAD.left - 3} y={toY(v) + 3} textAnchor="end" fontSize="7" fill="currentColor" opacity="0.4">
             {v >= 10 ? v.toFixed(0) : v.toFixed(1)}
           </text>
@@ -144,9 +151,7 @@ function BarChart({ days, valuesByDay, color, height = 90 }) {
       {days.map((d, i) => {
         const v = vals[i];
         const bH = Math.max(v > 0 ? 2 : 0, (v / maxVal) * GH);
-        return (
-          <rect key={i} x={toX(i)} y={toY(v)} width={barW} height={bH} fill={color} opacity={0.75} rx="1" />
-        );
+        return <rect key={i} x={toX(i)} y={toY(v)} width={barW} height={bH} fill={color} opacity={0.75} rx="1" />;
       })}
       {days.map((d, i) => {
         if (i % labelStep !== 0 && i !== days.length - 1) return null;
@@ -161,8 +166,7 @@ function BarChart({ days, valuesByDay, color, height = 90 }) {
 }
 
 function StackedBarChart({ days, zoneData, height = 120 }) {
-  const W = 400;
-  const H = height;
+  const W = 400, H = height;
   const PAD = { top: 10, right: 6, bottom: 20, left: 32 };
   const GW = W - PAD.left - PAD.right;
   const GH = H - PAD.top - PAD.bottom;
@@ -179,15 +183,9 @@ function StackedBarChart({ days, zoneData, height = 120 }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }}>
       {[0, maxVal / 2, maxVal].map((v, i) => (
         <g key={i}>
-          <line
-            x1={PAD.left} y1={PAD.top + GH * (1 - v / maxVal)}
-            x2={W - PAD.right} y2={PAD.top + GH * (1 - v / maxVal)}
-            stroke="currentColor" strokeOpacity="0.07" strokeDasharray="3 3"
-          />
-          <text
-            x={PAD.left - 3} y={PAD.top + GH * (1 - v / maxVal) + 3}
-            textAnchor="end" fontSize="7" fill="currentColor" opacity="0.4"
-          >
+          <line x1={PAD.left} y1={PAD.top + GH * (1 - v / maxVal)} x2={W - PAD.right} y2={PAD.top + GH * (1 - v / maxVal)}
+            stroke="currentColor" strokeOpacity="0.07" strokeDasharray="3 3" />
+          <text x={PAD.left - 3} y={PAD.top + GH * (1 - v / maxVal) + 3} textAnchor="end" fontSize="7" fill="currentColor" opacity="0.4">
             {v.toFixed(0)}
           </text>
         </g>
@@ -201,9 +199,7 @@ function StackedBarChart({ days, zoneData, height = 120 }) {
           const bH = Math.max(2, (v / maxVal) * GH);
           const y = PAD.top + GH - ((cumMin + v) / maxVal) * GH;
           cumMin += v;
-          return (
-            <rect key={z.key} x={toX(i)} y={y} width={barW} height={bH} fill={z.color} opacity={0.8} rx="1" />
-          );
+          return <rect key={z.key} x={toX(i)} y={y} width={barW} height={bH} fill={z.color} opacity={0.8} rx="1" />;
         });
       })}
       {days.map((d, i) => {
@@ -218,7 +214,23 @@ function StackedBarChart({ days, zoneData, height = 120 }) {
   );
 }
 
-// ─── Zone Card ──────────────────────────────────────────────────────────────
+// ─── Shared stat chip ────────────────────────────────────────────────────────
+
+function StatBox({ label, value, unit, color }) {
+  return (
+    <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3">
+      <p className="text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+        {label}
+      </p>
+      <p className="text-xl font-light" style={{ color: color || 'var(--text-primary)' }}>
+        {value ?? '—'}
+      </p>
+      {unit && <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{unit}</p>}
+    </div>
+  );
+}
+
+// ─── Zone card ───────────────────────────────────────────────────────────────
 
 function ZoneCard({ zone, entities, callService }) {
   const sensor = entities?.[zone.sensorId];
@@ -239,84 +251,68 @@ function ZoneCard({ zone, entities, callService }) {
 
   return (
     <div
-      className="rounded-2xl border p-4 flex flex-col gap-3 transition-colors"
-      style={{
-        borderColor: isRunning ? `${zone.color}50` : 'var(--glass-border)',
-        backgroundColor: isRunning ? `${zone.color}0d` : 'var(--glass-bg)',
-      }}
+      className="popup-surface rounded-2xl p-4 flex flex-col gap-3 transition-colors"
+      style={isRunning ? { borderColor: `${zone.color}50`, backgroundColor: `${zone.color}0d` } : {}}
     >
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">
             {isRunning && (
-              <span
-                className="h-2 w-2 rounded-full animate-pulse shrink-0"
-                style={{ backgroundColor: zone.color }}
-              />
+              <span className="h-2 w-2 rounded-full animate-pulse shrink-0" style={{ backgroundColor: zone.color }} />
             )}
-            <p className="text-sm font-bold text-[var(--text-primary)]">{zone.name}</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{zone.name}</p>
           </div>
           {isRunning && timeRemaining && (
-            <p className="text-xs mt-0.5" style={{ color: zone.color }}>
-              Läuft noch {timeRemaining}
-            </p>
+            <p className="text-xs mt-0.5 font-light" style={{ color: zone.color }}>Läuft noch {timeRemaining}</p>
           )}
         </div>
         {isRunning ? (
-          <button
-            onClick={stop}
-            className="shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border bg-red-500/20 text-red-400 border-red-500/40"
-          >
+          <button onClick={stop}
+            className="shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold border bg-red-500/20 text-red-400 border-red-500/40 uppercase tracking-wider">
             <Pause className="h-3 w-3" /> Stopp
           </button>
         ) : (
-          <button
-            onClick={start}
-            className="shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border transition-all"
-            style={{ backgroundColor: `${zone.color}20`, color: zone.color, borderColor: `${zone.color}50` }}
-          >
+          <button onClick={start}
+            className="shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold border uppercase tracking-wider transition-all"
+            style={{ backgroundColor: `${zone.color}20`, color: zone.color, borderColor: `${zone.color}50` }}>
             <Play className="h-3 w-3" /> Start
           </button>
         )}
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <div className="flex justify-between items-center text-xs">
-          <span className="text-[var(--text-secondary)]">Manuelle Dauer</span>
+        <div className="flex justify-between items-center">
+          <p className="text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+            Manuelle Dauer
+          </p>
           <div className="flex items-center gap-2">
             {smartMin != null && smartMin > 0 && (
               <span className="text-[10px] text-green-400 border border-green-500/30 bg-green-500/10 rounded-full px-2 py-0.5">
                 Smart: {smartMin} min
               </span>
             )}
-            <span className="font-bold text-[var(--text-primary)]">{minutes} min</span>
+            <span className="text-sm font-light text-[var(--text-primary)]">{minutes} min</span>
           </div>
         </div>
-        <input
-          type="range"
-          min={minMin}
-          max={minMax}
-          step={1}
-          value={minutes}
+        <input type="range" min={minMin} max={minMax} step={1} value={minutes}
           onChange={(e) => setMinutes(Number(e.target.value))}
-          className="w-full accent-emerald-400"
-        />
+          className="w-full accent-emerald-400" />
       </div>
     </div>
   );
 }
 
-// ─── Tab: Zonen ─────────────────────────────────────────────────────────────
+// ─── Tab: Zonen ──────────────────────────────────────────────────────────────
 
-function ZonenTab({ entities, callService }) {
+function ZonenTab({ entities, callService, isCompact }) {
   const totalMin = entities?.['sensor.beregnung_gesamtzeit_minuten']?.state;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="space-y-3">
       {totalMin != null && Number(totalMin) > 0 && (
-        <span className="self-start rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-bold text-orange-400">
-          {totalMin} min gesamt
-        </span>
+        <p className="text-sm font-light" style={{ color: 'var(--text-secondary)' }}>
+          <span className="font-semibold text-orange-400">{totalMin} min</span> gesamt aktiv
+        </p>
       )}
       {ZONES.map((zone) => (
         <ZoneCard key={zone.key} zone={zone} entities={entities} callService={callService} />
@@ -327,7 +323,7 @@ function ZonenTab({ entities, callService }) {
 
 // ─── Tab: Regen ──────────────────────────────────────────────────────────────
 
-function RegenTab({ entities, rainHistory, days, loading }) {
+function RegenTab({ entities, rainHistory, days, loading, isPhone }) {
   const daily = entities?.['sensor.gw2000a_daily_rain']?.state;
   const hourly = entities?.['sensor.gw2000a_hourly_rain']?.state;
   const weekly = entities?.['sensor.gw2000a_weekly_rain']?.state;
@@ -336,13 +332,6 @@ function RegenTab({ entities, rainHistory, days, loading }) {
   const bucket = entities?.['sensor.rasenflache_bucket']?.state;
   const water = entities?.['sensor.wasserzaehler_value']?.state;
 
-  const statItems = [
-    { label: 'Rate', value: rate, unit: 'mm/h', color: Number(rate) > 0 ? '#60a5fa' : undefined },
-    { label: 'Täglich', value: daily, unit: 'mm', color: '#60a5fa' },
-    { label: 'Wöchentl.', value: weekly, unit: 'mm', color: '#60a5fa' },
-    { label: 'Jährlich', value: yearly, unit: 'mm', color: '#60a5fa' },
-  ];
-
   const smartZones = [
     { name: 'T. rechts', id: 'sensor.smart_irrigation_terrasse_rechts_min' },
     { name: 'T. links', id: 'sensor.smart_irrigation_terrasse_links_min' },
@@ -350,37 +339,23 @@ function RegenTab({ entities, rainHistory, days, loading }) {
   ];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-6">
       <div>
-        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+        <p className="mb-2 text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
           Niederschlag
         </p>
-        <div className="grid grid-cols-4 gap-2 mb-3">
-          {statItems.map((item) => (
-            <div
-              key={item.label}
-              className="flex flex-col items-center rounded-2xl border p-2.5 gap-0.5"
-              style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
-            >
-              <p className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">{item.label}</p>
-              <p className="text-base font-bold" style={{ color: item.color || 'var(--text-primary)' }}>
-                {item.value ?? '—'}
-              </p>
-              <p className="text-[10px] text-[var(--text-secondary)]">{item.unit}</p>
-            </div>
-          ))}
+        <div className={`grid gap-2 mb-4 ${isPhone ? 'grid-cols-2' : 'grid-cols-4'}`}>
+          <StatBox label="Rate" value={rate} unit="mm/h" color={Number(rate) > 0 ? '#60a5fa' : undefined} />
+          <StatBox label="Täglich" value={daily} unit="mm" color="#60a5fa" />
+          <StatBox label="Wöchentl." value={weekly} unit="mm" color="#60a5fa" />
+          <StatBox label="Jährlich" value={yearly} unit="mm" color="#60a5fa" />
         </div>
-        <div
-          className="rounded-2xl border p-3"
-          style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
-        >
-          <p className="mb-1.5 text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">
-            14 Tage Verlauf
+        <div className="popup-surface rounded-2xl p-4">
+          <p className="mb-2 text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+            14-Tage-Verlauf
           </p>
           {loading ? (
-            <div className="flex h-20 items-center justify-center text-xs text-[var(--text-secondary)]">
-              Lade…
-            </div>
+            <div className="flex h-20 items-center justify-center text-xs" style={{ color: 'var(--text-secondary)' }}>Lade…</div>
           ) : (
             <BarChart days={days} valuesByDay={rainHistory} color="#60a5fa" height={90} />
           )}
@@ -388,46 +363,30 @@ function RegenTab({ entities, rainHistory, days, loading }) {
       </div>
 
       <div>
-        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+        <p className="mb-2 text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
           Smart Irrigation
         </p>
         <div className="grid grid-cols-3 gap-2">
           {smartZones.map((z) => (
-            <div
-              key={z.id}
-              className="flex flex-col items-center rounded-2xl border p-2.5 gap-0.5"
-              style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
-            >
-              <p className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">{z.name}</p>
-              <p className="text-base font-bold text-green-400">{entities?.[z.id]?.state ?? '—'}</p>
-              <p className="text-[10px] text-[var(--text-secondary)]">min</p>
-            </div>
+            <StatBox key={z.id} label={z.name} value={entities?.[z.id]?.state ?? '—'} unit="min" color="#4ade80" />
           ))}
         </div>
         {bucket != null && (
-          <div
-            className="mt-2 flex items-center justify-between rounded-2xl border px-4 py-3"
-            style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
-          >
-            <p className="text-sm text-[var(--text-secondary)]">Bodenwasser-Vorrat</p>
-            <p className="text-sm font-bold text-cyan-400">{bucket} mm</p>
+          <div className="popup-surface mt-2 flex items-center justify-between rounded-2xl px-4 py-3">
+            <p className="text-sm font-light" style={{ color: 'var(--text-secondary)' }}>Bodenwasser-Vorrat</p>
+            <p className="text-sm font-semibold text-cyan-400">{bucket} mm</p>
           </div>
         )}
       </div>
 
       {water != null && (
         <div>
-          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+          <p className="mb-2 text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
             Wasserzähler
           </p>
-          <div
-            className="flex items-center justify-between rounded-2xl border px-4 py-3"
-            style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
-          >
-            <p className="text-sm text-[var(--text-secondary)]">Gesamtverbrauch</p>
-            <p className="text-sm font-bold text-[var(--text-primary)]">
-              {parseFloat(water).toFixed(2)} m³
-            </p>
+          <div className="popup-surface flex items-center justify-between rounded-2xl px-4 py-3">
+            <p className="text-sm font-light" style={{ color: 'var(--text-secondary)' }}>Gesamtverbrauch</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{parseFloat(water).toFixed(2)} m³</p>
           </div>
         </div>
       )}
@@ -435,39 +394,32 @@ function RegenTab({ entities, rainHistory, days, loading }) {
   );
 }
 
-// ─── Tab: Verlauf ────────────────────────────────────────────────────────────
+// ─── Tab: Verlauf ─────────────────────────────────────────────────────────────
 
 function VerlaufTab({ zoneData, days, loading }) {
-  const hasData = ZONES.some((z) =>
-    Object.values(zoneData[z.key] ?? {}).some((v) => v > 0)
-  );
+  const hasData = ZONES.some((z) => Object.values(zoneData[z.key] ?? {}).some((v) => v > 0));
   const todayKey = new Date().toDateString();
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-6">
       <div>
-        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+        <p className="mb-2 text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
           Bewässerung pro Tag (min)
         </p>
-        <div
-          className="rounded-2xl border p-3"
-          style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
-        >
+        <div className="popup-surface rounded-2xl p-4">
           {loading ? (
-            <div className="flex h-28 items-center justify-center text-xs text-[var(--text-secondary)]">
-              Lade…
-            </div>
+            <div className="flex h-28 items-center justify-center text-xs" style={{ color: 'var(--text-secondary)' }}>Lade…</div>
           ) : !hasData ? (
-            <div className="flex h-28 items-center justify-center text-xs text-[var(--text-secondary)]">
+            <div className="flex h-28 items-center justify-center text-xs" style={{ color: 'var(--text-secondary)' }}>
               Keine Daten für die letzten 14 Tage
             </div>
           ) : (
             <StackedBarChart days={days} zoneData={zoneData} height={120} />
           )}
         </div>
-        <div className="mt-2 flex gap-3 flex-wrap">
+        <div className="mt-2 flex gap-4 flex-wrap">
           {ZONES.map((z) => (
-            <div key={z.key} className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+            <div key={z.key} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: z.color }} />
               {z.name}
             </div>
@@ -476,21 +428,17 @@ function VerlaufTab({ zoneData, days, loading }) {
       </div>
 
       <div>
-        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+        <p className="mb-2 text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
           Heute
         </p>
-        <div className="flex flex-col gap-2">
+        <div className="space-y-2">
           {ZONES.map((z) => {
             const todayMin = zoneData[z.key]?.[todayKey] ?? 0;
             return (
-              <div
-                key={z.key}
-                className="flex items-center gap-3 rounded-2xl border px-4 py-2.5"
-                style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
-              >
+              <div key={z.key} className="popup-surface flex items-center gap-3 rounded-2xl px-4 py-3">
                 <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: z.color }} />
-                <p className="flex-1 text-sm text-[var(--text-primary)]">{z.name}</p>
-                <p className="text-sm font-bold" style={{ color: todayMin > 0 ? z.color : 'var(--text-secondary)' }}>
+                <p className="flex-1 text-sm font-light text-[var(--text-primary)]">{z.name}</p>
+                <p className="text-sm font-semibold" style={{ color: todayMin > 0 ? z.color : 'var(--text-muted)' }}>
                   {todayMin > 0 ? `${todayMin.toFixed(0)} min` : '—'}
                 </p>
               </div>
@@ -502,7 +450,7 @@ function VerlaufTab({ zoneData, days, loading }) {
   );
 }
 
-// ─── Tab: Ventile ────────────────────────────────────────────────────────────
+// ─── Tab: Ventile ─────────────────────────────────────────────────────────────
 
 function VentileTab({ entities, callService }) {
   const ventile = [
@@ -512,28 +460,21 @@ function VentileTab({ entities, callService }) {
   ];
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="space-y-2">
       {ventile.map((v) => {
-        const sw = entities?.[v.id];
-        const isOn = sw?.state === 'on';
+        const isOn = entities?.[v.id]?.state === 'on';
         return (
-          <div
-            key={v.id}
-            className="flex items-center justify-between rounded-2xl border px-4 py-3"
-            style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
-          >
+          <div key={v.id} className="popup-surface flex items-center justify-between rounded-2xl px-4 py-3">
             <div>
-              <p className="text-sm font-bold text-[var(--text-primary)]">{v.name}</p>
-              <p className="text-xs text-[var(--text-secondary)]">{v.id}</p>
+              <p className="text-sm font-semibold text-[var(--text-primary)]">{v.name}</p>
+              <p className="text-xs font-light" style={{ color: 'var(--text-muted)' }}>{v.id}</p>
             </div>
             <button
-              onClick={() =>
-                callService?.('switch', isOn ? 'turn_off' : 'turn_on', { entity_id: v.id })
-              }
-              className={`shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border transition-all ${
+              onClick={() => callService?.('switch', isOn ? 'turn_off' : 'turn_on', { entity_id: v.id })}
+              className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider border transition-all ${
                 isOn
                   ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                  : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] border-[var(--glass-border)]'
+                  : 'border-[var(--glass-border)] text-[var(--text-secondary)]'
               }`}
             >
               <span className={`h-2 w-2 rounded-full ${isOn ? 'bg-emerald-400' : 'bg-gray-500'}`} />
@@ -546,19 +487,31 @@ function VentileTab({ entities, callService }) {
   );
 }
 
-// ─── Main Modal ──────────────────────────────────────────────────────────────
+// ─── Main Modal ───────────────────────────────────────────────────────────────
 
 export default function BeregnungModal({ show, onClose, entities, callService, conn, haUrl, haToken }) {
-  const [activeTab, setActiveTab] = useState(0);
+  const [mainTab, setMainTab] = useState('zonen');
   const [zoneData, setZoneData] = useState({ z1: {}, z2: {}, z3: {} });
   const [rainHistory, setRainHistory] = useState({});
   const [histLoading, setHistLoading] = useState(false);
 
   const days = getLastNDays(HIST_DAYS);
-  const masterActive = entities?.['binary_sensor.beregung_master_status']?.state === 'on';
+  const masterRunning = entities?.[MASTER_STATUS]?.state === 'on';
+
+  // Check if IU controller is enabled (attributes may expose this)
+  const masterEntity = entities?.[MASTER_ENTITY];
+  const masterEnabled = masterEntity?.attributes?.enabled !== false; // default assume enabled
+
+  const toggleMaster = () => {
+    callService?.('irrigation_unlimited', 'toggle', { entity_id: MASTER_ENTITY });
+  };
+
+  const stopAll = () => {
+    callService?.('irrigation_unlimited', 'cancel', { entity_id: MASTER_ENTITY });
+  };
 
   useEffect(() => {
-    if (!show || (activeTab !== 1 && activeTab !== 2)) return;
+    if (!show || (mainTab !== 'regen' && mainTab !== 'verlauf')) return;
     if (!conn && !haUrl) return;
 
     const start = new Date();
@@ -567,20 +520,15 @@ export default function BeregnungModal({ show, onClose, entities, callService, c
 
     setHistLoading(true);
 
-    if (activeTab === 2) {
+    if (mainTab === 'verlauf') {
       Promise.all(
         ZONES.map((z) =>
-          fetchEntityHistory(conn, haUrl, haToken, z.sensorId, start).then((data) => ({
-            key: z.key,
-            data,
-          }))
+          fetchEntityHistory(conn, haUrl, haToken, z.sensorId, start).then((data) => ({ key: z.key, data }))
         )
       )
         .then((results) => {
           const newZoneData = {};
-          results.forEach(({ key, data }) => {
-            newZoneData[key] = parseZoneMinutesByDay(data, days);
-          });
+          results.forEach(({ key, data }) => { newZoneData[key] = parseZoneMinutesByDay(data, days); });
           setZoneData(newZoneData);
         })
         .catch(() => {})
@@ -591,21 +539,30 @@ export default function BeregnungModal({ show, onClose, entities, callService, c
         .catch(() => {})
         .finally(() => setHistLoading(false));
     }
-  }, [show, activeTab, conn, haUrl, haToken]);
+  }, [show, mainTab, conn, haUrl, haToken]);
 
   if (!show) return null;
 
-  const stopAll = () =>
-    callService?.('irrigation_unlimited', 'cancel', { entity_id: 'irrigation_unlimited.coordinator' });
+  const isCompact =
+    window.innerHeight < 900 || window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  const isPhone = window.innerWidth < 640;
 
   return (
     <AccessibleModalShell
       open={show}
       onClose={onClose}
       titleId="beregnung-modal-title"
-      overlayClassName="fixed inset-0 z-[130] flex items-center justify-center p-3 sm:p-5"
-      overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.5)' }}
-      panelClassName="popup-anim relative flex max-h-[92vh] w-full max-w-2xl flex-col rounded-2xl border font-sans shadow-2xl backdrop-blur-xl sm:rounded-3xl overflow-hidden"
+      overlayClassName={
+        isCompact
+          ? 'fixed inset-0 z-50 flex items-stretch justify-center'
+          : 'fixed inset-0 z-50 flex items-center justify-center p-6'
+      }
+      overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
+      panelClassName={
+        isCompact
+          ? 'popup-anim relative flex flex-col w-full max-w-2xl h-full overflow-hidden rounded-none border font-sans backdrop-blur-xl'
+          : 'popup-anim relative flex flex-col w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[3rem] border font-sans backdrop-blur-xl'
+      }
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -614,83 +571,123 @@ export default function BeregnungModal({ show, onClose, entities, callService, c
     >
       {() => (
         <>
-          {/* Header */}
-          <div className="flex items-center justify-between gap-3 p-4 pb-3 shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)]">
-                <Droplets className={`h-4 w-4 ${masterActive ? 'text-cyan-400' : 'text-[var(--text-secondary)]'}`} />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
-                  Garten
-                </p>
-                <h3 id="beregnung-modal-title" className="text-base font-bold text-[var(--text-primary)]">
-                  Beregnung
-                </h3>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {masterActive && (
-                <button
-                  onClick={stopAll}
-                  className="flex items-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/20 px-3 py-1.5 text-xs font-bold text-red-400"
-                >
-                  <Pause className="h-3 w-3" /> Alle stoppen
-                </button>
-              )}
-              <span
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${
-                  masterActive
-                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
-                    : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)]'
-                }`}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${masterActive ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'}`}
-                />
-                {masterActive ? 'Aktiv' : 'Inaktiv'}
-              </span>
-              <button
-                onClick={onClose}
-                className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1.5 text-[var(--text-secondary)]"
-              >
+          {/* ── Fixed header ── */}
+          <div
+            className={`flex-shrink-0 border-b ${isCompact ? 'p-4 pb-3' : 'p-8 pb-5'}`}
+            style={{ borderColor: 'var(--glass-border)' }}
+          >
+            {/* Close */}
+            <div className="absolute top-4 right-4 z-20">
+              <button onClick={onClose} className="modal-close" aria-label="Schließen">
                 <X className="h-4 w-4" />
               </button>
             </div>
-          </div>
 
-          {/* Tabs */}
-          <div className="flex gap-1 px-4 pb-3 shrink-0">
-            {TABS.map((tab, i) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(i)}
-                className={`rounded-xl px-4 py-1.5 text-xs font-bold transition-all ${
-                  activeTab === i
-                    ? 'bg-[var(--accent-bg)] text-[var(--accent-color)] border border-[var(--accent-color)]'
-                    : 'text-[var(--text-secondary)] border border-transparent hover:border-[var(--glass-border)]'
-                }`}
+            {/* Icon + title + status */}
+            <div className="mb-4 flex items-center gap-3 pr-10 font-sans">
+              <div
+                className="rounded-2xl p-3 transition-all duration-500"
+                style={{
+                  backgroundColor: masterRunning ? 'rgba(52,211,153,0.15)' : 'rgba(100,116,139,0.15)',
+                  color: masterRunning ? '#34d399' : 'var(--text-secondary)',
+                }}
               >
-                {tab}
-              </button>
-            ))}
+                <Droplets className="h-6 w-6" />
+              </div>
+              <div>
+                <h3
+                  id="beregnung-modal-title"
+                  className="text-xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic"
+                >
+                  Beregnung
+                </h3>
+                <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+                  {/* Status badge */}
+                  <div
+                    className="inline-flex items-center gap-2 rounded-full border px-3 py-1 transition-all duration-500"
+                    style={{
+                      backgroundColor: masterRunning ? 'var(--status-success-bg)' : 'var(--glass-bg)',
+                      borderColor: masterRunning ? 'var(--status-success-border)' : 'var(--glass-border)',
+                    }}
+                  >
+                    <span
+                      className={`h-2 w-2 rounded-full ${masterRunning ? 'bg-[var(--status-success-fg)] animate-pulse' : 'bg-[var(--text-muted)]'}`}
+                    />
+                    <p
+                      className="text-[10px] font-bold tracking-widest uppercase italic"
+                      style={{ color: masterRunning ? 'var(--status-success-fg)' : 'var(--text-secondary)' }}
+                    >
+                      {masterRunning ? 'Aktiv' : 'Inaktiv'}
+                    </p>
+                  </div>
+                  {/* Master toggle */}
+                  <button
+                    onClick={toggleMaster}
+                    className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold tracking-widest uppercase italic transition-all"
+                    style={{
+                      backgroundColor: masterEnabled ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)',
+                      borderColor: masterEnabled ? 'rgba(52,211,153,0.4)' : 'rgba(248,113,113,0.4)',
+                      color: masterEnabled ? '#34d399' : '#f87171',
+                    }}
+                  >
+                    {masterEnabled ? 'Aktiviert' : 'Deaktiviert'}
+                  </button>
+                  {/* Stop all — only when running */}
+                  {masterRunning && (
+                    <button
+                      onClick={stopAll}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1 text-[10px] font-bold tracking-widest uppercase italic text-red-400"
+                    >
+                      <Pause className="h-3 w-3" /> Alle stoppen
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Tab bar */}
+            <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
+              {MAIN_TABS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setMainTab(key)}
+                  className="flex-1 rounded-xl py-2 text-[11px] font-bold tracking-widest uppercase transition-all"
+                  style={
+                    mainTab === key
+                      ? {
+                          backgroundColor: 'var(--accent-bg)',
+                          color: 'var(--accent-color)',
+                          border: '1px solid var(--accent-color)',
+                        }
+                      : { color: 'var(--text-secondary)' }
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto px-4 pb-4">
-            {activeTab === 0 && <ZonenTab entities={entities} callService={callService} />}
-            {activeTab === 1 && (
+          {/* ── Scrollable content ── */}
+          <div className={`flex-1 overflow-y-auto ${isCompact ? 'p-4' : 'p-8'}`}>
+            {mainTab === 'zonen' && (
+              <ZonenTab entities={entities} callService={callService} isCompact={isCompact} />
+            )}
+            {mainTab === 'regen' && (
               <RegenTab
                 entities={entities}
                 rainHistory={rainHistory}
                 days={days}
                 loading={histLoading}
+                isPhone={isPhone}
               />
             )}
-            {activeTab === 2 && (
+            {mainTab === 'verlauf' && (
               <VerlaufTab zoneData={zoneData} days={days} loading={histLoading} />
             )}
-            {activeTab === 3 && <VentileTab entities={entities} callService={callService} />}
+            {mainTab === 'ventile' && (
+              <VentileTab entities={entities} callService={callService} />
+            )}
           </div>
         </>
       )}
