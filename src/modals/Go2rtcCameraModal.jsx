@@ -141,6 +141,9 @@ export default function Go2rtcCameraModal({
     if (hasManagedMS) {
       video.disableRemotePlayback = true;
       video.srcObject = ms;
+      // ManagedMediaSource: call play() early and re-trigger on startstreaming
+      video.play().catch(() => {});
+      ms.addEventListener('startstreaming', () => { video.play().catch(() => {}); });
     } else {
       objectUrl = URL.createObjectURL(ms);
       video.src = objectUrl;
@@ -206,7 +209,7 @@ export default function Go2rtcCameraModal({
               if (firstData) {
                 firstData = false;
                 setLoading(false);
-                video.play().catch(() => {});
+                if (!hasManagedMS) video.play().catch(() => {});
               }
             } catch {}
           } else {
