@@ -320,6 +320,11 @@ export function useSettingsSync({ haUserId, contextSettersRef }) {
         } catch {
           // ignore bootstrap errors
         }
+      } else if (row.data && typeof row.data === 'object') {
+        // Apply the shared server state on every fresh load so the
+        // dashboard is immediately populated without needing a manual
+        // "load from server" click.
+        applySnapshot(row.data, contextSettersRef.current);
       }
 
       if (disposed) return;
