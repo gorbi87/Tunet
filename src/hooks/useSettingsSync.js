@@ -11,36 +11,11 @@ import {
 } from '../services/settingsApi';
 import { collectSnapshot, applySnapshot, isValidSnapshot } from '../services/snapshot';
 
-const createDeviceId = () => {
-  const webCrypto = globalThis.window?.crypto ?? globalThis.crypto;
-  if (webCrypto && typeof webCrypto.randomUUID === 'function') {
-    return webCrypto.randomUUID();
-  }
-
-  if (webCrypto && typeof webCrypto.getRandomValues === 'function') {
-    const bytes = new Uint8Array(16);
-    webCrypto.getRandomValues(bytes);
-    const hex = Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
-    return `device_${hex}`;
-  }
-
-  const epoch = Date.now().toString(36);
-  const perfNow = Math.trunc(globalThis.performance?.now?.() || 0).toString(36);
-  return `device_${epoch}_${perfNow}`;
-};
-
-const getOrCreateDeviceId = () => {
-  const key = 'tunet_device_id';
-  try {
-    const existing = localStorage.getItem(key);
-    if (existing) return existing;
-    const next = createDeviceId();
-    localStorage.setItem(key, next);
-    return next;
-  } catch {
-    return createDeviceId();
-  }
-};
+// All devices share a single settings slot so the dashboard is
+// automatically in sync across PC, phone and tablet without any
+// manual "publish to device" step.
+const SHARED_DEVICE_ID = 'shared';
+const getOrCreateDeviceId = () => SHARED_DEVICE_ID;
 
 const clampHistoryKeepLimit = (value) => {
   const parsed = Number(value);
