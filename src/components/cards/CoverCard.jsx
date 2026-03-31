@@ -436,37 +436,37 @@ const CoverCard = ({
         key={cardId}
         {...dragProps}
         data-haptic={editMode ? undefined : 'card'}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!editMode) handleToggle();
-        }}
-        className={`glass-texture touch-feedback group relative flex h-full items-center gap-3 overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 font-sans transition-all select-none ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
+        className={`glass-texture group relative flex h-full items-center overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass-bg)] font-sans select-none ${editMode ? 'cursor-move' : ''} ${isUnavailable ? 'opacity-70' : ''}`}
         style={cardStyle}
       >
         {controls}
 
-        {/* Icon — tap opens modal */}
+        {/* Icon button — tap opens modal */}
         <button
           type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!editMode && onOpen) onOpen();
-          }}
+          disabled={editMode}
+          onClick={() => { if (!editMode && onOpen) onOpen(); }}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', color: accent.text }}
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] transition-all active:scale-90"
+          className="ml-3 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] transition-all active:scale-90"
         >
           <Icon className={`h-4 w-4 stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
         </button>
 
-        {/* Text */}
-        <div className="flex min-w-0 flex-col gap-0.5">
+        {/* Text area button — tap toggles cover */}
+        <button
+          type="button"
+          disabled={editMode}
+          onClick={() => { if (!editMode) handleToggle(); }}
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+          className={`flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-3 h-full text-left transition-all ${!editMode ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+        >
           <span className="truncate text-base font-medium leading-tight text-[var(--text-primary)]">
             {compactLabel}
           </span>
           <span className="truncate text-[9px] font-bold uppercase tracking-wide text-[var(--text-secondary)] opacity-80">
             {name}
           </span>
-        </div>
+        </button>
       </div>
     );
   }
