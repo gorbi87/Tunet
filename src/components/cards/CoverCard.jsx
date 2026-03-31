@@ -351,12 +351,19 @@ const CoverCard = ({
   const position = activeEntity.attributes?.current_position;
   const [localPos, setLocalPos] = useState(position ?? 0);
   const isDraggingRef = useRef(false);
+  // Tracks last movement direction so a stopped blind can resume in reverse
+  const lastMovingDirectionRef = useRef(null); // 'up' | 'down' | null
 
   useEffect(() => {
     if (!isDraggingRef.current && typeof position === 'number') {
       setLocalPos(position);
     }
   }, [position]);
+
+  useEffect(() => {
+    if (isOpening) lastMovingDirectionRef.current = 'up';
+    if (isClosing) lastMovingDirectionRef.current = 'down';
+  }, [isOpening, isClosing]);
 
   const getAccent = () => {
     if (isUnavailable)
@@ -385,15 +392,24 @@ const CoverCard = ({
     callService('cover', 'set_cover_position', { entity_id: activeEntityId, position: val });
   };
 
-  // Toggle: moving → stop, open → close, else → open
+  // Smart toggle: moving → stop (remember direction) → next tap reverses
+  // Fully closed → open. Fully open or unknown → close.
+  // Stopped mid-way → resume in opposite direction of last movement.
   const handleToggle = () => {
     if (isUnavailable || !activeEntityId || editMode) return;
     if (isMoving) {
       callService('cover', 'stop_cover', { entity_id: activeEntityId });
-    } else if (state === 'open') {
-      callService('cover', 'close_cover', { entity_id: activeEntityId });
-    } else {
+    } else if (state === 'closed') {
       callService('cover', 'open_cover', { entity_id: activeEntityId });
+      lastMovingDirectionRef.current = 'up';
+    } else if (lastMovingDirectionRef.current === 'down') {
+      // Was going down and stopped → go back up
+      callService('cover', 'open_cover', { entity_id: activeEntityId });
+      lastMovingDirectionRef.current = 'up';
+    } else {
+      // Fully open, or was going up and stopped → close
+      callService('cover', 'close_cover', { entity_id: activeEntityId });
+      lastMovingDirectionRef.current = 'down';
     }
   };
 
