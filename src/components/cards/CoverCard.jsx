@@ -426,6 +426,11 @@ const CoverCard = ({
 
   // ── Ultra-compact two-column mobile layout ──────────────────────────
   if (isTwoColMobile) {
+    const compactLabel =
+      typeof position === 'number' && position > 0 && position < 100
+        ? `${localPos}%`
+        : getStateLabel();
+
     return (
       <div
         key={cardId}
@@ -435,49 +440,31 @@ const CoverCard = ({
           e.stopPropagation();
           if (!editMode) handleToggle();
         }}
-        className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 font-sans transition-all select-none ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
+        className={`glass-texture touch-feedback group relative flex h-full items-center gap-3 overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 font-sans transition-all select-none ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
         style={cardStyle}
       >
         {controls}
 
-        {/* Top: Icon */}
-        <div className="flex items-start">
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!editMode && onOpen) onOpen();
-            }}
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] transition-all hover:bg-white/10 active:scale-90"
-            style={{ color: accent.text }}
-          >
-            <Icon className={`h-4 w-4 stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
-          </div>
+        {/* Icon — tap opens modal */}
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!editMode && onOpen) onOpen();
+          }}
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] transition-all active:scale-90"
+          style={{ color: accent.text }}
+        >
+          <Icon className={`h-4 w-4 stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
         </div>
 
-        {/* Bottom: Value + Name */}
-        <div className="flex flex-col gap-0.5 pl-0.5">
-          <div className="flex items-baseline gap-0.5">
-            {typeof position === 'number' && position > 0 && position < 100 ? (
-              <>
-                <span className="text-2xl leading-none font-thin text-[var(--text-primary)] tabular-nums">
-                  {localPos}
-                </span>
-                <span className="text-sm leading-none font-light text-[var(--text-secondary)]">%</span>
-              </>
-            ) : (
-              <span className="text-xl leading-none font-thin text-[var(--text-primary)] capitalize">
-                {getStateLabel()}
-              </span>
-            )}
-          </div>
-          <div className="text-[9px] truncate font-bold tracking-wide text-[var(--text-secondary)] uppercase opacity-80">
+        {/* Text */}
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <span className="truncate text-base font-medium leading-tight text-[var(--text-primary)]">
+            {compactLabel}
+          </span>
+          <span className="truncate text-[9px] font-bold uppercase tracking-wide text-[var(--text-secondary)] opacity-80">
             {name}
-          </div>
-          {isMoving && (
-            <div className="mt-0.5 text-[9px] animate-pulse font-bold tracking-widest text-[var(--text-primary)] uppercase">
-              {isOpening ? `${translate('cover.opening')}...` : `${translate('cover.closing')}...`}
-            </div>
-          )}
+          </span>
         </div>
       </div>
     );
