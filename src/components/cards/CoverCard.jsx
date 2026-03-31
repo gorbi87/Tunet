@@ -92,9 +92,8 @@ const HorizontalBlindSlider = ({ position, onChange, onCommit, accent, isUnavail
     if (!containerRef.current) return null;
     const rect = containerRef.current.getBoundingClientRect();
     const x = clientX - rect.left;
-    let pct = (x / rect.width) * 100; // Left=0, Right=100
+    let pct = (x / rect.width) * 100;
     pct = Math.max(0, Math.min(100, pct));
-    // Invert drag: Dragging Right adds to "Closed" (Width increases), so "Open" (Position) decreases.
     return Math.round((100 - pct) / 5) * 5;
   };
 
@@ -120,9 +119,6 @@ const HorizontalBlindSlider = ({ position, onChange, onCommit, accent, isUnavail
     }
   };
 
-  // Logic: "Curtain" style.
-  // Position 0 (Closed) -> Full Width Fill (100%).
-  // Position 100 (Open) -> 0 Width Fill (0%).
   const closedPct = 100 - (position ?? 0);
 
   return (
@@ -142,7 +138,6 @@ const HorizontalBlindSlider = ({ position, onChange, onCommit, accent, isUnavail
           backgroundColor: accent.fill,
         }}
       >
-        {/* Vertical "curtain fold" lines */}
         <div className="pointer-events-none absolute inset-y-0 right-0 left-0 flex flex-row overflow-hidden">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="flex-1 border-r border-black/5" />
@@ -150,7 +145,7 @@ const HorizontalBlindSlider = ({ position, onChange, onCommit, accent, isUnavail
         </div>
       </div>
 
-      {/* Vertical Handle (Outside, fixed to right edge of blind) */}
+      {/* Vertical Handle */}
       <div
         className="pointer-events-none absolute top-1.5 bottom-1.5 w-1.5 rounded-full bg-white/40 shadow-sm transition-all duration-100 ease-out"
         style={{ left: `calc(${closedPct}% - ${closedPct * 0.06}px)` }}
@@ -167,30 +162,21 @@ const ButtonControl = ({ onOpen, onClose, onStop, isUnavailable, horizontal = fa
         className={`flex h-full w-full items-center justify-between gap-1.5 rounded-2xl p-1.5 ${CONTROL_STYLE}`}
       >
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpen();
-          }}
+          onClick={(e) => { e.stopPropagation(); onOpen(); }}
           disabled={isUnavailable}
           className="flex h-full flex-1 items-center justify-center rounded-xl bg-white/5 text-[var(--text-secondary)] transition-all hover:bg-white/10 hover:text-[var(--text-primary)] active:scale-95"
         >
           <ChevronUp className="h-5 w-5" />
         </button>
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onStop();
-          }}
+          onClick={(e) => { e.stopPropagation(); onStop(); }}
           disabled={isUnavailable}
           className="flex h-full w-10 items-center justify-center rounded-xl bg-white/5 text-[var(--text-secondary)] transition-all hover:bg-white/10 hover:text-[var(--text-primary)] active:scale-95"
         >
           <div className="h-2 w-2 rounded-sm bg-current" />
         </button>
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClose();
-          }}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           disabled={isUnavailable}
           className="flex h-full flex-1 items-center justify-center rounded-xl bg-white/5 text-[var(--text-secondary)] transition-all hover:bg-white/10 hover:text-[var(--text-primary)] active:scale-95"
         >
@@ -203,10 +189,7 @@ const ButtonControl = ({ onOpen, onClose, onStop, isUnavailable, horizontal = fa
   return (
     <div className={`flex h-full w-full flex-col gap-1.5 rounded-[2rem] p-1.5 ${CONTROL_STYLE}`}>
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpen();
-        }}
+        onClick={(e) => { e.stopPropagation(); onOpen(); }}
         disabled={isUnavailable}
         className="group flex w-full flex-1 items-center justify-center rounded-t-[1.6rem] rounded-b-xl bg-white/5 transition-all hover:bg-white/10 active:scale-[0.98]"
       >
@@ -214,10 +197,7 @@ const ButtonControl = ({ onOpen, onClose, onStop, isUnavailable, horizontal = fa
       </button>
 
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onStop();
-        }}
+        onClick={(e) => { e.stopPropagation(); onStop(); }}
         disabled={isUnavailable}
         className="group flex h-12 w-full items-center justify-center rounded-xl bg-white/5 transition-all hover:bg-white/10 active:scale-[0.98]"
       >
@@ -225,10 +205,7 @@ const ButtonControl = ({ onOpen, onClose, onStop, isUnavailable, horizontal = fa
       </button>
 
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onClose();
-        }}
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
         disabled={isUnavailable}
         className="group flex w-full flex-1 items-center justify-center rounded-t-xl rounded-b-[1.6rem] bg-white/5 transition-all hover:bg-white/10 active:scale-[0.98]"
       >
@@ -247,13 +224,13 @@ const SmallCoverCard = (props) => {
     cardStyle,
     editMode,
     onOpen,
+    handleToggle,
     localPos,
     position,
     isMoving,
     getStateLabel,
     accent,
     isUnavailable,
-    handleToggleMode,
     Icon,
     mode,
     supportsPosition,
@@ -272,7 +249,7 @@ const SmallCoverCard = (props) => {
       data-haptic={editMode ? undefined : 'card'}
       onClick={(e) => {
         e.stopPropagation();
-        if (!editMode && onOpen) onOpen();
+        if (!editMode) handleToggle();
       }}
       className={`glass-texture touch-feedback group relative flex h-full items-center gap-4 overflow-hidden rounded-3xl border p-4 pl-5 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''} `}
       style={cardStyle}
@@ -280,10 +257,11 @@ const SmallCoverCard = (props) => {
       {controls}
 
       <div className="flex min-w-0 flex-1 items-center gap-4">
+        {/* Icon — click opens modal */}
         <div
           onClick={(e) => {
             e.stopPropagation();
-            handleToggleMode();
+            if (!editMode && onOpen) onOpen();
           }}
           className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-all duration-500 group-hover:scale-110"
           style={{
@@ -345,20 +323,20 @@ const CoverCard = ({
   callService,
   settings,
   isMobile,
+  isTwoColMobile = false,
   t,
 }) => {
   const activeEntityId = entityId || '';
   const activeEntity = entity || { state: 'unknown', attributes: {} };
 
   const isSmall = settings?.size === 'small';
-  const isDenseMobile = isMobile && !isSmall;
+  const isDenseMobile = isMobile && !isSmall && !isTwoColMobile;
   const state = activeEntity.state;
   const isUnavailable = state === 'unavailable' || state === 'unknown' || !state;
   const isOpening = state === 'opening';
   const isClosing = state === 'closing';
   const isMoving = isOpening || isClosing;
 
-  // Features
   const supportedFeatures = activeEntity.attributes?.supported_features ?? 0;
   const supportsPosition = (supportedFeatures & 4) !== 0;
 
@@ -366,12 +344,10 @@ const CoverCard = ({
   const coverIconName = customIcons[cardId] || activeEntity?.attributes?.icon;
   const Icon = coverIconName ? getIconComponent(coverIconName) || ArrowUpDown : ArrowUpDown;
 
-  // View Mode: 'slider' or 'buttons'
-  const [mode, setMode] = useState(supportsPosition ? 'slider' : 'buttons');
+  const [mode] = useState(supportsPosition ? 'slider' : 'buttons');
 
   const translate = t || ((key) => key);
 
-  // Position Logic
   const position = activeEntity.attributes?.current_position;
   const [localPos, setLocalPos] = useState(position ?? 0);
   const isDraggingRef = useRef(false);
@@ -382,28 +358,25 @@ const CoverCard = ({
     }
   }, [position]);
 
-  // Colors
   const getAccent = () => {
-    const defaultColor = 'var(--text-primary)';
-    const defaultFill = 'rgba(160, 160, 160, 0.35)'; // Semi-transparent glass fill
-
     if (isUnavailable)
       return { text: '#ef4444', fill: 'rgba(239, 68, 68, 0.4)', bg: 'rgba(239, 68, 68, 0.1)' };
-    return { text: defaultColor, fill: defaultFill, bg: 'var(--glass-bg)' };
+    return {
+      text: 'var(--text-primary)',
+      fill: 'rgba(160, 160, 160, 0.35)',
+      bg: 'var(--glass-bg)',
+    };
   };
   const accent = getAccent();
 
   const handleOpenCover = () =>
-    !isUnavailable &&
-    activeEntityId &&
+    !isUnavailable && activeEntityId &&
     callService('cover', 'open_cover', { entity_id: activeEntityId });
   const handleCloseCover = () =>
-    !isUnavailable &&
-    activeEntityId &&
+    !isUnavailable && activeEntityId &&
     callService('cover', 'close_cover', { entity_id: activeEntityId });
   const handleStopCover = () =>
-    !isUnavailable &&
-    activeEntityId &&
+    !isUnavailable && activeEntityId &&
     callService('cover', 'stop_cover', { entity_id: activeEntityId });
 
   const handlePositionCommit = (val) => {
@@ -412,9 +385,16 @@ const CoverCard = ({
     callService('cover', 'set_cover_position', { entity_id: activeEntityId, position: val });
   };
 
-  const handleToggleMode = (e) => {
-    e.stopPropagation();
-    setMode((prev) => (prev === 'slider' ? 'buttons' : 'slider'));
+  // Toggle: moving → stop, open → close, else → open
+  const handleToggle = () => {
+    if (isUnavailable || !activeEntityId || editMode) return;
+    if (isMoving) {
+      callService('cover', 'stop_cover', { entity_id: activeEntityId });
+    } else if (state === 'open') {
+      callService('cover', 'close_cover', { entity_id: activeEntityId });
+    } else {
+      callService('cover', 'open_cover', { entity_id: activeEntityId });
+    }
   };
 
   const getStateLabel = () => {
@@ -426,39 +406,98 @@ const CoverCard = ({
     return state;
   };
 
-  const commonProps = {
-    cardId,
-    dragProps,
-    controls,
-    cardStyle,
-    editMode,
-    onOpen,
-    name,
-    localPos,
-    position,
-    isMoving,
-    isOpening,
-    getStateLabel,
-    accent,
-    isUnavailable,
-    handleToggleMode,
-    Icon,
-    mode,
-    supportsPosition,
-    handlePositionCommit,
-    setLocalPos,
-    handleOpenCover,
-    handleCloseCover,
-    handleStopCover,
-    translate,
-  };
-
   if (!entity || !activeEntityId) return null;
 
-  if (isSmall) {
-    return <SmallCoverCard {...commonProps} />;
+  // ── Ultra-compact two-column mobile layout ──────────────────────────
+  if (isTwoColMobile) {
+    return (
+      <div
+        key={cardId}
+        {...dragProps}
+        data-haptic={editMode ? undefined : 'card'}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!editMode) handleToggle();
+        }}
+        className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 font-sans transition-all select-none ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
+        style={cardStyle}
+      >
+        {controls}
+
+        {/* Top: Icon */}
+        <div className="flex items-start">
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!editMode && onOpen) onOpen();
+            }}
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] transition-all hover:bg-white/10 active:scale-90"
+            style={{ color: accent.text }}
+          >
+            <Icon className={`h-4 w-4 stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
+          </div>
+        </div>
+
+        {/* Bottom: Value + Name */}
+        <div className="flex flex-col gap-0.5 pl-0.5">
+          <div className="flex items-baseline gap-0.5">
+            {typeof position === 'number' ? (
+              <>
+                <span className="text-2xl leading-none font-thin text-[var(--text-primary)] tabular-nums">
+                  {localPos}
+                </span>
+                <span className="text-sm leading-none font-light text-[var(--text-secondary)]">%</span>
+              </>
+            ) : (
+              <span className="text-xl leading-none font-thin text-[var(--text-primary)] capitalize">
+                {getStateLabel()}
+              </span>
+            )}
+          </div>
+          <div className="text-[9px] truncate font-bold tracking-wide text-[var(--text-secondary)] uppercase opacity-80">
+            {name}
+          </div>
+          {isMoving && (
+            <div className="mt-0.5 text-[9px] animate-pulse font-bold tracking-widest text-[var(--text-primary)] uppercase">
+              {isOpening ? `${translate('cover.opening')}...` : `${translate('cover.closing')}...`}
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
+  // ── Small card variant ───────────────────────────────────────────────
+  if (isSmall) {
+    return (
+      <SmallCoverCard
+        cardId={cardId}
+        dragProps={dragProps}
+        controls={controls}
+        cardStyle={cardStyle}
+        editMode={editMode}
+        onOpen={onOpen}
+        handleToggle={handleToggle}
+        localPos={localPos}
+        position={position}
+        isMoving={isMoving}
+        getStateLabel={getStateLabel}
+        accent={accent}
+        isUnavailable={isUnavailable}
+        Icon={Icon}
+        mode={mode}
+        supportsPosition={supportsPosition}
+        handlePositionCommit={handlePositionCommit}
+        setLocalPos={setLocalPos}
+        handleOpenCover={handleOpenCover}
+        handleCloseCover={handleCloseCover}
+        handleStopCover={handleStopCover}
+        name={name}
+      />
+    );
+  }
+
+  // ── Standard card ────────────────────────────────────────────────────
   return (
     <div
       key={cardId}
@@ -468,17 +507,20 @@ const CoverCard = ({
       style={cardStyle}
       onClick={(e) => {
         e.stopPropagation();
-        if (!editMode && onOpen) onOpen();
+        if (!editMode) handleToggle();
       }}
     >
       {controls}
 
       {/* LEFT COLUMN: Info */}
       <div className={`pointer-events-none z-10 flex min-w-0 flex-1 flex-col justify-between ${isDenseMobile ? 'pr-1.5' : 'pr-2'}`}>
-        {/* Top: Icon (Interactive for mode toggle) */}
+        {/* Top: Icon — click opens modal */}
         <div className="pointer-events-auto flex items-start">
           <div
-            onClick={handleToggleMode}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!editMode && onOpen) onOpen();
+            }}
             className={`flex cursor-pointer items-center justify-center border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] shadow-sm transition-all group-hover:scale-110 hover:bg-white/10 active:scale-90 ${isDenseMobile ? 'h-10 w-10 rounded-xl' : 'h-12 w-12 rounded-2xl'}`}
             style={{ color: accent.text }}
           >
