@@ -446,16 +446,17 @@ const CoverCard = ({
         {controls}
 
         {/* Icon — tap opens modal */}
-        <div
+        <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             if (!editMode && onOpen) onOpen();
           }}
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', color: accent.text }}
           className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] transition-all active:scale-90"
-          style={{ color: accent.text }}
         >
           <Icon className={`h-4 w-4 stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
-        </div>
+        </button>
 
         {/* Text */}
         <div className="flex min-w-0 flex-col gap-0.5">
@@ -519,16 +520,17 @@ const CoverCard = ({
       <div className={`pointer-events-none z-10 flex min-w-0 flex-1 flex-col justify-between ${isDenseMobile ? 'pr-1.5' : 'pr-2'}`}>
         {/* Top: Icon — click opens modal */}
         <div className="pointer-events-auto flex items-start">
-          <div
+          <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               if (!editMode && onOpen) onOpen();
             }}
-            className={`flex cursor-pointer items-center justify-center border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] shadow-sm transition-all group-hover:scale-110 hover:bg-white/10 active:scale-90 ${isDenseMobile ? 'h-10 w-10 rounded-xl' : 'h-12 w-12 rounded-2xl'}`}
-            style={{ color: accent.text }}
+            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', color: accent.text }}
+            className={`flex items-center justify-center border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] shadow-sm transition-all group-hover:scale-110 hover:bg-white/10 active:scale-90 ${isDenseMobile ? 'h-10 w-10 rounded-xl' : 'h-12 w-12 rounded-2xl'}`}
           >
             <Icon className={`${isDenseMobile ? 'h-5 w-5' : 'h-6 w-6'} stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
-          </div>
+          </button>
         </div>
 
         {/* Bottom: Info */}
