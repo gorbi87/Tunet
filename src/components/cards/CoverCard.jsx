@@ -457,7 +457,7 @@ const CoverCard = ({
         {/* Bottom: Value + Name */}
         <div className="flex flex-col gap-0.5 pl-0.5">
           <div className="flex items-baseline gap-0.5">
-            {typeof position === 'number' ? (
+            {typeof position === 'number' && position > 0 && position < 100 ? (
               <>
                 <span className="text-2xl leading-none font-thin text-[var(--text-primary)] tabular-nums">
                   {localPos}

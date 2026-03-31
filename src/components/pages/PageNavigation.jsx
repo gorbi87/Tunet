@@ -61,6 +61,7 @@ export default function PageNavigation({
           <button
             key={page.id}
             draggable={editMode}
+            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             onClick={() => (editMode ? setEditingPage(page.id) : setActivePage(page.id))}
             onDragStart={(event) => {
               if (!editMode) return;

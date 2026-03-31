@@ -169,7 +169,7 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
             id.startsWith('pv_card_') ||
             id.startsWith('beregnung_card_');
           const rowPx = isTwoColMobile
-            ? (isCustomCard ? 72 : 82)
+            ? 72
             : isMobile
               ? (isCustomCard ? 100 : 82)
               : 100;

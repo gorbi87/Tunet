@@ -97,7 +97,7 @@ export default function AccessibleModalShell({
   if (!open) return null;
 
   return (
-    <div className={overlayClassName} style={overlayStyle} onClick={onClose}>
+    <div className={overlayClassName} style={{ ...overlayStyle, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }} onClick={onClose}>
       <div
         ref={panelRef}
         role="dialog"
