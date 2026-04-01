@@ -279,6 +279,12 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
+    case 'light_panel': {
+      const lightPanelCardId = `light_panel_card_${Date.now()}`;
+      commitSingleCard(lightPanelCardId, {});
+      return;
+    }
+
     case 'car': {
       const cardId = `car_card_${Date.now()}`;
       commitSingleCard(cardId, { type: 'car', size: 'large' }, { openEdit: true });

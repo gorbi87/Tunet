@@ -1046,6 +1046,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="light_panel"
+                  icon={Lightbulb}
+                  label="Licht Panel"
+                  isActive={addCardType === 'light_panel'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="climate"
                   icon={Thermometer}
                   label={t('addCard.type.climate')}
@@ -1222,6 +1229,8 @@ function AddCardContent({
               renderSimpleAddSection(Camera, 'go2rtc Kamera hinzufügen', 'go2rtc Kamera hinzufügen')
             ) : addCardType === 'beregnung' ? (
               renderSimpleAddSection(Droplets, 'Beregnung Karte hinzufügen', 'Beregnung hinzufügen')
+            ) : addCardType === 'light_panel' ? (
+              renderSimpleAddSection(Lightbulb, 'Licht Panel hinzufügen (EG / OG / Außen / Automatik)', 'Licht Panel hinzufügen')
             ) : addCardType === 'room' ? (
               <RoomSection
                 conn={conn}
