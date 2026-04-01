@@ -435,7 +435,6 @@ const CoverCard = ({
       <div
         key={cardId}
         {...dragProps}
-        data-haptic={editMode ? undefined : 'card'}
         className={`glass-texture group relative flex h-full items-center overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass-bg)] font-sans select-none ${editMode ? 'cursor-move' : ''} ${isUnavailable ? 'opacity-70' : ''}`}
         style={cardStyle}
       >
@@ -445,6 +444,7 @@ const CoverCard = ({
         <button
           type="button"
           disabled={editMode}
+          data-haptic={editMode ? undefined : 'card'}
           onClick={() => { if (!editMode && onOpen) onOpen(); }}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', color: accent.text }}
           className="ml-3 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg-hover)] transition-all active:scale-90"
@@ -456,6 +456,7 @@ const CoverCard = ({
         <button
           type="button"
           disabled={editMode}
+          data-haptic={editMode ? undefined : 'card'}
           onClick={() => { if (!editMode) handleToggle(); }}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
           className={`flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-3 h-full text-left transition-all ${!editMode ? 'cursor-pointer active:scale-[0.98]' : ''}`}
