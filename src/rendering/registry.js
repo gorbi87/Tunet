@@ -36,6 +36,7 @@ import {
  * (cardId, dragProps, getControls, cardStyle, settingsKey, ctx) => JSX|null
  */
 export const CARD_REGISTRY = [
+  { prefix: 'light_panel_card_', renderer: renderLightPanelCard },
   { prefix: 'light_', renderer: renderLightCard },
   { prefix: 'light.', renderer: renderLightCard },
   { prefix: 'vacuum.', renderer: renderVacuumCard },
@@ -62,7 +63,6 @@ export const CARD_REGISTRY = [
   { prefix: 'alarm_card_', renderer: renderAlarmCard },
   { prefix: 'spacer_card_', renderer: renderSpacerCard },
   { prefix: 'beregnung_card_', renderer: renderBeregnungCard },
-  { prefix: 'light_panel_card_', renderer: renderLightPanelCard },
 ];
 
 export function dispatchCardRender(cardId, dragProps, getControls, cardStyle, settingsKey, ctx) {
