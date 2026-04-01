@@ -167,7 +167,8 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
             id.startsWith('waermepumpe_card_') ||
             id.startsWith('luftungsanlage_card_') ||
             id.startsWith('pv_card_') ||
-            id.startsWith('beregnung_card_');
+            id.startsWith('beregnung_card_') ||
+            id.startsWith('light_panel_card_');
           const rowPx = isTwoColMobile
             ? 72
             : isMobile

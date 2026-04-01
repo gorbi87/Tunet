@@ -18,6 +18,7 @@ const SPAN_TABLE = {
   // { small, medium, large } → row span
   triSize: { small: 1, medium: 2, default: 4 }, // calendar, todo
   dualSize: { small: 1, default: 2 }, // light, car, room
+  lightPanel: { small: 3, default: 5 }, // light panel card
 };
 
 const CARD_SPAN_RULES = [
@@ -30,6 +31,7 @@ const CARD_SPAN_RULES = [
   { prefix: 'room_card_', category: 'dualSize' },
   { prefix: 'camera_card_', category: 'dualSize' },
   { prefix: 'spacer_card_', category: 'dualSize' },
+  { prefix: 'light_panel_card_', category: 'lightPanel' },
 ];
 
 export const getCardGridSpan = (
@@ -97,6 +99,7 @@ export const getCardGridSpan = (
  * @returns {number} 1–4
  */
 export const getCardColSpan = (cardId, getCardSettingsKey, cardSettings) => {
+  if (cardId.startsWith('light_panel_card_')) return Number.MAX_SAFE_INTEGER;
   const settings = cardSettings[getCardSettingsKey(cardId)] || cardSettings[cardId] || {};
   if (settings.colSpan === 'full') return Number.MAX_SAFE_INTEGER;
   return settings.colSpan || 1;

@@ -28,6 +28,7 @@ import {
   renderSpacerCard,
   renderGo2rtcCameraCard,
   renderBeregnungCard,
+  renderLightPanelCard,
 } from './cards';
 
 /**
@@ -61,6 +62,7 @@ export const CARD_REGISTRY = [
   { prefix: 'alarm_card_', renderer: renderAlarmCard },
   { prefix: 'spacer_card_', renderer: renderSpacerCard },
   { prefix: 'beregnung_card_', renderer: renderBeregnungCard },
+  { prefix: 'light_panel_card_', renderer: renderLightPanelCard },
 ];
 
 export function dispatchCardRender(cardId, dragProps, getControls, cardStyle, settingsKey, ctx) {
