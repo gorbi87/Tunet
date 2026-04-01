@@ -9,6 +9,7 @@ export function renderLightPanelCard(cardId, dragProps, getControls, cardStyle, 
     optimisticLightBrightness,
     setOptimisticLightBrightness,
     setShowLightModal,
+    isMobile,
     t,
   } = ctx;
 
@@ -28,6 +29,7 @@ export function renderLightPanelCard(cardId, dragProps, getControls, cardStyle, 
       setOptimisticLightBrightness={setOptimisticLightBrightness}
       settings={settings}
       onOpenLightModal={setShowLightModal ? (entityId) => setShowLightModal(entityId) : null}
+      isMobile={isMobile}
       t={t}
     />
   );
