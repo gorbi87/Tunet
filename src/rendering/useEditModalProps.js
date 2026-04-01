@@ -21,7 +21,8 @@ export function useEditModalProps({
     const editId = showEditCardModal;
     const editEntity = editId ? entities[editId] : null;
 
-    const isEditLight = !!editId && (editId.startsWith('light_') || editId.startsWith('light.'));
+    const isEditLightPanel = !!editId && editId.startsWith('light_panel_card_');
+    const isEditLight = !!editId && !isEditLightPanel && (editId.startsWith('light_') || editId.startsWith('light.'));
     const isEditMedia =
       !!editId &&
       (editId.startsWith('media_player.') ||
@@ -112,6 +113,7 @@ export function useEditModalProps({
       isEditWeatherTemp,
       isEditFan,
       isEditAlarm,
+      isEditLightPanel,
       editSettingsKey,
       editSettings,
     };

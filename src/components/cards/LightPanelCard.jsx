@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { Lightbulb } from '../../icons';
+import { Lightbulb, ChevronRight } from '../../icons';
 import { getIconComponent } from '../../icons';
 import M3Slider from '../ui/M3Slider';
 
 const DEBOUNCE_MS = 200;
 
-const TABS = [
+const DEFAULT_TABS = [
   {
     id: 'eg',
     title: 'EG',
@@ -70,7 +70,7 @@ const TABS = [
 ];
 
 /* ── Light Tile ───────────────────────────────────────────────────── */
-const LightTile = memo(({ entityId, name, entity, callService, optimisticBrightness, setOptimisticBrightness }) => {
+const LightTile = memo(({ entityId, name, entity, callService, optimisticBrightness, setOptimisticBrightness, onOpenModal }) => {
   const domain = entityId.split('.')[0];
   const state = entity?.state;
   const isOn = state === 'on';
@@ -108,7 +108,7 @@ const LightTile = memo(({ entityId, name, entity, callService, optimisticBrightn
 
   return (
     <div
-      className={`overflow-hidden rounded-xl border transition-all duration-300 ${
+      className={`relative overflow-hidden rounded-xl border transition-all duration-300 ${
         isOn
           ? 'border-amber-500/30 bg-amber-500/10'
           : 'border-[var(--glass-border)] bg-[var(--glass-bg)]'
@@ -155,6 +155,19 @@ const LightTile = memo(({ entityId, name, entity, callService, optimisticBrightn
         </span>
       </button>
 
+      {/* Modal open button — only for light entities */}
+      {onOpenModal && isLight && (
+        <button
+          type="button"
+          data-haptic="card"
+          onClick={(e) => { e.stopPropagation(); onOpenModal(entityId); }}
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+          className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-md text-[var(--text-muted)] opacity-40 transition-all hover:opacity-80 active:scale-90"
+        >
+          <ChevronRight className="h-3 w-3" />
+        </button>
+      )}
+
       {/* Brightness slider — only for dimmable lights that are on */}
       {isDimmable && isOn && (
         <div className="px-2.5 pb-2.5">
@@ -186,9 +199,13 @@ const LightPanelCard = ({
   callService,
   optimisticLightBrightness,
   setOptimisticLightBrightness,
+  settings,
+  onOpenLightModal,
 }) => {
-  const [activeTabId, setActiveTabId] = useState('eg');
-  const activeTab = TABS.find((t) => t.id === activeTabId) || TABS[0];
+  const tabs = settings?.panelTabs || DEFAULT_TABS;
+  const [activeTabId, setActiveTabId] = useState(null);
+  const resolvedActiveTabId = activeTabId || tabs[0]?.id;
+  const activeTab = tabs.find((t) => t.id === resolvedActiveTabId) || tabs[0];
 
   return (
     <div
@@ -201,9 +218,9 @@ const LightPanelCard = ({
 
       {/* Tab bar */}
       <div className="scrollbar-hide flex flex-shrink-0 items-center gap-2 overflow-x-auto border-b border-[var(--glass-border)] px-4 py-3">
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const TabIcon = getIconComponent(tab.icon) || Lightbulb;
-          const isActive = activeTabId === tab.id;
+          const isActive = resolvedActiveTabId === tab.id;
           return (
             <button
               key={tab.id}
@@ -237,6 +254,7 @@ const LightPanelCard = ({
               callService={callService}
               optimisticBrightness={optimisticLightBrightness}
               setOptimisticBrightness={setOptimisticLightBrightness}
+              onOpenModal={!editMode && onOpenLightModal ? onOpenLightModal : null}
             />
           ))}
           {/* Spacer for odd tile count */}

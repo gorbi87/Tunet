@@ -7,6 +7,7 @@ import { getRelatedEntityIds } from '../services/haClient';
 import { CarMappingsSection, SearchableSelect } from './editCard/CarMappingsSection';
 import { buildCarAnchorOptions } from './editCard/carAnchorOptions';
 import { RoomSettingsSection } from './editCard/RoomSettingsSection';
+import { LightPanelSettingsSection } from './editCard/LightPanelSettingsSection';
 import { useConfig, useHomeAssistantMeta } from '../contexts';
 import {
   convertValueByKind,
@@ -737,6 +738,7 @@ export default function EditCardModal({
   isEditAndroidTV,
   isEditFan,
   isEditVacuum,
+  isEditLightPanel,
   editSettingsKey,
   editSettings,
   isEditWeatherTemp,
@@ -3016,6 +3018,16 @@ export default function EditCardModal({
                 </p>
               </div>
             </div>
+          )}
+
+          {isEditLightPanel && editSettingsKey && (
+            <LightPanelSettingsSection
+              editSettings={editSettings}
+              editSettingsKey={editSettingsKey}
+              saveCardSetting={saveCardSetting}
+              entities={entities}
+              t={t}
+            />
           )}
 
           {isEditRoom && editSettingsKey && (

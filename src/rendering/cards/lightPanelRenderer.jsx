@@ -4,11 +4,15 @@ export function renderLightPanelCard(cardId, dragProps, getControls, cardStyle, 
   const {
     entities,
     editMode,
+    cardSettings,
     callService,
     optimisticLightBrightness,
     setOptimisticLightBrightness,
+    setShowLightModal,
     t,
   } = ctx;
+
+  const settings = cardSettings[settingsKey] || cardSettings[cardId] || {};
 
   return (
     <LightPanelCard
@@ -22,6 +26,8 @@ export function renderLightPanelCard(cardId, dragProps, getControls, cardStyle, 
       callService={callService}
       optimisticLightBrightness={optimisticLightBrightness}
       setOptimisticLightBrightness={setOptimisticLightBrightness}
+      settings={settings}
+      onOpenLightModal={setShowLightModal ? (entityId) => setShowLightModal(entityId) : null}
       t={t}
     />
   );

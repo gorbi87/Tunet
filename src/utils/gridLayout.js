@@ -18,7 +18,7 @@ const SPAN_TABLE = {
   // { small, medium, large } → row span
   triSize: { small: 1, medium: 2, default: 4 }, // calendar, todo
   dualSize: { small: 1, default: 2 }, // light, car, room
-  lightPanel: { small: 3, default: 5 }, // light panel card
+  lightPanel: { small: 3, default: 7 }, // light panel card
 };
 
 const CARD_SPAN_RULES = [
