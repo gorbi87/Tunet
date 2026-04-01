@@ -22,7 +22,8 @@ const SPAN_TABLE = {
 };
 
 const CARD_SPAN_RULES = [
-  // prefix match → category  (checked in order)
+  // prefix match → category  (checked in order — more-specific prefixes first)
+  { prefix: 'light_panel_card_', category: 'lightPanel' },
   { prefix: 'calendar_card_', category: 'triSize' },
   { prefix: 'todo_card_', category: 'triSize' },
   { prefix: 'light_', category: 'dualSize' },
@@ -31,7 +32,6 @@ const CARD_SPAN_RULES = [
   { prefix: 'room_card_', category: 'dualSize' },
   { prefix: 'camera_card_', category: 'dualSize' },
   { prefix: 'spacer_card_', category: 'dualSize' },
-  { prefix: 'light_panel_card_', category: 'lightPanel' },
 ];
 
 export const getCardGridSpan = (
