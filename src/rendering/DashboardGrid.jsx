@@ -183,6 +183,9 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
             cardHeight = Math.max(40, Math.min(420, Number(settings.heightPx)));
           } else if (isLargeCard && sizeSetting !== 'small' && sizeSetting !== 'medium') {
             cardHeight = 4 * rowPx + 3 * gapPx;
+          } else if (id.startsWith('light_panel_card_')) {
+            // Always use 100px/row so the panel isn't squished on isTwoColMobile (72px rows)
+            cardHeight = forcedSpan * 100 + Math.max(0, forcedSpan - 1) * gapPx;
           } else {
             cardHeight = forcedSpan * rowPx + Math.max(0, forcedSpan - 1) * gapPx;
           }
