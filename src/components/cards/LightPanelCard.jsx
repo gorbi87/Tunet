@@ -363,6 +363,7 @@ const LightTile = memo(({
   optimisticBrightness, setOptimisticBrightness,
   onOpenModal,
   sperreEntityId, sperreEntity,
+  isMobile,
 }) => {
   const domain = entityId.split('.')[0];
   const state = entity?.state;
@@ -412,6 +413,14 @@ const LightTile = memo(({
     callService(sperreDomain, sperreOn ? 'turn_off' : 'turn_on', { entity_id: sperreEntityId });
   }, [sperreEntityId, sperreOn, sperreUnavailable, callService]);
 
+  const px = isMobile ? 'px-3' : 'px-4';
+  const py = isMobile ? 'py-3' : 'py-4';
+  const iconSize = isMobile ? 'h-9 w-9 rounded-xl' : 'h-12 w-12 rounded-2xl';
+  const iconInner = isMobile ? 'h-5 w-5' : 'h-6 w-6';
+  const stateText = isMobile ? 'text-base' : 'text-lg';
+  const btnSize = isMobile ? 'h-7 w-7 rounded-lg' : 'h-9 w-9 rounded-xl';
+  const btnIcon = isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4';
+
   return (
     <div className={`glass-texture overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--card-bg)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
       <div className="flex items-center">
@@ -421,21 +430,19 @@ const LightTile = memo(({
           disabled={isUnavailable}
           onClick={handleToggle}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-          className={`flex min-w-0 flex-1 items-center gap-3 px-4 py-4 text-left transition-all active:scale-[0.97] ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
+          className={`flex min-w-0 flex-1 items-center gap-3 ${px} ${py} text-left transition-all active:scale-[0.97] ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
         >
-          {/* Icon */}
           <div
-            className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-all duration-300"
+            className={`flex flex-shrink-0 items-center justify-center ${iconSize} transition-all duration-300`}
             style={isOn ? { backgroundColor: 'rgba(245,158,11,0.15)', color: 'rgb(251,191,36)' } : { backgroundColor: 'var(--glass-bg-hover)', color: 'var(--text-muted)' }}
           >
-            <TileIcon className={`h-6 w-6 stroke-[1.5px] ${isOn && isLight ? 'fill-amber-400/15' : ''}`} />
+            <TileIcon className={`${iconInner} stroke-[1.5px] ${isOn && isLight ? 'fill-amber-400/15' : ''}`} />
           </div>
-          {/* Name + state */}
           <div className="min-w-0 flex-1">
-            <p className="mb-1.5 truncate text-xs font-bold leading-none tracking-widest uppercase text-[var(--text-secondary)] opacity-60">
+            <p className="mb-1.5 truncate text-[10px] font-bold leading-none tracking-widest uppercase text-[var(--text-secondary)] opacity-60">
               {name}
             </p>
-            <p className={`text-lg font-medium leading-none ${
+            <p className={`${stateText} font-medium leading-none ${
               isUnavailable ? 'text-red-400' : isOn ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)] opacity-40'
             }`}>
               {stateLabel}
@@ -443,8 +450,7 @@ const LightTile = memo(({
           </div>
         </button>
 
-        {/* Right-side buttons */}
-        <div className="flex flex-shrink-0 items-center pr-3 gap-1">
+        <div className={`flex flex-shrink-0 items-center ${isMobile ? 'pr-2' : 'pr-3'} gap-0.5`}>
           {sperreEntityId && (
             <button
               type="button"
@@ -453,11 +459,11 @@ const LightTile = memo(({
               disabled={sperreUnavailable}
               title={sperreOn ? 'Sperre aktiv' : 'Automatik aktiv'}
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-              className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all active:scale-90 ${
+              className={`flex items-center justify-center ${btnSize} transition-all active:scale-90 ${
                 sperreOn ? 'bg-orange-500/15 text-orange-400' : 'text-[var(--text-muted)] opacity-25 hover:opacity-60'
               }`}
             >
-              {sperreOn ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+              {sperreOn ? <Lock className={btnIcon} /> : <Unlock className={btnIcon} />}
             </button>
           )}
           {onOpenModal && isLight && (
@@ -466,16 +472,16 @@ const LightTile = memo(({
               data-haptic="card"
               onClick={(e) => { e.stopPropagation(); onOpenModal(entityId); }}
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-[var(--text-muted)] opacity-25 transition-all hover:opacity-70 active:scale-90"
+              className={`flex items-center justify-center ${btnSize} text-[var(--text-muted)] opacity-25 transition-all hover:opacity-70 active:scale-90`}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className={btnIcon} />
             </button>
           )}
         </div>
       </div>
 
       {isDimmable && isOn && (
-        <div className="px-4 pb-4">
+        <div className={`${px} pb-3`}>
           <M3Slider
             variant="thinLg"
             min={0} max={255} step={1}
@@ -537,33 +543,61 @@ const LightPanelCard = ({
     >
       {controls}
 
-      {/* Tab bar — PageNavigation style */}
-      <div
-        className="flex flex-wrap gap-2"
-      >
-        {tabs.map((tab) => {
-          const TabIcon = getIconComponent(tab.icon) || Lightbulb;
-          const isActive = resolvedActiveTabId === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              data-haptic={editMode ? undefined : 'card'}
-              disabled={editMode}
-              onClick={() => setActiveTabId(tab.id)}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-              className={`flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase transition-all active:scale-95 ${
-                isActive
-                  ? 'border-[var(--glass-border)] bg-[var(--glass-bg-hover)] text-[var(--text-primary)]'
-                  : 'border-transparent bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <TabIcon className="h-3.5 w-3.5 flex-shrink-0" />
-              <span>{tab.title}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Tab bar — full-width grid on desktop, horizontal scroll on mobile */}
+      {isMobile ? (
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          {tabs.map((tab) => {
+            const TabIcon = getIconComponent(tab.icon) || Lightbulb;
+            const isActive = resolvedActiveTabId === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                data-haptic={editMode ? undefined : 'card'}
+                disabled={editMode}
+                onClick={() => setActiveTabId(tab.id)}
+                style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+                className={`flex flex-shrink-0 items-center gap-1.5 rounded-2xl border px-4 py-2 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase transition-all active:scale-95 ${
+                  isActive
+                    ? 'border-[var(--glass-border)] bg-[var(--glass-bg-hover)] text-[var(--text-primary)]'
+                    : 'border-transparent bg-[var(--glass-bg)] text-[var(--text-secondary)]'
+                }`}
+              >
+                <TabIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                <span>{tab.title}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+        >
+          {tabs.map((tab) => {
+            const TabIcon = getIconComponent(tab.icon) || Lightbulb;
+            const isActive = resolvedActiveTabId === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                data-haptic={editMode ? undefined : 'card'}
+                disabled={editMode}
+                onClick={() => setActiveTabId(tab.id)}
+                style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+                className={`flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase transition-all active:scale-95 ${
+                  isActive
+                    ? 'border-[var(--glass-border)] bg-[var(--glass-bg-hover)] text-[var(--text-primary)]'
+                    : 'border-transparent bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                <TabIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                <span>{tab.title}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Tile grid */}
       <div className={`grid gap-3 ${cols === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
@@ -610,6 +644,7 @@ const LightPanelCard = ({
                 onOpenModal={!editMode && onOpenLightModal ? onOpenLightModal : null}
                 sperreEntityId={sperreEntityId || null}
                 sperreEntity={sperreEntityId ? entities[sperreEntityId] : null}
+                isMobile={isMobile}
               />
             ))}
             {Array.from({ length: spacers }, (_, i) => <div key={`sp-${i}`} />)}
