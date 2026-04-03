@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { Lightbulb, ChevronRight, Zap, ToggleLeft, Workflow } from '../../icons';
+import { Lightbulb, ChevronRight, Zap, ToggleLeft, Workflow, Lock, Unlock } from '../../icons';
 import { getIconComponent } from '../../icons';
 import M3Slider from '../ui/M3Slider';
+
+const DEBOUNCE_MS = 200;
 
 const DOMAIN_FALLBACK_ICON = {
   light: Lightbulb,
@@ -10,24 +12,22 @@ const DOMAIN_FALLBACK_ICON = {
   automation: Workflow,
 };
 
-const DEBOUNCE_MS = 200;
-
 const DEFAULT_TABS = [
   {
     id: 'eg',
     title: 'EG',
     icon: 'mdi:home-floor-0',
     entities: [
-      { entityId: 'light.kuche', name: 'Küche' },
-      { entityId: 'light.beleuchtung_esstisch', name: 'Esstisch' },
-      { entityId: 'light.eg_flur', name: 'Flur' },
+      { entityId: 'light.kuche', name: 'Küche', sperreEntityId: 'input_boolean.sperre_beleuchtung_kuche' },
+      { entityId: 'light.beleuchtung_esstisch', name: 'Esstisch', sperreEntityId: 'input_boolean.sperre_beleuchtung_esstisch' },
+      { entityId: 'light.eg_flur', name: 'Flur', sperreEntityId: 'switch.sperre_flur_eg' },
       { entityId: 'light.wohnzimmer', name: 'Wohnzimmer' },
       { entityId: 'light.gaste_wc', name: 'Gäste WC' },
-      { entityId: 'light.eg_hwr', name: 'HWR' },
-      { entityId: 'light.wohnzimmer_schattenfuge', name: 'Schattenfuge' },
+      { entityId: 'light.eg_hwr', name: 'HWR', sperreEntityId: 'switch.sperre_hwr' },
+      { entityId: 'light.wohnzimmer_schattenfuge', name: 'Schattenfuge', sperreEntityId: 'input_boolean.sperre_beleuchtung_schattenfuge_wz' },
       { entityId: 'light.bogenlampe', name: 'Bogenlampe' },
-      { entityId: 'light.kuche_essen', name: 'Durchgang' },
-      { entityId: 'light.eg_buro', name: 'Büro' },
+      { entityId: 'light.kuche_essen', name: 'Durchgang', sperreEntityId: 'input_boolean.sperre_beleuchtung_durchgang' },
+      { entityId: 'light.eg_buro', name: 'Büro', sperreEntityId: 'switch.sperre_buro_eg_wled' },
     ],
   },
   {
@@ -38,7 +38,7 @@ const DEFAULT_TABS = [
       { entityId: 'light.schlafzimmer', name: 'Schlafzimmer' },
       { entityId: 'light.schlafzimmer_stripe', name: 'Stripe' },
       { entityId: 'light.kinderzimmer', name: 'Kinderzimmer' },
-      { entityId: 'light.og_flur', name: 'Flur' },
+      { entityId: 'light.og_flur', name: 'Flur', sperreEntityId: 'switch.sperre_flur_og' },
       { entityId: 'light.og_buro', name: 'Büro' },
       { entityId: 'light.og_badezimmer_decke', name: 'Badezimmer' },
       { entityId: 'light.og_badezimmer_dusche', name: 'Dusche' },
@@ -77,7 +77,12 @@ const DEFAULT_TABS = [
 ];
 
 /* ── Light Tile ───────────────────────────────────────────────────── */
-const LightTile = memo(({ entityId, name, entity, callService, optimisticBrightness, setOptimisticBrightness, onOpenModal }) => {
+const LightTile = memo(({
+  entityId, name, entity, callService,
+  optimisticBrightness, setOptimisticBrightness,
+  onOpenModal,
+  sperreEntityId, sperreEntity,
+}) => {
   const domain = entityId.split('.')[0];
   const state = entity?.state;
   const isOn = state === 'on';
@@ -115,6 +120,16 @@ const LightTile = memo(({ entityId, name, entity, callService, optimisticBrightn
 
   const iconName = entity?.attributes?.icon;
   const TileIcon = (iconName ? getIconComponent(iconName) : null) || DOMAIN_FALLBACK_ICON[domain] || Lightbulb;
+
+  // Sperre state
+  const sperreOn = sperreEntity?.state === 'on';
+  const sperreUnavailable = sperreEntityId && (!sperreEntity?.state || sperreEntity.state === 'unavailable');
+  const handleToggleSperre = useCallback((e) => {
+    e.stopPropagation();
+    if (!sperreEntityId || sperreUnavailable) return;
+    const sperreDomain = sperreEntityId.split('.')[0];
+    callService(sperreDomain, sperreOn ? 'turn_off' : 'turn_on', { entity_id: sperreEntityId });
+  }, [sperreEntityId, sperreOn, sperreUnavailable, callService]);
 
   return (
     <div
@@ -165,18 +180,43 @@ const LightTile = memo(({ entityId, name, entity, callService, optimisticBrightn
           </div>
         </button>
 
-        {/* Modal button for light.* entities */}
-        {onOpenModal && isLight && (
-          <button
-            type="button"
-            data-haptic="card"
-            onClick={(e) => { e.stopPropagation(); onOpenModal(entityId); }}
-            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-            className="flex-shrink-0 px-2 py-3 text-[var(--text-muted)] opacity-30 transition-all hover:opacity-70 active:scale-90"
-          >
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
-        )}
+        {/* Right-side buttons */}
+        <div className="flex flex-shrink-0 items-center pr-1.5 gap-0.5">
+          {/* Sperre toggle */}
+          {sperreEntityId && (
+            <button
+              type="button"
+              data-haptic="card"
+              onClick={handleToggleSperre}
+              disabled={sperreUnavailable}
+              title={sperreOn ? 'Sperre aktiv – Automatik blockiert' : 'Automatik aktiv'}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+              className={`flex h-7 w-7 items-center justify-center rounded-lg transition-all active:scale-90 ${
+                sperreOn
+                  ? 'bg-orange-500/15 text-orange-400'
+                  : 'text-[var(--text-muted)] opacity-30 hover:opacity-60'
+              }`}
+            >
+              {sperreOn
+                ? <Lock className="h-3.5 w-3.5" />
+                : <Unlock className="h-3.5 w-3.5" />
+              }
+            </button>
+          )}
+
+          {/* Light modal button */}
+          {onOpenModal && isLight && (
+            <button
+              type="button"
+              data-haptic="card"
+              onClick={(e) => { e.stopPropagation(); onOpenModal(entityId); }}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] opacity-30 transition-all hover:opacity-70 active:scale-90"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Brightness slider — only for dimmable lights that are on */}
@@ -265,7 +305,7 @@ const LightPanelCard = ({
       {/* Tile grid — auto-height, no internal scroll */}
       <div className="p-4">
         <div className={`grid gap-3 ${cols === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
-          {entities_.map(({ entityId, name }) => (
+          {entities_.map(({ entityId, name, sperreEntityId }) => (
             <LightTile
               key={entityId}
               entityId={entityId}
@@ -275,6 +315,8 @@ const LightPanelCard = ({
               optimisticBrightness={optimisticLightBrightness}
               setOptimisticBrightness={setOptimisticLightBrightness}
               onOpenModal={!editMode && onOpenLightModal ? onOpenLightModal : null}
+              sperreEntityId={sperreEntityId || null}
+              sperreEntity={sperreEntityId ? entities[sperreEntityId] : null}
             />
           ))}
           {Array.from({ length: spacers }, (_, i) => <div key={`sp-${i}`} />)}
