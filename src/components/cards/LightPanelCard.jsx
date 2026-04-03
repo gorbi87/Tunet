@@ -1,7 +1,14 @@
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { Lightbulb, ChevronRight } from '../../icons';
+import { Lightbulb, ChevronRight, Zap, ToggleLeft, Workflow } from '../../icons';
 import { getIconComponent } from '../../icons';
 import M3Slider from '../ui/M3Slider';
+
+const DOMAIN_FALLBACK_ICON = {
+  light: Lightbulb,
+  switch: Zap,
+  input_boolean: ToggleLeft,
+  automation: Workflow,
+};
 
 const DEBOUNCE_MS = 200;
 
@@ -106,6 +113,9 @@ const LightTile = memo(({ entityId, name, entity, callService, optimisticBrightn
 
   const stateLabel = isUnavailable ? '⚠' : isOn ? (isDimmable ? `${displayPct}%` : 'An') : 'Aus';
 
+  const iconName = entity?.attributes?.icon;
+  const TileIcon = (iconName ? getIconComponent(iconName) : null) || DOMAIN_FALLBACK_ICON[domain] || Lightbulb;
+
   return (
     <div
       className={`overflow-hidden rounded-2xl border transition-all duration-300 ${
@@ -132,8 +142,8 @@ const LightTile = memo(({ entityId, name, entity, callService, optimisticBrightn
               isOn ? 'bg-amber-500/20 text-amber-400' : 'bg-[var(--glass-bg-hover)] text-[var(--text-muted)]'
             }`}
           >
-            <Lightbulb
-              className={`h-4 w-4 stroke-[1.5px] transition-all duration-300 ${isOn ? 'fill-amber-400/20' : ''}`}
+            <TileIcon
+              className={`h-4 w-4 stroke-[1.5px] transition-all duration-300 ${isOn && isLight ? 'fill-amber-400/20' : ''}`}
             />
           </div>
           {/* Name + state stacked */}
