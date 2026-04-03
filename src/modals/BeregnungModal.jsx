@@ -530,11 +530,12 @@ function VerlaufTab({ zoneData, days, loading }) {
 
 function VentileTab({ entities, callService }) {
   const ventile = [
-    { id: 'switch.irrigation_manual_zone_1', name: 'Terrasse rechts' },
-    { id: 'switch.irrigation_manual_zone_3', name: 'Terrasse links' },
-    { id: 'switch.irrigation_manual_zone_2', name: 'Rasenfläche' },
-    { id: 'switch.irrigation_manual_zone_4', name: 'Vorgarten rechts' },
-    { id: 'switch.irrigation_manual_zone_5', name: 'Vorgarten links' },
+    { id: 'switch.magnetventil_1', name: 'Terrasse rechts' },
+    { id: 'switch.magnetventil_4', name: 'Terrasse links' },
+    { id: 'switch.magnetventil_3', name: 'Rasenfläche' },
+    { id: 'switch.magnetventil_5', name: 'Vorgarten rechts' },
+    { id: 'switch.magnetventil_6', name: 'Vorgarten links' },
+    { id: 'switch.magnetventil_2', name: 'Wasserdose' },
   ];
 
   return (
