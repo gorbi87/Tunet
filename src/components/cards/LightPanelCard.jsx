@@ -422,7 +422,7 @@ const LightTile = memo(({
   const btnIcon = isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4';
 
   return (
-    <div className={`glass-texture overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--card-bg)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
+    <div className={`glass-texture overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
       <div className="flex items-center">
         <button
           type="button"
