@@ -519,19 +519,27 @@ const LightPanelCard = ({
   const remainder = regularEntities.length % cols;
   const spacers = remainder === 0 ? 0 : cols - remainder;
 
+  // Strip card surface styles — background/border handled by individual tiles
+  const layoutStyle = cardStyle ? {
+    transform: cardStyle.transform,
+    opacity: cardStyle.opacity,
+    zIndex: cardStyle.zIndex,
+    pointerEvents: cardStyle.pointerEvents,
+    transition: cardStyle.transition,
+  } : {};
+
   return (
     <div
       key={cardId}
       {...dragProps}
       className={`relative flex flex-col gap-3 font-sans select-none ${editMode ? 'cursor-move' : ''}`}
-      style={cardStyle}
+      style={layoutStyle}
     >
       {controls}
 
-      {/* Tab bar — individual glass cards, no outer border */}
+      {/* Tab bar — PageNavigation style */}
       <div
-        className="grid gap-2"
-        style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+        className="flex flex-wrap gap-2"
       >
         {tabs.map((tab) => {
           const TabIcon = getIconComponent(tab.icon) || Lightbulb;
@@ -544,14 +552,14 @@ const LightPanelCard = ({
               disabled={editMode}
               onClick={() => setActiveTabId(tab.id)}
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-              className={`glass-texture flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-2.5 text-xs font-bold tracking-wide uppercase transition-all active:scale-95 ${
+              className={`flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase transition-all active:scale-95 ${
                 isActive
-                  ? 'border-transparent bg-[var(--accent-color)] text-white shadow-sm'
-                  : 'border-[var(--glass-border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  ? 'border-[var(--glass-border)] bg-[var(--glass-bg-hover)] text-[var(--text-primary)]'
+                  : 'border-transparent bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'
               }`}
             >
               <TabIcon className="h-3.5 w-3.5 flex-shrink-0" />
-              <span className="truncate">{tab.title}</span>
+              <span>{tab.title}</span>
             </button>
           );
         })}
