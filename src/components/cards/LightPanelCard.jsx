@@ -466,7 +466,7 @@ const LightTile = memo(({
               {sperreOn ? <Lock className={btnIcon} /> : <Unlock className={btnIcon} />}
             </button>
           )}
-          {onOpenModal && isLight && !isMobile && (
+          {onOpenModal && isLight && (
             <button
               type="button"
               data-haptic="card"
