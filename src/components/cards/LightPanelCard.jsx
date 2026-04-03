@@ -439,7 +439,10 @@ const LightTile = memo(({
             <TileIcon className={`${iconInner} stroke-[1.5px] ${isOn && isLight ? 'fill-amber-400/15' : ''}`} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className={`mb-1.5 text-[10px] font-bold leading-tight tracking-widest uppercase text-[var(--text-secondary)] opacity-60 ${isMobile ? 'line-clamp-2 break-words' : 'truncate'}`}>
+            <p
+              lang={isMobile ? 'de' : undefined}
+              className={`mb-1.5 text-[10px] font-bold leading-tight tracking-widest uppercase text-[var(--text-secondary)] opacity-60 ${isMobile ? 'line-clamp-2 hyphens-auto' : 'truncate'}`}
+            >
               {name}
             </p>
             <p className={`${stateText} font-medium leading-none ${
