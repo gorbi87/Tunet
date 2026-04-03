@@ -204,39 +204,37 @@ const SchedulerTile = ({ entityId, name, entity, callService, allEntities }) => 
   };
 
   return (
-    <div
-      className={`col-span-full overflow-hidden rounded-2xl border transition-all duration-300 ${
-        isOn ? 'border-blue-500/30 bg-blue-500/8' : 'border-[var(--glass-border)] bg-[var(--glass-bg)]'
-      } ${isUnavailable ? 'opacity-50' : ''}`}
-    >
+    <div className={`glass-texture col-span-full overflow-hidden rounded-2xl border border-[var(--glass-border)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
       {/* Header row */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center">
         <button
           type="button"
           data-haptic="card"
           disabled={isUnavailable}
           onClick={() => { if (!isUnavailable) callService('switch', isOn ? 'turn_off' : 'turn_on', { entity_id: entityId }); }}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-          className="flex min-w-0 flex-1 items-start gap-3 px-3 py-3 text-left transition-transform active:scale-[0.98]"
+          className={`flex min-w-0 flex-1 items-center gap-3 px-3 py-3.5 text-left transition-all active:scale-[0.97] ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
         >
-          <div className={`mt-0.5 flex-shrink-0 rounded-lg p-1.5 transition-all duration-300 ${isOn ? 'bg-blue-500/20 text-blue-400' : 'bg-[var(--glass-bg-hover)] text-[var(--text-muted)]'}`}>
+          <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
+            isOn ? 'bg-blue-500/15 text-blue-400' : 'bg-[var(--glass-bg-hover)] text-[var(--text-muted)]'
+          }`}>
             <TileIcon className="h-4 w-4 stroke-[1.5px]" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[var(--text-primary)]">{name}</span>
-              <span className={`flex-shrink-0 text-[10px] font-bold uppercase tracking-wide ${isOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}`}>
+            <p className="truncate text-[10px] font-bold leading-none tracking-widest uppercase text-[var(--text-secondary)] opacity-60">
+              {name}
+            </p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5">
+              <span className={`text-sm font-medium leading-none ${isOn ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)] opacity-50'}`}>
                 {isOn ? 'Aktiv' : 'Inaktiv'}
               </span>
+              {timeslotLabel && <span className="text-xs text-[var(--text-muted)] opacity-60">· {timeslotLabel}</span>}
+              {weekdaysLabel && <span className="text-xs text-[var(--text-muted)] opacity-40">· {weekdaysLabel}</span>}
             </div>
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5">
-              {timeslotLabel && <span className="text-[10px] text-[var(--text-muted)]">{timeslotLabel}</span>}
-              {weekdaysLabel && <span className="text-[10px] text-[var(--text-muted)] opacity-60">· {weekdaysLabel}</span>}
-              {nextTime && <span className="text-[10px] text-blue-400/80">· {nextTime} Uhr</span>}
-            </div>
-            {controlledNames && (
-              <div className="mt-0.5 truncate text-[10px] text-[var(--text-muted)] opacity-70">
-                {action}: {controlledNames}
+            {(controlledNames || nextTime) && (
+              <div className="mt-1 flex flex-wrap items-center gap-x-1.5">
+                {controlledNames && <span className="truncate text-[10px] text-[var(--text-muted)] opacity-50">{action}: {controlledNames}</span>}
+                {nextTime && <span className="text-[10px] text-blue-400/70 opacity-80">· {nextTime} Uhr</span>}
               </div>
             )}
           </div>
@@ -248,7 +246,9 @@ const SchedulerTile = ({ entityId, name, entity, callService, allEntities }) => 
           data-haptic="card"
           onClick={() => editing ? setEditing(false) : openEditor()}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-          className={`flex-shrink-0 px-3 py-3 transition-all active:scale-90 ${editing ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-40 hover:opacity-80'}`}
+          className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg mr-2 transition-all active:scale-90 ${
+            editing ? 'bg-[var(--accent-color)] text-white' : 'text-[var(--text-muted)] opacity-25 hover:opacity-60'
+          }`}
         >
           <Edit2 className="h-3.5 w-3.5" />
         </button>
@@ -266,7 +266,7 @@ const SchedulerTile = ({ entityId, name, entity, callService, allEntities }) => 
                 type="button"
                 onClick={() => setMode(m)}
                 className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase tracking-wide transition-all ${
-                  mode === m ? 'bg-blue-500/20 text-blue-400' : 'bg-[var(--glass-bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                  mode === m ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--glass-bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 {label}
@@ -280,7 +280,7 @@ const SchedulerTile = ({ entityId, name, entity, callService, allEntities }) => 
               type="time"
               value={timeValue}
               onChange={(e) => setTimeValue(e.target.value)}
-              className="w-full rounded-xl bg-[var(--glass-bg-hover)] px-3 py-2 text-sm font-semibold text-[var(--text-primary)] outline-none border border-[var(--glass-border)] focus:border-blue-500/50"
+              className="w-full rounded-xl bg-[var(--glass-bg-hover)] px-3 py-2 text-sm font-semibold text-[var(--text-primary)] outline-none border border-[var(--glass-border)]"
             />
           ) : (
             <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
@@ -291,7 +291,7 @@ const SchedulerTile = ({ entityId, name, entity, callService, allEntities }) => 
                   onClick={() => setOffsetMin(step)}
                   className={`flex-shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-bold transition-all ${
                     offsetMin === step
-                      ? 'bg-blue-500/20 text-blue-400'
+                      ? 'bg-[var(--accent-color)] text-white'
                       : 'bg-[var(--glass-bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                   }`}
                 >
@@ -345,7 +345,7 @@ const SchedulerTile = ({ entityId, name, entity, callService, allEntities }) => 
             <button
               type="button"
               onClick={handleSave}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold bg-[var(--accent-color)] text-white hover:opacity-90 transition-all"
             >
               <Check className="h-3.5 w-3.5" /> Speichern
             </button>
@@ -412,14 +412,7 @@ const LightTile = memo(({
   }, [sperreEntityId, sperreOn, sperreUnavailable, callService]);
 
   return (
-    <div
-      className={`overflow-hidden rounded-2xl border transition-all duration-300 ${
-        isOn
-          ? 'border-amber-500/30 bg-amber-500/10'
-          : 'border-[var(--glass-border)] bg-[var(--glass-bg)]'
-      } ${isUnavailable ? 'opacity-50' : ''}`}
-    >
-      {/* Toggle row */}
+    <div className={`glass-texture overflow-hidden rounded-2xl border border-[var(--glass-border)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
       <div className="flex items-center">
         <button
           type="button"
@@ -427,71 +420,51 @@ const LightTile = memo(({
           disabled={isUnavailable}
           onClick={handleToggle}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-          className={`flex min-w-0 flex-1 items-center gap-2.5 px-3 py-3 text-left transition-transform active:scale-[0.97] ${
-            isUnavailable ? 'cursor-default' : 'cursor-pointer'
-          }`}
+          className={`flex min-w-0 flex-1 items-center gap-3 px-3 py-3.5 text-left transition-all active:scale-[0.97] ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
         >
-          {/* Icon */}
-          <div
-            className={`flex-shrink-0 rounded-lg p-1.5 transition-all duration-300 ${
-              isOn ? 'bg-amber-500/20 text-amber-400' : 'bg-[var(--glass-bg-hover)] text-[var(--text-muted)]'
-            }`}
-          >
-            <TileIcon
-              className={`h-4 w-4 stroke-[1.5px] transition-all duration-300 ${isOn && isLight ? 'fill-amber-400/20' : ''}`}
-            />
+          {/* Icon — same treatment as CoverCard */}
+          <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
+            isOn ? 'bg-amber-500/15 text-amber-400' : 'bg-[var(--glass-bg-hover)] text-[var(--text-muted)]'
+          }`}>
+            <TileIcon className={`h-4 w-4 stroke-[1.5px] ${isOn && isLight ? 'fill-amber-400/15' : ''}`} />
           </div>
-          {/* Name + state stacked */}
+          {/* Name (small caps) + state (value) — Tunet typography */}
           <div className="min-w-0 flex-1">
-            <span className="block truncate text-xs font-semibold leading-tight text-[var(--text-primary)]">
+            <p className="truncate text-[10px] font-bold leading-none tracking-widest uppercase text-[var(--text-secondary)] opacity-60">
               {name}
-            </span>
-            <span
-              className={`block text-[10px] font-bold uppercase tracking-wide leading-tight mt-0.5 ${
-                isUnavailable
-                  ? 'text-red-400'
-                  : isOn
-                    ? 'text-amber-400'
-                    : 'text-[var(--text-muted)] opacity-60'
-              }`}
-            >
+            </p>
+            <p className={`mt-1.5 text-sm font-medium leading-none ${
+              isUnavailable ? 'text-red-400' : isOn ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)] opacity-50'
+            }`}>
               {stateLabel}
-            </span>
+            </p>
           </div>
         </button>
 
         {/* Right-side buttons */}
-        <div className="flex flex-shrink-0 items-center pr-1.5 gap-0.5">
-          {/* Sperre toggle */}
+        <div className="flex flex-shrink-0 items-center pr-2 gap-0.5">
           {sperreEntityId && (
             <button
               type="button"
               data-haptic="card"
               onClick={handleToggleSperre}
               disabled={sperreUnavailable}
-              title={sperreOn ? 'Sperre aktiv – Automatik blockiert' : 'Automatik aktiv'}
+              title={sperreOn ? 'Sperre aktiv' : 'Automatik aktiv'}
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
               className={`flex h-7 w-7 items-center justify-center rounded-lg transition-all active:scale-90 ${
-                sperreOn
-                  ? 'bg-orange-500/15 text-orange-400'
-                  : 'text-[var(--text-muted)] opacity-30 hover:opacity-60'
+                sperreOn ? 'text-orange-400' : 'text-[var(--text-muted)] opacity-25 hover:opacity-60'
               }`}
             >
-              {sperreOn
-                ? <Lock className="h-3.5 w-3.5" />
-                : <Unlock className="h-3.5 w-3.5" />
-              }
+              {sperreOn ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
             </button>
           )}
-
-          {/* Light modal button */}
           {onOpenModal && isLight && (
             <button
               type="button"
               data-haptic="card"
               onClick={(e) => { e.stopPropagation(); onOpenModal(entityId); }}
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] opacity-30 transition-all hover:opacity-70 active:scale-90"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] opacity-25 transition-all hover:opacity-70 active:scale-90"
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </button>
@@ -499,14 +472,11 @@ const LightTile = memo(({
         </div>
       </div>
 
-      {/* Brightness slider — only for dimmable lights that are on */}
       {isDimmable && isOn && (
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-3.5">
           <M3Slider
             variant="thinLg"
-            min={0}
-            max={255}
-            step={1}
+            min={0} max={255} step={1}
             value={displayBrightness}
             disabled={isUnavailable}
             onChange={handleBrightness}
