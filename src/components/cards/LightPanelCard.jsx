@@ -204,7 +204,7 @@ const SchedulerTile = ({ entityId, name, entity, callService, allEntities }) => 
   };
 
   return (
-    <div className={`glass-texture col-span-full overflow-hidden rounded-3xl border border-[var(--glass-border)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
+    <div className={`glass-texture col-span-full overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--card-bg)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
       {/* Header row */}
       <div className="flex items-center">
         <button
@@ -413,7 +413,7 @@ const LightTile = memo(({
   }, [sperreEntityId, sperreOn, sperreUnavailable, callService]);
 
   return (
-    <div className={`glass-texture overflow-hidden rounded-3xl border border-[var(--glass-border)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
+    <div className={`glass-texture overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--card-bg)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
       <div className="flex items-center">
         <button
           type="button"
