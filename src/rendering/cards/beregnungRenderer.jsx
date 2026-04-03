@@ -3,9 +3,11 @@ import { Droplets } from '../../icons';
 import { getSettings } from '../helpers';
 
 const ZONES = [
-  { key: 'z1', name: 'Terrasse rechts', sensorId: 'binary_sensor.irrigation_unlimited_c1_z1', color: '#34d399' },
-  { key: 'z3', name: 'Terrasse links', sensorId: 'binary_sensor.irrigation_unlimited_c1_z3', color: '#60a5fa' },
-  { key: 'z2', name: 'Rasenfläche', sensorId: 'binary_sensor.irrigation_unlimited_c1_z2', color: '#a78bfa' },
+  { key: 'z1', name: 'Terrasse rechts',   sensorId: 'binary_sensor.irrigation_unlimited_c1_z1', smartMinId: 'sensor.smart_irrigation_terrasse_rechts_min', color: '#34d399' },
+  { key: 'z3', name: 'Terrasse links',    sensorId: 'binary_sensor.irrigation_unlimited_c1_z3', smartMinId: 'sensor.smart_irrigation_terrasse_links_min',  color: '#60a5fa' },
+  { key: 'z2', name: 'Rasenfläche',       sensorId: 'binary_sensor.irrigation_unlimited_c1_z2', smartMinId: 'sensor.smart_irrigation_rasenflache_min',     color: '#a78bfa' },
+  { key: 'z4', name: 'Vorgarten rechts',  sensorId: 'binary_sensor.irrigation_unlimited_c1_z4', smartMinId: null, color: '#f59e0b' },
+  { key: 'z5', name: 'Vorgarten links',   sensorId: 'binary_sensor.irrigation_unlimited_c1_z5', smartMinId: null, color: '#fb923c' },
 ];
 
 const BeregnungCard = memo(function BeregnungCard({
@@ -33,12 +35,7 @@ const BeregnungCard = memo(function BeregnungCard({
   }));
 
   const smartMax = Math.max(
-    ...ZONES.map((z) => {
-      const smartId = `sensor.smart_irrigation_${
-        z.key === 'z1' ? 'terrasse_rechts' : z.key === 'z3' ? 'terrasse_links' : 'rasenflache'
-      }_min`;
-      return parseFloat(entities?.[smartId]?.state) || 0;
-    })
+    ...ZONES.map((z) => (z.smartMinId ? parseFloat(entities?.[z.smartMinId]?.state) || 0 : 0))
   );
 
   const iconColor = masterActive ? '#34d399' : 'var(--text-muted)';

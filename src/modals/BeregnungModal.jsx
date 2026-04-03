@@ -34,6 +34,24 @@ const ZONES = [
     smartMinId: 'sensor.smart_irrigation_rasenflache_min',
     color: '#a78bfa',
   },
+  {
+    key: 'z4',
+    name: 'Vorgarten rechts',
+    switchId: 'switch.irrigation_manual_zone_4',
+    sensorId: 'binary_sensor.irrigation_unlimited_c1_z4',
+    minutesId: 'input_number.manual_irrigation_z4_minutes',
+    smartMinId: null,
+    color: '#f59e0b',
+  },
+  {
+    key: 'z5',
+    name: 'Vorgarten links',
+    switchId: 'switch.irrigation_manual_zone_5',
+    sensorId: 'binary_sensor.irrigation_unlimited_c1_z5',
+    minutesId: 'input_number.manual_irrigation_z5_minutes',
+    smartMinId: null,
+    color: '#fb923c',
+  },
 ];
 
 const MAIN_TABS = [
@@ -513,8 +531,10 @@ function VerlaufTab({ zoneData, days, loading }) {
 function VentileTab({ entities, callService }) {
   const ventile = [
     { id: 'switch.irrigation_manual_zone_1', name: 'Terrasse rechts' },
-    { id: 'switch.irrigation_manual_zone_2', name: 'Rasenfläche' },
     { id: 'switch.irrigation_manual_zone_3', name: 'Terrasse links' },
+    { id: 'switch.irrigation_manual_zone_2', name: 'Rasenfläche' },
+    { id: 'switch.irrigation_manual_zone_4', name: 'Vorgarten rechts' },
+    { id: 'switch.irrigation_manual_zone_5', name: 'Vorgarten links' },
   ];
 
   return (
@@ -549,7 +569,7 @@ function VentileTab({ entities, callService }) {
 
 export default function BeregnungModal({ show, onClose, entities, callService, conn, haUrl, haToken }) {
   const [mainTab, setMainTab] = useState('regen');
-  const [zoneData, setZoneData] = useState({ z1: {}, z2: {}, z3: {} });
+  const [zoneData, setZoneData] = useState({ z1: {}, z2: {}, z3: {}, z4: {}, z5: {} });
   const [rainHistory, setRainHistory] = useState({});
   const [histLoading, setHistLoading] = useState(false);
 
