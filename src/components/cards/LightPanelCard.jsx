@@ -439,7 +439,7 @@ const LightTile = memo(({
             <TileIcon className={`${iconInner} stroke-[1.5px] ${isOn && isLight ? 'fill-amber-400/15' : ''}`} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="mb-1.5 truncate text-[10px] font-bold leading-none tracking-widest uppercase text-[var(--text-secondary)] opacity-60">
+            <p className={`mb-1.5 text-[10px] font-bold leading-tight tracking-widest uppercase text-[var(--text-secondary)] opacity-60 ${isMobile ? 'line-clamp-2 break-words' : 'truncate'}`}>
               {name}
             </p>
             <p className={`${stateText} font-medium leading-none ${
@@ -466,7 +466,7 @@ const LightTile = memo(({
               {sperreOn ? <Lock className={btnIcon} /> : <Unlock className={btnIcon} />}
             </button>
           )}
-          {onOpenModal && isLight && (
+          {onOpenModal && isLight && !isMobile && (
             <button
               type="button"
               data-haptic="card"
