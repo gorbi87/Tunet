@@ -63,18 +63,124 @@ const DEFAULT_TABS = [
     title: 'Automatik',
     icon: 'mdi:auto-mode',
     entities: [
-      { entityId: 'input_boolean.sperre_beleuchtung_kuche', name: 'Küche' },
-      { entityId: 'input_boolean.sperre_beleuchtung_esstisch', name: 'Esstisch' },
-      { entityId: 'input_boolean.sperre_beleuchtung_schattenfuge_wz', name: 'Schattenfuge WZ' },
-      { entityId: 'switch.sperre_buro_eg_wled', name: 'Büro EG' },
-      { entityId: 'switch.sperre_flur_eg', name: 'Flur EG' },
-      { entityId: 'switch.sperre_flur_og', name: 'Flur OG' },
-      { entityId: 'input_boolean.sperre_beleuchtung_durchgang', name: 'Durchgang' },
-      { entityId: 'switch.sperre_hwr', name: 'HWR' },
+      { entityId: 'switch.schedule_789cd8', name: 'Carport Ein' },
+      { entityId: 'switch.schedule_0cc89b', name: 'Carport Aus' },
       { entityId: 'automation.treppenbeleuchtung_blueprint', name: 'Treppenbeleuchtung' },
     ],
   },
 ];
+
+/* ── Scheduler helpers ────────────────────────────────────────────── */
+function formatTimeslot(slot) {
+  if (!slot) return '';
+  const parseSunOffset = (base, rest) => {
+    const m = rest.match(/([+-])(\d{2}):(\d{2})/);
+    if (!m || (m[2] === '00' && m[3] === '00')) return base;
+    const h = parseInt(m[2]), min = parseInt(m[3]);
+    if (h > 0) return `${base} ${m[1]}${h}h`;
+    if (min > 0) return `${base} ${m[1]}${min}min`;
+    return base;
+  };
+  if (slot.startsWith('sunset')) return parseSunOffset('Sonnenuntergang', slot.slice(6));
+  if (slot.startsWith('sunrise')) return parseSunOffset('Sonnenaufgang', slot.slice(7));
+  return slot.substring(0, 5); // HH:MM
+}
+
+function formatWeekdays(weekdays) {
+  if (!weekdays?.length) return '';
+  if (weekdays.includes('daily')) return 'täglich';
+  if (weekdays.includes('workday')) return 'Mo–Fr';
+  if (weekdays.includes('weekend')) return 'Sa–So';
+  const MAP = { mon: 'Mo', tue: 'Di', wed: 'Mi', thu: 'Do', fri: 'Fr', sat: 'Sa', sun: 'So' };
+  return weekdays.map((d) => MAP[d] || d).join(', ');
+}
+
+function formatNextTrigger(iso) {
+  if (!iso) return null;
+  try {
+    return new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  } catch { return null; }
+}
+
+/* ── Scheduler Tile ───────────────────────────────────────────────── */
+const SchedulerTile = memo(({ entityId, name, entity, callService, allEntities }) => {
+  const isOn = entity?.state === 'on';
+  const isUnavailable = !entity?.state || entity.state === 'unavailable';
+  const attrs = entity?.attributes || {};
+
+  const timeslot = formatTimeslot(attrs.timeslots?.[0]);
+  const weekdays = formatWeekdays(attrs.weekdays);
+  const nextTime = formatNextTrigger(attrs.next_trigger);
+  const controlledNames = (attrs.entities || [])
+    .map((id) => allEntities[id]?.attributes?.friendly_name || id.split('.')[1])
+    .join(', ');
+  const action = attrs.actions?.[0]?.service?.includes('turn_on') ? 'Ein' : 'Aus';
+  const iconName = attrs.icon;
+  const TileIcon = (iconName ? getIconComponent(iconName) : null) || Workflow;
+
+  const handleToggle = useCallback(() => {
+    if (isUnavailable) return;
+    callService('switch', isOn ? 'turn_off' : 'turn_on', { entity_id: entityId });
+  }, [entityId, isOn, isUnavailable, callService]);
+
+  return (
+    <div
+      className={`col-span-full overflow-hidden rounded-2xl border transition-all duration-300 ${
+        isOn
+          ? 'border-blue-500/30 bg-blue-500/8'
+          : 'border-[var(--glass-border)] bg-[var(--glass-bg)]'
+      } ${isUnavailable ? 'opacity-50' : ''}`}
+    >
+      <button
+        type="button"
+        data-haptic="card"
+        disabled={isUnavailable}
+        onClick={handleToggle}
+        style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+        className={`flex w-full items-start gap-3 px-3 py-3 text-left transition-transform active:scale-[0.98] ${
+          isUnavailable ? 'cursor-default' : 'cursor-pointer'
+        }`}
+      >
+        {/* Icon */}
+        <div
+          className={`mt-0.5 flex-shrink-0 rounded-lg p-1.5 transition-all duration-300 ${
+            isOn ? 'bg-blue-500/20 text-blue-400' : 'bg-[var(--glass-bg-hover)] text-[var(--text-muted)]'
+          }`}
+        >
+          <TileIcon className="h-4 w-4 stroke-[1.5px]" />
+        </div>
+
+        {/* Info */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[var(--text-primary)]">
+              {name}
+            </span>
+            <span
+              className={`flex-shrink-0 text-[10px] font-bold uppercase tracking-wide ${
+                isOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'
+              }`}
+            >
+              {isOn ? 'Aktiv' : 'Inaktiv'}
+            </span>
+          </div>
+          {(timeslot || weekdays) && (
+            <div className="mt-0.5 flex items-center gap-1.5">
+              <span className="text-[10px] text-[var(--text-muted)]">{timeslot}</span>
+              {weekdays && <span className="text-[10px] text-[var(--text-muted)] opacity-60">· {weekdays}</span>}
+              {nextTime && <span className="text-[10px] text-blue-400/70">· {nextTime} Uhr</span>}
+            </div>
+          )}
+          {controlledNames && (
+            <div className="mt-0.5 truncate text-[10px] text-[var(--text-muted)] opacity-70">
+              {action}: {controlledNames}
+            </div>
+          )}
+        </div>
+      </button>
+    </div>
+  );
+});
 
 /* ── Light Tile ───────────────────────────────────────────────────── */
 const LightTile = memo(({
@@ -261,7 +367,9 @@ const LightPanelCard = ({
 
   const cols = isMobile ? 2 : 3;
   const entities_ = activeTab?.entities || [];
-  const remainder = entities_.length % cols;
+  // only count non-scheduler tiles for spacer calculation
+  const regularCount = entities_.filter(({ entityId }) => !entities[entityId]?.attributes?.timeslots).length;
+  const remainder = regularCount % cols;
   const spacers = remainder === 0 ? 0 : cols - remainder;
 
   return (
@@ -305,20 +413,36 @@ const LightPanelCard = ({
       {/* Tile grid — auto-height, no internal scroll */}
       <div className="p-4">
         <div className={`grid gap-3 ${cols === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
-          {entities_.map(({ entityId, name, sperreEntityId }) => (
-            <LightTile
-              key={entityId}
-              entityId={entityId}
-              name={name}
-              entity={entities[entityId]}
-              callService={callService}
-              optimisticBrightness={optimisticLightBrightness}
-              setOptimisticBrightness={setOptimisticLightBrightness}
-              onOpenModal={!editMode && onOpenLightModal ? onOpenLightModal : null}
-              sperreEntityId={sperreEntityId || null}
-              sperreEntity={sperreEntityId ? entities[sperreEntityId] : null}
-            />
-          ))}
+          {entities_.map(({ entityId, name, sperreEntityId }) => {
+            const entity = entities[entityId];
+            const isScheduler = !!entity?.attributes?.timeslots;
+            if (isScheduler) {
+              return (
+                <SchedulerTile
+                  key={entityId}
+                  entityId={entityId}
+                  name={name}
+                  entity={entity}
+                  callService={callService}
+                  allEntities={entities}
+                />
+              );
+            }
+            return (
+              <LightTile
+                key={entityId}
+                entityId={entityId}
+                name={name}
+                entity={entity}
+                callService={callService}
+                optimisticBrightness={optimisticLightBrightness}
+                setOptimisticBrightness={setOptimisticLightBrightness}
+                onOpenModal={!editMode && onOpenLightModal ? onOpenLightModal : null}
+                sperreEntityId={sperreEntityId || null}
+                sperreEntity={sperreEntityId ? entities[sperreEntityId] : null}
+              />
+            );
+          })}
           {Array.from({ length: spacers }, (_, i) => <div key={`sp-${i}`} />)}
         </div>
       </div>
