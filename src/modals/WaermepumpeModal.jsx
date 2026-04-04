@@ -369,6 +369,18 @@ export default function WaermepumpeModal({
                         />
                       </div>
                     )}
+                    {e(WAERMEPUMPE_ENTITY_IDS.raumsoll) && (
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">
+                          Raumsoll
+                        </p>
+                        <SelectDropdown
+                          entityId={WAERMEPUMPE_ENTITY_IDS.raumsoll}
+                          entity={e(WAERMEPUMPE_ENTITY_IDS.raumsoll)}
+                          onSelect={selectOption}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

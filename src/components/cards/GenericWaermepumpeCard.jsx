@@ -18,6 +18,7 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   betriebsmodus: 'select.daikin_heizung_betriebsmodus',
   heizstabSelect: 'select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018',
   betriebsart: 'sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can',
+  raumsoll: 'select.daikin_heizung_raumsoll_1',
 };
 
 const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
