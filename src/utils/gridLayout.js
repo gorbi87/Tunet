@@ -101,6 +101,8 @@ export const getCardGridSpan = (
 export const getCardColSpan = (cardId, getCardSettingsKey, cardSettings) => {
   if (cardId.startsWith('light_panel_card_')) return Number.MAX_SAFE_INTEGER;
   const settings = cardSettings[getCardSettingsKey(cardId)] || cardSettings[cardId] || {};
+  // Divider spacers always span full width so nothing can slip next to them
+  if (cardId.startsWith('spacer_card_') && settings.variant === 'divider') return Number.MAX_SAFE_INTEGER;
   if (settings.colSpan === 'full') return Number.MAX_SAFE_INTEGER;
   return settings.colSpan || 1;
 };
