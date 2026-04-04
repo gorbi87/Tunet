@@ -258,19 +258,19 @@ const SmallCoverCard = (props) => {
 
       <div className="flex min-w-0 flex-1 items-center gap-4">
         {/* Icon — click opens modal */}
-        <div
+        <button
+          type="button"
+          data-haptic="card"
+          disabled={editMode}
           onClick={(e) => {
             e.stopPropagation();
-            if (!editMode && onOpen) onOpen();
+            onOpen?.();
           }}
+          style={{ backgroundColor: accent.bg, color: accent.text, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
           className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-all duration-500 group-hover:scale-110"
-          style={{
-            backgroundColor: accent.bg,
-            color: accent.text,
-          }}
         >
           <Icon className={`h-6 w-6 stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
-        </div>
+        </button>
 
         <div className="flex min-w-0 flex-col">
           <p className="mb-1.5 text-xs leading-none font-bold tracking-widest break-words whitespace-normal text-[var(--text-secondary)] uppercase opacity-60">
