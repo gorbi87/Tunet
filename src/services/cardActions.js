@@ -285,6 +285,12 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
+    case 'cover_panel': {
+      const coverPanelCardId = `cover_panel_card_${Date.now()}`;
+      commitSingleCard(coverPanelCardId, {});
+      return;
+    }
+
     case 'car': {
       const cardId = `car_card_${Date.now()}`;
       commitSingleCard(cardId, { type: 'car', size: 'large' }, { openEdit: true });

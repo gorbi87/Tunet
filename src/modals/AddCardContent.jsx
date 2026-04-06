@@ -1053,6 +1053,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="cover_panel"
+                  icon={ArrowUpDown}
+                  label="Beschattung Panel"
+                  isActive={addCardType === 'cover_panel'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="climate"
                   icon={Thermometer}
                   label={t('addCard.type.climate')}
@@ -1231,6 +1238,8 @@ function AddCardContent({
               renderSimpleAddSection(Droplets, 'Beregnung Karte hinzufügen', 'Beregnung hinzufügen')
             ) : addCardType === 'light_panel' ? (
               renderSimpleAddSection(Lightbulb, 'Licht Panel hinzufügen (EG / OG / Außen / Automatik)', 'Licht Panel hinzufügen')
+            ) : addCardType === 'cover_panel' ? (
+              renderSimpleAddSection(ArrowUpDown, 'Beschattung Panel hinzufügen (EG / OG / Automatik)', 'Beschattung Panel hinzufügen')
             ) : addCardType === 'room' ? (
               <RoomSection
                 conn={conn}
