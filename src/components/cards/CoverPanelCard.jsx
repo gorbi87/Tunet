@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback, memo, useMemo } from 'react';
-import { Workflow } from '../../icons';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
+import { ArrowUpDown, Lock } from '../../icons';
 import { getIconComponent } from '../../icons';
 
 const DEFAULT_TABS = [
@@ -65,8 +65,7 @@ const CoverTile = memo(({ entityId, name, entity, callService, isMobile, onOpen 
     if (isClosing) lastMovingDirectionRef.current = 'down';
   }, [isOpening, isClosing]);
 
-  const iconName = entity?.attributes?.icon;
-  const TileIcon = useMemo(() => (iconName ? getIconComponent(iconName) : null) || Workflow, [iconName]);
+  const TileIcon = ArrowUpDown;
 
   const open  = useCallback(() => callService('cover', 'open_cover',  { entity_id: entityId }), [entityId, callService]);
   const close = useCallback(() => callService('cover', 'close_cover', { entity_id: entityId }), [entityId, callService]);
@@ -177,7 +176,7 @@ const SwitchTile = memo(({ entityId, name, entity, callService, isMobile }) => {
           className={`flex flex-shrink-0 items-center justify-center ${iconSize} transition-all duration-300`}
           style={isOn ? { backgroundColor: 'rgba(251,146,60,0.15)', color: '#fb923c' } : { backgroundColor: 'var(--glass-bg-hover)', color: 'var(--text-muted)' }}
         >
-          <Workflow className={`${iconInner} stroke-[1.5px]`} />
+          <Lock className={`${iconInner} stroke-[1.5px]`} />
         </div>
         <div className="min-w-0 flex-1">
           <p className={`mb-1.5 text-[10px] font-bold leading-tight tracking-widest uppercase text-[var(--text-secondary)] opacity-60 ${isMobile ? 'line-clamp-2 hyphens-auto' : 'truncate'}`} lang={isMobile ? 'de' : undefined}>
@@ -239,7 +238,7 @@ const CoverPanelCard = ({
       {isMobile ? (
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => {
-            const TabIcon = getIconComponent(tab.icon) || Workflow;
+            const TabIcon = getIconComponent(tab.icon) || ArrowUpDown;
             const isActive = resolvedActiveTabId === tab.id;
             return (
               <button
@@ -267,7 +266,7 @@ const CoverPanelCard = ({
           style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
         >
           {tabs.map((tab) => {
-            const TabIcon = getIconComponent(tab.icon) || Workflow;
+            const TabIcon = getIconComponent(tab.icon) || ArrowUpDown;
             const isActive = resolvedActiveTabId === tab.id;
             return (
               <button
