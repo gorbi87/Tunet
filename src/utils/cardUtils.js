@@ -62,6 +62,8 @@ const SPECIAL_CARD_PREFIXES = [
   'luftungsanlage_card_',
   'pv_card_',
   'beregnung_card_',
+  'light_panel_card_',
+  'cover_panel_card_',
 ];
 
 /**
