@@ -191,6 +191,126 @@ const SwitchTile = memo(({ entityId, name, entity, callService, isMobile }) => {
   );
 });
 
+/* ── Beschattungs-Status Panel ───────────────────────────────────────── */
+const azimutToDirection = (az) => {
+  if (az === null) return '–';
+  if (az < 22.5 || az >= 337.5) return 'N';
+  if (az < 67.5) return 'NO';
+  if (az < 112.5) return 'O';
+  if (az < 157.5) return 'SO';
+  if (az < 202.5) return 'S';
+  if (az < 247.5) return 'SW';
+  if (az < 292.5) return 'W';
+  return 'NW';
+};
+
+const parseDiagnose = (state) => {
+  if (!state) return { mValue: -1, sValue: -1, azimut: null, elevation: null };
+  const mMatch = state.match(/M(\d+)/);
+  const sMatch = state.match(/S(\d+)/);
+  const aMatch = state.match(/A(\d+)/);
+  const eMatch = state.match(/E(\d+)/);
+  return {
+    mValue:    mMatch ? parseInt(mMatch[1]) : -1,
+    sValue:    sMatch ? parseInt(sMatch[1]) : -1,
+    azimut:    aMatch ? parseInt(aMatch[1]) : null,
+    elevation: eMatch ? parseInt(eMatch[1]) : null,
+  };
+};
+
+// Rooms with their KNX-configured azimut windows
+const BESCHATTUNGS_ROOMS = [
+  { name: 'Kinderzimmer', dir: 'West', azFrom: 200, azTo: 330, actor: '8fach' },
+  { name: 'Esszimmer',    dir: 'Süd',  azFrom: 115, azTo: 250, actor: '8fach' },
+  { name: 'Küche',        dir: 'West', azFrom: 210, azTo: 330, actor: '8fach' },
+  { name: 'OG Tür Dach',  dir: 'Ost',  azFrom: 30,  azTo: 150, actor: '4fach' },
+  { name: 'Schlafzimmer', dir: 'Süd',  azFrom: 115, azTo: 250, actor: '4fach' },
+];
+
+const BeschattungsStatusPanel = memo(({ entities, isMobile }) => {
+  const raw8 = entities['text.diagnose_beschattung_8fach']?.state || '';
+  const raw4 = entities['text.diagnose_beschattung_4fach']?.state || '';
+
+  // Both actors share sun position — prefer 8fach, fallback to 4fach
+  const primary = parseDiagnose(raw8 || raw4);
+  const d4 = parseDiagnose(raw4);
+
+  const { azimut, elevation } = primary;
+  const direction = azimutToDirection(azimut);
+
+  const getActorDiag = (actor) => actor === '8fach' ? primary : d4;
+
+  const px = isMobile ? 'px-3' : 'px-4';
+  const py = isMobile ? 'py-3' : 'py-4';
+
+  return (
+    <div className="col-span-full glass-texture overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)]">
+      <div className={`${px} ${py} flex flex-col gap-3`}>
+
+        {/* Sun position */}
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--text-secondary)] opacity-60">Sonne</p>
+          <p className="text-[10px] font-mono text-[var(--text-secondary)] opacity-30">{raw8 || raw4}</p>
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="rounded-xl bg-[var(--glass-bg)] px-2 py-2">
+            <p className="text-[9px] font-bold tracking-widest uppercase text-[var(--text-secondary)] opacity-50 mb-1">Azimut</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{azimut !== null ? `${azimut}°` : '–'}</p>
+          </div>
+          <div className="rounded-xl bg-[var(--glass-bg)] px-2 py-2">
+            <p className="text-[9px] font-bold tracking-widest uppercase text-[var(--text-secondary)] opacity-50 mb-1">Richtung</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{direction}</p>
+          </div>
+          <div className="rounded-xl bg-[var(--glass-bg)] px-2 py-2">
+            <p className="text-[9px] font-bold tracking-widest uppercase text-[var(--text-secondary)] opacity-50 mb-1">Elevation</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{elevation !== null ? `${elevation}°` : '–'}</p>
+          </div>
+        </div>
+
+        {/* Per-room status */}
+        <div className="flex flex-col gap-1.5">
+          {BESCHATTUNGS_ROOMS.map(({ name, dir, azFrom, azTo, actor, sensorId }) => {
+            const { mValue, sValue } = getActorDiag(actor);
+
+            const sunInRange = azimut !== null && elevation !== null
+              && azimut >= azFrom && azimut <= azTo && elevation >= 2;
+
+            const isLocked   = mValue >= 0 && (mValue & 2) !== 0;
+            const isTempLock = mValue >= 0 && (mValue & 4) !== 0;
+            const schwelleOk = sValue > 0;
+
+            // Determine room status
+            let dotColor, label;
+            if (!sunInRange) {
+              dotColor = 'bg-gray-600'; label = `außerhalb (${azFrom}°–${azTo}°)`;
+            } else if (isLocked) {
+              dotColor = 'bg-orange-500'; label = 'Gesperrt';
+            } else if (isTempLock) {
+              dotColor = 'bg-yellow-500'; label = 'AT-Sperre';
+            } else if (!schwelleOk) {
+              dotColor = 'bg-gray-400'; label = 'Zu dunkel';
+            } else {
+              dotColor = 'bg-blue-500'; label = 'Beschattet';
+            }
+
+            const inRange = sunInRange;
+
+            return (
+              <div key={name} className={`flex items-center gap-2.5 rounded-xl px-3 py-2 ${inRange ? 'bg-[var(--glass-bg-hover)]' : 'bg-[var(--glass-bg)] opacity-50'}`}>
+                <span className={`h-2 w-2 flex-shrink-0 rounded-full ${dotColor}`} />
+                <span className="text-xs font-semibold text-[var(--text-primary)] w-24 flex-shrink-0">{name}</span>
+                <span className="text-[10px] font-bold tracking-widest uppercase text-[var(--text-secondary)] opacity-60 w-8">{dir}</span>
+                <span className={`text-[10px] font-medium ${inRange ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>{label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+      </div>
+    </div>
+  );
+});
+
 /* ── Cover Panel Card ────────────────────────────────────────────────── */
 const CoverPanelCard = ({
   cardId,
@@ -292,6 +412,9 @@ const CoverPanelCard = ({
 
       {/* Tile grid */}
       <div className={`grid gap-3 ${cols === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+        {isAutomatikTab && (
+          <BeschattungsStatusPanel entities={entities} isMobile={isMobile} />
+        )}
         {tabEntities.map(({ entityId, name }) => {
           const entity = entities[entityId];
           const domain = entityId.split('.')[0];
