@@ -19,11 +19,13 @@ const SPAN_TABLE = {
   triSize: { small: 1, medium: 2, default: 4 }, // calendar, todo
   dualSize: { small: 1, default: 2 }, // light, car, room
   lightPanel: { default: 1 }, // auto-height card, span=1 is enough (gridAutoRows: auto sizes to content)
+  coverPanel: { default: 1 }, // auto-height, same as lightPanel
 };
 
 const CARD_SPAN_RULES = [
   // prefix match → category  (checked in order — more-specific prefixes first)
   { prefix: 'light_panel_card_', category: 'lightPanel' },
+  { prefix: 'cover_panel_card_', category: 'coverPanel' },
   { prefix: 'calendar_card_', category: 'triSize' },
   { prefix: 'todo_card_', category: 'triSize' },
   { prefix: 'light_', category: 'dualSize' },
@@ -100,6 +102,7 @@ export const getCardGridSpan = (
  */
 export const getCardColSpan = (cardId, getCardSettingsKey, cardSettings) => {
   if (cardId.startsWith('light_panel_card_')) return Number.MAX_SAFE_INTEGER;
+  if (cardId.startsWith('cover_panel_card_')) return Number.MAX_SAFE_INTEGER;
   const settings = cardSettings[getCardSettingsKey(cardId)] || cardSettings[cardId] || {};
   // Divider spacers always span full width so nothing can slip next to them
   if (cardId.startsWith('spacer_card_') && settings.variant === 'divider') return Number.MAX_SAFE_INTEGER;

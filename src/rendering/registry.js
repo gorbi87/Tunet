@@ -29,6 +29,7 @@ import {
   renderGo2rtcCameraCard,
   renderBeregnungCard,
   renderLightPanelCard,
+  renderCoverPanelCard,
 } from './cards';
 
 /**
@@ -37,6 +38,7 @@ import {
  */
 export const CARD_REGISTRY = [
   { prefix: 'light_panel_card_', renderer: renderLightPanelCard },
+  { prefix: 'cover_panel_card_', renderer: renderCoverPanelCard },
   { prefix: 'light_', renderer: renderLightCard },
   { prefix: 'light.', renderer: renderLightCard },
   { prefix: 'vacuum.', renderer: renderVacuumCard },
