@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { ChevronUp, ChevronDown, Square, Workflow } from '../../icons';
+import { ChevronUp, ChevronDown, Pause, Workflow } from '../../icons';
 import { getIconComponent } from '../../icons';
 
 const DEFAULT_TABS = [
@@ -131,7 +131,7 @@ const CoverTile = memo(({ entityId, name, entity, callService, isMobile }) => {
             style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             className={`flex items-center justify-center ${btnSize} text-[var(--text-muted)] opacity-40 transition-all hover:opacity-80 active:scale-90 hover:text-amber-400`}
           >
-            <Square className={btnIcon} />
+            <Pause className={btnIcon} />
           </button>
           <button
             type="button"
