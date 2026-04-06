@@ -353,10 +353,13 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
 
       {showCoverModal &&
         (() => {
-          const coverSettingsKey = getCardSettingsKey(showCoverModal);
-          const coverSettings =
-            cardSettings[coverSettingsKey] || cardSettings[showCoverModal] || {};
-          const coverEntityId = coverSettings.coverId;
+          const isDirectCoverEntityId =
+            typeof showCoverModal === 'string' && showCoverModal.startsWith('cover.');
+          const coverSettingsKey = isDirectCoverEntityId ? null : getCardSettingsKey(showCoverModal);
+          const coverSettings = isDirectCoverEntityId
+            ? {}
+            : cardSettings[coverSettingsKey] || cardSettings[showCoverModal] || {};
+          const coverEntityId = isDirectCoverEntityId ? showCoverModal : coverSettings.coverId;
           const coverEntity = coverEntityId ? entities[coverEntityId] : null;
           if (!coverEntityId || !coverEntity) return null;
           return (

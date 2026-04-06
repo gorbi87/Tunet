@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { ChevronUp, ChevronDown, Pause, Workflow } from '../../icons';
+import { useState, useRef, useEffect, useCallback, memo, useMemo } from 'react';
+import { Workflow } from '../../icons';
 import { getIconComponent } from '../../icons';
 
 const DEFAULT_TABS = [
@@ -41,7 +41,7 @@ const DEFAULT_TABS = [
 ];
 
 /* ── Cover Tile ──────────────────────────────────────────────────────── */
-const CoverTile = memo(({ entityId, name, entity, callService, isMobile }) => {
+const CoverTile = memo(({ entityId, name, entity, callService, isMobile, onOpen }) => {
   const state = entity?.state;
   const isUnavailable = !state || state === 'unavailable' || state === 'unknown';
   const isOpening = state === 'opening';
@@ -54,16 +54,40 @@ const CoverTile = memo(({ entityId, name, entity, callService, isMobile }) => {
 
   const [localPos, setLocalPos] = useState(position ?? 0);
   const isDraggingRef = useRef(false);
+  const lastMovingDirectionRef = useRef(null); // 'up' | 'down' | null
+
   useEffect(() => {
     if (!isDraggingRef.current && typeof position === 'number') setLocalPos(position);
   }, [position]);
 
+  useEffect(() => {
+    if (isOpening) lastMovingDirectionRef.current = 'up';
+    if (isClosing) lastMovingDirectionRef.current = 'down';
+  }, [isOpening, isClosing]);
+
   const iconName = entity?.attributes?.icon;
-  const TileIcon = (iconName ? getIconComponent(iconName) : null) || Workflow;
+  const TileIcon = useMemo(() => (iconName ? getIconComponent(iconName) : null) || Workflow, [iconName]);
 
   const open  = useCallback(() => callService('cover', 'open_cover',  { entity_id: entityId }), [entityId, callService]);
   const close = useCallback(() => callService('cover', 'close_cover', { entity_id: entityId }), [entityId, callService]);
   const stop  = useCallback(() => callService('cover', 'stop_cover',  { entity_id: entityId }), [entityId, callService]);
+
+  // Smart toggle: moving → stop → next tap reverses direction
+  const handleToggle = useCallback(() => {
+    if (isUnavailable) return;
+    if (isMoving) {
+      callService('cover', 'stop_cover', { entity_id: entityId });
+    } else if (state === 'closed') {
+      callService('cover', 'open_cover', { entity_id: entityId });
+      lastMovingDirectionRef.current = 'up';
+    } else if (lastMovingDirectionRef.current === 'down') {
+      callService('cover', 'open_cover', { entity_id: entityId });
+      lastMovingDirectionRef.current = 'up';
+    } else {
+      callService('cover', 'close_cover', { entity_id: entityId });
+      lastMovingDirectionRef.current = 'down';
+    }
+  }, [isUnavailable, isMoving, state, entityId, callService]);
 
   const stateLabel = isUnavailable ? '⚠'
     : isOpening ? 'öffnet'
@@ -76,11 +100,9 @@ const CoverTile = memo(({ entityId, name, entity, callService, isMobile }) => {
   const py = isMobile ? 'py-3' : 'py-4';
   const iconSize = isMobile ? 'h-9 w-9 rounded-xl' : 'h-12 w-12 rounded-2xl';
   const iconInner = isMobile ? 'h-5 w-5' : 'h-6 w-6';
-  const btnSize = isMobile ? 'h-7 w-7 rounded-lg' : 'h-8 w-8 rounded-xl';
-  const btnIcon = isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4';
   const stateSize = isMobile ? 'text-base' : 'text-lg';
 
-  const iconBg = isUnavailable
+  const iconStyle = isUnavailable
     ? { backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }
     : isMoving
     ? { backgroundColor: 'rgba(96,165,250,0.12)', color: '#60a5fa' }
@@ -88,11 +110,22 @@ const CoverTile = memo(({ entityId, name, entity, callService, isMobile }) => {
 
   return (
     <div className={`glass-texture overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
-      <div className={`flex items-center ${px} ${py} gap-3`}>
-        {/* Icon */}
+      <button
+        type="button"
+        data-haptic="card"
+        disabled={isUnavailable}
+        onClick={handleToggle}
+        style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+        className={`flex w-full items-center ${px} ${py} gap-3 text-left transition-all active:scale-[0.97] ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
+      >
+        {/* Icon — click opens modal */}
         <div
-          className={`flex flex-shrink-0 items-center justify-center ${iconSize} transition-all duration-300`}
-          style={iconBg}
+          role="button"
+          tabIndex={-1}
+          onClick={(e) => { e.stopPropagation(); if (!isUnavailable && onOpen) onOpen(); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); if (!isUnavailable && onOpen) onOpen(); } }}
+          className={`flex flex-shrink-0 items-center justify-center ${iconSize} transition-all duration-300 hover:opacity-80 active:scale-90`}
+          style={iconStyle}
         >
           <TileIcon className={`${iconInner} stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
         </div>
@@ -108,44 +141,7 @@ const CoverTile = memo(({ entityId, name, entity, callService, isMobile }) => {
             {stateLabel}
           </p>
         </div>
-
-        {/* Open / Stop / Close buttons */}
-        <div className="flex flex-shrink-0 items-center gap-0.5">
-          <button
-            type="button"
-            data-haptic="card"
-            disabled={isUnavailable}
-            onClick={open}
-            title="Öffnen"
-            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-            className={`flex items-center justify-center ${btnSize} text-[var(--text-muted)] opacity-40 transition-all hover:opacity-80 active:scale-90 hover:text-emerald-400`}
-          >
-            <ChevronUp className={btnIcon} />
-          </button>
-          <button
-            type="button"
-            data-haptic="card"
-            disabled={isUnavailable}
-            onClick={stop}
-            title="Stopp"
-            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-            className={`flex items-center justify-center ${btnSize} text-[var(--text-muted)] opacity-40 transition-all hover:opacity-80 active:scale-90 hover:text-amber-400`}
-          >
-            <Pause className={btnIcon} />
-          </button>
-          <button
-            type="button"
-            data-haptic="card"
-            disabled={isUnavailable}
-            onClick={close}
-            title="Schließen"
-            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-            className={`flex items-center justify-center ${btnSize} text-[var(--text-muted)] opacity-40 transition-all hover:opacity-80 active:scale-90 hover:text-red-400`}
-          >
-            <ChevronDown className={btnIcon} />
-          </button>
-        </div>
-      </div>
+      </button>
     </div>
   );
 });
@@ -207,6 +203,7 @@ const CoverPanelCard = ({
   callService,
   settings,
   isMobile,
+  setShowCoverModal,
 }) => {
   const tabs = settings?.panelTabs || DEFAULT_TABS;
   const [activeTabId, setActiveTabId] = useState(null);
@@ -308,6 +305,7 @@ const CoverPanelCard = ({
                 entity={entity}
                 callService={callService}
                 isMobile={isMobile}
+                onOpen={setShowCoverModal ? () => setShowCoverModal(entityId) : undefined}
               />
             );
           }
