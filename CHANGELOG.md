@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.14.84] — 2026-04-06
+
+### Added
+- **Cover Panel – Automatik-Tab**: Neues Beschattungsstatus-Panel zeigt aktuelle Sonnenposition (Azimut, Himmelsrichtung, Elevation) und pro Raum ob die Sonne gerade im konfigurierten KNX-Azimutfenster steht. Status je Raum: Beschattet / AT-Sperre / Gesperrt / Zu dunkel / außerhalb.
+
 ## [1.14.83] — 2026-03-20
 
 ### Fixed
