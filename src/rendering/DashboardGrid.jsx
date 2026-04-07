@@ -182,7 +182,11 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
             cardHeight = Math.max(40, Math.min(420, Number(settings.heightPx)));
           } else if (isLargeCard && sizeSetting !== 'small' && sizeSetting !== 'medium') {
             cardHeight = 4 * rowPx + 3 * gapPx;
-          } else if (id.startsWith('light_panel_card_') || id.startsWith('cover_panel_card_')) {
+          } else if (
+            id.startsWith('light_panel_card_') ||
+            id.startsWith('cover_panel_card_') ||
+            id.startsWith('security_panel_card_')
+          ) {
             cardHeight = null; // auto-sizes to content
           } else {
             cardHeight = forcedSpan * rowPx + Math.max(0, forcedSpan - 1) * gapPx;
