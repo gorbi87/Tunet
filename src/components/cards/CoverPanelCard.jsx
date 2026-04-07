@@ -109,28 +109,28 @@ const CoverTile = memo(({ entityId, name, entity, callService, isMobile, onOpen 
 
   return (
     <div className={`glass-texture overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] transition-all duration-300 ${isUnavailable ? 'opacity-50' : ''}`}>
-      <button
-        type="button"
-        data-haptic="card"
-        disabled={isUnavailable}
-        onClick={handleToggle}
-        style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-        className={`flex w-full items-center ${px} ${py} gap-3 text-left transition-all active:scale-[0.97] ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
-      >
-        {/* Icon — click opens modal */}
-        <div
-          role="button"
-          tabIndex={-1}
-          onClick={(e) => { e.stopPropagation(); if (!isUnavailable && onOpen) onOpen(); }}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); if (!isUnavailable && onOpen) onOpen(); } }}
-          className={`flex flex-shrink-0 items-center justify-center ${iconSize} transition-all duration-300 hover:opacity-80 active:scale-90`}
-          style={iconStyle}
+      <div className={`flex w-full items-center ${px} ${py} gap-3`}>
+        {/* Icon — tap opens modal */}
+        <button
+          type="button"
+          data-haptic="light"
+          disabled={isUnavailable}
+          onClick={() => { if (!isUnavailable && onOpen) onOpen(); }}
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', ...iconStyle }}
+          className={`flex flex-shrink-0 items-center justify-center ${iconSize} transition-all duration-300 hover:opacity-80 active:scale-90 ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
         >
           <TileIcon className={`${iconInner} stroke-[1.5px] ${isMoving ? 'animate-pulse' : ''}`} />
-        </div>
+        </button>
 
-        {/* Name + state */}
-        <div className="min-w-0 flex-1">
+        {/* Name + state — tap toggles */}
+        <button
+          type="button"
+          data-haptic="card"
+          disabled={isUnavailable}
+          onClick={handleToggle}
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+          className={`min-w-0 flex-1 text-left transition-all active:scale-[0.97] ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
+        >
           <p className={`mb-1.5 text-[10px] font-bold leading-tight tracking-widest uppercase text-[var(--text-secondary)] opacity-60 ${isMobile ? 'line-clamp-2 hyphens-auto' : 'truncate'}`} lang={isMobile ? 'de' : undefined}>
             {name}
           </p>
@@ -139,8 +139,8 @@ const CoverTile = memo(({ entityId, name, entity, callService, isMobile, onOpen 
           }`}>
             {stateLabel}
           </p>
-        </div>
-      </button>
+        </button>
+      </div>
     </div>
   );
 });
