@@ -70,7 +70,7 @@ const DetectionRow = memo(({ entity, callService }) => {
       disabled={isUnavailable}
       onClick={toggle}
       style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-      className={`flex w-full items-center gap-3 transition-all active:scale-[0.98] ${isUnavailable ? 'cursor-default opacity-50' : 'cursor-pointer'}`}
+      className={`flex items-center gap-3 transition-all active:scale-[0.98] ${isUnavailable ? 'cursor-default opacity-50' : 'cursor-pointer'}`}
     >
       <div
         className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl transition-all"
@@ -82,8 +82,8 @@ const DetectionRow = memo(({ entity, callService }) => {
       >
         <Icon className="h-4 w-4 stroke-[1.5px]" />
       </div>
-      <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">Kamera Detection</span>
-      <span className={`text-xs font-semibold ${isUnavailable ? 'text-red-400' : isOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}`}>
+      <span className="text-sm font-medium text-[var(--text-primary)]">Kamera Detection</span>
+      <span className={`ml-auto text-xs font-semibold ${isUnavailable ? 'text-red-400' : isOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}`}>
         {isUnavailable ? '⚠' : isOn ? 'Aktiv' : 'Inaktiv'}
       </span>
     </button>
@@ -120,7 +120,7 @@ const LockRow = memo(({ entityId, contactId, name, entities, onOpen }) => {
       data-haptic="card"
       onClick={() => onOpen?.({ entityId, contactId, name })}
       style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-      className="flex w-full items-center gap-3 transition-all active:scale-[0.98] cursor-pointer"
+      className="flex items-center gap-3 transition-all active:scale-[0.98] cursor-pointer"
     >
       <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl transition-all" style={iconStyle}>
         {isUnavailable
@@ -128,8 +128,8 @@ const LockRow = memo(({ entityId, contactId, name, entities, onOpen }) => {
           : <Icon className={`h-4 w-4 stroke-[1.5px] ${isTransition ? 'animate-pulse' : ''}`} />
         }
       </div>
-      <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">{name}</span>
-      <div className="flex items-center gap-1.5">
+      <span className="text-sm font-medium text-[var(--text-primary)]">{name}</span>
+      <div className="ml-auto flex items-center gap-1.5">
         {isDoorOpen && <span className="text-[10px] font-semibold text-orange-400">Tür auf</span>}
         <span className={`text-xs font-semibold ${stateColor}`}>{stateLabel}</span>
       </div>
@@ -154,17 +154,17 @@ const ContactRow = memo(({ label, summaryId, contacts, entities, onClick }) => {
       data-haptic="card"
       onClick={onClick}
       style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-      className="flex w-full items-center gap-3 transition-all active:scale-[0.98] cursor-pointer"
+      className="flex items-center gap-3 transition-all active:scale-[0.98] cursor-pointer"
     >
-      <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl`}
+      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl"
         style={isOpen
           ? { backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }
           : { backgroundColor: 'rgba(34,197,94,0.1)',  color: '#22c55e' }}
       >
         <Shield className="h-4 w-4 stroke-[1.5px]" />
       </div>
-      <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">{label}</span>
-      <div className="flex items-center gap-1.5">
+      <span className="text-sm font-medium text-[var(--text-primary)]">{label}</span>
+      <div className="ml-auto flex items-center gap-1.5">
         <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
         <span className={`text-xs font-semibold ${stateColor}`}>{stateLabel}</span>
       </div>

@@ -18,14 +18,16 @@ const SPAN_TABLE = {
   // { small, medium, large } → row span
   triSize: { small: 1, medium: 2, default: 4 }, // calendar, todo
   dualSize: { small: 1, default: 2 }, // light, car, room
-  lightPanel: { default: 1 }, // auto-height card, span=1 is enough (gridAutoRows: auto sizes to content)
-  coverPanel: { default: 1 }, // auto-height, same as lightPanel
+  lightPanel:    { default: 1 }, // auto-height card, span=1 is enough (gridAutoRows: auto sizes to content)
+  coverPanel:    { default: 1 }, // auto-height, same as lightPanel
+  securityPanel: { default: 1 }, // auto-height, same as lightPanel
 };
 
 const CARD_SPAN_RULES = [
   // prefix match → category  (checked in order — more-specific prefixes first)
-  { prefix: 'light_panel_card_', category: 'lightPanel' },
-  { prefix: 'cover_panel_card_', category: 'coverPanel' },
+  { prefix: 'light_panel_card_',    category: 'lightPanel'    },
+  { prefix: 'cover_panel_card_',    category: 'coverPanel'    },
+  { prefix: 'security_panel_card_', category: 'securityPanel' },
   { prefix: 'calendar_card_', category: 'triSize' },
   { prefix: 'todo_card_', category: 'triSize' },
   { prefix: 'light_', category: 'dualSize' },
