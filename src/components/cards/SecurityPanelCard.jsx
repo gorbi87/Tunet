@@ -39,20 +39,21 @@ const MOTION_SENSORS = [
   { entityId: 'binary_sensor.bewegung_buro_eg',                                    name: 'Büro EG'  },
 ];
 
-/* ── Row components ──────────────────────────────────────────────────── */
+/* ── Shared sub-components ───────────────────────────────────────────── */
 
 const SectionLabel = ({ children }) => (
-  <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--text-secondary)] opacity-50">
+  <p className="mb-2 text-[10px] font-bold tracking-widest uppercase text-[var(--text-secondary)] opacity-50">
     {children}
   </p>
 );
 
-const Divider = () => (
-  <div className="border-t border-[var(--glass-border)] opacity-50" />
+const VDivider = () => (
+  <div className="self-stretch w-px bg-[var(--glass-border)] opacity-50 mx-1" />
 );
 
-/* Detection row */
-const DetectionRow = memo(({ entity, callService }) => {
+/* ── Detection column ────────────────────────────────────────────────── */
+
+const DetectionColumn = memo(({ entity, callService }) => {
   const state = entity?.state;
   const isOn = state === 'on';
   const isUnavailable = !state || state === 'unavailable' || state === 'unknown';
@@ -70,10 +71,10 @@ const DetectionRow = memo(({ entity, callService }) => {
       disabled={isUnavailable}
       onClick={toggle}
       style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-      className={`flex items-center gap-3 transition-all active:scale-[0.98] ${isUnavailable ? 'cursor-default opacity-50' : 'cursor-pointer'}`}
+      className={`flex flex-col items-center justify-center gap-2 h-full w-full transition-all active:scale-[0.97] rounded-xl px-3 py-3 ${isUnavailable ? 'cursor-default opacity-50' : 'cursor-pointer'}`}
     >
       <div
-        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl transition-all"
+        className="flex h-9 w-9 items-center justify-center rounded-xl"
         style={isUnavailable
           ? { backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }
           : isOn
@@ -82,15 +83,18 @@ const DetectionRow = memo(({ entity, callService }) => {
       >
         <Icon className="h-4 w-4 stroke-[1.5px]" />
       </div>
-      <span className="text-sm font-medium text-[var(--text-primary)]">Kamera Detection</span>
-      <span className={`ml-auto text-xs font-semibold ${isUnavailable ? 'text-red-400' : isOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}`}>
+      <span className="text-[11px] font-semibold text-[var(--text-primary)] text-center leading-tight">
+        Kamera<br />Detection
+      </span>
+      <span className={`text-[10px] font-bold ${isUnavailable ? 'text-red-400' : isOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}`}>
         {isUnavailable ? '⚠' : isOn ? 'Aktiv' : 'Inaktiv'}
       </span>
     </button>
   );
 });
 
-/* Lock row */
+/* ── Lock row (compact) ──────────────────────────────────────────────── */
+
 const LockRow = memo(({ entityId, contactId, name, entities, onOpen }) => {
   const entity  = entities[entityId];
   const contact = entities[contactId];
@@ -111,7 +115,6 @@ const LockRow = memo(({ entityId, contactId, name, entities, onOpen }) => {
 
   const stateLabel = isUnavailable ? '⚠' : isJammed ? 'Blockiert' : isTransition ? '…' : isLocked ? 'Gesperrt' : 'Offen';
   const stateColor = isUnavailable || isJammed ? 'text-red-400' : isTransition ? 'text-blue-400' : isLocked ? 'text-green-400' : 'text-orange-400';
-
   const Icon = isLocked || state === 'locking' ? Lock : Unlock;
 
   return (
@@ -120,24 +123,25 @@ const LockRow = memo(({ entityId, contactId, name, entities, onOpen }) => {
       data-haptic="card"
       onClick={() => onOpen?.({ entityId, contactId, name })}
       style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-      className="flex items-center gap-3 transition-all active:scale-[0.98] cursor-pointer"
+      className="flex items-center gap-2 transition-all active:scale-[0.98] cursor-pointer w-full"
     >
-      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl transition-all" style={iconStyle}>
+      <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg" style={iconStyle}>
         {isUnavailable
-          ? <AlertTriangle className="h-4 w-4 stroke-[1.5px]" />
-          : <Icon className={`h-4 w-4 stroke-[1.5px] ${isTransition ? 'animate-pulse' : ''}`} />
+          ? <AlertTriangle className="h-3.5 w-3.5 stroke-[1.5px]" />
+          : <Icon className={`h-3.5 w-3.5 stroke-[1.5px] ${isTransition ? 'animate-pulse' : ''}`} />
         }
       </div>
-      <span className="text-sm font-medium text-[var(--text-primary)]">{name}</span>
-      <div className="ml-auto flex items-center gap-1.5">
-        {isDoorOpen && <span className="text-[10px] font-semibold text-orange-400">Tür auf</span>}
-        <span className={`text-xs font-semibold ${stateColor}`}>{stateLabel}</span>
+      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 text-left">{name}</span>
+      <div className="flex items-center gap-1">
+        {isDoorOpen && <span className="text-[9px] font-bold text-orange-400">Tür auf</span>}
+        <span className={`text-[10px] font-bold ${stateColor}`}>{stateLabel}</span>
       </div>
     </button>
   );
 });
 
-/* Contact summary row */
+/* ── Contact summary row (compact) ──────────────────────────────────── */
+
 const ContactRow = memo(({ label, summaryId, contacts, entities, onClick }) => {
   const summary = entities[summaryId];
   const isOpen = summary?.state === 'on';
@@ -154,19 +158,19 @@ const ContactRow = memo(({ label, summaryId, contacts, entities, onClick }) => {
       data-haptic="card"
       onClick={onClick}
       style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-      className="flex items-center gap-3 transition-all active:scale-[0.98] cursor-pointer"
+      className="flex items-center gap-2 transition-all active:scale-[0.98] cursor-pointer w-full"
     >
-      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl"
+      <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg"
         style={isOpen
           ? { backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }
           : { backgroundColor: 'rgba(34,197,94,0.1)',  color: '#22c55e' }}
       >
-        <Shield className="h-4 w-4 stroke-[1.5px]" />
+        <Shield className="h-3.5 w-3.5 stroke-[1.5px]" />
       </div>
-      <span className="text-sm font-medium text-[var(--text-primary)]">{label}</span>
-      <div className="ml-auto flex items-center gap-1.5">
-        <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
-        <span className={`text-xs font-semibold ${stateColor}`}>{stateLabel}</span>
+      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 text-left">{label}</span>
+      <div className="flex items-center gap-1">
+        <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${dotColor}`} />
+        <span className={`text-[10px] font-bold ${stateColor}`}>{stateLabel}</span>
       </div>
     </button>
   );
@@ -186,7 +190,6 @@ const SecurityPanelCard = ({
   setShowSecurityContactsModal,
 }) => {
   const anyMotion = MOTION_SENSORS.some(({ entityId }) => entities[entityId]?.state === 'on');
-  const p = isMobile ? 'px-3 py-3' : 'px-4 py-4';
 
   const layoutStyle = cardStyle ? {
     transform: cardStyle.transform,
@@ -205,81 +208,83 @@ const SecurityPanelCard = ({
     >
       {controls}
 
-      <div className={`glass-texture rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] flex flex-col gap-0 overflow-hidden`}>
+      <div className="glass-texture rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] overflow-hidden">
+        <div className={`flex items-stretch ${isMobile ? 'gap-0' : 'gap-0'}`}>
 
-        {/* Detection */}
-        <div className={p}>
-          <DetectionRow entity={entities[DETECTION_SWITCH]} callService={callService} />
-        </div>
+          {/* ── Detection ── */}
+          <div className="flex-shrink-0 flex items-center justify-center" style={{ minWidth: isMobile ? 72 : 88 }}>
+            <DetectionColumn entity={entities[DETECTION_SWITCH]} callService={callService} />
+          </div>
 
-        <Divider />
+          <VDivider />
 
-        {/* Locks */}
-        <div className={`${p} flex flex-col gap-3`}>
-          <SectionLabel>Schlösser</SectionLabel>
-          {LOCKS.map((lock) => (
-            <LockRow
-              key={lock.entityId}
-              {...lock}
+          {/* ── Schlösser ── */}
+          <div className={`flex flex-col justify-center gap-2 ${isMobile ? 'px-3 py-3' : 'px-4 py-3'}`} style={{ minWidth: isMobile ? 130 : 160 }}>
+            <SectionLabel>Schlösser</SectionLabel>
+            {LOCKS.map((lock) => (
+              <LockRow
+                key={lock.entityId}
+                {...lock}
+                entities={entities}
+                onOpen={setShowSecurityLockModal}
+              />
+            ))}
+          </div>
+
+          <VDivider />
+
+          {/* ── Kontakte ── */}
+          <div className={`flex flex-col justify-center gap-2 ${isMobile ? 'px-3 py-3' : 'px-4 py-3'}`} style={{ minWidth: isMobile ? 130 : 150 }}>
+            <SectionLabel>Kontakte</SectionLabel>
+            <ContactRow
+              label="Türkontakte"
+              summaryId={TUR_SUMMARY_ID}
+              contacts={TUR_KONTAKTE}
               entities={entities}
-              onOpen={setShowSecurityLockModal}
+              onClick={() => setShowSecurityContactsModal?.({ type: 'tür', contacts: TUR_KONTAKTE })}
             />
-          ))}
-        </div>
-
-        <Divider />
-
-        {/* Contacts */}
-        <div className={`${p} flex flex-col gap-3`}>
-          <SectionLabel>Kontakte</SectionLabel>
-          <ContactRow
-            label="Türkontakte"
-            summaryId={TUR_SUMMARY_ID}
-            contacts={TUR_KONTAKTE}
-            entities={entities}
-            onClick={() => setShowSecurityContactsModal?.({ type: 'tür', contacts: TUR_KONTAKTE })}
-          />
-          <ContactRow
-            label="Fensterkontakte"
-            summaryId={FENSTER_SUMMARY_ID}
-            contacts={FENSTER_KONTAKTE}
-            entities={entities}
-            onClick={() => setShowSecurityContactsModal?.({ type: 'fenster', contacts: FENSTER_KONTAKTE })}
-          />
-        </div>
-
-        <Divider />
-
-        {/* Motion */}
-        <div className={`${p} flex flex-col gap-2.5`}>
-          <div className="flex items-center justify-between">
-            <SectionLabel>Bewegung</SectionLabel>
-            {anyMotion && <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse" />}
+            <ContactRow
+              label="Fensterkontakte"
+              summaryId={FENSTER_SUMMARY_ID}
+              contacts={FENSTER_KONTAKTE}
+              entities={entities}
+              onClick={() => setShowSecurityContactsModal?.({ type: 'fenster', contacts: FENSTER_KONTAKTE })}
+            />
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {MOTION_SENSORS.map(({ entityId, name }) => {
-              const state = entities[entityId]?.state;
-              const isOn = state === 'on';
-              const isUnavailable = !state || state === 'unavailable';
-              return (
-                <span
-                  key={entityId}
-                  className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all ${
-                    isUnavailable
-                      ? 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-muted)] opacity-25'
-                      : isOn
-                      ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
-                      : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] opacity-70'
-                  }`}
-                >
-                  <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${isUnavailable ? 'bg-gray-600' : isOn ? 'bg-yellow-400 animate-pulse' : 'bg-gray-500'}`} />
-                  {name}
-                </span>
-              );
-            })}
-          </div>
-        </div>
 
+          <VDivider />
+
+          {/* ── Bewegung ── */}
+          <div className={`flex-1 flex flex-col justify-center gap-2 ${isMobile ? 'px-3 py-3' : 'px-4 py-3'}`}>
+            <div className="flex items-center gap-2">
+              <SectionLabel>Bewegung</SectionLabel>
+              {anyMotion && <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse mb-2" />}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {MOTION_SENSORS.map(({ entityId, name }) => {
+                const state = entities[entityId]?.state;
+                const isOn = state === 'on';
+                const isUnavailable = !state || state === 'unavailable';
+                return (
+                  <span
+                    key={entityId}
+                    className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-all ${
+                      isUnavailable
+                        ? 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-muted)] opacity-25'
+                        : isOn
+                        ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
+                        : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] opacity-60'
+                    }`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${isUnavailable ? 'bg-gray-600' : isOn ? 'bg-yellow-400 animate-pulse' : 'bg-gray-500'}`} />
+                    {name}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
