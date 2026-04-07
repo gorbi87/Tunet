@@ -1,232 +1,174 @@
 import { memo, useCallback } from 'react';
 import { Shield, Lock, Unlock, AlertTriangle, Eye, EyeOff } from '../../icons';
 
-/* ── Static entity config ────────────────────────────────────────────── */
+/* ── Entity config ───────────────────────────────────────────────────── */
 
 const DETECTION_SWITCH = 'switch.sicherheit_detection';
 
 const LOCKS = [
-  { entityId: 'lock.nuki_nuki_lock',             contactId: 'binary_sensor.turkontakt_haustur_contact', name: 'Haustür' },
-  { entityId: 'lock.aqara_smart_lock_u200_schloss', contactId: 'binary_sensor.turkontakt_hwr_contact',   name: 'HWR Tür'  },
+  { entityId: 'lock.nuki_nuki_lock',               contactId: 'binary_sensor.turkontakt_haustur_contact', name: 'Haustür' },
+  { entityId: 'lock.aqara_smart_lock_u200_schloss', contactId: 'binary_sensor.turkontakt_hwr_contact',     name: 'HWR Tür' },
 ];
 
 const TUR_KONTAKTE = [
-  { entityId: 'binary_sensor.turkontakt_haustur_contact',      name: 'Haustür'         },
-  { entityId: 'binary_sensor.turkontakt_hwr_contact',          name: 'HWR'             },
-  { entityId: 'binary_sensor.turkontakt_dach_contact',         name: 'Dach'            },
-  { entityId: 'binary_sensor.turkontakt_terasse_kuche_contact',name: 'Terrasse Küche'  },
-  { entityId: 'binary_sensor.turkontakt_esszimmer_contact',    name: 'Esszimmer'       },
+  { entityId: 'binary_sensor.turkontakt_haustur_contact',       name: 'Haustür'        },
+  { entityId: 'binary_sensor.turkontakt_hwr_contact',           name: 'HWR'            },
+  { entityId: 'binary_sensor.turkontakt_dach_contact',          name: 'Dach'           },
+  { entityId: 'binary_sensor.turkontakt_terasse_kuche_contact', name: 'Terrasse Küche' },
+  { entityId: 'binary_sensor.turkontakt_esszimmer_contact',     name: 'Esszimmer'      },
   { entityId: 'binary_sensor.fensterkontakt_kinderzimmer_contact', name: 'Kinderzimmer'},
 ];
-const TUR_SUMMARY_ID  = 'binary_sensor.sicherheit_turkontakte';
+const TUR_SUMMARY_ID = 'binary_sensor.sicherheit_turkontakte';
 
 const FENSTER_KONTAKTE = [
-  { entityId: 'binary_sensor.fensterkontakt_gaste_wc_contact',    name: 'Gäste WC'    },
-  { entityId: 'binary_sensor.fensterkontakt_schlafzimmer_contact', name: 'Schlafzimmer'},
-  { entityId: 'binary_sensor.fensterkontakt_badezimmer_contact',   name: 'Badezimmer'  },
+  { entityId: 'binary_sensor.fensterkontakt_gaste_wc_contact',     name: 'Gäste WC'    },
+  { entityId: 'binary_sensor.fensterkontakt_schlafzimmer_contact',  name: 'Schlafzimmer'},
+  { entityId: 'binary_sensor.fensterkontakt_badezimmer_contact',    name: 'Badezimmer'  },
 ];
 const FENSTER_SUMMARY_ID = 'binary_sensor.sicherheit_fensterkontakte';
 
 const MOTION_SENSORS = [
-  { entityId: 'binary_sensor.carport_bewegung',                                     name: 'Carport'   },
-  { entityId: 'binary_sensor.terasse_motion',                                       name: 'Terrasse'  },
-  { entityId: 'binary_sensor.bewegung_eingang',                                     name: 'Eingang'   },
-  { entityId: 'binary_sensor.bird_home_automation_doorbird_d1101fv_f_gb_bewegung',  name: 'Doorbird'  },
-  { entityId: 'binary_sensor.bewegung_flur',                                        name: 'Flur EG'   },
-  { entityId: 'binary_sensor.bewegung_flur_og',                                     name: 'Flur OG'   },
-  { entityId: 'binary_sensor.bewegung_hwr',                                         name: 'HWR'       },
-  { entityId: 'binary_sensor.bewegung_gaste_wc',                                    name: 'Gäste WC'  },
-  { entityId: 'binary_sensor.bewegung_buro_eg',                                     name: 'Büro EG'   },
+  { entityId: 'binary_sensor.carport_bewegung',                                    name: 'Carport'  },
+  { entityId: 'binary_sensor.terasse_motion',                                      name: 'Terrasse' },
+  { entityId: 'binary_sensor.bewegung_eingang',                                    name: 'Eingang'  },
+  { entityId: 'binary_sensor.bird_home_automation_doorbird_d1101fv_f_gb_bewegung', name: 'Doorbird' },
+  { entityId: 'binary_sensor.bewegung_flur',                                       name: 'Flur EG'  },
+  { entityId: 'binary_sensor.bewegung_flur_og',                                    name: 'Flur OG'  },
+  { entityId: 'binary_sensor.bewegung_hwr',                                        name: 'HWR'      },
+  { entityId: 'binary_sensor.bewegung_gaste_wc',                                   name: 'Gäste WC' },
+  { entityId: 'binary_sensor.bewegung_buro_eg',                                    name: 'Büro EG'  },
 ];
 
-/* ── Helpers ─────────────────────────────────────────────────────────── */
-const px = (mobile) => mobile ? 'px-3' : 'px-4';
-const py = (mobile) => mobile ? 'py-3' : 'py-4';
-const iconBox  = (mobile) => mobile ? 'h-9 w-9 rounded-xl'   : 'h-12 w-12 rounded-2xl';
-const iconInner = (mobile) => mobile ? 'h-5 w-5'              : 'h-6 w-6';
-const stateText = (mobile) => mobile ? 'text-base'            : 'text-lg';
+/* ── Row components ──────────────────────────────────────────────────── */
 
-/* ── Detection Switch ────────────────────────────────────────────────── */
-const DetectionTile = memo(({ entity, callService, isMobile }) => {
+const SectionLabel = ({ children }) => (
+  <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--text-secondary)] opacity-50">
+    {children}
+  </p>
+);
+
+const Divider = () => (
+  <div className="border-t border-[var(--glass-border)] opacity-50" />
+);
+
+/* Detection row */
+const DetectionRow = memo(({ entity, callService }) => {
   const state = entity?.state;
   const isOn = state === 'on';
   const isUnavailable = !state || state === 'unavailable' || state === 'unknown';
+  const Icon = isOn ? Eye : EyeOff;
 
   const toggle = useCallback(() => {
     if (isUnavailable) return;
     callService('switch', isOn ? 'turn_off' : 'turn_on', { entity_id: DETECTION_SWITCH });
   }, [isOn, isUnavailable, callService]);
 
-  const iconStyle = isUnavailable
-    ? { backgroundColor: 'rgba(239,68,68,0.1)',  color: '#ef4444' }
-    : isOn
-    ? { backgroundColor: 'rgba(96,165,250,0.12)', color: '#60a5fa' }
-    : { backgroundColor: 'var(--glass-bg-hover)', color: 'var(--text-muted)' };
-
-  const Icon = isOn ? Eye : EyeOff;
-
   return (
-    <div className={`glass-texture overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] transition-all ${isUnavailable ? 'opacity-50' : ''}`}>
-      <button
-        type="button"
-        data-haptic="card"
-        disabled={isUnavailable}
-        onClick={toggle}
-        style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-        className={`flex w-full items-center gap-3 ${px(isMobile)} ${py(isMobile)} text-left transition-all active:scale-[0.97] ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
+    <button
+      type="button"
+      data-haptic="card"
+      disabled={isUnavailable}
+      onClick={toggle}
+      style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+      className={`flex w-full items-center gap-3 transition-all active:scale-[0.98] ${isUnavailable ? 'cursor-default opacity-50' : 'cursor-pointer'}`}
+    >
+      <div
+        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl transition-all"
+        style={isUnavailable
+          ? { backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }
+          : isOn
+          ? { backgroundColor: 'rgba(96,165,250,0.12)', color: '#60a5fa' }
+          : { backgroundColor: 'var(--glass-bg-hover)', color: 'var(--text-muted)' }}
       >
-        <div className={`flex flex-shrink-0 items-center justify-center ${iconBox(isMobile)} transition-all`} style={iconStyle}>
-          <Icon className={`${iconInner(isMobile)} stroke-[1.5px]`} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="mb-1.5 text-[10px] font-bold leading-tight tracking-widest uppercase text-[var(--text-secondary)] opacity-60 truncate">
-            Kamera Detection
-          </p>
-          <p className={`${stateText(isMobile)} font-medium leading-none ${isUnavailable ? 'text-red-400' : isOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}`}>
-            {isUnavailable ? '⚠' : isOn ? 'Aktiv' : 'Inaktiv'}
-          </p>
-        </div>
-      </button>
-    </div>
+        <Icon className="h-4 w-4 stroke-[1.5px]" />
+      </div>
+      <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">Kamera Detection</span>
+      <span className={`text-xs font-semibold ${isUnavailable ? 'text-red-400' : isOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}`}>
+        {isUnavailable ? '⚠' : isOn ? 'Aktiv' : 'Inaktiv'}
+      </span>
+    </button>
   );
 });
 
-/* ── Lock Tile ───────────────────────────────────────────────────────── */
-const LockTile = memo(({ lockEntityId, contactId, name, entities, callService, isMobile, onOpen }) => {
-  const entity = entities[lockEntityId];
+/* Lock row */
+const LockRow = memo(({ entityId, contactId, name, entities, onOpen }) => {
+  const entity  = entities[entityId];
   const contact = entities[contactId];
   const state = entity?.state;
-  const isLocked   = state === 'locked';
-  const isUnlocked = state === 'unlocked';
-  const isJammed   = state === 'jammed';
+  const isLocked     = state === 'locked';
+  const isJammed     = state === 'jammed';
+  const isTransition = state === 'locking' || state === 'unlocking';
   const isUnavailable = !state || state === 'unavailable' || state === 'unknown';
   const isDoorOpen = contact?.state === 'on';
 
-  const iconStyle = isUnavailable
+  const iconStyle = isUnavailable || isJammed
     ? { backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }
-    : isJammed
-    ? { backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }
     : isLocked
     ? { backgroundColor: 'rgba(34,197,94,0.1)',  color: '#22c55e' }
-    : { backgroundColor: 'rgba(251,146,60,0.12)', color: '#fb923c' };
+    : isTransition
+    ? { backgroundColor: 'rgba(96,165,250,0.1)', color: '#60a5fa' }
+    : { backgroundColor: 'rgba(251,146,60,0.1)', color: '#fb923c' };
 
-  const Icon = isLocked ? Lock : Unlock;
+  const stateLabel = isUnavailable ? '⚠' : isJammed ? 'Blockiert' : isTransition ? '…' : isLocked ? 'Gesperrt' : 'Offen';
+  const stateColor = isUnavailable || isJammed ? 'text-red-400' : isTransition ? 'text-blue-400' : isLocked ? 'text-green-400' : 'text-orange-400';
 
-  const stateLabel = isUnavailable ? '⚠' : isJammed ? 'Blockiert' : isLocked ? 'Gesperrt' : 'Offen';
-  const stateColor = isUnavailable ? 'text-red-400' : isJammed ? 'text-red-400' : isLocked ? 'text-green-400' : 'text-orange-400';
+  const Icon = isLocked || state === 'locking' ? Lock : Unlock;
 
   return (
-    <div className={`glass-texture overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] transition-all ${isUnavailable ? 'opacity-50' : ''}`}>
-      <div className={`flex w-full items-center gap-3 ${px(isMobile)} ${py(isMobile)}`}>
-        <button
-          type="button"
-          data-haptic="light"
-          onClick={() => { if (onOpen) onOpen({ entityId: lockEntityId, contactId, name }); }}
-          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', ...iconStyle }}
-          className={`flex flex-shrink-0 items-center justify-center ${iconBox(isMobile)} transition-all hover:opacity-80 active:scale-90 cursor-pointer`}
-        >
-          <Icon className={`${iconInner(isMobile)} stroke-[1.5px]`} />
-        </button>
-        <button
-          type="button"
-          data-haptic="card"
-          onClick={() => { if (onOpen) onOpen({ entityId: lockEntityId, contactId, name }); }}
-          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-          className="min-w-0 flex-1 text-left transition-all active:scale-[0.97] cursor-pointer"
-        >
-          <p className="mb-1.5 text-[10px] font-bold leading-tight tracking-widest uppercase text-[var(--text-secondary)] opacity-60 truncate">
-            {name}
-          </p>
-          <p className={`${stateText(isMobile)} font-medium leading-none ${stateColor}`}>
-            {stateLabel}
-            {isDoorOpen && <span className="ml-1.5 text-[10px] text-orange-400 opacity-80">· Tür auf</span>}
-          </p>
-        </button>
+    <button
+      type="button"
+      data-haptic="card"
+      onClick={() => onOpen?.({ entityId, contactId, name })}
+      style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+      className="flex w-full items-center gap-3 transition-all active:scale-[0.98] cursor-pointer"
+    >
+      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl transition-all" style={iconStyle}>
+        {isUnavailable
+          ? <AlertTriangle className="h-4 w-4 stroke-[1.5px]" />
+          : <Icon className={`h-4 w-4 stroke-[1.5px] ${isTransition ? 'animate-pulse' : ''}`} />
+        }
       </div>
-    </div>
+      <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">{name}</span>
+      <div className="flex items-center gap-1.5">
+        {isDoorOpen && <span className="text-[10px] font-semibold text-orange-400">Tür auf</span>}
+        <span className={`text-xs font-semibold ${stateColor}`}>{stateLabel}</span>
+      </div>
+    </button>
   );
 });
 
-/* ── Contact Summary Tile ────────────────────────────────────────────── */
-const ContactSummaryTile = memo(({ label, icon: Icon, summaryId, contacts, entities, isMobile, onClick }) => {
+/* Contact summary row */
+const ContactRow = memo(({ label, summaryId, contacts, entities, onClick }) => {
   const summary = entities[summaryId];
-  const summaryState = summary?.state;
-  const isOpen = summaryState === 'on';
-  const isUnavailable = !summaryState || summaryState === 'unavailable';
-
+  const isOpen = summary?.state === 'on';
+  const isUnavailable = !summary?.state || summary.state === 'unavailable';
   const openCount = contacts.filter(({ entityId }) => entities[entityId]?.state === 'on').length;
 
-  const iconStyle = isUnavailable
-    ? { backgroundColor: 'rgba(239,68,68,0.1)',  color: '#ef4444' }
-    : isOpen
-    ? { backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }
-    : { backgroundColor: 'rgba(34,197,94,0.1)',  color: '#22c55e' };
-
+  const dotColor = isUnavailable ? 'bg-gray-500' : isOpen ? 'bg-red-500' : 'bg-green-500';
   const stateLabel = isUnavailable ? '⚠' : isOpen ? `${openCount} offen` : 'Alle zu';
   const stateColor = isUnavailable ? 'text-red-400' : isOpen ? 'text-red-400' : 'text-green-400';
 
   return (
-    <div className={`glass-texture overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] transition-all ${isUnavailable ? 'opacity-50' : ''}`}>
-      <button
-        type="button"
-        data-haptic="card"
-        onClick={onClick}
-        style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-        className={`flex w-full items-center gap-3 ${px(isMobile)} ${py(isMobile)} text-left transition-all active:scale-[0.97] cursor-pointer`}
+    <button
+      type="button"
+      data-haptic="card"
+      onClick={onClick}
+      style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+      className="flex w-full items-center gap-3 transition-all active:scale-[0.98] cursor-pointer"
+    >
+      <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl`}
+        style={isOpen
+          ? { backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }
+          : { backgroundColor: 'rgba(34,197,94,0.1)',  color: '#22c55e' }}
       >
-        <div className={`flex flex-shrink-0 items-center justify-center ${iconBox(isMobile)} transition-all`} style={iconStyle}>
-          <Icon className={`${iconInner(isMobile)} stroke-[1.5px]`} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="mb-1.5 text-[10px] font-bold leading-tight tracking-widest uppercase text-[var(--text-secondary)] opacity-60 truncate">
-            {label}
-          </p>
-          <p className={`${stateText(isMobile)} font-medium leading-none ${stateColor}`}>
-            {stateLabel}
-          </p>
-        </div>
-      </button>
-    </div>
-  );
-});
-
-/* ── Motion Strip ────────────────────────────────────────────────────── */
-const MotionStrip = memo(({ entities, isMobile }) => {
-  const anyActive = MOTION_SENSORS.some(({ entityId }) => entities[entityId]?.state === 'on');
-
-  return (
-    <div className="glass-texture overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)]">
-      <div className={`${px(isMobile)} ${py(isMobile)} flex flex-col gap-2.5`}>
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--text-secondary)] opacity-60">
-            Bewegung
-          </p>
-          {anyActive && <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />}
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {MOTION_SENSORS.map(({ entityId, name }) => {
-            const state = entities[entityId]?.state;
-            const isOn = state === 'on';
-            const isUnavailable = !state || state === 'unavailable';
-            return (
-              <span
-                key={entityId}
-                className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all ${
-                  isUnavailable
-                    ? 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-muted)] opacity-30'
-                    : isOn
-                    ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
-                    : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] opacity-70'
-                }`}
-              >
-                <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${isUnavailable ? 'bg-gray-600' : isOn ? 'bg-yellow-400 animate-pulse' : 'bg-gray-500'}`} />
-                {name}
-              </span>
-            );
-          })}
-        </div>
+        <Shield className="h-4 w-4 stroke-[1.5px]" />
       </div>
-    </div>
+      <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">{label}</span>
+      <div className="flex items-center gap-1.5">
+        <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
+        <span className={`text-xs font-semibold ${stateColor}`}>{stateLabel}</span>
+      </div>
+    </button>
   );
 });
 
@@ -243,6 +185,9 @@ const SecurityPanelCard = ({
   setShowSecurityLockModal,
   setShowSecurityContactsModal,
 }) => {
+  const anyMotion = MOTION_SENSORS.some(({ entityId }) => entities[entityId]?.state === 'on');
+  const p = isMobile ? 'px-3 py-3' : 'px-4 py-4';
+
   const layoutStyle = cardStyle ? {
     transform: cardStyle.transform,
     opacity: cardStyle.opacity,
@@ -255,56 +200,87 @@ const SecurityPanelCard = ({
     <div
       key={cardId}
       {...dragProps}
-      className={`relative flex flex-col gap-3 font-sans select-none ${editMode ? 'cursor-move' : ''}`}
+      className={`relative font-sans select-none ${editMode ? 'cursor-move' : ''}`}
       style={layoutStyle}
     >
       {controls}
 
-      {/* Detection switch — full width */}
-      <DetectionTile
-        entity={entities[DETECTION_SWITCH]}
-        callService={callService}
-        isMobile={isMobile}
-      />
+      <div className={`glass-texture rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] flex flex-col gap-0 overflow-hidden`}>
 
-      {/* Locks — 2 cols */}
-      <div className="grid grid-cols-2 gap-3">
-        {LOCKS.map((lock) => (
-          <LockTile
-            key={lock.entityId}
-            {...lock}
+        {/* Detection */}
+        <div className={p}>
+          <DetectionRow entity={entities[DETECTION_SWITCH]} callService={callService} />
+        </div>
+
+        <Divider />
+
+        {/* Locks */}
+        <div className={`${p} flex flex-col gap-3`}>
+          <SectionLabel>Schlösser</SectionLabel>
+          {LOCKS.map((lock) => (
+            <LockRow
+              key={lock.entityId}
+              {...lock}
+              entities={entities}
+              onOpen={setShowSecurityLockModal}
+            />
+          ))}
+        </div>
+
+        <Divider />
+
+        {/* Contacts */}
+        <div className={`${p} flex flex-col gap-3`}>
+          <SectionLabel>Kontakte</SectionLabel>
+          <ContactRow
+            label="Türkontakte"
+            summaryId={TUR_SUMMARY_ID}
+            contacts={TUR_KONTAKTE}
             entities={entities}
-            callService={callService}
-            isMobile={isMobile}
-            onOpen={setShowSecurityLockModal}
+            onClick={() => setShowSecurityContactsModal?.({ type: 'tür', contacts: TUR_KONTAKTE })}
           />
-        ))}
-      </div>
+          <ContactRow
+            label="Fensterkontakte"
+            summaryId={FENSTER_SUMMARY_ID}
+            contacts={FENSTER_KONTAKTE}
+            entities={entities}
+            onClick={() => setShowSecurityContactsModal?.({ type: 'fenster', contacts: FENSTER_KONTAKTE })}
+          />
+        </div>
 
-      {/* Contacts — 2 cols */}
-      <div className="grid grid-cols-2 gap-3">
-        <ContactSummaryTile
-          label="Türkontakte"
-          icon={Shield}
-          summaryId={TUR_SUMMARY_ID}
-          contacts={TUR_KONTAKTE}
-          entities={entities}
-          isMobile={isMobile}
-          onClick={() => setShowSecurityContactsModal({ type: 'tür', contacts: TUR_KONTAKTE })}
-        />
-        <ContactSummaryTile
-          label="Fensterkontakte"
-          icon={Shield}
-          summaryId={FENSTER_SUMMARY_ID}
-          contacts={FENSTER_KONTAKTE}
-          entities={entities}
-          isMobile={isMobile}
-          onClick={() => setShowSecurityContactsModal({ type: 'fenster', contacts: FENSTER_KONTAKTE })}
-        />
-      </div>
+        <Divider />
 
-      {/* Motion sensors — full width */}
-      <MotionStrip entities={entities} isMobile={isMobile} />
+        {/* Motion */}
+        <div className={`${p} flex flex-col gap-2.5`}>
+          <div className="flex items-center justify-between">
+            <SectionLabel>Bewegung</SectionLabel>
+            {anyMotion && <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse" />}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {MOTION_SENSORS.map(({ entityId, name }) => {
+              const state = entities[entityId]?.state;
+              const isOn = state === 'on';
+              const isUnavailable = !state || state === 'unavailable';
+              return (
+                <span
+                  key={entityId}
+                  className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all ${
+                    isUnavailable
+                      ? 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-muted)] opacity-25'
+                      : isOn
+                      ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
+                      : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] opacity-70'
+                  }`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${isUnavailable ? 'bg-gray-600' : isOn ? 'bg-yellow-400 animate-pulse' : 'bg-gray-500'}`} />
+                  {name}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };
