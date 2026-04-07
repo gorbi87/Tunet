@@ -320,47 +320,40 @@ const SecurityPanelCard = ({
   const p = isMobile ? 'px-3 py-3' : 'px-4 py-3';
 
   if (isMobile) {
-    // Mobile: 2-column grid, 3 rows
-    const cellBorder = 'border-[var(--glass-border)]';
+    // Mobile: 3-column grid, 2 rows — no section labels, tight padding
+    const b = 'border-[var(--glass-border)]';
+    const mp = 'px-2.5 py-2';
     return (
       <div key={cardId} {...dragProps} className={`relative font-sans select-none ${editMode ? 'cursor-move' : ''}`} style={layoutStyle}>
         {controls}
         <div className="glass-texture rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] overflow-hidden">
-          <div className="grid grid-cols-2">
+          <div className="grid grid-cols-3">
 
             {/* Row 1 */}
-            <div className={`${p} flex flex-col gap-2 border-r border-b ${cellBorder}`}>
-              <SectionLabel>Detection</SectionLabel>
+            <div className={`${mp} flex flex-col gap-1.5 border-r border-b ${b}`}>
               <DetectionSection entity={entities[DETECTION_SWITCH]} callService={callService} mobile />
             </div>
-            <div className={`${p} flex flex-col gap-2 border-b ${cellBorder}`}>
-              <SectionLabel>Schlösser</SectionLabel>
+            <div className={`${mp} flex flex-col gap-1.5 border-r border-b ${b}`}>
               {LOCKS.map((lock) => (
                 <LockRow key={lock.entityId} {...lock} entities={entities} onOpen={setShowSecurityLockModal} />
               ))}
             </div>
-
-            {/* Row 2 */}
-            <div className={`${p} flex flex-col gap-2 border-r border-b ${cellBorder}`}>
-              <SectionLabel>Kontakte</SectionLabel>
+            <div className={`${mp} flex flex-col gap-1.5 border-b ${b}`}>
               <ContactRow label="Türkontakte" summaryId={TUR_SUMMARY_ID} contacts={TUR_KONTAKTE} entities={entities}
                 onClick={() => setShowSecurityContactsModal?.({ type: 'tür', contacts: TUR_KONTAKTE })} />
               <ContactRow label="Fensterkontakte" summaryId={FENSTER_SUMMARY_ID} contacts={FENSTER_KONTAKTE} entities={entities}
                 onClick={() => setShowSecurityContactsModal?.({ type: 'fenster', contacts: FENSTER_KONTAKTE })} />
             </div>
-            <div className={`${p} flex flex-col gap-2 border-b ${cellBorder}`}>
-              <SectionLabel>Bewegung</SectionLabel>
+
+            {/* Row 2 */}
+            <div className={`${mp} flex flex-col justify-center border-r ${b}`}>
               <MotionRow entities={entities}
                 onClick={() => setShowSecurityContactsModal?.({ type: 'bewegung', contacts: MOTION_SENSORS })} />
             </div>
-
-            {/* Row 3 */}
-            <div className={`${p} flex flex-col gap-2 border-r ${cellBorder}`}>
-              <SectionLabel>Alarm</SectionLabel>
+            <div className={`${mp} flex flex-col justify-center border-r ${b}`}>
               <AlarmRow entity={entities[ALARM_ENTITY]} onOpen={() => setShowAlarmModal?.(ALARM_ENTITY)} />
             </div>
-            <div className={`${p} flex flex-col gap-2`}>
-              <SectionLabel>Simulation</SectionLabel>
+            <div className={`${mp} flex flex-col justify-center`}>
               <SimulationRow entity={entities[SIMULATION_SWITCH]} callService={callService} />
             </div>
 
