@@ -121,20 +121,18 @@ const LockTile = memo(({ lockEntityId, contactId, name, entities, callService, i
         <button
           type="button"
           data-haptic="light"
-          disabled={isUnavailable}
-          onClick={() => { if (!isUnavailable && onOpen) onOpen({ entityId: lockEntityId, contactId, name }); }}
+          onClick={() => { if (onOpen) onOpen({ entityId: lockEntityId, contactId, name }); }}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', ...iconStyle }}
-          className={`flex flex-shrink-0 items-center justify-center ${iconBox(isMobile)} transition-all hover:opacity-80 active:scale-90 ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
+          className={`flex flex-shrink-0 items-center justify-center ${iconBox(isMobile)} transition-all hover:opacity-80 active:scale-90 cursor-pointer`}
         >
           <Icon className={`${iconInner(isMobile)} stroke-[1.5px]`} />
         </button>
         <button
           type="button"
           data-haptic="card"
-          disabled={isUnavailable}
-          onClick={() => { if (!isUnavailable && onOpen) onOpen({ entityId: lockEntityId, contactId, name }); }}
+          onClick={() => { if (onOpen) onOpen({ entityId: lockEntityId, contactId, name }); }}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-          className={`min-w-0 flex-1 text-left transition-all active:scale-[0.97] ${isUnavailable ? 'cursor-default' : 'cursor-pointer'}`}
+          className="min-w-0 flex-1 text-left transition-all active:scale-[0.97] cursor-pointer"
         >
           <p className="mb-1.5 text-[10px] font-bold leading-tight tracking-widest uppercase text-[var(--text-secondary)] opacity-60 truncate">
             {name}
