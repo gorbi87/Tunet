@@ -320,44 +320,51 @@ const SecurityPanelCard = ({
   const p = isMobile ? 'px-3 py-3' : 'px-4 py-3';
 
   if (isMobile) {
-    // Mobile: 3-column grid, 2 rows — no section labels, tight padding
-    const b = 'border-[var(--glass-border)]';
-    const mp = 'px-2.5 py-2';
+    // Mobile: compact single-column list, grouped by thin dividers
+    const Row = ({ children }) => (
+      <div className="px-3 py-2">{children}</div>
+    );
+    const HDivider = () => (
+      <div className="border-t border-[var(--glass-border)] opacity-50 mx-3" />
+    );
     return (
       <div key={cardId} {...dragProps} className={`relative font-sans select-none ${editMode ? 'cursor-move' : ''}`} style={layoutStyle}>
         {controls}
-        <div className="glass-texture rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] overflow-hidden">
-          <div className="grid grid-cols-3">
+        <div className="glass-texture rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] overflow-hidden py-1">
 
-            {/* Row 1 */}
-            <div className={`${mp} flex flex-col gap-1.5 border-r border-b ${b}`}>
-              <DetectionSection entity={entities[DETECTION_SWITCH]} callService={callService} mobile />
-            </div>
-            <div className={`${mp} flex flex-col gap-1.5 border-r border-b ${b}`}>
-              {LOCKS.map((lock) => (
-                <LockRow key={lock.entityId} {...lock} entities={entities} onOpen={setShowSecurityLockModal} />
-              ))}
-            </div>
-            <div className={`${mp} flex flex-col gap-1.5 border-b ${b}`}>
-              <ContactRow label="Türkontakte" summaryId={TUR_SUMMARY_ID} contacts={TUR_KONTAKTE} entities={entities}
-                onClick={() => setShowSecurityContactsModal?.({ type: 'tür', contacts: TUR_KONTAKTE })} />
-              <ContactRow label="Fensterkontakte" summaryId={FENSTER_SUMMARY_ID} contacts={FENSTER_KONTAKTE} entities={entities}
-                onClick={() => setShowSecurityContactsModal?.({ type: 'fenster', contacts: FENSTER_KONTAKTE })} />
-            </div>
+          <Row><DetectionSection entity={entities[DETECTION_SWITCH]} callService={callService} mobile /></Row>
 
-            {/* Row 2 */}
-            <div className={`${mp} flex flex-col justify-center border-r ${b}`}>
-              <MotionRow entities={entities}
-                onClick={() => setShowSecurityContactsModal?.({ type: 'bewegung', contacts: MOTION_SENSORS })} />
-            </div>
-            <div className={`${mp} flex flex-col justify-center border-r ${b}`}>
-              <AlarmRow entity={entities[ALARM_ENTITY]} onOpen={() => setShowAlarmModal?.(ALARM_ENTITY)} />
-            </div>
-            <div className={`${mp} flex flex-col justify-center`}>
-              <SimulationRow entity={entities[SIMULATION_SWITCH]} callService={callService} />
-            </div>
+          <HDivider />
 
-          </div>
+          {LOCKS.map((lock) => (
+            <Row key={lock.entityId}>
+              <LockRow {...lock} entities={entities} onOpen={setShowSecurityLockModal} />
+            </Row>
+          ))}
+
+          <HDivider />
+
+          <Row>
+            <ContactRow label="Türkontakte" summaryId={TUR_SUMMARY_ID} contacts={TUR_KONTAKTE} entities={entities}
+              onClick={() => setShowSecurityContactsModal?.({ type: 'tür', contacts: TUR_KONTAKTE })} />
+          </Row>
+          <Row>
+            <ContactRow label="Fensterkontakte" summaryId={FENSTER_SUMMARY_ID} contacts={FENSTER_KONTAKTE} entities={entities}
+              onClick={() => setShowSecurityContactsModal?.({ type: 'fenster', contacts: FENSTER_KONTAKTE })} />
+          </Row>
+
+          <HDivider />
+
+          <Row>
+            <MotionRow entities={entities}
+              onClick={() => setShowSecurityContactsModal?.({ type: 'bewegung', contacts: MOTION_SENSORS })} />
+          </Row>
+
+          <HDivider />
+
+          <Row><AlarmRow entity={entities[ALARM_ENTITY]} onOpen={() => setShowAlarmModal?.(ALARM_ENTITY)} /></Row>
+          <Row><SimulationRow entity={entities[SIMULATION_SWITCH]} callService={callService} /></Row>
+
         </div>
       </div>
     );
