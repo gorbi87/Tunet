@@ -8,6 +8,7 @@ export function renderSecurityPanelCard(cardId, dragProps, getControls, cardStyl
     isMobile,
     setShowSecurityLockModal,
     setShowSecurityContactsModal,
+    setShowAlarmModal,
   } = ctx;
 
   return (
@@ -23,6 +24,7 @@ export function renderSecurityPanelCard(cardId, dragProps, getControls, cardStyl
       isMobile={isMobile}
       setShowSecurityLockModal={setShowSecurityLockModal}
       setShowSecurityContactsModal={setShowSecurityContactsModal}
+      setShowAlarmModal={setShowAlarmModal}
     />
   );
 }
