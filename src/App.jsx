@@ -180,6 +180,8 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     setShowWeatherModal: modals.setShowWeatherModal,
     setShowAlarmModal: modals.setShowAlarmModal,
     setShowAlarmActionModal: modals.setShowAlarmActionModal,
+    setShowSecurityLockModal: modals.setShowSecurityLockModal,
+    setShowSecurityContactsModal: modals.setShowSecurityContactsModal,
   };
   const mediaModalActions = groupedMediaModalActions || {
     setActiveMediaModal: modals.setActiveMediaModal,

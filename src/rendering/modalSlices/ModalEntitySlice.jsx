@@ -27,6 +27,8 @@ const LuftungsanlageModal = lazy(() => import('../../modals/LuftungsanlageModal'
 const PvModal = lazy(() => import('../../modals/PvModal'));
 const BeregnungModal = lazy(() => import('../../modals/BeregnungModal'));
 const EntityCountModal = lazy(() => import('../../modals/EntityCountModal'));
+const SecurityLockModal = lazy(() => import('../../modals/SecurityLockModal'));
+const SecurityContactsModal = lazy(() => import('../../modals/SecurityContactsModal'));
 
 export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, resolveCarSettings }) {
   const { entities, conn, activeUrl, authRef, config, t, language } = core;
@@ -81,6 +83,10 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     setShowBeregnungModal,
     showEntityCountModal,
     setShowEntityCountModal,
+    showSecurityLockModal,
+    setShowSecurityLockModal,
+    showSecurityContactsModal,
+    setShowSecurityContactsModal,
   } = modals;
   const { cardSettings, saveCardSetting, customNames, customIcons, getCardSettingsKey } =
     cardConfig;
@@ -569,6 +575,29 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
             activeState={showEntityCountModal?.activeState || 'on'}
             label={showEntityCountModal?.label || ''}
             singularLabel={showEntityCountModal?.singularLabel || ''}
+          />
+        </ModalSuspense>
+      )}
+
+      {showSecurityLockModal && (
+        <ModalSuspense>
+          <SecurityLockModal
+            show={true}
+            onClose={() => setShowSecurityLockModal(null)}
+            lockInfo={showSecurityLockModal}
+            entities={entities}
+            callService={callService}
+          />
+        </ModalSuspense>
+      )}
+
+      {showSecurityContactsModal && (
+        <ModalSuspense>
+          <SecurityContactsModal
+            show={true}
+            onClose={() => setShowSecurityContactsModal(null)}
+            contactsInfo={showSecurityContactsModal}
+            entities={entities}
           />
         </ModalSuspense>
       )}

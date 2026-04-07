@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.87
+
+### Changed
+- Add release notes.
+
 ## 1.14.86
 
 ### Fixed

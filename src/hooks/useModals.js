@@ -41,6 +41,8 @@ const MODAL_DEFAULTS = {
   showEditCardModal: null,
   showStatusPillsConfig: false,
   showEntityCountModal: null,
+  showSecurityLockModal: null,
+  showSecurityContactsModal: null,
 };
 
 // Keys checked by hasOpenModal
@@ -74,6 +76,8 @@ const OPEN_CHECK_KEYS = [
   'showPvModal',
   'showBeregnungModal',
   'showEntityCountModal',
+  'showSecurityLockModal',
+  'showSecurityContactsModal',
 ];
 
 /** @param {ModalState} state @param {{ type: 'SET', key: keyof ModalState, value: ModalState[keyof ModalState] } | { type: 'CLOSE_ALL' }} action */
@@ -137,6 +141,8 @@ export function useModals() {
       setShowLuftungsanlageModal: setters.setShowLuftungsanlageModal,
       setShowPvModal: setters.setShowPvModal,
       setShowBeregnungModal: setters.setShowBeregnungModal,
+      setShowSecurityLockModal: setters.setShowSecurityLockModal,
+      setShowSecurityContactsModal: setters.setShowSecurityContactsModal,
     }),
     [setters]
   );
