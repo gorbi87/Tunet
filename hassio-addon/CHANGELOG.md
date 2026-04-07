@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.93
+
+### Changed
+- Add release notes.
+
 ## 1.14.92
 
 ### Changed

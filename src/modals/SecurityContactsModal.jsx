@@ -5,7 +5,8 @@ export default function SecurityContactsModal({ show, onClose, contactsInfo, ent
   if (!show || !contactsInfo) return null;
 
   const { type, contacts } = contactsInfo;
-  const title = type === 'tür' ? 'Türkontakte' : 'Fensterkontakte';
+  const isBewegung = type === 'bewegung';
+  const title = type === 'tür' ? 'Türkontakte' : isBewegung ? 'Bewegungsmelder' : 'Fensterkontakte';
 
   const items = contacts.map(({ entityId, name }) => {
     const state = entities[entityId]?.state;
@@ -31,8 +32,10 @@ export default function SecurityContactsModal({ show, onClose, contactsInfo, ent
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[var(--glass-border)]">
             <div>
               <h2 id={titleId} className="text-base font-semibold text-[var(--text-primary)]">{title}</h2>
-              <p className={`text-xs mt-0.5 font-medium ${openItems.length > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                {openItems.length > 0 ? `${openItems.length} offen` : 'Alle geschlossen'}
+              <p className={`text-xs mt-0.5 font-medium ${openItems.length > 0 ? (isBewegung ? 'text-yellow-400' : 'text-red-400') : 'text-green-400'}`}>
+                {openItems.length > 0
+                  ? isBewegung ? `${openItems.length} aktiv` : `${openItems.length} offen`
+                  : isBewegung ? 'Keine Bewegung' : 'Alle geschlossen'}
               </p>
             </div>
             <button
@@ -60,9 +63,9 @@ export default function SecurityContactsModal({ show, onClose, contactsInfo, ent
               >
                 <span className="text-sm font-medium text-[var(--text-primary)]">{name}</span>
                 <span className={`text-xs font-bold ${
-                  isUnavailable ? 'text-[var(--text-muted)]' : isOpen ? 'text-red-400' : 'text-green-400'
+                  isUnavailable ? 'text-[var(--text-muted)]' : isOpen ? (isBewegung ? 'text-yellow-400' : 'text-red-400') : 'text-green-400'
                 }`}>
-                  {isUnavailable ? '–' : isOpen ? 'Offen' : 'Zu'}
+                  {isUnavailable ? '–' : isOpen ? (isBewegung ? 'Aktiv' : 'Offen') : (isBewegung ? 'Ruhig' : 'Zu')}
                 </span>
               </div>
             ))}

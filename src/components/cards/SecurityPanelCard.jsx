@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react';
-import { Shield, Lock, Unlock, AlertTriangle, Eye, EyeOff } from '../../icons';
+import { Shield, Lock, Unlock, AlertTriangle, Camera, Activity } from '../../icons';
 
 /* ── Entity config ───────────────────────────────────────────────────── */
 
@@ -57,7 +57,6 @@ const DetectionColumn = memo(({ entity, callService }) => {
   const state = entity?.state;
   const isOn = state === 'on';
   const isUnavailable = !state || state === 'unavailable' || state === 'unknown';
-  const Icon = isOn ? Eye : EyeOff;
 
   const toggle = useCallback(() => {
     if (isUnavailable) return;
@@ -81,7 +80,7 @@ const DetectionColumn = memo(({ entity, callService }) => {
           ? { backgroundColor: 'rgba(96,165,250,0.12)', color: '#60a5fa' }
           : { backgroundColor: 'var(--glass-bg-hover)', color: 'var(--text-muted)' }}
       >
-        <Icon className="h-4 w-4 stroke-[1.5px]" />
+        <Camera className="h-4 w-4 stroke-[1.5px]" />
       </div>
       <span className="text-[11px] font-semibold text-[var(--text-primary)] text-center leading-tight">
         Kamera<br />Detection
@@ -177,6 +176,44 @@ const ContactRow = memo(({ label, summaryId, contacts, entities, onClick }) => {
 });
 
 /* ── Security Panel Card ─────────────────────────────────────────────── */
+/* ── Motion summary row ──────────────────────────────────────────────── */
+
+const MotionRow = memo(({ entities, onClick }) => {
+  const activeCount = MOTION_SENSORS.filter(({ entityId }) => entities[entityId]?.state === 'on').length;
+  const total = MOTION_SENSORS.length;
+  const isActive = activeCount > 0;
+
+  const dotColor = isActive ? 'bg-yellow-400' : 'bg-green-500';
+  const stateLabel = isActive ? `${activeCount} aktiv` : 'Keine';
+  const stateColor = isActive ? 'text-yellow-400' : 'text-green-400';
+
+  return (
+    <button
+      type="button"
+      data-haptic="card"
+      onClick={onClick}
+      style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+      className="flex items-center gap-2 transition-all active:scale-[0.98] cursor-pointer w-full"
+    >
+      <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg"
+        style={isActive
+          ? { backgroundColor: 'rgba(234,179,8,0.12)', color: '#facc15' }
+          : { backgroundColor: 'rgba(34,197,94,0.1)',  color: '#22c55e' }}
+      >
+        <Activity className={`h-3.5 w-3.5 stroke-[1.5px] ${isActive ? 'animate-pulse' : ''}`} />
+      </div>
+      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 text-left">
+        Bewegungsmelder
+      </span>
+      <div className="flex items-center gap-1">
+        <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${dotColor} ${isActive ? 'animate-pulse' : ''}`} />
+        <span className={`text-[10px] font-bold ${stateColor}`}>{stateLabel}</span>
+      </div>
+    </button>
+  );
+});
+
+/* ── Security Panel Card ─────────────────────────────────────────────── */
 const SecurityPanelCard = ({
   cardId,
   dragProps,
@@ -189,7 +226,6 @@ const SecurityPanelCard = ({
   setShowSecurityLockModal,
   setShowSecurityContactsModal,
 }) => {
-  const anyMotion = MOTION_SENSORS.some(({ entityId }) => entities[entityId]?.state === 'on');
 
   const layoutStyle = cardStyle ? {
     transform: cardStyle.transform,
@@ -255,33 +291,12 @@ const SecurityPanelCard = ({
           <VDivider />
 
           {/* ── Bewegung ── */}
-          <div className={`flex-1 flex flex-col justify-center gap-2 ${isMobile ? 'px-3 py-3' : 'px-4 py-3'}`}>
-            <div className="flex items-center gap-2">
-              <SectionLabel>Bewegung</SectionLabel>
-              {anyMotion && <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse mb-2" />}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {MOTION_SENSORS.map(({ entityId, name }) => {
-                const state = entities[entityId]?.state;
-                const isOn = state === 'on';
-                const isUnavailable = !state || state === 'unavailable';
-                return (
-                  <span
-                    key={entityId}
-                    className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-all ${
-                      isUnavailable
-                        ? 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-muted)] opacity-25'
-                        : isOn
-                        ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
-                        : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] opacity-60'
-                    }`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${isUnavailable ? 'bg-gray-600' : isOn ? 'bg-yellow-400 animate-pulse' : 'bg-gray-500'}`} />
-                    {name}
-                  </span>
-                );
-              })}
-            </div>
+          <div className={`flex flex-col justify-center gap-2 ${isMobile ? 'px-3 py-3' : 'px-4 py-3'}`} style={{ minWidth: isMobile ? 130 : 160 }}>
+            <SectionLabel>Bewegung</SectionLabel>
+            <MotionRow
+              entities={entities}
+              onClick={() => setShowSecurityContactsModal?.({ type: 'bewegung', contacts: MOTION_SENSORS })}
+            />
           </div>
 
         </div>
