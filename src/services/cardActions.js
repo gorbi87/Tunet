@@ -291,6 +291,12 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
+    case 'security_panel': {
+      const securityPanelCardId = `security_panel_card_${Date.now()}`;
+      commitSingleCard(securityPanelCardId, {});
+      return;
+    }
+
     case 'car': {
       const cardId = `car_card_${Date.now()}`;
       commitSingleCard(cardId, { type: 'car', size: 'large' }, { openEdit: true });

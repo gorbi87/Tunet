@@ -30,6 +30,7 @@ import {
   renderBeregnungCard,
   renderLightPanelCard,
   renderCoverPanelCard,
+  renderSecurityPanelCard,
 } from './cards';
 
 /**
@@ -39,6 +40,7 @@ import {
 export const CARD_REGISTRY = [
   { prefix: 'light_panel_card_', renderer: renderLightPanelCard },
   { prefix: 'cover_panel_card_', renderer: renderCoverPanelCard },
+  { prefix: 'security_panel_card_', renderer: renderSecurityPanelCard },
   { prefix: 'light_', renderer: renderLightCard },
   { prefix: 'light.', renderer: renderLightCard },
   { prefix: 'vacuum.', renderer: renderVacuumCard },

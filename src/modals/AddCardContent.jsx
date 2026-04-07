@@ -1060,6 +1060,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="security_panel"
+                  icon={Shield}
+                  label="Sicherheit Panel"
+                  isActive={addCardType === 'security_panel'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="climate"
                   icon={Thermometer}
                   label={t('addCard.type.climate')}
@@ -1240,6 +1247,8 @@ function AddCardContent({
               renderSimpleAddSection(Lightbulb, 'Licht Panel hinzufügen (EG / OG / Außen / Automatik)', 'Licht Panel hinzufügen')
             ) : addCardType === 'cover_panel' ? (
               renderSimpleAddSection(ArrowUpDown, 'Beschattung Panel hinzufügen (EG / OG / Automatik)', 'Beschattung Panel hinzufügen')
+            ) : addCardType === 'security_panel' ? (
+              renderSimpleAddSection(Shield, 'Sicherheit Panel hinzufügen', 'Sicherheit Panel hinzufügen')
             ) : addCardType === 'room' ? (
               <RoomSection
                 conn={conn}

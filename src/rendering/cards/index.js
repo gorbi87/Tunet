@@ -26,3 +26,4 @@ export { renderGo2rtcCameraCard } from './go2rtcCameraRenderer';
 export { renderBeregnungCard } from './beregnungRenderer';
 export { renderLightPanelCard } from './lightPanelRenderer';
 export { renderCoverPanelCard } from './coverPanelRenderer';
+export { renderSecurityPanelCard } from './securityPanelRenderer';

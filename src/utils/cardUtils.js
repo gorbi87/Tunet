@@ -64,6 +64,7 @@ const SPECIAL_CARD_PREFIXES = [
   'beregnung_card_',
   'light_panel_card_',
   'cover_panel_card_',
+  'security_panel_card_',
 ];
 
 /**
