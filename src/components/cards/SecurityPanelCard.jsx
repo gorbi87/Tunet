@@ -13,32 +13,36 @@ const LOCKS = [
 ];
 
 const TUR_KONTAKTE = [
-  { entityId: 'binary_sensor.turkontakt_haustur_contact',         name: 'Haustür'        },
-  { entityId: 'binary_sensor.turkontakt_hwr_contact',             name: 'HWR'            },
-  { entityId: 'binary_sensor.turkontakt_dach_contact',            name: 'Dach'           },
-  { entityId: 'binary_sensor.turkontakt_terasse_kuche_contact',   name: 'Terrasse Küche' },
-  { entityId: 'binary_sensor.turkontakt_esszimmer_contact',       name: 'Esszimmer'      },
-  { entityId: 'binary_sensor.fensterkontakt_kinderzimmer_contact',name: 'Kinderzimmer'   },
+  { entityId: 'binary_sensor.turkontakt_haustur_contact',       name: 'Haustür'        },
+  { entityId: 'binary_sensor.turkontakt_hwr_contact',           name: 'HWR'            },
+  { entityId: 'binary_sensor.turkontakt_dach_contact',          name: 'Dach'           },
+  { entityId: 'binary_sensor.turkontakt_terasse_kuche_contact', name: 'Terrasse Küche' },
+  { entityId: 'binary_sensor.turkontakt_esszimmer_contact',     name: 'Esszimmer'      },
 ];
 const TUR_SUMMARY_ID = 'binary_sensor.sicherheit_turkontakte';
 
 const FENSTER_KONTAKTE = [
-  { entityId: 'binary_sensor.fensterkontakt_gaste_wc_contact',    name: 'Gäste WC'    },
-  { entityId: 'binary_sensor.fensterkontakt_schlafzimmer_contact', name: 'Schlafzimmer'},
-  { entityId: 'binary_sensor.fensterkontakt_badezimmer_contact',   name: 'Badezimmer'  },
+  { entityId: 'binary_sensor.fensterkontakt_kinderzimmer_contact', name: 'Kinderzimmer' },
+  { entityId: 'binary_sensor.fensterkontakt_gaste_wc_contact',     name: 'Gäste WC'     },
+  { entityId: 'binary_sensor.fensterkontakt_schlafzimmer_contact',  name: 'Schlafzimmer' },
+  { entityId: 'binary_sensor.fensterkontakt_badezimmer_contact',    name: 'Badezimmer'   },
 ];
 const FENSTER_SUMMARY_ID = 'binary_sensor.sicherheit_fensterkontakte';
 
 const MOTION_SENSORS = [
-  { entityId: 'binary_sensor.carport_bewegung',                                    name: 'Carport'  },
-  { entityId: 'binary_sensor.terasse_motion',                                      name: 'Terrasse' },
-  { entityId: 'binary_sensor.bewegung_eingang',                                    name: 'Eingang'  },
-  { entityId: 'binary_sensor.bird_home_automation_doorbird_d1101fv_f_gb_bewegung', name: 'Doorbird' },
-  { entityId: 'binary_sensor.bewegung_flur',                                       name: 'Flur EG'  },
-  { entityId: 'binary_sensor.bewegung_flur_og',                                    name: 'Flur OG'  },
-  { entityId: 'binary_sensor.bewegung_hwr',                                        name: 'HWR'      },
-  { entityId: 'binary_sensor.bewegung_gaste_wc',                                   name: 'Gäste WC' },
-  { entityId: 'binary_sensor.bewegung_buro_eg',                                    name: 'Büro EG'  },
+  { entityId: 'binary_sensor.bewegung_flur',                              name: 'Flur EG'     },
+  { entityId: 'binary_sensor.bewegung_flur_og',                           name: 'Flur OG'     },
+  { entityId: 'binary_sensor.bewegung_hwr',                               name: 'HWR'         },
+  { entityId: 'binary_sensor.bewegung_gaste_wc',                          name: 'Gäste WC'    },
+  { entityId: 'binary_sensor.bewegung_buro_eg',                           name: 'Büro EG'     },
+  { entityId: 'binary_sensor.bewegungsmelder_treppe_unten_occupancy',     name: 'Treppe unten'},
+  { entityId: 'binary_sensor.bewegungsmelder_treppe_oben_occupancy',      name: 'Treppe oben' },
+  { entityId: 'binary_sensor.presence_sensor_fp2_f2b3_presence_sensor_2', name: 'Küche'       },
+  { entityId: 'binary_sensor.presence_sensor_fp2_bfb8_presence_sensor_3', name: 'Sofa'        },
+  { entityId: 'binary_sensor.presence_sensor_fp2_bfb8_wohnzimmer_presence_sensor_2', name: 'Esstisch'  },
+  { entityId: 'binary_sensor.presence_sensor_fp2_bfb8_presence_sensor_4', name: 'Durchgang'   },
+  { entityId: 'binary_sensor.bewegung_bad_og_dusche',                     name: 'Dusche OG'   },
+  { entityId: 'binary_sensor.bewegung_bad_og_wc',                         name: 'WC OG'       },
 ];
 
 /* ── Alarm state helpers ─────────────────────────────────────────────── */
@@ -148,7 +152,7 @@ const LockRow = memo(({ entityId, contactId, name, entities, onOpen }) => {
           ? <AlertTriangle className="h-3.5 w-3.5 stroke-[1.5px]" />
           : <Icon className={`h-3.5 w-3.5 stroke-[1.5px] ${isTransition ? 'animate-pulse' : ''}`} />}
       </div>
-      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 text-left">{name}</span>
+      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 min-w-0 truncate text-left">{name}</span>
       <div className="flex items-center gap-1 flex-shrink-0">
         {isDoorOpen && <span className="text-[9px] font-bold text-orange-400">Tür auf</span>}
         <span className={`text-[10px] font-bold ${stateColor}`}>{stateLabel}</span>
@@ -184,7 +188,7 @@ const ContactRow = memo(({ label, summaryId, contacts, entities, onClick }) => {
       >
         <Shield className="h-3.5 w-3.5 stroke-[1.5px]" />
       </div>
-      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 text-left">{label}</span>
+      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 min-w-0 truncate text-left">{label}</span>
       <div className="flex items-center gap-1 flex-shrink-0">
         <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
         <span className={`text-[10px] font-bold ${stateColor}`}>{stateLabel}</span>
@@ -214,7 +218,7 @@ const MotionRow = memo(({ entities, onClick }) => {
       >
         <Activity className={`h-3.5 w-3.5 stroke-[1.5px] ${isActive ? 'animate-pulse' : ''}`} />
       </div>
-      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 text-left">Bewegungsmelder</span>
+      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 min-w-0 truncate text-left">Bewegungsmelder</span>
       <div className="flex items-center gap-1 flex-shrink-0">
         <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-yellow-400 animate-pulse' : 'bg-green-500'}`} />
         <span className={`text-[10px] font-bold ${isActive ? 'text-yellow-400' : 'text-green-400'}`}>
@@ -250,7 +254,7 @@ const AlarmRow = memo(({ entity, onOpen }) => {
           ? <AlertTriangle className="h-3.5 w-3.5 stroke-[1.5px]" />
           : <Icon className="h-3.5 w-3.5 stroke-[1.5px]" />}
       </div>
-      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 text-left">Alarmo</span>
+      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 min-w-0 truncate text-left">Alarmo</span>
       <span className={`text-[10px] font-bold flex-shrink-0 ${isUnavailable ? 'text-red-400' : color}`}>
         {isUnavailable ? '⚠' : label}
       </span>
@@ -286,7 +290,7 @@ const SimulationRow = memo(({ entity, callService }) => {
       >
         <UserCheck className="h-3.5 w-3.5 stroke-[1.5px]" />
       </div>
-      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 text-left">Anwesenheit</span>
+      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 min-w-0 truncate text-left">Anwesenheit</span>
       <span className={`text-[10px] font-bold flex-shrink-0 ${isUnavailable ? 'text-red-400' : isOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}`}>
         {isUnavailable ? '⚠' : isOn ? 'Aktiv' : 'Inaktiv'}
       </span>
@@ -320,51 +324,42 @@ const SecurityPanelCard = ({
   const p = isMobile ? 'px-3 py-3' : 'px-4 py-3';
 
   if (isMobile) {
-    // Mobile: compact single-column list, grouped by thin dividers
-    const Row = ({ children }) => (
-      <div className="px-3 py-2">{children}</div>
-    );
-    const HDivider = () => (
-      <div className="border-t border-[var(--glass-border)] opacity-50 mx-3" />
-    );
+    // Mobile: 2-column grid, 4 rows — labels truncate, no section headers
+    const b = 'border-[var(--glass-border)]';
+    const mp = 'px-2.5 py-2';
     return (
       <div key={cardId} {...dragProps} className={`relative font-sans select-none ${editMode ? 'cursor-move' : ''}`} style={layoutStyle}>
         {controls}
-        <div className="glass-texture rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] overflow-hidden py-1">
-
-          <Row><DetectionSection entity={entities[DETECTION_SWITCH]} callService={callService} mobile /></Row>
-
-          <HDivider />
-
-          {LOCKS.map((lock) => (
-            <Row key={lock.entityId}>
-              <LockRow {...lock} entities={entities} onOpen={setShowSecurityLockModal} />
-            </Row>
-          ))}
-
-          <HDivider />
-
-          <Row>
-            <ContactRow label="Türkontakte" summaryId={TUR_SUMMARY_ID} contacts={TUR_KONTAKTE} entities={entities}
-              onClick={() => setShowSecurityContactsModal?.({ type: 'tür', contacts: TUR_KONTAKTE })} />
-          </Row>
-          <Row>
-            <ContactRow label="Fensterkontakte" summaryId={FENSTER_SUMMARY_ID} contacts={FENSTER_KONTAKTE} entities={entities}
-              onClick={() => setShowSecurityContactsModal?.({ type: 'fenster', contacts: FENSTER_KONTAKTE })} />
-          </Row>
-
-          <HDivider />
-
-          <Row>
-            <MotionRow entities={entities}
-              onClick={() => setShowSecurityContactsModal?.({ type: 'bewegung', contacts: MOTION_SENSORS })} />
-          </Row>
-
-          <HDivider />
-
-          <Row><AlarmRow entity={entities[ALARM_ENTITY]} onOpen={() => setShowAlarmModal?.(ALARM_ENTITY)} /></Row>
-          <Row><SimulationRow entity={entities[SIMULATION_SWITCH]} callService={callService} /></Row>
-
+        <div className="glass-texture rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] overflow-hidden">
+          <div className="grid grid-cols-2">
+            {/* Row 1 */}
+            <div className={`${mp} border-r border-b ${b}`}>
+              <DetectionSection entity={entities[DETECTION_SWITCH]} callService={callService} mobile />
+            </div>
+            <div className={`${mp} flex flex-col gap-1.5 border-b ${b}`}>
+              {LOCKS.map((lock) => (
+                <LockRow key={lock.entityId} {...lock} entities={entities} onOpen={setShowSecurityLockModal} />
+              ))}
+            </div>
+            {/* Row 2 */}
+            <div className={`${mp} flex flex-col gap-1.5 border-r border-b ${b}`}>
+              <ContactRow label="Türkontakte" summaryId={TUR_SUMMARY_ID} contacts={TUR_KONTAKTE} entities={entities}
+                onClick={() => setShowSecurityContactsModal?.({ type: 'tür', contacts: TUR_KONTAKTE })} />
+              <ContactRow label="Fensterkontakte" summaryId={FENSTER_SUMMARY_ID} contacts={FENSTER_KONTAKTE} entities={entities}
+                onClick={() => setShowSecurityContactsModal?.({ type: 'fenster', contacts: FENSTER_KONTAKTE })} />
+            </div>
+            <div className={`${mp} flex flex-col justify-center border-b ${b}`}>
+              <MotionRow entities={entities}
+                onClick={() => setShowSecurityContactsModal?.({ type: 'bewegung', contacts: MOTION_SENSORS })} />
+            </div>
+            {/* Row 3 */}
+            <div className={`${mp} border-r ${b}`}>
+              <AlarmRow entity={entities[ALARM_ENTITY]} onOpen={() => setShowAlarmModal?.(ALARM_ENTITY)} />
+            </div>
+            <div className={`${mp}`}>
+              <SimulationRow entity={entities[SIMULATION_SWITCH]} callService={callService} />
+            </div>
+          </div>
         </div>
       </div>
     );
