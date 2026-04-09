@@ -359,13 +359,13 @@ const SecurityPanelCard = ({
         data-haptic="card"
         onClick={onClick}
         style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-        className="flex flex-col items-center justify-center gap-1 py-2.5 px-1 transition-all active:scale-[0.95] cursor-pointer"
+        className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 w-full h-full transition-all active:scale-[0.95] cursor-pointer"
       >
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl flex-shrink-0"
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg flex-shrink-0"
           style={{ backgroundColor: iconBg, color: iconFg }}>
-          <Icon className={`h-3.5 w-3.5 stroke-[1.5px] ${pulse ? 'animate-pulse' : ''}`} />
+          <Icon className={`h-3 w-3 stroke-[1.5px] ${pulse ? 'animate-pulse' : ''}`} />
         </div>
-        <span className="text-[10px] font-semibold text-[var(--text-primary)] text-center leading-tight w-full truncate px-0.5">{label}</span>
+        <span className="text-[9px] font-semibold text-[var(--text-primary)] text-center leading-tight w-full truncate px-0.5 mt-0.5">{label}</span>
         <span className={`text-[9px] font-bold text-center truncate w-full px-0.5 ${stateCls}`}>{state}</span>
       </button>
     );
