@@ -324,40 +324,139 @@ const SecurityPanelCard = ({
   const p = isMobile ? 'px-3 py-3' : 'px-4 py-3';
 
   if (isMobile) {
-    // Mobile: 2-column grid, 4 rows — labels truncate, no section headers
+    // Mobile: 4×2 compact icon tiles
+    const tiles = [
+      // Row 1: Detection, Haustür, HWR Tür, Türkontakte
+      // Row 2: Fensterkontakte, Bewegung, Alarm, Anwesenheit
+    ];
+
+    const alarmState = entities[ALARM_ENTITY]?.state;
+    const alarmCfg = (alarmState && ALARM_STATES[alarmState]) || ALARM_STATES.disarmed;
+
+    const detState   = entities[DETECTION_SWITCH]?.state;
+    const detOn      = detState === 'on';
+    const detUnavail = !detState || detState === 'unavailable' || detState === 'unknown';
+
+    const simState   = entities[SIMULATION_SWITCH]?.state;
+    const simOn      = simState === 'on';
+
+    const turSummary = entities[TUR_SUMMARY_ID]?.state;
+    const turOpen    = TUR_KONTAKTE.filter(({ entityId }) => entities[entityId]?.state === 'on').length;
+    const turBad     = turSummary === 'on';
+
+    const fenSummary = entities[FENSTER_SUMMARY_ID]?.state;
+    const fenOpen    = FENSTER_KONTAKTE.filter(({ entityId }) => entities[entityId]?.state === 'on').length;
+    const fenBad     = fenSummary === 'on';
+
+    const motCount   = MOTION_SENSORS.filter(({ entityId }) => entities[entityId]?.state === 'on').length;
+    const motActive  = motCount > 0;
+
     const b = 'border-[var(--glass-border)]';
-    const mp = 'px-2.5 py-2';
+
+    const Tile = ({ icon: Icon, label, state, iconBg, iconFg, stateCls, onClick, pulse = false }) => (
+      <button
+        type="button"
+        data-haptic="card"
+        onClick={onClick}
+        style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+        className="flex flex-col items-center justify-center gap-1 py-2.5 px-1 transition-all active:scale-[0.95] cursor-pointer"
+      >
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl flex-shrink-0"
+          style={{ backgroundColor: iconBg, color: iconFg }}>
+          <Icon className={`h-3.5 w-3.5 stroke-[1.5px] ${pulse ? 'animate-pulse' : ''}`} />
+        </div>
+        <span className="text-[10px] font-semibold text-[var(--text-primary)] text-center leading-tight w-full truncate px-0.5">{label}</span>
+        <span className={`text-[9px] font-bold text-center truncate w-full px-0.5 ${stateCls}`}>{state}</span>
+      </button>
+    );
+
+    // Lock helper
+    const lockTile = (lock) => {
+      const e = entities[lock.entityId];
+      const c = entities[lock.contactId];
+      const s = e?.state;
+      const locked = s === 'locked';
+      const jammed = s === 'jammed';
+      const transit = s === 'locking' || s === 'unlocking';
+      const unavail = !s || s === 'unavailable' || s === 'unknown';
+      const doorOpen = c?.state === 'on';
+      const Icon = locked || s === 'locking' ? Lock : (unavail || jammed ? AlertTriangle : Unlock);
+      const bg = unavail || jammed ? 'rgba(239,68,68,0.1)' : locked ? 'rgba(34,197,94,0.1)' : transit ? 'rgba(96,165,250,0.1)' : 'rgba(251,146,60,0.1)';
+      const fg = unavail || jammed ? '#ef4444' : locked ? '#22c55e' : transit ? '#60a5fa' : '#fb923c';
+      const stLabel = unavail ? '⚠' : jammed ? 'Blockiert' : transit ? '…' : locked ? 'Gesperrt' : (doorOpen ? 'Tür auf' : 'Offen');
+      const stCls = unavail || jammed ? 'text-red-400' : transit ? 'text-blue-400' : locked ? 'text-green-400' : 'text-orange-400';
+      return (
+        <Tile key={lock.entityId} icon={Icon} label={lock.name} state={stLabel}
+          iconBg={bg} iconFg={fg} stateCls={stCls} pulse={transit}
+          onClick={() => setShowSecurityLockModal?.({ entityId: lock.entityId, contactId: lock.contactId, name: lock.name })} />
+      );
+    };
+
     return (
       <div key={cardId} {...dragProps} className={`relative font-sans select-none ${editMode ? 'cursor-move' : ''}`} style={layoutStyle}>
         {controls}
         <div className="glass-texture rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] overflow-hidden">
-          <div className="grid grid-cols-2">
+          <div className="grid grid-cols-4">
             {/* Row 1 */}
-            <div className={`${mp} border-r border-b ${b}`}>
-              <DetectionSection entity={entities[DETECTION_SWITCH]} callService={callService} mobile />
+            <div className={`border-r border-b ${b}`}>
+              <Tile icon={Camera} label="Detection"
+                iconBg={detUnavail ? 'rgba(239,68,68,0.1)' : detOn ? 'rgba(96,165,250,0.12)' : 'var(--glass-bg-hover)'}
+                iconFg={detUnavail ? '#ef4444' : detOn ? '#60a5fa' : 'var(--text-muted)'}
+                state={detUnavail ? '⚠' : detOn ? 'Aktiv' : 'Inaktiv'}
+                stateCls={detUnavail ? 'text-red-400' : detOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}
+                onClick={() => !detUnavail && callService('switch', detOn ? 'turn_off' : 'turn_on', { entity_id: DETECTION_SWITCH })}
+              />
             </div>
-            <div className={`${mp} flex flex-col gap-1.5 border-b ${b}`}>
-              {LOCKS.map((lock) => (
-                <LockRow key={lock.entityId} {...lock} entities={entities} onOpen={setShowSecurityLockModal} />
-              ))}
+            {LOCKS.map((lock, i) => (
+              <div key={lock.entityId} className={`border-r border-b ${b}`}>{lockTile(lock)}</div>
+            ))}
+            <div className={`border-b ${b}`}>
+              <Tile icon={turBad ? Shield : Shield} label="Türen"
+                iconBg={turBad ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)'}
+                iconFg={turBad ? '#ef4444' : '#22c55e'}
+                state={turBad ? `${turOpen} offen` : 'Alle zu'}
+                stateCls={turBad ? 'text-red-400' : 'text-green-400'}
+                onClick={() => setShowSecurityContactsModal?.({ type: 'tür', contacts: TUR_KONTAKTE })}
+              />
             </div>
             {/* Row 2 */}
-            <div className={`${mp} flex flex-col gap-1.5 border-r border-b ${b}`}>
-              <ContactRow label="Türkontakte" summaryId={TUR_SUMMARY_ID} contacts={TUR_KONTAKTE} entities={entities}
-                onClick={() => setShowSecurityContactsModal?.({ type: 'tür', contacts: TUR_KONTAKTE })} />
-              <ContactRow label="Fensterkontakte" summaryId={FENSTER_SUMMARY_ID} contacts={FENSTER_KONTAKTE} entities={entities}
-                onClick={() => setShowSecurityContactsModal?.({ type: 'fenster', contacts: FENSTER_KONTAKTE })} />
+            <div className={`border-r ${b}`}>
+              <Tile icon={Shield} label="Fenster"
+                iconBg={fenBad ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)'}
+                iconFg={fenBad ? '#ef4444' : '#22c55e'}
+                state={fenBad ? `${fenOpen} offen` : 'Alle zu'}
+                stateCls={fenBad ? 'text-red-400' : 'text-green-400'}
+                onClick={() => setShowSecurityContactsModal?.({ type: 'fenster', contacts: FENSTER_KONTAKTE })}
+              />
             </div>
-            <div className={`${mp} flex flex-col justify-center border-b ${b}`}>
-              <MotionRow entities={entities}
-                onClick={() => setShowSecurityContactsModal?.({ type: 'bewegung', contacts: MOTION_SENSORS })} />
+            <div className={`border-r ${b}`}>
+              <Tile icon={Activity} label="Bewegung"
+                iconBg={motActive ? 'rgba(234,179,8,0.12)' : 'rgba(34,197,94,0.1)'}
+                iconFg={motActive ? '#facc15' : '#22c55e'}
+                state={motActive ? `${motCount} aktiv` : 'Keine'}
+                stateCls={motActive ? 'text-yellow-400' : 'text-green-400'}
+                pulse={motActive}
+                onClick={() => setShowSecurityContactsModal?.({ type: 'bewegung', contacts: MOTION_SENSORS })}
+              />
             </div>
-            {/* Row 3 */}
-            <div className={`${mp} border-r ${b}`}>
-              <AlarmRow entity={entities[ALARM_ENTITY]} onOpen={() => setShowAlarmModal?.(ALARM_ENTITY)} />
+            <div className={`border-r ${b}`}>
+              <Tile icon={alarmCfg.Icon} label="Alarm"
+                iconBg={alarmState === 'unavailable' ? 'rgba(239,68,68,0.1)' : alarmCfg.bg}
+                iconFg={alarmState === 'unavailable' ? '#ef4444' : alarmCfg.fg}
+                state={alarmState === 'unavailable' ? '⚠' : alarmCfg.label}
+                stateCls={alarmState === 'unavailable' ? 'text-red-400' : alarmCfg.color}
+                pulse={alarmState === 'triggered'}
+                onClick={() => setShowAlarmModal?.(ALARM_ENTITY)}
+              />
             </div>
-            <div className={`${mp}`}>
-              <SimulationRow entity={entities[SIMULATION_SWITCH]} callService={callService} />
+            <div>
+              <Tile icon={UserCheck} label="Anwesenheit"
+                iconBg={simOn ? 'rgba(96,165,250,0.12)' : 'var(--glass-bg-hover)'}
+                iconFg={simOn ? '#60a5fa' : 'var(--text-muted)'}
+                state={simOn ? 'Aktiv' : 'Inaktiv'}
+                stateCls={simOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}
+                onClick={() => callService('switch', simOn ? 'turn_off' : 'turn_on', { entity_id: SIMULATION_SWITCH })}
+              />
             </div>
           </div>
         </div>
