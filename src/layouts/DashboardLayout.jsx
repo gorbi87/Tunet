@@ -153,11 +153,11 @@ export default function DashboardLayout(props) {
           sectionSpacing={sectionSpacing}
         >
           <div
-            className={`mt-0 w-full font-sans ${isMobile ? 'flex flex-col items-start gap-3' : 'flex items-center justify-between'}`}
+            className="mt-0 w-full font-sans flex items-center justify-between"
             style={{ marginTop: `${sectionSpacing?.headerToStatus ?? 0}px` }}
           >
             <div
-              className={`flex min-w-0 flex-wrap items-center gap-2.5 ${isMobile ? 'w-full origin-left scale-90' : ''}`}
+              className="flex min-w-0 flex-wrap items-center gap-2.5"
             >
               {(pagesConfig.header || []).map((id) => personStatus(id))}
               {editMode && (
