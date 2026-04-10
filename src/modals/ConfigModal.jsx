@@ -709,6 +709,7 @@ export default function ConfigModal({
         const text = await file.text();
         const parsed = JSON.parse(text);
         importDashboard(parsed);
+        autoSync?.syncNow?.();
       } catch {
         globalThis.alert(t('profiles.invalidFile'));
       } finally {
