@@ -7,50 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [1.15.11] — 2026-04-10
 
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
 ### Fixed
-- Add release notes.
+- Profil-Import: Konfiguration blieb nach einem Seitenneuladen nicht erhalten, da nach dem Import kein Server-Push ausgelöst wurde.
 
 
 ## [1.15.10] — 2026-04-10
 
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
 ### Fixed
-- Add release notes.
+- Header: Titel und Uhrzeit wurden auf dem iPhone in Desktop-Größe (~48px) dargestellt statt in der korrekten mobilen Größe (~20px).
 
 
 ## [1.15.9] — 2026-04-10
 
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
 ### Fixed
-- Add release notes.
+- Status-Pills: Alle Pills haben jetzt eine einheitliche Höhe (h-9 Desktop / h-8 Mobile), unabhängig vom Inhalt.
 
 
 ## [1.15.8] — 2026-04-10
 
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
 ### Fixed
-- Add release notes.
+- iOS: Doppel-Tap-Problem bei Buttons und Modals behoben — Touch-to-Click-Fix greift jetzt für alle Buttons, nicht nur für Karten.
 
 
 ## [1.15.7] — 2026-04-10

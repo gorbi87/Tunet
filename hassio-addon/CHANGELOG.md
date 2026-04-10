@@ -2,23 +2,23 @@
 
 ## 1.15.11
 
-### Changed
-- Add release notes.
+### Fixed
+- Profil-Import: Konfiguration blieb nach einem Seitenneuladen nicht erhalten.
 
 ## 1.15.10
 
-### Changed
-- Add release notes.
+### Fixed
+- Header: Titel und Uhrzeit auf dem iPhone zu groß (Desktop-Schriftgröße statt Mobile).
 
 ## 1.15.9
 
-### Changed
-- Add release notes.
+### Fixed
+- Status-Pills: Einheitliche Höhe für alle Pills.
 
 ## 1.15.8
 
-### Changed
-- Add release notes.
+### Fixed
+- iOS: Doppel-Tap-Problem bei Buttons und Modals behoben.
 
 ## 1.15.7
 
