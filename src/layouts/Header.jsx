@@ -82,8 +82,12 @@ export default function Header({
     : { hour: '2-digit', minute: '2-digit', hour12: false };
 
   const timeStr = now.toLocaleTimeString(locale, timeOptions);
-  const headingFontSize = `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale})`;
-  const clockFontSize = `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale} * ${clockScale})`;
+  const headingFontSize = isMobile
+    ? `calc(clamp(1.25rem, 5vw, 1.5rem) * ${headerScale})`
+    : `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale})`;
+  const clockFontSize = isMobile
+    ? `calc(clamp(1.25rem, 5vw, 1.5rem) * ${headerScale} * ${clockScale})`
+    : `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale} * ${clockScale})`;
 
   const isBattery = headerSettings?.headerStyle === 'battery';
   const batteryVariant = headerSettings?.batteryVariant || 'glass';
