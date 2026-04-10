@@ -1,387 +1,49 @@
 # Changelog
 
-## 1.14.99
+## 1.15.2
 
 ### Changed
-- Add release notes.
-
-## 1.14.98
-
-### Changed
-- Add release notes.
-
-## 1.14.97
-
-### Changed
-- Add release notes.
-
-## 1.14.96
-
-### Changed
-- Add release notes.
-
-## 1.14.95
-
-### Changed
-- Add release notes.
-
-## 1.14.94
-
-### Changed
-- Add release notes.
-
-## 1.14.93
-
-### Changed
-- Add release notes.
-
-## 1.14.92
-
-### Changed
-- Add release notes.
-
-## 1.14.91
-
-### Changed
-- Add release notes.
-
-## 1.14.90
-
-### Changed
-- Add release notes.
-
-## 1.14.89
-
-### Changed
-- Add release notes.
-
-## 1.14.88
-
-### Changed
-- Add release notes.
-
-## 1.14.87
-
-### Changed
-- Add release notes.
-
-## 1.14.86
-
-### Fixed
-- **Camera snapshot now works via HA supervisor proxy**: Frigate's go2rtc port 1984 is not exposed to the Docker host, so the direct proxy always returned 502. The server now uses HA's internal camera proxy (`http://supervisor/core/api/camera_proxy/camera.{stream}`) as primary path and direct go2rtc as fallback. No Docker networking issues.
-- Removed `host_network: true` (was added in 1.14.85 to work around Docker isolation — unnecessary with the supervisor-proxy approach and caused internal hostname resolution to break).
-- WebSocket close code fixed: when upstream go2rtc is unreachable, the server now closes the client WebSocket with code 1011 (not 1000). Code 1000 was treated as "normal close" by the popup, leaving it stuck in the loading spinner. With 1011, the error state is set and the snapshot fallback is shown.
-
-## 1.14.85
-
-### Fixed
-- Add `host_network: true` to addon config — the Tunet container was isolated in the Docker bridge network and couldn't reach go2rtc at the host's LAN IP (502). Host networking gives direct access to all host services including Frigate's embedded go2rtc on port 1984.
-
-## 1.14.84
-
-### Fixed
-- Force rebuild: v1.14.83 container was built before proxy code was on GitHub — go2rtc-proxy route was missing (404). This rebuild pulls the correct code.
-
-## 1.14.83
-
-### Fixed
-- Dockerfile: broken tarball fallback logic — empty file from failed `curl -f` on non-existent tag skipped the main-branch download. Simplified to always pull from `main` branch; `BUILD_VERSION` is used solely to bust Docker layer cache
-
-## 1.14.82
-
-### Fixed
-- **UniFi Camera mixed-content fix**: Tunet's backend now proxies all go2rtc traffic (snapshot, HLS, WebSocket). This fixes the camera when Tunet is served over HTTPS (HA Ingress) and go2rtcUrl is a local HTTP address.
-  - Card thumbnail / snapshot loads correctly again
-  - MSE WebSocket stream now connects via `wss://` through Tunet's server — no more mixed-content blocking
-- Layout bug in camera popup fixed: video element and snapshot fallback were stacking vertically instead of overlapping
-
-## 1.14.81
-
-### Fixed
-- UniFi Camera: stream name is now auto-derived from legacy `cameraId` (e.g. `camera.terasse` → `terasse`), so existing cards only need go2rtcUrl configured — stream name no longer needs manual entry
-- Unconfigured cards now open the Edit modal on tap (instead of the camera modal) for easier setup
-
-## 1.14.80
-
-### Changed
-- **UniFi Camera** is now fully entity-free: no HA entity required. The card works purely from go2rtc config (URL + stream name).
-  - Added via simple one-click add button (no entity picker), Edit modal opens immediately to configure
-  - Modal uses custom name or stream name, no entity lookup
-  - Works even when Frigate / HA camera entities are unavailable
-
-## 1.14.79
-
-### Changed
-- UniFi Camera card now uses **go2rtc** as stream source instead of the slow HA `camera/stream` endpoint.
-  - Primary: **MSE over WebSocket** (`ws://go2rtcUrl/api/ws?src=stream`) — ~1-2s latency, native MediaSource API
-  - Fallback: **HLS via hls.js** (`/api/stream.m3u8?src=stream`) — for older browsers / Safari
-  - Snapshot via go2rtc `/api/snapshot?src=stream`
-  - go2rtc URL and stream name configurable per card via Edit Card modal (pencil icon in edit mode)
-
-## 1.14.78
-
-### Fixed
-- UniFi Camera card was hidden after exiting edit mode. Root cause: `unifi_camera_card_` was missing from `SPECIAL_CARD_PREFIXES` and `REMOVABLE_PREFIXES` in `cardUtils.js`, causing `isCardHiddenByLogic` to treat the card as a missing entity. Also wired `setShowUnifiCameraModal` into the card rendering context (`useCardRendering`, `useDashboardStateCoordinator`, `App.jsx`).
-
-## 1.14.77
+- Edit button moved into the settings dropdown on mobile.
+- Sensor card mobile layout improved: name no longer truncates on large cards.
+- Haptic feedback suppressed during scroll gestures.
 
 ### Added
-- New card type **UniFi Camera (HLS)**: live video stream from UniFi Protect via HLS in a modal. The new `unifi_camera_card_` type is independent from the existing `camera_card_` and leaves the original camera card unchanged.
-  - Stream is fetched via WebSocket (`camera/stream` message) from Home Assistant and played with hls.js (Chrome/Firefox) or native HLS (Safari).
-  - Fallback to snapshot image if stream is unavailable.
-  - Toggle between stream and snapshot view, refresh button.
-  - Loading indicator and error message on stream failure.
-  - Add via "Add Card" → type **UniFi Camera (HLS)** and select a camera entity.
+- Toggle to show/hide page pill labels on mobile (Header settings).
 
-## 1.14.76
-
-### Changed
-- Smartphone: moved edit pen and settings gear from the tab row into the header row (right of the clock) so page tabs are no longer obscured. Tablet and desktop layouts unchanged.
-
-## 1.14.75
+## 1.15.1
 
 ### Fixed
-- Smartphone: cards required 2–3 taps to open modal. Root fix: global touchend handler fires click immediately on [data-haptic] elements and blocks iOS's delayed ghost click via preventDefault. Scroll gestures are distinguished from taps by an 8 px movement threshold.
+- Fixed add-on installation and update failures caused by a build dependency conflict (#128).
 
-## 1.14.74
-
-### Fixed
-- Smartphone: cards needed 2 taps to open. Root cause: the `transform: scale(0.97)` active animation plays back during touchend and iOS fires click mid-animation, failing the hit test. On touch devices, the active state now uses `brightness` only (no transform), so the element doesn't move and click always registers on first tap.
-
-## 1.14.73
-
-### Changed
-- Wärmepumpe modal: Betriebsmodus and WW-Soll now use a dropdown instead of pill buttons.
-- Wärmepumpe modal: single-column stacked layout on phones (< 640 px).
-- Header: person indicators and status pills always on the same row (including mobile).
-
-## 1.14.72
-
-### Fixed
-- Smartphone: custom card row height reduced from 120 px to 100 px.
-
-## 1.14.71
-
-### Fixed
-- Smartphone: standard cards back to 82 px row height; only custom cards (Wärmepumpe, Lüftungsanlage, Solar) use 120 px to fit their extra data rows.
-
-## 1.14.70
-
-### Fixed
-- Smartphone: increased mobile grid row height from 82 px to 120 px so card content is no longer clipped.
-
-## 1.14.69
-
-### Fixed
-- Custom cards (Wärmepumpe, Lüftungsanlage, Solar): secondary data (outdoor temp, COP, CO₂, battery SOC, grid power) now visible on smartphones — was hidden by `isDenseMobile` guard.
-
-## 1.14.68
-
-### Fixed
-- Touch devices: cards now open modal on first tap. Sticky `:hover` on touch was consuming the first tap — fixed by wrapping hover styles in `@media (hover: hover)` and adding `touch-action: manipulation`.
-
-## 1.14.67
+## 1.15.0
 
 ### Added
-- Smartphone layout: header title and clock now side-by-side with smaller font size; tab labels visible on small screens.
-
-## 1.14.56
-
-### Fixed
-- PV PowerFlow: battery power label moved to the connection line (Batt↔Inverter).
-
-## 1.14.55
-
-### Fixed
-- PV PowerFlow: battery power text positioned below battery icon, not overlapping.
-
-## 1.14.54
-
-### Fixed / Added
-- PV PowerFlow: show battery charge/discharge power (+/- W) in BATT box.
-- Battery remaining time: discharge calculation uses (soc - 10%) minimum.
-
-## 1.14.53
-
-### Fixed
-- WRG diagram: maxHeight 270px. PowerFlow SVG: no maxHeight, scales naturally.
-
-## 1.14.52
-
-### Fixed
-- WRG diagram: maxHeight increased to 220px. PowerFlow SVG: maxHeight on SVG element directly, no more clipping.
-
-## 1.14.51
-
-### Fixed
-- Lüftung/PV tablet: WRG diagram, PowerFlow SVG and CO₂/VOC graphs smaller in compact mode.
-
-## 1.14.50
+- Battery page, Lights page, and Room Explorer page for dedicated device management.
+- Lava Lamp and Silk animated backgrounds.
+- Toast notifications and PWA support.
 
 ### Changed
-- LuftungsanlageModal + PvModal: same tablet-responsive layout as WärmepumpeModal.
+- Includes dashboard release `1.15.0`.
+- Restyled page navigation, Add Page dropdown, and modal type tabs.
 
-## 1.14.49
+### Security
+- Hashed auth tokens, added CSP headers, and hardened server routes.
 
-### Fixed
-- WärmepumpeModal tablet: limit width to max-w-2xl (672px), centered.
-
-## 1.14.48
-
-### Fixed
-- WärmepumpeModal: JS-based tablet detection (innerHeight < 900 or touch media query) replaces unreliable CSS breakpoints.
-
-## 1.14.47
-
-### Fixed
-- WärmepumpeModal: desktop-only styles moved from lg: to xl: — tablet landscape (1024px) now gets compact layout.
-
-## 1.14.46
+## 1.14.9
 
 ### Changed
-- WärmepumpeModal: compact tablet layout — 2-column grid from md, smaller COP box, controls in one row.
+- Includes dashboard release `1.14.9`.
 
-## 1.14.45
+### Fixed
+- Keeps the Status Pills editor open while creating a new pill so the add-on UI no longer drops the editor pane mid-edit.
+
+## 1.14.8
 
 ### Changed
-- WärmepumpeModal: full-screen layout on tablet with sticky header+tabs, scrollable content area.
-
-## 1.14.44
+- Includes dashboard release `1.14.8`.
 
 ### Fixed
-- Modals (Lüftungsanlage, Wärmepumpe, PV): responsive padding/radius for tablets.
-
-## 1.14.43
-
-### Added
-- Includes dashboard release `1.14.43`.
-- Lüftungsanlage modal: temperature stepper (−/+) to set target temperature via climate.set_temperature.
-
-## 1.14.42
-
-### Fixed / Added
-- Includes dashboard release `1.14.42`.
-- PV modal: SOC% inside battery icon (not above it), time-to-full/empty from solaredge_b1_maximum_energy.
-
-## 1.14.41
-
-### Changed
-- Includes dashboard release `1.14.41`.
-- PV modal: animated power flow lines, mid-line arrows, visual battery fill indicator.
-
-## 1.14.40
-
-### Added
-- Includes dashboard release `1.14.40`.
-- PV solar card now selectable in the "Verfügbare Karten" picker when adding cards in edit mode.
-
-## 1.14.33
-
-### Added
-- Includes dashboard release `1.14.33`.
-- New Lüftungsanlage card type: WRG flow diagram, air quality tab (EG/OG), HVAC/fan controls.
-
-## 1.14.32
-
-### Fixed
-- Includes dashboard release `1.14.32`.
-- Hydraulik SVG: hides DateTime group at bottom-left using display:none.
-
-## 1.14.31
-
-### Fixed
-- Includes dashboard release `1.14.31`.
-- Hydraulik SVG: hides ta2, second Heißgas and date/time boxes; reduces RPM font size.
-
-## 1.14.30
-
-### Fixed
-- Includes dashboard release `1.14.30`.
-- Hydraulik SVG: use rendered screen positions (getBoundingClientRect) for text placement — fixes missing values in Rücklauf, Vorlauf, Vorlauf BH boxes.
-
-## 1.14.29
-
-### Fixed
-- Includes dashboard release `1.14.29`.
-- Hydraulik SVG: text values now correctly positioned inside their boxes by applying each rect's own transform attribute.
-
-## 1.14.28
-
-### Fixed
-- Includes dashboard release `1.14.28`.
-- Hydraulik SVG: removes dark placeholder rects — values and labels now render cleanly over the diagram.
-
-## 1.14.27
-
-### Fixed
-- Includes dashboard release `1.14.27`.
-- Hydraulik SVG: German locale numbers with units (°C, pls, %, L/h, RPM, bar); prefixes for fehlercode/betriebsmodus/betriebsart.
-
-## 1.14.26
-
-### Fixed
-- Includes dashboard release `1.14.26`.
-- Wärmepumpe Hydraulik SVG: label rects now filled with German labels; Betriebsart shortening fixed.
-
-## 1.14.25
-
-### Changed
-- Includes dashboard release `1.14.25`.
-- Wärmepumpe Hydraulik tab: native inline SVG with live entity values, no iframe.
-
-## 1.14.24
-
-### Added
-- Includes dashboard release `1.14.24`.
-- Wärmepumpe popup: Hydraulik tab with embedded hpsu-dashboard-card iframe.
-
-## 1.14.23
-
-### Changed
-- Includes dashboard release `1.14.23`.
-- Wärmepumpe card status badge abbreviates Betriebsart: "Warmwasserbereitung" → "DHW", "Bereitschaft" → "Standby".
-
-## 1.14.22
-
-### Changed
-- Includes dashboard release `1.14.22`.
-- Wärmepumpe card status badge now shows the live Betriebsart (e.g. "Warmwasserbereitung") when the compressor is active.
-
-## 1.14.21
-
-### Added
-- Includes dashboard release `1.14.21`.
-- Wärmepumpe popup controls: Betriebsmodus switcher, WW-Solltemperatur selector, and Heizstab power selector.
-
-## 1.14.20
-
-### Added
-- Includes dashboard release `1.14.20`.
-- New Wärmepumpe card for Daikin heat pump with kompressor status, warmwater temperature, outdoor temp, COP, and daily consumption. Popup shows all temperatures and energy stats (today / month).
-
-## 1.14.19
-
-### Changed
-- Includes dashboard release `1.14.19`.
-- Hides Norwegian electricity subsidy toggle in Octopus Energy card popup.
-
-## 1.14.18
-
-### Fixed
-- Includes dashboard release `1.14.18`.
-- Fixes Octopus Energy sensor selection in Add Card dialog.
-
-## 1.14.17
-
-### Added
-- Includes dashboard release `1.14.17`.
-- New Octopus Energy electricity price card with 15-min SparkLine and price-level indicator.
-
-## 1.14.16
-
-### Changed
-- Includes dashboard release `1.14.16`.
-- Restored gorbi87 fork identity and reverted experimental autoZoom patches.
+- Keeps mobile sensor card titles, controls, and range visuals inside compact card bounds on narrow screens.
 
 ## 1.14.7
 

@@ -97,7 +97,7 @@ export default function StatusPillsConfigModal({
     return () => {
       cancelled = true;
     };
-  }, [show]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [show]);
 
   if (!show) return null;
 
@@ -170,7 +170,6 @@ export default function StatusPillsConfigModal({
       sessionSensorIds: [],
       sonosHeadingSource: 'song',
       sonosSubheadingSource: 'artist_player',
-      ...(pillType === 'entity_count' ? { entityIds: [], activeState: 'on', icon: 'Activity' } : {}),
     };
     setPills([...pills, newPill]);
     setEditingPill(newPill.id);
@@ -201,7 +200,6 @@ export default function StatusPillsConfigModal({
       const translated = t('statusPills.typeAlarm');
       return translated === 'statusPills.typeAlarm' ? 'Alarm' : translated;
     }
-    if (pillType === 'entity_count') return 'Zähler';
     return t('statusPills.typeSonos');
   };
 
@@ -425,7 +423,7 @@ export default function StatusPillsConfigModal({
 
           {/* Pills List */}
           <div
-            className={`h-[300px] min-h-0 w-full shrink-0 overflow-y-auto border-r-0 border-b border-[var(--glass-border)] p-4 md:h-full md:w-[360px] md:border-r md:border-b-0 ${isMobile && mobilePane !== 'list' ? 'hidden' : ''}`}
+            className={`min-h-0 w-full shrink-0 overflow-y-auto border-r-0 border-b border-[var(--glass-border)] p-4 md:h-full md:w-[360px] md:border-r md:border-b-0 ${isMobile && mobilePane !== 'list' ? 'hidden' : 'flex-1'}`}
           >
             <div className="relative mb-3 flex items-center justify-between" ref={addMenuRef}>
               <div className="flex min-w-0 items-center gap-2">
@@ -499,15 +497,6 @@ export default function StatusPillsConfigModal({
                     {t('statusPills.typeAlarm') === 'statusPills.typeAlarm'
                       ? 'Alarm'
                       : t('statusPills.typeAlarm')}
-                  </button>
-                  <button
-                    onClick={() => {
-                      addPill('entity_count');
-                      setShowAddMenu(false);
-                    }}
-                    className="flex items-center gap-2 rounded-lg px-4 py-3 text-left text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-white/5"
-                  >
-                    <Activity className="h-4 w-4 text-amber-400" /> Zähler
                   </button>
                 </div>
               )}
@@ -776,8 +765,8 @@ export default function StatusPillsConfigModal({
 
                     {/* Main Configuration Grid */}
                     <div className="grid grid-cols-1 gap-4 md:gap-5">
-                      {/* Visuals Group */}
-                      {(pill.type === 'conditional' || pill.type === 'entity_count') && (
+                      {/* Visuals Group (Only for Conditional) */}
+                      {pill.type === 'conditional' && (
                         <section className={`${sectionShellClass} space-y-3`}>
                           <h4 className="text-[11px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                             {t('statusPills.appearance')}
@@ -786,35 +775,29 @@ export default function StatusPillsConfigModal({
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div className="space-y-1">
                               <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                                {pill.type === 'entity_count' ? 'Plural' : t('statusPills.heading')}
+                                {t('statusPills.heading')}
                               </label>
                               <input
                                 type="text"
                                 value={pill.label || ''}
                                 onChange={(e) => updatePill(pill.id, { label: e.target.value })}
-                                placeholder={pill.type === 'entity_count' ? 'z.B. Lichter an' : t('statusPills.automatic')}
+                                placeholder={t('statusPills.automatic')}
                                 className="w-full rounded-xl border-0 bg-[var(--glass-bg)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none"
                               />
-                              {pill.type === 'entity_count' && (
-                                <p className="text-[10px] text-[var(--text-muted)]">Zahl wird automatisch vorangestellt</p>
-                              )}
                             </div>
                             <div className="space-y-1">
                               <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                                {pill.type === 'entity_count' ? 'Singular' : t('statusPills.subtitle')}
+                                {t('statusPills.subtitle')}
                               </label>
                               <input
                                 type="text"
-                                value={pill.type === 'entity_count' ? (pill.singularLabel || '') : (pill.sublabel || '')}
-                                onChange={(e) => updatePill(pill.id, pill.type === 'entity_count' ? { singularLabel: e.target.value } : { sublabel: e.target.value })}
-                                placeholder={pill.type === 'entity_count' ? 'z.B. 1 Licht an' : t('statusPills.automatic')}
+                                value={pill.sublabel || ''}
+                                onChange={(e) => updatePill(pill.id, { sublabel: e.target.value })}
+                                placeholder={t('statusPills.automatic')}
                                 className="w-full rounded-xl border-0 bg-[var(--glass-bg)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none"
                               />
-                              {pill.type === 'entity_count' && (
-                                <p className="text-[10px] text-[var(--text-muted)]">Leer: "1 {pill.label || 'aktiv'}"</p>
-                              )}
                             </div>
-                            {pill.type === 'conditional' && <div className="space-y-1">
+                            <div className="space-y-1">
                               <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
                                 {t('statusPills.unitSource')}
                               </label>
@@ -848,10 +831,10 @@ export default function StatusPillsConfigModal({
                                   {t('statusPills.unitCustom')}
                                 </option>
                               </select>
-                            </div>}
+                            </div>
                           </div>
 
-                          {pill.type === 'conditional' && pill.unitSource === 'custom' && (
+                          {pill.unitSource === 'custom' && (
                             <div className="space-y-1">
                               <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
                                 {t('statusPills.unitOverrideLabel')}
@@ -946,7 +929,7 @@ export default function StatusPillsConfigModal({
                       {/* Source Logic */}
                       <section className={`${sectionShellClass} space-y-3`}>
                         <h4 className="text-[11px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-                          {pill.type === 'conditional' || pill.type === 'alarm' || pill.type === 'entity_count'
+                          {pill.type === 'conditional' || pill.type === 'alarm'
                             ? t('statusPills.dataSource')
                             : t('statusPills.mediaPlayerSource')}
                         </h4>
@@ -1209,7 +1192,7 @@ export default function StatusPillsConfigModal({
                             </div>
                           )}
 
-                        {/* Standard Entity Select (Conditional / alarm) */}
+                        {/* Standard Entity Select (Conditional) */}
                         {(pill.type === 'conditional' || pill.type === 'alarm') && (
                           <div className="relative" ref={entityPickerRef}>
                             <input
@@ -1279,79 +1262,6 @@ export default function StatusPillsConfigModal({
                               </div>
                             )}
                           </div>
-                        )}
-
-                        {/* entity_count: active state + entity multi-picker */}
-                        {pill.type === 'entity_count' && (
-                          <>
-                            <div className="space-y-1.5">
-                              <label className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-                                Aktiver State
-                              </label>
-                              <input
-                                type="text"
-                                value={pill.activeState || 'on'}
-                                onChange={(e) => updatePill(pill.id, { activeState: e.target.value })}
-                                placeholder="on"
-                                className="w-full rounded-xl border-0 bg-[var(--glass-bg)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none"
-                              />
-                              <p className="text-[10px] text-[var(--text-muted)]">z.B. on, open, true</p>
-                            </div>
-                            <div className="rounded-xl bg-[var(--glass-bg)] p-3">
-                              <div className="mb-2 flex items-center justify-between">
-                                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                                  Entities
-                                </label>
-                                {Array.isArray(pill.entityIds) && pill.entityIds.length > 0 && (
-                                  <button
-                                    onClick={() => updatePill(pill.id, { entityIds: [] })}
-                                    className="text-[10px] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-                                  >
-                                    Alle entfernen
-                                  </button>
-                                )}
-                              </div>
-                              <input
-                                type="text"
-                                value={dataSourcePreviewSearch}
-                                onChange={(e) => setDataSourcePreviewSearch(e.target.value)}
-                                placeholder="Suchen…"
-                                className="mb-2 w-full rounded-lg border-0 bg-[var(--modal-bg)] px-3 py-1.5 text-sm text-[var(--text-primary)] outline-none"
-                              />
-                              <div className="custom-scrollbar max-h-48 space-y-1 overflow-y-auto">
-                                {Object.keys(entities)
-                                  .filter((id) => {
-                                    if (!dataSourcePreviewSearch) return true;
-                                    const search = dataSourcePreviewSearch.toLowerCase();
-                                    const name = (entities[id]?.attributes?.friendly_name || '').toLowerCase();
-                                    return id.toLowerCase().includes(search) || name.includes(search);
-                                  })
-                                  .sort((a, b) => {
-                                    const nA = (entities[a]?.attributes?.friendly_name || a).toLowerCase();
-                                    const nB = (entities[b]?.attributes?.friendly_name || b).toLowerCase();
-                                    return nA.localeCompare(nB);
-                                  })
-                                  .map((id) => {
-                                    const selected = Array.isArray(pill.entityIds) && pill.entityIds.includes(id);
-                                    const name = entities[id]?.attributes?.friendly_name || id;
-                                    return (
-                                      <button
-                                        key={id}
-                                        onClick={() => {
-                                          const current = Array.isArray(pill.entityIds) ? pill.entityIds : [];
-                                          const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
-                                          updatePill(pill.id, { entityIds: next });
-                                        }}
-                                        className={`w-full rounded-lg px-3 py-1.5 text-left transition-colors ${selected ? 'bg-[var(--accent-bg)] text-[var(--accent-color)]' : 'text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)]'}`}
-                                      >
-                                        <div className="truncate text-xs font-bold">{name}</div>
-                                        <div className="truncate text-[10px] opacity-60">{id}</div>
-                                      </button>
-                                    );
-                                  })}
-                              </div>
-                            </div>
-                          </>
                         )}
 
                         {/* Sessions Sensors (Emby only) */}

@@ -43,6 +43,7 @@ import {
   requestTokensFromOtherTabs,
   subscribeToOAuthTokenChanges,
 } from './services/oauthStorage';
+import { scheduleLikelyModalPrefetch } from './utils/prefetchModals';
 
 /** @typedef {import('./types/dashboard').AppContentProps} AppContentProps */
 
@@ -69,6 +70,12 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     setCardBorderOpacity,
     cardBgColor,
     setCardBgColor,
+    cardMaterial,
+    setCardMaterial,
+    density,
+    setDensity,
+    cardScale,
+    setCardScale,
     appFont,
     settingsLockEnabled,
     settingsLockSessionUnlocked,
@@ -142,6 +149,12 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     },
     [language, translations]
   );
+
+  useEffect(() => {
+    if (!entitiesLoaded) return undefined;
+    return scheduleLikelyModalPrefetch();
+  }, [entitiesLoaded]);
+
   const resolvedHeaderTitle = headerTitle || t('page.home');
 
   // Modal state management
@@ -292,6 +305,9 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     createPage,
     createMediaPage,
     createSonosPage,
+    createLightsPage,
+    createBatteryPage,
+    createRoomExplorerPage,
     deletePage,
     removeCard,
   } = usePageManagement({
@@ -321,6 +337,9 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     isCardHiddenByLogic,
     isMediaPage,
     isSonosPage,
+    isLightsPage,
+    isBatteryPage,
+    isRoomExplorerPage,
     hasEnabledPopupTriggers,
   } = useDashboardStateCoordinator({
     entities,
@@ -467,6 +486,9 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     activePage,
     isMediaPage,
     isSonosPage,
+    isLightsPage,
+    isBatteryPage,
+    isRoomExplorerPage,
     pagesConfig,
     persistConfig,
     cardSettings,
@@ -567,6 +589,9 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     editMode,
     isMediaPage,
     isSonosPage,
+    isLightsPage,
+    isBatteryPage,
+    isRoomExplorerPage,
     entities,
     conn,
     isSonosActive,
@@ -625,6 +650,12 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     setCardBorderOpacity,
     cardBgColor,
     setCardBgColor,
+    cardMaterial,
+    setCardMaterial,
+    density,
+    setDensity,
+    cardScale,
+    setCardScale,
     inactivityTimeout,
     setInactivityTimeout,
     setGridGapH,
@@ -670,6 +701,9 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     createPage,
     createMediaPage,
     createSonosPage,
+    createLightsPage,
+    createBatteryPage,
+    createRoomExplorerPage,
     deletePage,
     removeCard,
     persistPageSettings,

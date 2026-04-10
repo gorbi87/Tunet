@@ -5,481 +5,64 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [1.14.99] — 2026-04-09
+## [1.15.2] — 2026-04-05
 
 ### Added
-- Add release notes.
+- New toggle in Header settings to show page pill labels on mobile (#112).
 
 ### Changed
-- Add release notes.
+- Edit button moved into the settings dropdown on mobile for a cleaner toolbar (#112).
+- Sensor card large variant on mobile: name now renders on its own full-width row below the value, eliminating truncation (#112).
+- Small sensor card gauge repositioned for better visual balance (#112).
+- Haptic feedback now fires on pointer-up and is suppressed when the finger has scrolled, preventing unwanted vibration during scroll.
+
+
+## [1.15.1] — 2026-04-05
 
 ### Fixed
-- Add release notes.
+- Downgraded eslint to v9 to fix add-on build failures caused by a peer dependency conflict (#128).
 
 
-## [1.14.98] — 2026-04-09
+## [1.15.0] — 2026-04-05
 
 ### Added
-- Add release notes.
+- Battery page for monitoring all battery-powered device levels, low battery warnings, and offline tracking.
+- Lights page with brightness and color controls for all light entities.
+- Room Explorer page with enhanced controls and collapsible sections.
+- Lava Lamp and Silk animated backgrounds.
+- Toast notification system.
+- PWA manifest and service worker shell.
 
 ### Changed
-- Add release notes.
+- Restyled page navigation pills and Add Page dropdown to match the Settings dropdown design.
+- Restyled Add Page modal type tabs with icons matching the Add Card type pill design.
+- Prefetch likely modals and cache build assets for faster interactions.
+- Battery bar header, card material, density, and card scale options.
+- Bumped dependency versions (picomatch, path-to-regexp, express-rate-limit, actions/checkout, action-gh-release).
 
 ### Fixed
-- Add release notes.
+- Alarm card crash in production and CSP image policy.
+
+### Security
+- Hashed access tokens in auth validation cache.
+- Added CSP headers and reconnection UX with entity caching.
+- Sanitized inputs, removed dead code, and hardened server routes.
 
 
-## [1.14.97] — 2026-04-07
+## [1.14.9] — 2026-03-18
 
-### Added
-- Add release notes.
+### Fixed
+- Kept the Status Pills editor open while creating a new pill, so the right-side form no longer disappears during parent rerenders.
+
+
+## [1.14.8] — 2026-03-16
 
 ### Changed
-- Add release notes.
+- Refined mobile sensor card layouts with denser spacing for toggle states, numeric headers, and compact control rows.
 
 ### Fixed
-- Add release notes.
+- Kept mobile sensor card titles, toggle controls, and gauge/donut/bar visuals inside the card bounds instead of overlapping or spilling out on narrow screens.
 
-
-## [1.14.96] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.95] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.94] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.93] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.92] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.91] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.90] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.89] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.88] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.87] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.86] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.85] — 2026-04-07
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
-
-
-## [1.14.84] — 2026-04-06
-
-### Added
-- **Cover Panel – Automatik-Tab**: Neues Beschattungsstatus-Panel zeigt aktuelle Sonnenposition (Azimut, Himmelsrichtung, Elevation) und pro Raum ob die Sonne gerade im konfigurierten KNX-Azimutfenster steht. Status je Raum: Beschattet / AT-Sperre / Gesperrt / Zu dunkel / außerhalb.
-
-## [1.14.83] — 2026-03-20
-
-### Fixed
-- Dockerfile: Fallback-Logik für Tarball-Download war fehlerhaft (leere Datei nach gescheitertem `curl -f` auf nicht-existierenden Tag verhinderte Main-Branch-Download). Simplified: immer von `main`-Branch laden, `BUILD_VERSION` nur für Docker-Cache-Invalidierung
-
-## [1.14.82] — 2026-03-20
-
-### Fixed
-- **UniFi Camera Mixed-Content Fix**: Tunet's eigener Backend-Server proxied jetzt alle go2rtc-Requests (Snapshot, HLS, WebSocket). Damit funktioniert die Kamera auch wenn Tunet über HTTPS (HA Ingress) erreichbar ist und die go2rtcUrl eine lokale HTTP-Adresse ist.
-  - Snapshot und Karten-Thumbnail laden wieder
-  - MSE-WebSocket-Stream läuft über `wss://` durch Tunet's Server → kein Mixed-Content mehr
-- Layout-Bug im Popup behoben: Video-Element und Snapshot-Fallback wurden gleichzeitig angezeigt und gestapelt — jetzt löst Snapshot den Video-Player korrekt ab
-
-## [1.14.81] — 2026-03-20
-
-### Fixed
-- UniFi Camera: Stream-Name wird jetzt automatisch aus der alten `cameraId` abgeleitet (z.B. `camera.terasse` → `terasse`), sodass bestehende Karten nach der Migration keine manuelle Eingabe des Stream-Namens mehr brauchen — nur noch die go2rtc-URL muss eingetragen werden
-- Nicht konfigurierte Karten öffnen beim Tippen direkt das Edit-Modal (statt das nutzlose Camera-Modal), damit die Einstellungen leichter erreichbar sind
-
-## [1.14.80] — 2026-03-20
-
-### Changed
-- **UniFi Camera** ist jetzt vollständig entity-frei: Kein HA-Entity mehr erforderlich. Die Karte funktioniert rein auf Basis der go2rtc-Konfiguration (URL + Stream-Name).
-  - Hinzufügen über einfachen Add-Button (kein Entity-Picker), Edit-Modal öffnet sich direkt zum Konfigurieren
-  - Modal zeigt Namen aus Custom Name oder Stream-Name, kein Entity-Lookup
-  - Funktioniert auch wenn Frigate/HA-Entities nicht verfügbar sind
-
-## [1.14.79] — 2026-03-20
-
-### Changed
-- UniFi Camera Karte verwendet jetzt **go2rtc** als Stream-Quelle statt dem langsamen HA-`camera/stream`-Endpoint.
-  - Primär: **MSE via WebSocket** (`ws://go2rtcUrl/api/ws?src=stream`) — ~1-2s Latenz, direkt im Browser via MediaSource API
-  - Fallback: **HLS via hls.js** (`/api/stream.m3u8?src=stream`) — für ältere Browser / Safari
-  - Snapshot via go2rtc (`/api/snapshot?src=stream`) statt HA camera proxy
-  - go2rtc-URL und Stream-Name pro Karte konfigurierbar via Edit-Card-Modal (Stift-Icon im Bearbeitungsmodus)
-
-## [1.14.78] — 2026-03-20
-
-### Fixed
-- UniFi Camera Karte wurde nach dem Verlassen des Bearbeitungsmodus ausgeblendet. Ursache: `unifi_camera_card_` fehlte in `SPECIAL_CARD_PREFIXES` und `REMOVABLE_PREFIXES` (`cardUtils.js`), wodurch `isCardHiddenByLogic` die Karte als "fehlendes Entity" behandelte. Außerdem fehlte `setShowUnifiCameraModal` im `ctx`-Objekt von `useCardRendering`, `useDashboardStateCoordinator` und `App.jsx`.
-
-## [1.14.77] — 2026-03-20
-
-### Added
-- Neue Kartentype **UniFi Camera (HLS)**: Live-Videostream direkt aus UniFi Protect via HLS in einem Modal. Die neue Karte `unifi_camera_card_` ist unabhängig vom bestehenden `camera_card_`-Typ und lässt die original Kamera-Karte unverändert.
-  - Stream wird per WebSocket (`camera/stream`-Nachricht) von Home Assistant abgeholt und mit hls.js (Chrome/Firefox) bzw. nativem HLS (Safari) abgespielt.
-  - Fallback auf Snapshot-Bild, wenn der Stream nicht verfügbar ist.
-  - Toggle zwischen Stream- und Snapshot-Ansicht, Refresh-Button.
-  - Ladeindikator und Fehlermeldung bei Stream-Problemen.
-  - Neue Karte über „Karte hinzufügen" → Typ **UniFi Camera (HLS)** und Kamera-Entity auswählen.
-
-## [1.14.76] — 2026-03-20
-
-### Changed
-- Smartphone: Stift- und Zahnrad-Button aus der Tab-Zeile entfernt und in die Titelzeile (rechts neben der Uhrzeit) verschoben, damit die Seiten-Tabs nicht mehr verdeckt werden. Auf Tablet und Desktop bleibt alles unverändert.
-
-## [1.14.75] — 2026-03-20
-
-### Fixed
-- Smartphone: Karten öffneten das Popup erst beim 2.–3. Tippen. Grundlegende Lösung: Globaler `touchend`-Handler feuert das `click`-Event sofort beim Loslassen (statt auf iOS' verzögerten Ghost-Click zu warten) und blockiert den anschließenden Ghost-Click mit `e.preventDefault()`. Scroll-Gesten werden anhand einer 8 px-Bewegungsschwelle von echten Taps unterschieden.
-
-## [1.14.74] — 2026-03-20
-
-### Fixed
-- Smartphone: Karten öffneten das Popup erst beim 2. Tippen. Eigentliche Ursache: `.touch-feedback:active` und `active:scale-[0.98]` animieren das Element beim Loslassen zurück auf Scale 1.0 — iOS fire den `click` genau während dieser Transform-Animation und das Hit-Testing schlägt fehl. Fix: Auf Touch-Geräten (`hover: none, pointer: coarse`) wird kein Transform mehr verwendet; stattdessen nur ein einfaches `brightness`-Flash als visuelles Feedback.
-
-## [1.14.73] — 2026-03-20
-
-### Changed
-- Wärmepumpe-Popup: Betriebsmodus und WW-Solltemperatur werden jetzt als Dropdown (`<select>`) statt als Pill-Buttons dargestellt — kompakter und mobil-freundlicher.
-- Wärmepumpe-Popup: Smartphone-Ansicht (< 640 px) nutzt einspaltige gestapelte Darstellung statt dem 5-Spalten-Layout, das auf Phone-Breiten überlappte.
-- Header: Personen-Indikatoren und Status-Pills erscheinen jetzt immer in einer gemeinsamen Zeile (auch auf Mobile).
-
-## [1.14.72] — 2026-03-20
-
-### Fixed
-- Smartphone: Custom-Card-Zeilenhöhe von 120 px auf 100 px reduziert.
-
-## [1.14.71] — 2026-03-20
-
-### Fixed
-- Smartphone: Zeilenhöhe für Standard-Karten wieder auf 82 px zurückgesetzt. Nur die Custom-Cards (Wärmepumpe, Lüftungsanlage, Solar) verwenden 120 px, damit deren neu angezeigte Datenbereiche nicht abgeschnitten werden.
-
-## [1.14.70] — 2026-03-20
-
-### Fixed
-- Smartphone: Karten-Zeilenhöhe von 82 px auf 120 px erhöht, damit die neu sichtbaren Daten (Außentemp, COP, CO₂, Batt-SOC usw.) nicht mehr abgeschnitten werden.
-
-## [1.14.69] — 2026-03-20
-
-### Fixed
-- Wärmepumpe-Karte: Außentemperatur und COP/Strom-Zeile werden auch auf Smartphones angezeigt (waren durch `isDenseMobile`-Guard versteckt).
-- Lüftungsanlage-Karte: CO₂-Wert wird auch auf Smartphones angezeigt.
-- Solar-Karte: Tagesertrag (kWh), Batterie-SOC und Netzleistung werden auch auf Smartphones angezeigt.
-
-## [1.14.68] — 2026-03-20
-
-### Fixed
-- Karten auf Touch-Geräten (Smartphone/Tablet): Popup öffnete sich erst beim 2.–3. Tippen. Ursache: `.touch-feedback:hover` blieb auf Touch-Geräten "kleben" und verschluckte den ersten Tap. Fix: Hover-Animation nur noch bei Geräten mit echtem Mauszeiger (`@media (hover: hover)`), außerdem `touch-action: manipulation` für sofortige Tap-Erkennung ohne 300 ms Verzögerung.
-
-## [1.14.67] — 2026-03-20
-
-### Added
-- Smartphone-Layout: Header-Titel und Uhrzeit werden nebeneinander (statt übereinander) angezeigt und nutzen eine deutlich kleinere Schrift (`clamp(1.25rem, 5vw, 1.5rem)` statt `clamp(3rem, ...)`).
-- Tab-Navigation: Bezeichnungen werden auch auf Smartphones (< 480 px) angezeigt — nicht mehr nur Icons.
-- Weniger vertikaler Abstand unter dem Header auf Smartphones für kompaktere Darstellung.
-
-## [1.14.56] — 2026-03-17
-
-### Fixed
-- PV Energiefluss: Batterie-Leistungswert auf der Verbindungslinie zwischen Batterie und Wechselrichter angezeigt (statt im überfüllten BATT-Box).
-
-## [1.14.55] — 2026-03-17
-
-### Fixed
-- PV Energiefluss: Batterie-Leistungstext jetzt unterhalb des Batterie-Icons positioniert (war überlagert).
-
-## [1.14.54] — 2026-03-17
-
-### Fixed / Added
-- PV Energiefluss: Batterie-Leistung (+/− W) direkt im BATT-Box angezeigt.
-- Restzeit-Berechnung: Entladung berücksichtigt 10% SOC Mindestlimit (`soc - 10` statt `soc`).
-
-## [1.14.53] — 2026-03-17
-
-### Fixed
-- WRG-Diagramm (Lüftung): maxHeight 270px. PowerFlow SVG (Solar): maxHeight entfernt — SVG skaliert jetzt natürlich und füllt den Container ohne leeren Rand.
-
-## [1.14.52] — 2026-03-17
-
-### Fixed
-- WRG-Diagramm (Lüftung): maxHeight auf 220px erhöht (war zu klein).
-- PowerFlow SVG (Solar): overflow:hidden entfernt, maxHeight jetzt direkt am SVG-Element (190px) — kein Abschneiden mehr.
-
-## [1.14.51] — 2026-03-17
-
-### Fixed
-- Lüftung/PV Modals Tablet: WRG-Diagramm (`maxHeight: 150px`), PowerFlow SVG (`maxHeight: 170px`), CO₂/VOC-Graphen (`height: 75`) im Compact-Modus kleiner — kein Scrollen mehr nötig.
-
-## [1.14.50] — 2026-03-17
-
-### Changed
-- LuftungsanlageModal + PvModal: gleiches Tablet-Layout wie Wärmepumpe — JS-basierte `isCompact`-Erkennung, fester Header mit Tabs, scrollbarer Inhaltsbereich, `max-w-2xl` zentriert.
-
-## [1.14.49] — 2026-03-17
-
-### Fixed
-- WärmepumpeModal Tablet: Breite auf `max-w-2xl` (672px) begrenzt und zentriert, statt voller Tablet-Breite.
-
-## [1.14.48] — 2026-03-17
-
-### Fixed
-- WärmepumpeModal: Tablet-Erkennung per `window.innerHeight < 900` und `(hover: none) and (pointer: coarse)` statt CSS-Breakpoints. Lenovo P11 Pro (1280×800 Landscape) bekommt jetzt zuverlässig das kompakte Vollbild-Layout.
-
-## [1.14.47] — 2026-03-17
-
-### Fixed
-- WärmepumpeModal: "Desktop-only" Styles von `lg:` (≥1024px) auf `xl:` (≥1280px) verschoben. Tablet im Landscape (1024px) bekommt jetzt das kompakte Layout — kein Scrollen mehr nötig.
-
-## [1.14.46] — 2026-03-17
-
-### Changed
-- WärmepumpeModal Tablet: Temps+Energie ab `md:` nebeneinander (statt erst `lg:`), COP-Box kompakter, Steuerung-Controls in einer Zeile (`flex-wrap`), weniger Abstände — alles auf einmal sichtbar ohne Scrollen.
-
-## [1.14.45] — 2026-03-17
-
-### Changed
-- WärmepumpeModal: Vollbild-Layout auf Tablet (< lg). Header + Tabs oben fixiert, nur Inhaltsbereich scrollt. Desktop bleibt zentriertes Popup wie bisher.
-
-## [1.14.44] — 2026-03-17
-
-### Fixed
-- Modals (Lüftungsanlage, Wärmepumpe, PV): Tablet-Responsivität verbessert. Padding/Radius skalieren jetzt stufenweise (`p-4` mobil → `md:p-6` Tablet → `lg:p-10` Desktop), `lg:rounded-[3rem]` statt `md:rounded-[3rem]`.
-
-## [1.14.43] — 2026-03-16
-
-### Added
-- Lüftungsanlage modal: Zieltemperatur-Stepper (−/+) in der Steuerung-Sektion. Zeigt Ist-Temperatur daneben, aktiv nur bei Betriebsmodus heat/cool/auto, ruft `climate.set_temperature` auf.
-
-## [1.14.42] — 2026-03-16
-
-### Fixed
-- PV modal battery box: SOC% now shown inside the battery fill graphic (not above it), matching Sunsynk style.
-
-### Added
-- PV modal: time-to-full / time-to-empty displayed below battery icon, calculated from `sensor.solaredge_b1_maximum_energy` (4 kWh) and current charge/discharge power.
-
-## [1.14.41] — 2026-03-16
-
-### Changed
-- PV modal power flow diagram: animated flowing dash lines with mid-line directional arrows (no more overlap with inverter box), battery box now shows visual fill-level indicator (Sunsynk style) with charge lightning bolt, SOC color and percentage.
-
-## [1.14.40] — 2026-03-16
-
-### Added
-- PV solar card now appears in the "Verfügbare Karten" picker (edit mode) — added TypeButton, add action, card prefix registrations in cardActions, cardUtils, EditOverlay, and usePopupTriggers.
-
-## [1.14.33] — 2026-03-15
-
-### Added
-- New "Lüftungsanlage" card type for Blauberg S21 ventilation unit: card shows supply air temperature and CO₂ with color coding, modal has WRG flow diagram SVG with heat recovery efficiency, fan/HVAC controls, and a two-column air quality tab (EG/OG).
-
-## [1.14.32] — 2026-03-15
-
-### Fixed
-- Wärmepumpe Hydraulik SVG: hide DateTime group via `display:none` — the group's y-translate puts it at the bottom-left; inline `style` attributes prevented the previous fill=none approach from working.
-
-## [1.14.31] — 2026-03-15
-
-### Fixed
-- Wärmepumpe Hydraulik SVG: hide ta2, hot_gas_condenser, date and time rects (not needed).
-- Reduce font size for Verdichter and Lüfter RPM values (56→44) to fit within their boxes.
-
-## [1.14.30] — 2026-03-15
-
-### Fixed
-- Wärmepumpe Hydraulik SVG: use `getBoundingClientRect()` to position text in SVG root coordinates — handles all transform combinations (rect transforms, parent group transforms) correctly and fixes missing values for Rücklauf, Vorlauf, Vorlauf BH.
-
-## [1.14.29] — 2026-03-15
-
-### Fixed
-- Wärmepumpe Hydraulik SVG: apply each rect's own `transform` when positioning sibling text — rects with `transform="translate(...)"` or `transform="matrix(...)"` caused text to render outside their boxes.
-- Restores dark placeholder rect appearance (reverts fill/stroke=none from 1.14.28).
-
-## [1.14.28] — 2026-03-15
-
-### Fixed
-- Wärmepumpe Hydraulik SVG: hide dark placeholder rects (fill/stroke set to none) after reading coordinates — removes the dark boxes overlaying the hydraulic diagram.
-
-## [1.14.27] — 2026-03-15
-
-### Fixed
-- Wärmepumpe Hydraulik SVG: values now display with German locale (comma decimal, e.g. "52,2 °C") and units from `unit_of_measurement` — mirrors card.ts `formatNumber` exactly with `Intl.NumberFormat('de', ...)`.
-- Added missing prefixes for fehlercode ("Fehlercode: "), betriebsmodus ("Modus: ") and betriebsart ("Betriebsart: ") to match original card display.
-
-## [1.14.26] — 2026-03-15
-
-### Fixed
-- Wärmepumpe Hydraulik tab: inject German label texts into all label rects (TA, EEV, Rücklauf, Vorlauf etc.) — previously empty dark boxes throughout the diagram. Mirrors card.ts createStateLabels label injection exactly (font-size 35, grey fill, centered).
-- Betriebsart "Warmwasserbereitung" now correctly shortened to "Warmwasser" in the SVG.
-
-## [1.14.25] — 2026-03-15
-
-### Changed
-- Wärmepumpe popup **Hydraulik tab**: replaced iframe with a native React SVG component. The `hpsu.svg` from `wrfz/daikin-rotex-hpsu-dashboard` is now bundled directly and rendered inline with live sensor values injected — no HA iframe, no network request, exact same positioning/color logic as the original Lit card.
-
-## [1.14.24] — 2026-03-15
-
-### Added
-- Wärmepumpe popup: new **Hydraulik tab** that embeds the `custom:hpsu-dashboard-card` from a dedicated HA Lovelace panel view (`/test-mobile/hpsu-embed`) in an iframe.
-
-## [1.14.23] — 2026-03-15
-
-### Changed
-- Wärmepumpe card: Betriebsart values are now abbreviated in the status badge — "Warmwasserbereitung" → "DHW", "Bereitschaft" → "Standby", others shown as-is.
-
-## [1.14.22] — 2026-03-15
-
-### Changed
-- Wärmepumpe card: when the compressor is active, the status badge now shows the current **Betriebsart** (e.g. "Warmwasserbereitung", "Heizen") from `sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can` instead of the generic "Aktiv" label.
-
-## [1.14.21] — 2026-03-15
-
-### Added
-- Wärmepumpe popup now includes a **Controls section**: switch Betriebsmodus (Bereitschaft / Heizen / Absenken / Sommer / Kühlen / Automatik 1 / Automatik 2), set WW-Solltemperatur (35–70 °C), and enable/disable Heizstab (Aus / 3 kW / 6 kW / 9 kW).
-
-## [1.14.20] — 2026-03-15
-
-### Added
-- New **Wärmepumpe card** for Daikin heat pump (Kompressor status, Warmwasser temperature, outdoor temperature, COP, daily electric consumption). Popup shows all temperatures (Vorlauf, Rücklauf, Außen, Warmwasser) and energy stats (Strom / Wärme / COP) with Heute / Monat tabs.
-
-## [1.14.19] — 2026-03-15
-
-### Changed
-- Hide Norwegian electricity subsidy toggle in the Nordpool popup when opened from an Octopus Energy card (not applicable outside Norway).
-
-## [1.14.18] — 2026-03-15
-
-### Fixed
-- Octopus Energy sensors are now clickable in the Add Card dialog (missing state wiring in App.jsx).
-
-## [1.14.17] — 2026-03-15
-
-### Added
-- New **Octopus Energy card** showing current electricity price, 15-minute SparkLine chart, and price-level indicator (low / normal / high / very high). Interactive price graph popup included.
-
-## [1.14.16] — 2026-03-14
-
-### Changed
-- Restored gorbi87 fork identity (slug, name, repository URL) and reverted experimental autoZoom SparkLine patches.
 
 ## [1.14.7] — 2026-03-10
 
@@ -511,12 +94,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 - Prevent spurious logouts when the backend fails to connect to the Home Assistant URL (#106).
-
-
-## [1.14.3] — 2026-03-09
-
-### Changed
-- Improved mobile-friendly layouts for the first batch of cards: Alarm, Android TV, Car, Climate, Cover, Cost, Fan, Light, Media, Nordpool, Room, and Vacuum.
 
 
 ## [1.14.2] — 2026-03-09

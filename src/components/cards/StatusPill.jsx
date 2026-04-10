@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { getIconComponent } from '../../icons';
 import { Activity, AlertTriangle, Clapperboard, Lock, RefreshCw } from '../../icons';
-import MdiIcon from '@mdi/react';
+import { Icon as MdiIcon } from '@mdi/react';
 import { mdiShieldHome, mdiShieldLock, mdiShieldOff } from '@mdi/js';
 import { evaluateEntityCondition } from '../../utils/conditionUtils';
 import {
@@ -29,7 +29,7 @@ import {
  * @param {Function} props.getEntityImageUrl - Get entity image URL
  * @param {Function} props.isMediaActive - Check if media is active
  */
-const StatusPill = memo(function StatusPill({
+const StatusPill = memo(/** @param {any} props */ function StatusPill({
   pill,
   entity,
   onClick,
@@ -163,7 +163,7 @@ const StatusPill = memo(function StatusPill({
     const animated =
       pill.animated !== false &&
       (state === 'arming' || state === 'pending' || state === 'disarming');
-    const paddingClass = isMobile ? 'px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
+    const paddingClass = isMobile ? 'shrink-0 px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
     const textSize = isMobile ? 'text-[10px]' : 'text-xs';
 
@@ -354,7 +354,7 @@ const StatusPill = memo(function StatusPill({
     const animated = pill.animated !== false && isPlaying;
 
     // Mobile adjustments
-    const paddingClass = isMobile ? 'px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
+    const paddingClass = isMobile ? 'shrink-0 px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
     const textSize = isMobile ? 'text-[10px]' : 'text-xs';
 
@@ -494,7 +494,7 @@ const StatusPill = memo(function StatusPill({
     (entity.state === 'on' || entity.state === 'playing' || pill.animateAlways);
 
   // Mobile adjustments
-  const paddingClass = isMobile ? 'px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
+  const paddingClass = isMobile ? 'shrink-0 px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
   const iconPadding = isMobile ? 'p-1' : 'p-1.5';
   const textSize = isMobile ? 'text-[10px]' : 'text-xs';
 

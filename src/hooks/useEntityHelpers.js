@@ -2,14 +2,23 @@ import { useCallback, useMemo } from 'react';
 import { ENTITY_UPDATE_THRESHOLD, MEDIA_TIMEOUT } from '../config/constants';
 import { callService as haCallService } from '../services';
 import { logger } from '../utils/logger';
+import { useToast } from '../contexts/ToastContext';
 
 /**
  * Shared Home-Assistant entity accessor helpers:  getS, getA, getEntityImageUrl,
  * callService, isSonosActive, isMediaActive, hvacMap/fanMap/swingMap.
  *
  * Everything is stable-ref (useCallback / useMemo) so consumers don't re-render.
+ * @param {Object} deps
+ * @param {any} deps.entities
+ * @param {any} deps.conn
+ * @param {any} deps.activeUrl
+ * @param {any} [deps.now]
+ * @param {Function} deps.t
+ * @param {string} [deps.language]
  */
 export function useEntityHelpers({ entities, conn, activeUrl, now, t }) {
+  const { addToast } = useToast();
   // ── Attribute / state accessors ────────────────────────────────────────
   const getS = useCallback(
     (id, fallback = '--') => {
@@ -44,11 +53,12 @@ export function useEntityHelpers({ entities, conn, activeUrl, now, t }) {
         return Promise.reject(new Error('No connection'));
       }
       return haCallService(conn, domain, service, data).catch((error) => {
-        console.error(`Service call failed: ${domain}.${service}`, error);
+        const msg = t?.('toast.serviceFailed') || 'Action failed';
+        addToast(`${msg}: ${domain}.${service}`, 'error');
         throw error;
       });
     },
-    [conn]
+    [conn, addToast, t]
   );
 
   // ── Activity helpers ───────────────────────────────────────────────────

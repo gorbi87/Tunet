@@ -1,6 +1,7 @@
 import { Edit2 } from '../icons';
 import { getLocaleForLanguage } from '../i18n';
 import { useConfig } from '../contexts';
+import BatteryBar from '../components/ui/BatteryBar';
 
 /**
  * Header component with title, time and edit controls
@@ -9,9 +10,11 @@ import { useConfig } from '../contexts';
  * @param {string} props.headerTitle - Main title
  * @param {number} props.headerScale - Scale factor for header size
  * @param {boolean} props.editMode - Whether in edit mode
- * @param {Object} props.headerSettings - Header visibility settings
+ * @param {Object} [props.headerSettings] - Header visibility settings
  * @param {Function} props.setShowHeaderEditModal - Show header edit modal
  * @param {Function} props.t - Translation function
+ * @param {boolean} [props.isMobile] - Whether on mobile viewport
+ * @param {import('../types/dashboard.js').SectionSpacing} [props.sectionSpacing] - Section spacing
  * @param {React.ReactNode} [props.children] - Optional children content
  */
 export default function Header({
@@ -25,7 +28,6 @@ export default function Header({
   children,
   isMobile,
   sectionSpacing,
-  mobileToolbar,
 }) {
   const { language } = useConfig();
 
@@ -74,18 +76,111 @@ export default function Header({
   const dateScale = headerSettings?.dateScale ?? 1.0;
   const locale = getLocaleForLanguage(language);
 
+  /** @type {Intl.DateTimeFormatOptions} */
   const timeOptions = is12h
     ? { hour: 'numeric', minute: '2-digit', hour12: true }
     : { hour: '2-digit', minute: '2-digit', hour12: false };
 
   const timeStr = now.toLocaleTimeString(locale, timeOptions);
-  const headingFontSize = isMobile
-    ? `calc(clamp(1.25rem, 5vw, 1.5rem) * ${headerScale})`
-    : `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale})`;
-  const clockFontSize = isMobile
-    ? `calc(clamp(1.25rem, 5vw, 1.5rem) * ${headerScale} * ${clockScale})`
-    : `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale} * ${clockScale})`;
+  const headingFontSize = `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale})`;
+  const clockFontSize = `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale} * ${clockScale})`;
 
+  const isBattery = headerSettings?.headerStyle === 'battery';
+  const batteryVariant = headerSettings?.batteryVariant || 'glass';
+  const showBatteryNub = headerSettings?.showBatteryNub ?? true;
+
+  const dateStr = now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const titleStyle = {
+    color: 'var(--text-muted)',
+    fontSize: headingFontSize,
+    fontWeight: fontWeight,
+    letterSpacing: isMobile ? lsMobile : lsDesktop,
+    fontStyle: fontStyleVal === 'italic' ? 'italic' : 'normal',
+    textTransform: fontStyleVal === 'uppercase' ? 'uppercase' : 'none',
+    fontFamily: resolvedFontFamily,
+  };
+
+  const clockStyle = {
+    fontSize: clockFontSize,
+    color: 'var(--text-muted)',
+    fontFamily: resolvedFontFamily,
+  };
+
+  const showClock = headerSettings.showClock && (!isMobile || showClockOnMobile);
+
+  // ── Battery layout ──
+  if (isBattery) {
+    return (
+      <header
+        className="relative pt-4 font-sans md:pt-0"
+        style={{ marginBottom: `${headerBottom}px` }}
+      >
+        {editMode && !headerSettings.showTitle && setShowHeaderEditModal && (
+          <div className="edit-controls-anim absolute top-0 left-1/2 z-50 -translate-x-1/2">
+            <button
+              onClick={() => setShowHeaderEditModal(true)}
+              className="flex items-center gap-2 rounded-full border border-[var(--accent-color)] bg-[var(--accent-bg)] px-4 py-2 text-[var(--accent-color)] shadow-lg backdrop-blur-md transition-all hover:bg-[var(--accent-bg)]"
+            >
+              <Edit2 className="h-4 w-4 animate-pulse" />
+              <span className="text-xs font-bold tracking-widest uppercase">
+                {t('header.addHeader')}
+              </span>
+            </button>
+          </div>
+        )}
+
+        <BatteryBar variant={batteryVariant} showNub={showBatteryNub} isMobile={isMobile}>
+          {/* Left: Title */}
+          {headerSettings.showTitle && (
+            <h1 className="leading-none select-none whitespace-nowrap" style={titleStyle}>
+              {headerTitle || 'Tunet'}
+            </h1>
+          )}
+
+          {/* Center: Date */}
+          {headerSettings.showDate && !isMobile && (
+            <p
+              className="leading-none font-medium tracking-[0.2em] text-[var(--text-muted)] uppercase opacity-50 md:tracking-[0.4em]"
+              style={{
+                fontSize: `calc(0.75rem * ${dateScale})`,
+                fontFamily: resolvedFontFamily,
+              }}
+            >
+              {dateStr}
+            </p>
+          )}
+
+          {/* Right: Clock */}
+          {showClock && (
+            <h2
+              className="leading-none font-light tracking-[0.1em] select-none whitespace-nowrap"
+              style={clockStyle}
+            >
+              {timeStr}
+            </h2>
+          )}
+        </BatteryBar>
+
+        {/* Mobile date below battery bar */}
+        {headerSettings.showDate && isMobile && (
+          <p
+            className="mt-2 text-center leading-none font-medium tracking-[0.2em] text-[var(--text-muted)] uppercase opacity-50"
+            style={{
+              fontSize: `calc(0.75rem * ${dateScale})`,
+              fontFamily: resolvedFontFamily,
+            }}
+          >
+            {dateStr}
+          </p>
+        )}
+
+        <div className="flex w-full flex-col gap-6 pt-6 md:gap-3 md:pt-3">{children}</div>
+      </header>
+    );
+  }
+
+  // ── Classic layout (default) ──
   return (
     <header
       className="relative pt-4 font-sans md:pt-0"
@@ -105,45 +200,36 @@ export default function Header({
         </div>
       )}
 
-      {/* Top row: heading (left) and clock (right) aligned only with heading */}
-      <div className="flex items-center justify-between gap-4 leading-none">
-        <div className="flex items-center gap-4">
+      <div
+        className={`flex items-start justify-between gap-10 leading-none ${isMobile ? 'flex-col items-center text-center' : ''}`}
+      >
+        <div className={`flex items-center gap-4 ${isMobile ? 'w-full justify-center' : ''}`}>
           {headerSettings.showTitle && (
-            <h1
-              className="leading-none select-none"
-              style={{
-                color: 'var(--text-muted)',
-                fontSize: headingFontSize,
-                fontWeight: fontWeight,
-                letterSpacing: isMobile ? lsMobile : lsDesktop,
-                fontStyle: fontStyleVal === 'italic' ? 'italic' : 'normal',
-                textTransform: fontStyleVal === 'uppercase' ? 'uppercase' : 'none',
-                fontFamily: resolvedFontFamily,
-              }}
-            >
+            <h1 className="leading-none select-none" style={titleStyle}>
               {headerTitle || 'Tunet'}
             </h1>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          {headerSettings.showClock && (!isMobile || showClockOnMobile) && (
-            <h2
-              className="leading-none font-light tracking-[0.1em] select-none"
-              style={{
-                fontSize: clockFontSize,
-                color: 'var(--text-muted)',
-                fontFamily: resolvedFontFamily,
-              }}
-            >
-              {timeStr}
-            </h2>
-          )}
-          {isMobile && mobileToolbar}
-        </div>
+        {headerSettings.showClock && !isMobile && (
+          <h2
+            className="leading-none font-light tracking-[0.1em] select-none"
+            style={clockStyle}
+          >
+            {timeStr}
+          </h2>
+        )}
+
+        {headerSettings.showClock && isMobile && showClockOnMobile && (
+          <h2
+            className="leading-none font-light tracking-[0.08em] select-none"
+            style={clockStyle}
+          >
+            {timeStr}
+          </h2>
+        )}
       </div>
 
-      {/* Date row: independent from heading/clock alignment */}
       {headerSettings.showDate && !isMobile && (
         <p
           className="mt-1 leading-none font-medium tracking-[0.2em] text-[var(--text-muted)] uppercase opacity-50 md:tracking-[0.6em]"
@@ -152,12 +238,11 @@ export default function Header({
             fontFamily: resolvedFontFamily,
           }}
         >
-          {now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}
+          {dateStr}
         </p>
       )}
 
-      {/* Children (content below heading & clock) */}
-      <div className={`flex w-full flex-col ${isMobile ? 'gap-2 pt-2' : 'gap-6 pt-6 md:gap-3 md:pt-3'}`}>{children}</div>
+      <div className="flex w-full flex-col gap-6 pt-6 md:gap-3 md:pt-3">{children}</div>
     </header>
   );
 }

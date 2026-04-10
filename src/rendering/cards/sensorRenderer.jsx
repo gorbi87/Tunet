@@ -21,7 +21,7 @@ export function renderSensorCard(cardId, dragProps, getControls, cardStyle, sett
     customIcons,
     getA,
     callService,
-    isTwoColMobile,
+    isMobile,
     setShowSensorInfoModal,
     t,
   } = ctx;
@@ -83,7 +83,7 @@ export function renderSensorCard(cardId, dragProps, getControls, cardStyle, sett
       controls={getControls(cardId)}
       Icon={Icon}
       name={name}
-      isTwoColMobile={isTwoColMobile}
+      isMobile={isMobile}
       t={t}
       onControl={handleControl}
       onOpen={withEditModeGuard(editMode, () => setShowSensorInfoModal(cardId))}

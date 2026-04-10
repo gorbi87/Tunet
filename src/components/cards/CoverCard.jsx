@@ -155,7 +155,7 @@ const HorizontalBlindSlider = ({ position, onChange, onCommit, accent, isUnavail
 };
 
 /* -- Button Control Component ---------------------------------------- */
-const ButtonControl = ({ onOpen, onClose, onStop, isUnavailable, horizontal = false }) => {
+const ButtonControl = ({ onOpen, onClose, onStop, isUnavailable, accent = null, horizontal = false }) => {
   if (horizontal) {
     return (
       <div
@@ -309,6 +309,7 @@ const SmallCoverCard = (props) => {
   );
 };
 
+/** @param {any} props */
 const CoverCard = ({
   cardId,
   entityId,

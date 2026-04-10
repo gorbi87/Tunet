@@ -10,6 +10,7 @@ import {
   getDisplayUnitForKind,
   getEffectiveUnitMode,
   inferUnitKind,
+  downsampleTimeSeries,
 } from '../../utils';
 
 const SENSOR_THRESHOLD_COLOR_MAP = {
@@ -24,7 +25,7 @@ const DEFAULT_SENSOR_COLOR_THRESHOLDS = [
   { limit: 100, color: 'green' },
 ];
 
-const SensorCard = memo(function SensorCard({
+const SensorCard = memo(/** @param {any} props */ function SensorCard({
   entity,
   entities = {},
   conn,
@@ -37,7 +38,7 @@ const SensorCard = memo(function SensorCard({
   controls,
   onControl,
   onOpen,
-  isTwoColMobile = false,
+  isMobile = false,
   t,
 }) {
   const translate = t || ((key) => key);
@@ -240,6 +241,18 @@ const SensorCard = memo(function SensorCard({
     ['gauge', 'donut'].includes(variant) &&
     isNumeric &&
     normalizedNumericState !== null;
+  const useDenseMobileSmallLayout = isMobile && isSmall;
+  const useDenseMobileLargeLayout = isMobile && !isSmall;
+  const smallVariantGaugeSize = useDenseMobileSmallLayout ? 48 : 56;
+  const smallVariantGaugeStroke = useDenseMobileSmallLayout ? 7 : 8;
+  const smallVariantDonutSize = useDenseMobileSmallLayout ? 36 : 42;
+  const smallVariantDonutStroke = useDenseMobileSmallLayout ? 5 : 6;
+  const largeVariantGaugeSize = useDenseMobileLargeLayout ? 88 : 124;
+  const largeVariantGaugeStroke = useDenseMobileLargeLayout ? 10 : 14;
+  const largeVariantDonutSize = useDenseMobileLargeLayout ? 64 : 96;
+  const largeVariantDonutStroke = useDenseMobileLargeLayout ? 6 : 10;
+  const largeVariantBarHeight = useDenseMobileLargeLayout ? 14 : 20;
+  const useCompactMobileRangeLayout = useDenseMobileLargeLayout && showVariantPanel;
 
   const [history, setHistory] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -256,6 +269,11 @@ const SensorCard = memo(function SensorCard({
   }, [activeUntil]);
 
   useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true);
+      return undefined;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -296,8 +314,25 @@ const SensorCard = memo(function SensorCard({
         });
 
         const processed = (data && Array.isArray(data) ? data : [])
-          .filter((d) => !isNaN(parseFloat(d.state)))
-          .map((d) => ({ value: parseFloat(d.state), time: new Date(d.last_changed) }));
+          .map((d) => {
+            // Handle both standard format (state/last_changed ISO string) and
+            // HA compressed format (s/lc as Unix timestamp in seconds).
+            const rawState = d.state !== undefined ? d.state : d.s;
+            const val = parseFloat(rawState);
+            if (isNaN(val)) return null;
+            let time;
+            if (d.last_changed) {
+              const t = new Date(d.last_changed);
+              if (isNaN(t.getTime())) return null;
+              time = t;
+            } else if (typeof d.lc === 'number') {
+              time = new Date(d.lc * 1000);
+            } else {
+              return null;
+            }
+            return { value: val, time };
+          })
+          .filter(Boolean);
 
         if (processed.length === 1) {
           const onlyPoint = processed[0];
@@ -310,7 +345,7 @@ const SensorCard = memo(function SensorCard({
         }
 
         if (processed.length > 1) {
-          setHistory(processed);
+          setHistory(downsampleTimeSeries(processed));
           return;
         }
 
@@ -383,6 +418,22 @@ const SensorCard = memo(function SensorCard({
   const isToggleDomain =
     domain === 'input_boolean' || domain === 'switch' || domain === 'automation';
   const showToggleControls = isToggleDomain && showControls;
+  const useStackedSmallControls = useDenseMobileSmallLayout && (showToggleControls || showControls);
+  const showCompactMobileToggleState = isMobile && showToggleControls && showStatus && !isNumeric;
+  const useCompactMobileToggleLayout = useDenseMobileLargeLayout && showToggleControls;
+  const compactToggleStateTone = isUnavailable
+    ? 'border-[var(--status-error-border)] bg-[var(--status-error-bg)] text-[var(--status-error-fg)]'
+    : state === 'on'
+      ? 'border-transparent bg-[var(--accent-bg)] text-[var(--accent-color)]'
+      : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)]';
+
+  const renderCompactToggleState = (size = 'large') => (
+    <span
+      className={`inline-flex w-fit items-center rounded-full border font-bold tracking-widest uppercase ${size === 'small' ? 'px-2 py-0.5 text-[9px]' : 'px-2.5 py-1 text-[10px]'} ${compactToggleStateTone}`}
+    >
+      {displayState}
+    </span>
+  );
 
   const renderControls = () => {
     if (!showControls) return null;
@@ -509,8 +560,8 @@ const SensorCard = memo(function SensorCard({
           value={normalizedNumericState}
           min={chartMin}
           max={safeChartMax}
-          size={56}
-          strokeWidth={8}
+          size={smallVariantGaugeSize}
+          strokeWidth={smallVariantGaugeStroke}
           color={variantColor}
         />
       );
@@ -522,8 +573,8 @@ const SensorCard = memo(function SensorCard({
           value={normalizedNumericState}
           min={chartMin}
           max={safeChartMax}
-          size={42}
-          strokeWidth={6}
+          size={smallVariantDonutSize}
+          strokeWidth={smallVariantDonutStroke}
           color={variantColor}
         />
       );
@@ -533,6 +584,12 @@ const SensorCard = memo(function SensorCard({
   };
 
   if (isSmall) {
+    const smallToggleIconClass = showToggleControls
+      ? isActiveState
+        ? 'ring-1 ring-[var(--accent-color)]/40 bg-[var(--accent-bg)] text-[var(--accent-color)]'
+        : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] opacity-50'
+      : iconToneClass;
+
     return (
       <div
         ref={cardRef}
@@ -541,71 +598,80 @@ const SensorCard = memo(function SensorCard({
         onClick={(e) => {
           if (!editMode) onOpen?.(e);
         }}
-        className={`touch-feedback group relative flex h-full items-center gap-4 overflow-hidden rounded-3xl border p-4 pl-5 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer' : 'cursor-move'}`}
+        className={`touch-feedback group relative flex h-full overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${useDenseMobileSmallLayout ? 'items-center gap-3 p-3 pl-4' : 'items-center gap-3 p-4 pl-5'} ${!editMode ? 'cursor-pointer' : 'cursor-move'}`}
         style={{ ...cardStyle, containerType: 'inline-size' }}
       >
         {controls}
-        <div className="relative flex min-w-0 flex-1 items-center gap-4">
+        <div
+          className={`relative flex min-w-0 flex-1 items-center ${useDenseMobileSmallLayout ? 'gap-2.5' : 'gap-3'}`}
+        >
           {showIcon && (
             <div
-              className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl ${iconToneClass} transition-transform duration-500 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]`}
+              className={`flex flex-shrink-0 items-center justify-center ${useDenseMobileSmallLayout ? 'h-9 w-9 rounded-xl' : 'h-10 w-10 rounded-xl'} ${smallToggleIconClass} transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]`}
+              onClick={showToggleControls && !editMode ? (e) => {
+                e.stopPropagation();
+                onControl('toggle');
+              } : undefined}
+              role={showToggleControls ? 'button' : undefined}
+              tabIndex={showToggleControls ? 0 : undefined}
+              style={showToggleControls ? { cursor: 'pointer' } : undefined}
             >
               {Icon ? (
-                <Icon className="h-6 w-6 stroke-[1.5px]" />
+                <Icon className={`${useDenseMobileSmallLayout ? 'h-4.5 w-4.5' : 'h-5 w-5'} stroke-[1.5px]`} />
               ) : (
-                <Activity className="h-6 w-6" />
+                <Activity className={useDenseMobileSmallLayout ? 'h-4.5 w-4.5' : 'h-5 w-5'} />
               )}
             </div>
           )}
-          <div className={`flex min-w-0 flex-col ${showSmallVariantVisual ? 'pr-14' : ''}`}>
+          <div
+            className={`flex min-w-0 flex-1 flex-col ${showSmallVariantVisual ? (useDenseMobileSmallLayout ? 'pr-8' : 'pr-14') : ''}`}
+          >
             {showName && (
-              <p className="mb-1.5 text-xs leading-none font-bold tracking-widest break-words whitespace-normal text-[var(--text-secondary)] uppercase opacity-60">
+              <p
+                className={`${useDenseMobileSmallLayout ? 'mb-1 text-[10px]' : 'mb-1.5 text-xs'} block max-w-full truncate leading-none font-bold tracking-wide text-[var(--text-secondary)] uppercase opacity-60`}
+                title={String(name)}
+              >
                 {String(name)}
               </p>
             )}
-            <div className="flex items-baseline gap-1">
-              {showStatus && (
-                <span className="text-sm leading-none font-bold text-[var(--text-primary)]">
-                  {chartDisplayValue ?? displayState}
-                </span>
-              )}
-              {showStatus && displayNumericUnit && (
-                <span className="text-[10px] leading-none font-medium tracking-wider text-[var(--text-secondary)] uppercase">
-                  {displayNumericUnit}
-                </span>
-              )}
-            </div>
+            {showStatus && (
+              <div className={`flex min-w-0 items-baseline ${useDenseMobileSmallLayout ? 'gap-0.5' : 'gap-1'}`}>
+                {showToggleControls ? (
+                  <span
+                    className={`text-[10px] font-bold tracking-widest uppercase ${isActiveState ? 'text-[var(--accent-color)]' : 'text-[var(--text-secondary)]'}`}
+                  >
+                    {displayState}
+                  </span>
+                ) : showCompactMobileToggleState ? (
+                  renderCompactToggleState('small')
+                ) : (
+                  <span
+                    className={`${useDenseMobileSmallLayout ? 'truncate text-[13px]' : 'text-sm'} min-w-0 leading-none font-bold text-[var(--text-primary)]`}
+                  >
+                    {chartDisplayValue ?? displayState}
+                  </span>
+                )}
+                {!showToggleControls && !showCompactMobileToggleState && displayNumericUnit && valueMode !== 'percent' && (
+                  <span
+                    className={`${useDenseMobileSmallLayout ? 'text-[9px]' : 'text-[10px]'} shrink-0 leading-none font-medium tracking-wider text-[var(--text-secondary)] uppercase`}
+                  >
+                    {displayNumericUnit}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {showSmallVariantVisual && (
-            <div className="pointer-events-none absolute top-1/2 right-0 shrink-0 -translate-y-1/2">
+            <div
+              className={`pointer-events-none absolute top-1/2 shrink-0 -translate-y-1/2 ${useDenseMobileSmallLayout ? '-right-5' : '-right-6'}`}
+            >
               {renderSmallVariantVisual()}
             </div>
           )}
         </div>
 
-        {showToggleControls ? (
-          <div className="sensor-card-controls shrink-0">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (state !== 'on') onControl('toggle');
-              }}
-              className={`control-on rounded-full px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase transition-all ${state === 'on' ? 'bg-[var(--accent-bg)] text-[var(--accent-color)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'}`}
-            >
-              {translate('common.on')}
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (state === 'on') onControl('toggle');
-              }}
-              className={`control-off rounded-full px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase transition-all ${state !== 'on' ? 'bg-[var(--glass-bg-hover)] text-[var(--text-primary)]' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'}`}
-            >
-              {translate('common.off')}
-            </button>
-          </div>
-        ) : (
+        {!showToggleControls && (
           <div className="shrink-0">{renderControls()}</div>
         )}
       </div>
@@ -620,53 +686,68 @@ const SensorCard = memo(function SensorCard({
       onClick={(e) => {
         if (!editMode) onOpen?.(e);
       }}
-      className={`touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isTwoColMobile ? 'p-3' : 'p-7'} ${!editMode ? 'cursor-pointer' : 'cursor-move'}`}
+      className={`touch-feedback group relative flex h-full flex-col overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${useDenseMobileLargeLayout ? (useCompactMobileToggleLayout ? 'p-4' : 'p-5') : 'p-7'} ${useCompactMobileToggleLayout ? 'justify-start' : 'justify-between'} ${!editMode ? 'cursor-pointer' : 'cursor-move'}`}
       style={cardStyle}
     >
       {controls}
 
-      {!isTwoColMobile && (
-        <div className="pointer-events-none absolute -right-4 -bottom-4 text-[var(--glass-border)] opacity-[0.03]">
-          {Icon && <Icon size={140} />}
-        </div>
-      )}
+      <div className="pointer-events-none absolute -right-4 -bottom-4 text-[var(--glass-border)] opacity-[0.03]">
+        {Icon && <Icon size={140} />}
+      </div>
 
       {showGraph && history.length > 0 && (
-        <div className={`pointer-events-none absolute inset-x-0 bottom-0 z-0 ${isTwoColMobile ? 'h-16' : 'h-24'}`}>
-          <SparkLine data={history} height={isTwoColMobile ? 64 : 96} currentIndex={history.length - 1} fade />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24">
+          <SparkLine data={history} height={96} currentIndex={history.length - 1} fade />
         </div>
       )}
 
-      <div className="relative z-10 flex shrink-0 items-start justify-between">
+      <div
+        className={`relative z-10 flex shrink-0 items-start justify-between ${useDenseMobileLargeLayout ? (useCompactMobileToggleLayout ? 'gap-2.5' : 'gap-3') : ''}`}
+      >
         <div className="flex min-w-0 flex-col items-start">
           {showIcon ? (
             <div
-              className={`flex items-center justify-center ${isTwoColMobile ? 'h-8 w-8 rounded-xl' : 'h-11 w-11 rounded-2xl'} ${iconToneClass} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}
+              className={`flex items-center justify-center ${useDenseMobileLargeLayout ? (useCompactMobileToggleLayout ? 'h-9 w-9 rounded-xl' : 'h-10 w-10 rounded-xl') : 'h-11 w-11 rounded-2xl'} ${iconToneClass} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}
             >
               {Icon ? (
-                <Icon className={`stroke-[1.5px] ${isTwoColMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+                <Icon className={`${useDenseMobileLargeLayout ? (useCompactMobileToggleLayout ? 'h-[15px] w-[15px]' : 'h-4 w-4') : 'h-5 w-5'} stroke-[1.5px]`} />
               ) : (
-                <Activity className={isTwoColMobile ? 'h-4 w-4' : 'h-5 w-5'} />
+                <Activity className={useDenseMobileLargeLayout ? (useCompactMobileToggleLayout ? 'h-[15px] w-[15px]' : 'h-4 w-4') : 'h-5 w-5'} />
               )}
             </div>
           ) : (
-            <div className={isTwoColMobile ? 'h-8 w-8' : 'h-11 w-11'} />
+            <div className={useDenseMobileLargeLayout ? (useCompactMobileToggleLayout ? 'h-9 w-9' : 'h-10 w-10') : 'h-11 w-11'} />
           )}
 
-          {showName && (
-            <p className={`w-full truncate font-bold tracking-wide text-[var(--text-secondary)] uppercase opacity-60 ${isTwoColMobile ? 'mt-1 text-[9px]' : 'mt-2 text-xs tracking-widest'}`}>
+          {!useDenseMobileLargeLayout && showName && (
+            <p
+              className="mt-2 w-full text-xs font-bold tracking-wide text-[var(--text-secondary)] uppercase opacity-60 line-clamp-2"
+              title={String(name)}
+            >
               {String(name)}
             </p>
+          )}
+
+          {showCompactMobileToggleState && (
+            <div className={useCompactMobileToggleLayout ? 'mt-1.5' : 'mt-2'}>
+              {renderCompactToggleState(useCompactMobileToggleLayout ? 'small' : 'large')}
+            </div>
           )}
         </div>
 
         {domain !== 'input_number' && showStatus && isNumeric && (
-          <div className="flex items-baseline gap-1 text-right">
-            <span className={`leading-none font-thin text-[var(--text-primary)] ${isTwoColMobile ? 'text-2xl' : 'text-3xl'}`}>
+          <div
+            className={`flex shrink-0 items-baseline justify-end text-right ${useCompactMobileRangeLayout ? 'gap-1' : useDenseMobileLargeLayout ? 'gap-1.5' : 'gap-1.5'}`}
+          >
+            <span
+              className={`${useCompactMobileRangeLayout ? 'text-[1.3rem]' : useDenseMobileLargeLayout ? 'text-[1.65rem]' : 'text-3xl'} whitespace-nowrap tabular-nums leading-none font-thin text-[var(--text-primary)]`}
+            >
               {chartDisplayValue ?? displayState}
             </span>
             {displayNumericUnit && valueMode !== 'percent' && (
-              <span className={`font-medium tracking-wider text-[var(--text-secondary)] uppercase ${isTwoColMobile ? 'text-xs' : 'text-sm'}`}>
+              <span
+                className={`${useCompactMobileRangeLayout ? 'text-[9px]' : useDenseMobileLargeLayout ? 'text-xs' : 'text-sm'} shrink-0 font-medium tracking-wider text-[var(--text-secondary)] uppercase`}
+              >
                 {displayNumericUnit}
               </span>
             )}
@@ -674,23 +755,36 @@ const SensorCard = memo(function SensorCard({
         )}
       </div>
 
-      <div className="relative z-10 mt-4">
-        {domain !== 'input_number' && showStatus && !isNumeric && (
-          <div className="mb-3">
-            <span className="text-3xl leading-none font-thin text-[var(--text-primary)]">
+      {useDenseMobileLargeLayout && showName && (
+        <p
+          className={`relative z-10 ${useCompactMobileToggleLayout ? 'mt-1 text-[9px]' : 'mt-1.5 text-[10px]'} w-full font-bold tracking-wide text-[var(--text-secondary)] uppercase opacity-60 line-clamp-2`}
+          title={String(name)}
+        >
+          {String(name)}
+        </p>
+      )}
+
+      <div className={`relative z-10 ${useDenseMobileLargeLayout ? (useCompactMobileToggleLayout ? 'mt-1' : useCompactMobileRangeLayout ? 'mt-1' : 'mt-2') : 'mt-4'} ${useCompactMobileToggleLayout ? 'mt-auto pt-2' : ''}`}>
+        {domain !== 'input_number' && showStatus && !isNumeric && !showCompactMobileToggleState && (
+          <div className={useDenseMobileLargeLayout ? 'mb-2' : 'mb-3'}>
+            <span
+              className={`${useDenseMobileLargeLayout ? 'text-[1.4rem]' : 'text-3xl'} block truncate leading-none font-thin text-[var(--text-primary)]`}
+            >
               {displayState}
             </span>
           </div>
         )}
 
         {showToggleControls ? (
-          <div className="mt-4 flex w-fit items-center gap-2 rounded-full bg-[var(--glass-bg)] p-1">
+          <div
+            className={`${useDenseMobileLargeLayout ? `${useCompactMobileToggleLayout ? 'mt-0 gap-1.5' : 'mt-3 gap-2'} grid w-full grid-cols-2 bg-transparent p-0` : 'mt-4 flex w-fit items-center gap-2 rounded-full bg-[var(--glass-bg)] p-1'}`}
+          >
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 if (state === 'on') onControl('toggle');
               }}
-              className={`rounded-full px-4 py-2 text-xs font-bold tracking-widest uppercase transition-all ${state !== 'on' ? 'bg-[var(--glass-bg-hover)] text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+              className={`${useDenseMobileLargeLayout ? `${useCompactMobileToggleLayout ? 'flex h-9 items-center justify-center rounded-xl px-2.5 py-2 text-[9px]' : 'flex h-10 items-center justify-center rounded-xl px-3 py-2 text-[10px]'} bg-[var(--glass-bg)]` : 'rounded-full px-4 py-2 text-xs'} font-bold tracking-widest uppercase transition-all ${state !== 'on' ? 'bg-[var(--glass-bg-hover)] text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
             >
               {translate('common.off')}
             </button>
@@ -699,7 +793,7 @@ const SensorCard = memo(function SensorCard({
                 e.stopPropagation();
                 if (state !== 'on') onControl('toggle');
               }}
-              className={`rounded-full px-4 py-2 text-xs font-bold tracking-widest uppercase transition-all ${state === 'on' ? 'bg-[var(--accent-bg)] text-[var(--accent-color)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+              className={`${useDenseMobileLargeLayout ? `${useCompactMobileToggleLayout ? 'flex h-9 items-center justify-center rounded-xl px-2.5 py-2 text-[9px]' : 'flex h-10 items-center justify-center rounded-xl px-3 py-2 text-[10px]'} bg-[var(--glass-bg)]` : 'rounded-full px-4 py-2 text-xs'} font-bold tracking-widest uppercase transition-all ${state === 'on' ? 'bg-[var(--accent-bg)] text-[var(--accent-color)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
             >
               {translate('common.on')}
             </button>
@@ -709,28 +803,28 @@ const SensorCard = memo(function SensorCard({
         )}
 
         {showVariantPanel && (
-          <div className="mt-4 space-y-3 transition-all duration-300">
+          <div className={`${useDenseMobileLargeLayout ? 'mt-1.5 space-y-1 overflow-hidden' : 'mt-4 space-y-3'} transition-all duration-300`}>
             {variant === 'gauge' && isNumeric && normalizedNumericState !== null && (
-              <div className="-mt-1 flex items-center justify-center">
+              <div className={`${useDenseMobileLargeLayout ? 'flex items-center justify-center overflow-hidden' : '-mt-1 flex items-center justify-center'}`}>
                 <Gauge
                   value={normalizedNumericState}
                   min={chartMin}
                   max={safeChartMax}
-                  size={124}
-                  strokeWidth={14}
+                  size={largeVariantGaugeSize}
+                  strokeWidth={largeVariantGaugeStroke}
                   color={variantColor}
                 />
               </div>
             )}
 
             {variant === 'donut' && isNumeric && normalizedNumericState !== null && (
-              <div className="-mt-5 flex items-center justify-center">
+              <div className={`${useDenseMobileLargeLayout ? 'flex items-center justify-center overflow-hidden' : '-mt-5 flex items-center justify-center'}`}>
                 <Donut
                   value={normalizedNumericState}
                   min={chartMin}
                   max={safeChartMax}
-                  size={96}
-                  strokeWidth={10}
+                  size={largeVariantDonutSize}
+                  strokeWidth={largeVariantDonutStroke}
                   color={variantColor}
                 />
               </div>
@@ -741,7 +835,7 @@ const SensorCard = memo(function SensorCard({
                 value={normalizedNumericState}
                 min={chartMin}
                 max={safeChartMax}
-                height={20}
+                height={largeVariantBarHeight}
                 color={variantColor}
               />
             )}

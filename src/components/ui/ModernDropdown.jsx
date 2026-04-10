@@ -1,6 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 
+/**
+ * @param {Object} props
+ * @param {string} props.label
+ * @param {any} props.icon
+ * @param {string[]} props.options
+ * @param {string} props.current
+ * @param {Function} props.onChange
+ * @param {Record<string, string>} [props.map]
+ * @param {string} [props.placeholder]
+ * @param {Function} [props.t]
+ */
 export default function ModernDropdown({
   label,
   icon: Icon,
@@ -8,8 +19,10 @@ export default function ModernDropdown({
   current,
   onChange,
   map,
-  placeholder = 'Not selected',
+  placeholder,
+  t,
 }) {
+  const resolvedPlaceholder = placeholder || t?.('dropdown.noneSelected') || 'Not selected';
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   useEffect(() => {
@@ -40,7 +53,7 @@ export default function ModernDropdown({
             className="text-xs font-bold tracking-widest uppercase italic"
             style={{ color: 'var(--text-secondary)' }}
           >
-            {String(getLabel(current) || placeholder)}
+            {String(getLabel(current) || resolvedPlaceholder)}
           </span>
         </div>
         <ChevronDown

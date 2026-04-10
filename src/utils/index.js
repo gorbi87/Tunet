@@ -1,5 +1,5 @@
 // Utility barrel — re-exports from all utility modules
-export { formatRelativeTime, formatDuration, parseMarkdown, isToggleEntity } from './formatting';
+export { formatRelativeTime, formatDuration, isToggleEntity } from './formatting';
 export { logger } from './logger';
 export { isCardRemovable, isCardHiddenByLogic, isMediaPage } from './cardUtils';
 export {
@@ -28,3 +28,6 @@ export {
 export { getEffectiveRoomEntityIds, filterEntitiesByDomain } from './roomEntities';
 export { matchCarEntities } from './carEntityMatcher';
 export { CHART_STATUS_COLORS, WEATHER_BAND_COLORS, getThresholdColor } from './chartColors';
+export { downsampleTimeSeries } from './sensorHistory';
+export { isMusicAssistantMediaEntity, isSonosMediaEntity } from './mediaEntityClassification';
+export { buildRegistryLookupMap, enrichEntitiesWithRegistryMetadata } from './entityRegistryMetadata';

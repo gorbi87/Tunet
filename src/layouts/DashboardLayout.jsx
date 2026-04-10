@@ -15,7 +15,7 @@ const MemoStatusBar = memo(StatusBar);
 const MemoDashboardGrid = memo(DashboardGrid);
 const MemoModalManager = memo(ModalManager);
 
-/** @param {Record<string, unknown>} props */
+/** @param {any} props */
 export default function DashboardLayout(props) {
   const {
     resolvedAppFontFamily,
@@ -110,16 +110,23 @@ export default function DashboardLayout(props) {
   return (
     <div
       className="min-h-screen overflow-x-hidden font-sans transition-colors duration-500 selection:bg-[var(--accent-bg)]"
-      style={{
+      style={/** @type {any} */ ({
         backgroundColor: 'var(--bg-primary)',
         color: 'var(--text-primary)',
         '--font-sans': resolvedAppFontFamily,
         fontFamily: resolvedAppFontFamily,
-      }}
+      })}
     >
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-[var(--accent-color)] focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white focus:shadow-lg"
+      >
+        {t('a11y.skipToContent') || 'Skip to content'}
+      </a>
       <BackgroundLayer />
       {editMode && draggingId && touchPath && <DragOverlaySVG touchPath={touchPath} />}
       <div
+        id="main-content"
         role="main"
         aria-label="Dashboard"
         className={`relative z-10 mx-auto w-full max-w-[1600px] py-6 md:py-10 ${
@@ -144,29 +151,14 @@ export default function DashboardLayout(props) {
           t={t}
           isMobile={isMobile}
           sectionSpacing={sectionSpacing}
-          mobileToolbar={isMobile ? (
-            <EditToolbar
-              editMode={editMode}
-              setEditMode={guardedSetEditMode}
-              activePage={activePage}
-              setActivePage={setActivePage}
-              setShowAddCardModal={guardedSetShowAddCardModal}
-              setShowConfigModal={guardedSetShowConfigModal}
-              setConfigTab={setConfigTab}
-              setShowThemeSidebar={guardedSetShowThemeSidebar}
-              setShowLayoutSidebar={guardedSetShowLayoutSidebar}
-              setShowHeaderEditModal={guardedSetShowHeaderEditModal}
-              connected={connected}
-              updateCount={updateCount}
-              t={t}
-            />
-          ) : undefined}
         >
           <div
-            className="mt-0 flex w-full flex-wrap items-center justify-between gap-2 font-sans"
+            className={`mt-0 w-full font-sans ${isMobile ? 'flex flex-col items-start gap-3' : 'flex items-center justify-between'}`}
             style={{ marginTop: `${sectionSpacing?.headerToStatus ?? 0}px` }}
           >
-            <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+            <div
+              className={`flex min-w-0 flex-wrap items-center gap-2.5 ${isMobile ? 'w-full origin-left scale-90' : ''}`}
+            >
               {(pagesConfig.header || []).map((id) => personStatus(id))}
               {editMode && (
                 <button
@@ -190,7 +182,7 @@ export default function DashboardLayout(props) {
                 <div className="mx-2 h-8 w-px bg-[var(--glass-border)]"></div>
               )}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className={`min-w-0 ${isMobile ? 'w-full' : 'flex-1'}`}>
               {withProfiler(
                 'StatusBar',
                 <MemoStatusBar
@@ -221,23 +213,22 @@ export default function DashboardLayout(props) {
             setEditingPage={setEditingPage}
             t={t}
           />
-          {!isMobile && (
-            <EditToolbar
-              editMode={editMode}
-              setEditMode={guardedSetEditMode}
-              activePage={activePage}
-              setActivePage={setActivePage}
-              setShowAddCardModal={guardedSetShowAddCardModal}
-              setShowConfigModal={guardedSetShowConfigModal}
-              setConfigTab={setConfigTab}
-              setShowThemeSidebar={guardedSetShowThemeSidebar}
-              setShowLayoutSidebar={guardedSetShowLayoutSidebar}
-              setShowHeaderEditModal={guardedSetShowHeaderEditModal}
-              connected={connected}
-              updateCount={updateCount}
-              t={t}
-            />
-          )}
+          <EditToolbar
+            editMode={editMode}
+            setEditMode={guardedSetEditMode}
+            activePage={activePage}
+            setActivePage={setActivePage}
+            setShowAddCardModal={guardedSetShowAddCardModal}
+            setShowConfigModal={guardedSetShowConfigModal}
+            setConfigTab={setConfigTab}
+            setShowThemeSidebar={guardedSetShowThemeSidebar}
+            setShowLayoutSidebar={guardedSetShowLayoutSidebar}
+            setShowHeaderEditModal={guardedSetShowHeaderEditModal}
+            connected={connected}
+            updateCount={updateCount}
+            isMobile={isMobile}
+            t={t}
+          />
         </div>
 
         {withProfiler(

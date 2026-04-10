@@ -53,7 +53,8 @@ const resolveKeepLimit = (rawLimit) => {
 
 const normalizeDeviceLabel = (value) => {
   if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
+  // eslint-disable-next-line no-control-regex
+  const trimmed = value.replace(/[\x00-\x1f\x7f]/g, '').trim();
   return trimmed ? trimmed.slice(0, 120) : null;
 };
 
@@ -563,24 +564,31 @@ router.post('/publish', (req, res) => {
     return 1;
   };
 
-  if (target_device_id) {
-    const affected = upsertTarget(target_device_id);
-    return res.json({ success: true, affected });
-  }
+  const targetIds = target_device_id
+    ? [target_device_id]
+    : db
+        .prepare(
+          `SELECT device_id FROM current_settings
+         WHERE ha_user_id = ? AND device_id != ?`
+        )
+        .all(ha_user_id, source_device_id)
+        .map((row) => row.device_id);
 
-  const targets = db
-    .prepare(
-      `SELECT device_id FROM current_settings
-     WHERE ha_user_id = ? AND device_id != ?`
-    )
-    .all(ha_user_id, source_device_id);
-
-  let affected = 0;
-  targets.forEach((row) => {
-    affected += upsertTarget(row.device_id);
+  const publishTargets = db.transaction((deviceIds) => {
+    let affected = 0;
+    deviceIds.forEach((deviceId) => {
+      affected += upsertTarget(deviceId);
+    });
+    return affected;
   });
 
-  return res.json({ success: true, affected });
+  try {
+    const affected = publishTargets(targetIds);
+    return res.json({ success: true, affected });
+  } catch (error) {
+    console.error('[settings] Failed to publish settings:', error);
+    return res.status(500).json({ error: 'Failed to publish settings to target devices' });
+  }
 });
 
 export default router;
