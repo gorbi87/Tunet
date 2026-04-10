@@ -163,7 +163,8 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     const animated =
       pill.animated !== false &&
       (state === 'arming' || state === 'pending' || state === 'disarming');
-    const paddingClass = isMobile ? 'shrink-0 px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
+    const heightClass = isMobile ? 'h-8' : 'h-9';
+    const paddingClass = isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
     const textSize = isMobile ? 'text-[10px]' : 'text-xs';
 
@@ -171,11 +172,11 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     const wrapperProps = onClick
       ? {
           onClick,
-          className: `flex items-center ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animated ? 'animate-pulse' : ''}`,
+          className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animated ? 'animate-pulse' : ''}`,
           style: { backgroundColor: bgColor },
         }
       : {
-          className: `flex items-center ${paddingClass} rounded-2xl ${animated ? 'animate-pulse' : ''}`,
+          className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl ${animated ? 'animate-pulse' : ''}`,
           style: { backgroundColor: bgColor },
         };
 
@@ -354,7 +355,8 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     const animated = pill.animated !== false && isPlaying;
 
     // Mobile adjustments
-    const paddingClass = isMobile ? 'shrink-0 px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
+    const heightClass = isMobile ? 'h-8' : 'h-9';
+    const paddingClass = isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
     const textSize = isMobile ? 'text-[10px]' : 'text-xs';
 
@@ -363,11 +365,11 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
       pill.clickable && onClick
         ? {
             onClick,
-            className: `relative flex items-center ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95`,
+            className: `relative flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95`,
             style: { backgroundColor: bgColor },
           }
         : {
-            className: `relative flex items-center ${paddingClass} rounded-2xl`,
+            className: `relative flex items-center ${heightClass} ${paddingClass} rounded-2xl`,
             style: { backgroundColor: bgColor },
           };
 
@@ -439,13 +441,14 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     const labelColor = resolveHeadingColorClass(pill.labelColor);
     const sublabelColor = pill.sublabelColor || 'text-[var(--text-muted)]';
     const IconComponent = pill.icon ? getIconComponent(pill.icon) || Activity : Activity;
-    const paddingClass = isMobile ? 'px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
+    const heightClass = isMobile ? 'h-8' : 'h-9';
+    const paddingClass = isMobile ? 'px-1.5 gap-1.5' : 'px-2.5 gap-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
     const textSize = isMobile ? 'text-[10px]' : 'text-xs';
     const Wrapper = onClick ? 'button' : 'div';
     const wrapperProps = onClick
-      ? { onClick, className: `flex items-center ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95`, style: { backgroundColor: bgColor } }
-      : { className: `flex items-center ${paddingClass} rounded-2xl`, style: { backgroundColor: bgColor } };
+      ? { onClick, className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95`, style: { backgroundColor: bgColor } }
+      : { className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl`, style: { backgroundColor: bgColor } };
     return (
       <Wrapper {...wrapperProps}>
         <div className={`${iconPadding} rounded-xl ${iconColor}`} style={{ backgroundColor: iconBgColor }}>
@@ -494,7 +497,8 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     (entity.state === 'on' || entity.state === 'playing' || pill.animateAlways);
 
   // Mobile adjustments
-  const paddingClass = isMobile ? 'shrink-0 px-1.5 py-0.5 gap-1.5' : 'px-2.5 py-1 gap-2';
+  const heightClass = isMobile ? 'h-8' : 'h-9';
+  const paddingClass = isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
   const iconPadding = isMobile ? 'p-1' : 'p-1.5';
   const textSize = isMobile ? 'text-[10px]' : 'text-xs';
 
@@ -502,11 +506,11 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
   const wrapperProps = onClick
     ? {
         onClick,
-        className: `flex items-center ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animated ? 'animate-pulse' : ''}`,
+        className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animated ? 'animate-pulse' : ''}`,
         style: { backgroundColor: bgColor },
       }
     : {
-        className: `flex items-center ${paddingClass} rounded-2xl ${animated ? 'animate-pulse' : ''}`,
+        className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl ${animated ? 'animate-pulse' : ''}`,
         style: { backgroundColor: bgColor },
       };
 
@@ -525,12 +529,14 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
         >
           {label}
         </span>
-        <span
-          className={`${textSize} text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
-          title={sublabel}
-        >
-          {sublabel}
-        </span>
+        {sublabel && (
+          <span
+            className={`${textSize} text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
+            title={sublabel}
+          >
+            {sublabel}
+          </span>
+        )}
       </div>
     </Wrapper>
   );
