@@ -200,10 +200,8 @@ export default function Header({
         </div>
       )}
 
-      <div
-        className={`flex items-start justify-between gap-10 leading-none ${isMobile ? 'flex-col items-center text-center' : ''}`}
-      >
-        <div className={`flex items-center gap-4 ${isMobile ? 'w-full justify-center' : ''}`}>
+      <div className="flex items-center justify-between gap-4 leading-none">
+        <div className="flex items-center gap-4">
           {headerSettings.showTitle && (
             <h1 className="leading-none select-none" style={titleStyle}>
               {headerTitle || 'Tunet'}
@@ -211,23 +209,16 @@ export default function Header({
           )}
         </div>
 
-        {headerSettings.showClock && !isMobile && (
-          <h2
-            className="leading-none font-light tracking-[0.1em] select-none"
-            style={clockStyle}
-          >
-            {timeStr}
-          </h2>
-        )}
-
-        {headerSettings.showClock && isMobile && showClockOnMobile && (
-          <h2
-            className="leading-none font-light tracking-[0.08em] select-none"
-            style={clockStyle}
-          >
-            {timeStr}
-          </h2>
-        )}
+        <div className="flex items-center gap-3">
+          {headerSettings.showClock && (!isMobile || showClockOnMobile) && (
+            <h2
+              className="leading-none font-light tracking-[0.1em] select-none"
+              style={clockStyle}
+            >
+              {timeStr}
+            </h2>
+          )}
+        </div>
       </div>
 
       {headerSettings.showDate && !isMobile && (
@@ -242,7 +233,7 @@ export default function Header({
         </p>
       )}
 
-      <div className="flex w-full flex-col gap-6 pt-6 md:gap-3 md:pt-3">{children}</div>
+      <div className={`flex w-full flex-col ${isMobile ? 'gap-2 pt-2' : 'gap-6 pt-6 md:gap-3 md:pt-3'}`}>{children}</div>
     </header>
   );
 }
