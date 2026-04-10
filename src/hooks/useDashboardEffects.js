@@ -131,7 +131,7 @@ export function useDashboardEffects({
     };
     const onTouchEnd = (e) => {
       if (touchMoved) return;
-      const target = e.target?.closest?.('[data-haptic]');
+      const target = e.target?.closest?.('[data-haptic], button, [role="button"]');
       if (!target) return;
       e.preventDefault(); // block iOS ghost click (300 ms delayed synthetic click)
       target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
