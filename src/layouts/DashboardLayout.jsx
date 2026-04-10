@@ -157,7 +157,7 @@ export default function DashboardLayout(props) {
             style={{ marginTop: `${sectionSpacing?.headerToStatus ?? 0}px` }}
           >
             <div
-              className="flex min-w-0 flex-wrap items-center gap-2.5"
+              className="flex flex-shrink-0 flex-nowrap items-center gap-2.5"
             >
               {(pagesConfig.header || []).map((id) => personStatus(id))}
               {editMode && (
@@ -182,7 +182,7 @@ export default function DashboardLayout(props) {
                 <div className="mx-2 h-8 w-px bg-[var(--glass-border)]"></div>
               )}
             </div>
-            <div className={`min-w-0 ${isMobile ? 'w-full' : 'flex-1'}`}>
+            <div className="min-w-0 flex-1">
               {withProfiler(
                 'StatusBar',
                 <MemoStatusBar
