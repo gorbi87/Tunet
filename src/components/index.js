@@ -21,6 +21,7 @@ export { default as SpacerCard } from './cards/SpacerCard';
 export { default as StatusPill } from './cards/StatusPill';
 export { default as TodoCard } from './cards/TodoCard';
 export { default as VacuumCard } from './cards/VacuumCard';
+export { default as NavimowCard } from './cards/NavimowCard';
 export { default as WeatherTempCard } from './cards/WeatherTempCard';
 
 // ── Charts ───────────────────────────────────────────────────────────────

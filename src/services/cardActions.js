@@ -48,6 +48,8 @@ export const handleAddSelected = (ctx) => {
         return selectedEntities.filter((id) => id.startsWith('light.'));
       case 'vacuum':
         return selectedEntities.filter((id) => id.startsWith('vacuum.'));
+      case 'navimow':
+        return selectedEntities.filter((id) => id.startsWith('lawn_mower.'));
       case 'fan':
         return selectedEntities.filter((id) => id.startsWith('fan.'));
       case 'climate':
@@ -270,6 +272,14 @@ export const handleAddSelected = (ctx) => {
     case 'pv': {
       const pvCardId = `pv_card_${Date.now()}`;
       commitSingleCard(pvCardId, {});
+      return;
+    }
+
+    case 'navimow': {
+      const navimowEntities = selectedEntitiesForType();
+      if (navimowEntities.length === 0) return;
+      commitCards(navimowEntities);
+      setSelectedEntities([]);
       return;
     }
 

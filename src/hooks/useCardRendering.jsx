@@ -97,6 +97,7 @@ export function useCardRendering({
     setShowLuftungsanlageModal: legacySetShowLuftungsanlageModal,
     setShowPvModal: legacySetShowPvModal,
     setShowBeregnungModal: legacySetShowBeregnungModal,
+    setShowNavimowModal: () => {},
     setShowSecurityLockModal: () => {},
     setShowSecurityContactsModal: () => {},
   };
@@ -128,6 +129,7 @@ export function useCardRendering({
     setShowLuftungsanlageModal,
     setShowPvModal,
     setShowBeregnungModal,
+    setShowNavimowModal,
     setShowSecurityLockModal,
     setShowSecurityContactsModal,
   } = resolvedEntityModalActions;
@@ -381,6 +383,7 @@ export function useCardRendering({
         setShowLuftungsanlageModal,
         setShowPvModal,
         setShowBeregnungModal,
+        setShowNavimowModal,
         setShowSecurityLockModal,
         setShowSecurityContactsModal,
         setActivePage,
@@ -472,6 +475,7 @@ export function useCardRendering({
       setShowLuftungsanlageModal,
       setShowPvModal,
       setShowBeregnungModal,
+      setShowNavimowModal,
       setShowSecurityLockModal,
       setShowSecurityContactsModal,
       setActiveMediaId,

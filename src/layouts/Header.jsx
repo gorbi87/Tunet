@@ -208,7 +208,7 @@ export default function Header({
         <div className="flex items-center gap-4">
           {headerSettings.showTitle && (
             <h1 className="leading-none select-none" style={titleStyle}>
-              {headerTitle || 'Tunet'}
+              {headerTitle || 'Tunet'}{import.meta.env.DEV && <span className="ml-2 text-[0.3em] font-bold tracking-widest uppercase text-[var(--accent-color)] opacity-60 align-middle">Dev</span>}
             </h1>
           )}
         </div>

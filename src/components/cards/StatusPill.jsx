@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { getIconComponent } from '../../icons';
 import { Activity, AlertTriangle, Clapperboard, Lock, RefreshCw } from '../../icons';
 import { Icon as MdiIcon } from '@mdi/react';
-import { mdiShieldHome, mdiShieldLock, mdiShieldOff } from '@mdi/js';
+import { mdiShieldHome, mdiShieldLock, mdiShieldOff, mdiTrashCan, mdiNewspaper, mdiDeleteVariant } from '@mdi/js';
 import { evaluateEntityCondition } from '../../utils/conditionUtils';
 import {
   applyPlayerNameDisplayFilter,
@@ -465,6 +465,44 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
           )}
         </div>
       </Wrapper>
+    );
+  }
+
+  // Waste bin pill (rendered by StatusBar for each due bin)
+  if (pill.type === 'waste_bin') {
+    const bin = pill._wasteBin;
+    const state = entity?.state;
+    if (!bin || !state || !['Heute', 'Morgen', 'in 2 Tagen'].includes(state)) return null;
+
+    const heightClass = isMobile ? 'h-8' : 'h-9';
+    const paddingClass = isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
+    const iconPadding = isMobile ? 'p-1' : 'p-1.5';
+    const textSize = isMobile ? 'text-[10px]' : 'text-xs';
+
+    return (
+      <div
+        className={`flex items-center ${heightClass} ${paddingClass} rounded-2xl`}
+        style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}
+      >
+        <div
+          className={`${iconPadding} rounded-xl flex-shrink-0`}
+          style={{ backgroundColor: bin.iconBg }}
+        >
+          <MdiIcon path={bin.mdiPath} size={isMobile ? 0.65 : 0.75} color={bin.color} />
+        </div>
+        <div className="flex min-w-0 flex-col items-start">
+          <span
+            className={`${textSize} text-left leading-tight font-bold text-[var(--text-primary)] ${textMaxWidthClass} block w-full truncate`}
+          >
+            {bin.name}
+          </span>
+          <span
+            className={`${textSize} text-left font-medium text-[var(--text-muted)] ${textMaxWidthClass} block w-full truncate`}
+          >
+            {state}
+          </span>
+        </div>
+      </div>
     );
   }
 

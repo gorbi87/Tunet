@@ -282,6 +282,27 @@ export default function StatusBar({
               );
             }
 
+            if (pill.type === 'waste') {
+              const WASTE_BINS = [
+                { entityId: 'sensor.gelbe_tonne', name: 'Gelbe Tonne', color: '#FFD700', iconBg: 'rgba(255,215,0,0.15)', mdiPath: 'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z' },
+                { entityId: 'sensor.restmull',    name: 'Restmüll',    color: '#A9A9A9', iconBg: 'rgba(169,169,169,0.15)', mdiPath: 'M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z' },
+                { entityId: 'sensor.papier',      name: 'Papier',      color: '#60a5fa', iconBg: 'rgba(96,165,250,0.15)', mdiPath: 'M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z' },
+              ];
+              const SOON = ['Heute', 'Morgen', 'in 2 Tagen'];
+              const dueBins = WASTE_BINS.filter((b) => SOON.includes(entities[b.entityId]?.state));
+              if (dueBins.length === 0) return null;
+              return dueBins.map((bin) => (
+                <StatusPill
+                  key={`${pill.id}-${bin.entityId}`}
+                  entity={entities[bin.entityId]}
+                  pill={{ ...pill, type: 'waste_bin', _wasteBin: bin }}
+                  getA={getA}
+                  t={t}
+                  isMobile={isMobile}
+                />
+              ));
+            }
+
             if (pill.type === 'entity_count') {
               const activeState = pill.activeState || 'on';
               const entityIds = Array.isArray(pill.entityIds) ? pill.entityIds : [];

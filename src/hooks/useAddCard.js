@@ -115,6 +115,7 @@ export function useAddCard({
     if (addCardTargetPage === 'header') return t('addCard.available.people');
     if (addCardTargetPage === 'settings') return t('addCard.available.allEntities');
     if (addCardType === 'vacuum') return t('addCard.available.vacuums');
+    if (addCardType === 'navimow') return 'Navimow';
     if (addCardType === 'fan') return t('addCard.available.fans');
     if (addCardType === 'camera') return t('addCard.available.cameras');
     if (addCardType === 'climate') return t('addCard.available.climates');
@@ -162,7 +163,9 @@ export function useAddCard({
                                 ? 'addCard.item.sensors'
                                 : addCardType === 'entity'
                                   ? 'addCard.item.entities'
-                                  : 'addCard.item.lights';
+                                  : addCardType === 'navimow'
+                                    ? 'addCard.item.vacuums'
+                                    : 'addCard.item.lights';
 
     return t('addCard.noneLeft').replace('{item}', t(itemKey));
   };

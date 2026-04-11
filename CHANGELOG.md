@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.15.12] — 2026-04-11
+
+### Added
+- NavimowCard: Neue Karte für Mähroboter (`lawn_mower`-Domain) mit Steuerung (Starten/Pausieren/Station) und Modal mit Mähhistorie als Balkendiagramm (14 Tage).
+- Beschattungsview: Schnellaktionen "Alle runter", "EG runter", "EG ohne Tür", "OG runter" als Buttons über den Kacheln.
+- StatusBar: Neuer Pill-Typ "Müllabholung" zeigt automatisch fällige Tonnen (Gelbe Tonne, Restmüll, Papier) wenn Abholung in ≤2 Tagen.
+
+### Changed
+- Sicherheitskarte: Simulation aus eigener Spalte entfernt und direkt unter Alarmo in die Alarm-Sektion integriert; Kachel-Label "Anwesenheit" → "Simulation".
+- go2rtc-Kamera: Kameraname aus der Kachelansicht entfernt.
+
+### Fixed
+- NavimowModal: `AccessibleModalShell` korrekt mit `open`-Prop und children-Funktion verwendet (Modal öffnete sich vorher nicht).
+
+
 ## [1.15.11] — 2026-04-10
 
 ### Fixed

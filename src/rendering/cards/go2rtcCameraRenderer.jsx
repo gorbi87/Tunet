@@ -67,10 +67,9 @@ const Go2rtcCameraCard = memo(function Go2rtcCameraCard({
           )}
         </div>
         <div className="flex min-w-0 flex-col justify-center">
-          <p className="mb-1.5 truncate text-xs leading-none font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
+          <p className="truncate text-sm leading-none font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
             {hasConfig ? t?.('camera.live') || 'Live' : 'go2rtc'}
           </p>
-          <p className="truncate text-sm leading-none font-bold text-[var(--text-primary)]">{name}</p>
         </div>
         <span className={`ml-auto h-2.5 w-2.5 shrink-0 rounded-full ${hasConfig ? 'bg-emerald-400' : 'bg-amber-400'}`} />
       </div>
@@ -123,10 +122,7 @@ const Go2rtcCameraCard = memo(function Go2rtcCameraCard({
         {hasConfig ? t?.('camera.live') || 'Live' : 'go2rtc'}
       </div>
 
-      <div className="absolute right-3 bottom-3 left-3 flex items-end justify-between gap-3">
-        <div className="popup-surface max-w-[75%] min-w-0 rounded-xl border border-[var(--glass-border)] px-3 py-2">
-          <p className="truncate text-xs font-bold tracking-wide text-[var(--text-primary)] uppercase">{name}</p>
-        </div>
+      <div className="absolute right-3 bottom-3">
         <div className="popup-surface shrink-0 rounded-xl border border-[var(--glass-border)] p-2 text-[var(--text-primary)]">
           <Icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
         </div>

@@ -26,6 +26,7 @@ const WaermepumpeModal = lazy(() => import('../../modals/WaermepumpeModal'));
 const LuftungsanlageModal = lazy(() => import('../../modals/LuftungsanlageModal'));
 const PvModal = lazy(() => import('../../modals/PvModal'));
 const BeregnungModal = lazy(() => import('../../modals/BeregnungModal'));
+const NavimowModal = lazy(() => import('../../modals/NavimowModal'));
 const EntityCountModal = lazy(() => import('../../modals/EntityCountModal'));
 const SecurityLockModal = lazy(() => import('../../modals/SecurityLockModal'));
 const SecurityContactsModal = lazy(() => import('../../modals/SecurityContactsModal'));
@@ -81,6 +82,8 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     setShowPvModal,
     showBeregnungModal,
     setShowBeregnungModal,
+    showNavimowModal,
+    setShowNavimowModal,
     showEntityCountModal,
     setShowEntityCountModal,
     showSecurityLockModal,
@@ -555,6 +558,23 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
           <BeregnungModal
             show={true}
             onClose={() => setShowBeregnungModal(null)}
+            entities={entities}
+            callService={callService}
+            conn={conn}
+            haUrl={activeUrl}
+            haToken={
+              config.authMethod === 'oauth' ? authRef?.current?.accessToken || '' : config.token
+            }
+          />
+        </ModalSuspense>
+      )}
+
+      {showNavimowModal && (
+        <ModalSuspense>
+          <NavimowModal
+            show={true}
+            onClose={() => setShowNavimowModal(null)}
+            mowerId={showNavimowModal}
             entities={entities}
             callService={callService}
             conn={conn}

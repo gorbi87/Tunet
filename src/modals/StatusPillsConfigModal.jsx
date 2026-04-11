@@ -200,6 +200,7 @@ export default function StatusPillsConfigModal({
       const translated = t('statusPills.typeAlarm');
       return translated === 'statusPills.typeAlarm' ? 'Alarm' : translated;
     }
+    if (pillType === 'waste') return 'Müllabholung';
     return t('statusPills.typeSonos');
   };
 
@@ -497,6 +498,15 @@ export default function StatusPillsConfigModal({
                     {t('statusPills.typeAlarm') === 'statusPills.typeAlarm'
                       ? 'Alarm'
                       : t('statusPills.typeAlarm')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      addPill('waste');
+                      setShowAddMenu(false);
+                    }}
+                    className="flex items-center gap-2 rounded-lg px-4 py-3 text-left text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-white/5"
+                  >
+                    <span className="text-base leading-none">🗑</span> Müllabholung
                   </button>
                 </div>
               )}

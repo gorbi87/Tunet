@@ -31,6 +31,7 @@ import {
   renderLightPanelCard,
   renderCoverPanelCard,
   renderSecurityPanelCard,
+  renderNavimowCard,
 } from './cards';
 
 /**
@@ -44,6 +45,7 @@ export const CARD_REGISTRY = [
   { prefix: 'light_', renderer: renderLightCard },
   { prefix: 'light.', renderer: renderLightCard },
   { prefix: 'vacuum.', renderer: renderVacuumCard },
+  { prefix: 'lawn_mower.', renderer: renderNavimowCard },
   { prefix: 'fan.', renderer: renderFanCard },
   { prefix: 'media_player.', renderer: renderMediaPlayerCard },
   { prefix: 'media_group_', renderer: renderMediaGroupCard },

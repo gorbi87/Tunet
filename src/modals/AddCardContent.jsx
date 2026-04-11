@@ -348,6 +348,7 @@ function AddCardContent({
       if (addCardTargetPage === 'header') return id.startsWith('person.') && !excludedHeader.has(id);
       if (addCardTargetPage === 'settings') return !excludedSettings.has(id);
       if (addCardType === 'vacuum') return id.startsWith('vacuum.') && !excludedOnPage.has(id);
+      if (addCardType === 'navimow') return id.startsWith('lawn_mower.') && !excludedOnPage.has(id);
       if (addCardType === 'fan') return id.startsWith('fan.') && !excludedOnPage.has(id);
       if (addCardType === 'camera') return id.startsWith('camera.');
       if (addCardType === 'cover') return id.startsWith('cover.');
@@ -926,6 +927,7 @@ function AddCardContent({
     'sensor',
     'light',
     'vacuum',
+    'navimow',
     'fan',
     'camera',
     'climate',
@@ -1008,6 +1010,13 @@ function AddCardContent({
                   icon={Bot}
                   label={t('addCard.type.vacuum')}
                   isActive={addCardType === 'vacuum'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
+                  type="navimow"
+                  icon={Bot}
+                  label="Navimow"
+                  isActive={addCardType === 'navimow'}
                   onSelect={setAddCardType}
                 />
                 <TypeButton

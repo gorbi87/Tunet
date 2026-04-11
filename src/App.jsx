@@ -190,6 +190,7 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     setShowCameraModal: modals.setShowCameraModal,
     setShowGo2rtcCameraModal: modals.setShowGo2rtcCameraModal,
     setShowBeregnungModal: modals.setShowBeregnungModal,
+    setShowNavimowModal: modals.setShowNavimowModal,
     setShowWeatherModal: modals.setShowWeatherModal,
     setShowAlarmModal: modals.setShowAlarmModal,
     setShowAlarmActionModal: modals.setShowAlarmActionModal,

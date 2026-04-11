@@ -290,7 +290,7 @@ const SimulationRow = memo(({ entity, callService }) => {
       >
         <UserCheck className="h-3.5 w-3.5 stroke-[1.5px]" />
       </div>
-      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 min-w-0 truncate text-left">Anwesenheit</span>
+      <span className="text-xs font-medium text-[var(--text-primary)] flex-1 min-w-0 truncate text-left">Simulation</span>
       <span className={`text-[10px] font-bold flex-shrink-0 ${isUnavailable ? 'text-red-400' : isOn ? 'text-blue-400' : 'text-[var(--text-muted)] opacity-60'}`}>
         {isUnavailable ? '⚠' : isOn ? 'Aktiv' : 'Inaktiv'}
       </span>
@@ -450,7 +450,7 @@ const SecurityPanelCard = ({
               />
             </div>
             <div>
-              <Tile icon={UserCheck} label="Anwesenheit"
+              <Tile icon={UserCheck} label="Simulation"
                 iconBg={simOn ? 'rgba(96,165,250,0.12)' : 'var(--glass-bg-hover)'}
                 iconFg={simOn ? '#60a5fa' : 'var(--text-muted)'}
                 state={simOn ? 'Aktiv' : 'Inaktiv'}
@@ -502,14 +502,9 @@ const SecurityPanelCard = ({
           </div>
 
           {/* Alarm */}
-          <div className={`${p} flex flex-col gap-2 border-r border-[var(--glass-border)]`} style={{ minWidth: 180 }}>
+          <div className={`${p} flex flex-col gap-2 flex-1`} style={{ minWidth: 180 }}>
             <SectionLabel>Alarm</SectionLabel>
             <AlarmRow entity={entities[ALARM_ENTITY]} onOpen={() => setShowAlarmModal?.(ALARM_ENTITY)} />
-          </div>
-
-          {/* Anwesenheit */}
-          <div className={`${p} flex flex-col gap-2 flex-1`} style={{ minWidth: 180 }}>
-            <SectionLabel>Simulation</SectionLabel>
             <SimulationRow entity={entities[SIMULATION_SWITCH]} callService={callService} />
           </div>
 

@@ -311,6 +311,46 @@ const BeschattungsStatusPanel = memo(({ entities, isMobile }) => {
   );
 });
 
+/* ── Group Action Bar ────────────────────────────────────────────────── */
+
+const GROUP_ACTIONS = {
+  eg: [
+    { entityId: 'cover.gruppe_rolladen_eg',  label: 'EG runter',         icon: '↓' },
+    { entityId: 'cover.eg_komplett_ohne_tur', label: 'EG ohne Tür',       icon: '↓' },
+  ],
+  og: [
+    { entityId: 'cover.gruppe_rolladen_og',  label: 'OG runter',         icon: '↓' },
+  ],
+};
+
+const ALL_DOWN_ENTITY = 'cover.alle_rolladen';
+
+const GroupActionBar = memo(({ tabId, callService, isMobile }) => {
+  const tabActions = GROUP_ACTIONS[tabId] || [];
+  if (tabActions.length === 0) return null;
+
+  const btn = (entityId, label) => (
+    <button
+      key={entityId}
+      type="button"
+      data-haptic="card"
+      onClick={() => callService('cover', 'close_cover', { entity_id: entityId })}
+      style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+      className="flex items-center gap-1.5 rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase text-[var(--text-secondary)] transition-all hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
+    >
+      <span className="text-xs leading-none">↓</span>
+      {label}
+    </button>
+  );
+
+  return (
+    <div className="col-span-full flex flex-wrap items-center gap-2">
+      {btn(ALL_DOWN_ENTITY, 'Alle runter')}
+      {tabActions.map((a) => btn(a.entityId, a.label))}
+    </div>
+  );
+});
+
 /* ── Cover Panel Card ────────────────────────────────────────────────── */
 const CoverPanelCard = ({
   cardId,
@@ -414,6 +454,9 @@ const CoverPanelCard = ({
       <div className={`grid gap-3 ${cols === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
         {isAutomatikTab && (
           <BeschattungsStatusPanel entities={entities} isMobile={isMobile} />
+        )}
+        {!isAutomatikTab && (
+          <GroupActionBar tabId={resolvedActiveTabId} callService={callService} isMobile={isMobile} />
         )}
         {tabEntities.map(({ entityId, name }) => {
           const entity = entities[entityId];

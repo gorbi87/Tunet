@@ -61,6 +61,7 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     setShowLuftungsanlageModal,
     setShowPvModal,
     setShowBeregnungModal,
+    setShowNavimowModal,
   } = modalActions;
 
   if (typeof cardId !== 'string' || !cardId.trim()) return false;
@@ -146,6 +147,11 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
 
   if (cardId.startsWith('beregnung_card_')) {
     closeAndOpen(() => setShowBeregnungModal && setShowBeregnungModal(cardId));
+    return true;
+  }
+
+  if (cardId.startsWith('lawn_mower.')) {
+    closeAndOpen(() => setShowNavimowModal && setShowNavimowModal(cardId));
     return true;
   }
 
