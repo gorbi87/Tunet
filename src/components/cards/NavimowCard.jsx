@@ -196,27 +196,27 @@ const NavimowCard = ({
         </div>
       </div>
 
-      <div className="flex items-end justify-between">
+      <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-end justify-between'}`}>
         <div>
-          <p className="mb-1 text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
+          <p className="mb-1 truncate text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
             {name}
           </p>
-          <h3 className={`${isMobile ? 'text-[1.65rem]' : 'text-3xl'} leading-none font-thin text-[var(--text-primary)]`}>
+          <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} leading-none font-thin text-[var(--text-primary)]`}>
             {statusText}
           </h3>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleStart}
-            className={`${isMobile ? 'p-2.5' : 'p-3'} rounded-xl bg-[var(--glass-bg)] text-[var(--text-primary)] transition-colors hover:bg-[var(--glass-bg-hover)] active:scale-95`}
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--glass-bg)] text-[var(--text-primary)] transition-colors hover:bg-[var(--glass-bg-hover)] active:scale-95"
           >
-            {isMowing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="ml-0.5 h-5 w-5 fill-current" />}
+            {isMowing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
           </button>
           <button
             onClick={handleDock}
-            className={`${isMobile ? 'p-2.5' : 'p-3'} rounded-xl bg-[var(--glass-bg)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95`}
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--glass-bg)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
           >
-            <Home className="h-5 w-5" />
+            <Home className="h-4 w-4" />
           </button>
         </div>
       </div>

@@ -2720,6 +2720,28 @@ export default function EditCardModal({
                       </button>
                     </div>
                   )}
+
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-bold tracking-widest text-[var(--text-muted)] uppercase">
+                      Begleit-Sensor
+                    </span>
+                    <span className="text-[10px] text-[var(--text-muted)]">z.B. Luftfeuchtigkeit neben Temperatur</span>
+                    <select
+                      value={editSettings.companionEntityId || ''}
+                      onChange={(e) =>
+                        editSettingsKey &&
+                        saveCardSetting(editSettingsKey, 'companionEntityId', e.target.value || null)
+                      }
+                      className="mt-1 w-full rounded-lg border-0 bg-[var(--modal-bg)] px-2 py-1.5 text-xs text-[var(--text-primary)] outline-none"
+                    >
+                      <option value="">— keiner —</option>
+                      {numericEntityOptions.map((id) => (
+                        <option key={id} value={id}>
+                          {entities[id]?.attributes?.friendly_name || id}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               );
             })()}

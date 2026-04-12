@@ -108,6 +108,16 @@ const SensorCard = memo(/** @param {any} props */ function SensorCard({
         : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'
     : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]';
 
+  // Companion entity (e.g. humidity alongside temperature)
+  const companionEntityId = settings?.companionEntityId || null;
+  const companionEntity = companionEntityId ? entities[companionEntityId] : null;
+  const companionState = companionEntity?.state;
+  const companionUnit = companionEntity?.attributes?.unit_of_measurement || '';
+  const companionValue =
+    companionState && companionState !== 'unavailable' && companionState !== 'unknown'
+      ? `${Math.round(parseFloat(companionState))}${companionUnit}`
+      : null;
+
   // Feature flags from settings
   const showControls = settings?.showControls !== false;
   const showName = settings?.showName !== false;
@@ -726,6 +736,12 @@ const SensorCard = memo(/** @param {any} props */ function SensorCard({
             >
               {String(name)}
             </p>
+          )}
+          {!useDenseMobileLargeLayout && companionValue && (
+            <div className="mt-1.5 flex items-center gap-1 text-[var(--text-secondary)]">
+              <span className="text-[10px] opacity-50">💧</span>
+              <span className="text-xs font-medium opacity-70">{companionValue}</span>
+            </div>
           )}
 
           {showCompactMobileToggleState && (

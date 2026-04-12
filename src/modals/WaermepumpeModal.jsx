@@ -36,6 +36,7 @@ export default function WaermepumpeModal({
   customNames,
   cardId,
   callService,
+  onOpenSensorModal,
   t,
 }) {
   const translate = t || ((key) => key);
@@ -219,7 +220,19 @@ export default function WaermepumpeModal({
                       {translate('waermepumpe.temperatures')}
                     </p>
                     <div className="grid grid-cols-2 gap-3">
-                      <TempRow label={translate('waermepumpe.warmwasser')} value={wwTemp} color="#fb923c" />
+                      {/* Warmwasser — klickbar für SensorModal */}
+                      <button
+                        onClick={() => onOpenSensorModal?.(WAERMEPUMPE_ENTITY_IDS.warmwasser)}
+                        className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3 transition-all hover:opacity-80 active:scale-[0.98]"
+                      >
+                        <p className="text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                          {translate('waermepumpe.warmwasser')}
+                        </p>
+                        <p className="text-xl font-light" style={{ color: '#fb923c' }}>
+                          {wwTemp != null ? `${wwTemp.toFixed(1)} °C` : '—'}
+                        </p>
+                        <span className="text-[9px] text-[var(--text-muted)] opacity-50">↗ Verlauf</span>
+                      </button>
                       <TempRow label={translate('waermepumpe.aussentemp')} value={aussentemp} />
                       <TempRow
                         label={translate('waermepumpe.vorlauf')}

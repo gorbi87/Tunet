@@ -511,6 +511,10 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
             customNames={customNames}
             cardId={showWaermepumpeModal}
             callService={callService}
+            conn={conn}
+            haUrl={activeUrl}
+            haToken={config.authMethod === 'oauth' ? authRef?.current?.accessToken || '' : config.token}
+            onOpenSensorModal={setShowSensorInfoModal}
             t={t}
           />
         </ModalSuspense>

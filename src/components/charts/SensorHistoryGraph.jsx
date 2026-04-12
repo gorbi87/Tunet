@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 
 // Helper function to create smooth Bezier curves
 const createBezierPath = (points, smoothing = 0.3) => {
@@ -39,7 +39,10 @@ export default function SensorHistoryGraph({
   color = '#3b82f6',
   noDataLabel = 'No history data available',
   formatXLabel,
+  unit = '',
 }) {
+  const [hoverIdx, setHoverIdx] = useState(null);
+  const svgRef = useRef(null);
   const hasData = Array.isArray(data) && data.length > 0;
   const safeData = hasData ? data : [];
 
@@ -139,6 +142,20 @@ export default function SensorHistoryGraph({
   const fadeGradientId = `fade-gradient-${Math.random().toString(36).substr(2, 9)}`;
   const maskId = `mask-${Math.random().toString(36).substr(2, 9)}`;
 
+  const handlePointerMove = (e) => {
+    if (!svgRef.current || safeData.length === 0) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const relX = ((clientX - rect.left) / rect.width) * width;
+    const idx = Math.max(0, Math.min(safeData.length - 1,
+      Math.round((relX - padding.left) / graphWidth * (safeData.length - 1))
+    ));
+    setHoverIdx(idx);
+  };
+
+  const hoverPoint = hoverIdx !== null ? pointsArray[hoverIdx] : null;
+  const hoverData = hoverIdx !== null ? safeData[hoverIdx] : null;
+
   if (!hasData) {
     return (
       <div className="flex h-[200px] items-center justify-center text-sm text-[var(--text-muted)]">
@@ -149,10 +166,40 @@ export default function SensorHistoryGraph({
 
   return (
     <div className="relative w-full select-none">
+      {/* Hover info bar */}
+      <div className="mb-3 flex items-end justify-between px-1" style={{ minHeight: 36 }}>
+        {hoverData ? (
+          <>
+            <div>
+              <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">Zeit</p>
+              <p className="text-base font-medium text-[var(--text-primary)]">
+                {new Date(hoverData.time).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                <span className="ml-2 text-xs text-[var(--text-muted)]">
+                  {new Date(hoverData.time).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
+                </span>
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-bold tracking-widest uppercase" style={{ color }}>Wert</p>
+              <p className="text-2xl leading-none font-light" style={{ color }}>
+                {hoverData.value.toFixed(1)}
+                {unit && <span className="ml-1 text-sm text-[var(--text-muted)]">{unit}</span>}
+              </p>
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-[var(--text-muted)] opacity-50">← Zeige über den Graph fahren</p>
+        )}
+      </div>
       <svg
+        ref={svgRef}
         viewBox={`0 0 ${width} ${height}`}
-        className="h-full w-full overflow-visible"
+        className="h-full w-full cursor-crosshair overflow-visible"
         preserveAspectRatio="none"
+        onMouseMove={handlePointerMove}
+        onTouchMove={handlePointerMove}
+        onMouseLeave={() => setHoverIdx(null)}
+        onTouchEnd={() => setHoverIdx(null)}
       >
         <defs>
           {/* Area gradient - more opaque at top, fades to bottom */}
@@ -230,6 +277,21 @@ export default function SensorHistoryGraph({
             {l.label}
           </text>
         ))}
+
+        {/* Crosshair */}
+        {hoverPoint && (
+          <>
+            <line
+              x1={hoverPoint[0]} y1={padding.top}
+              x2={hoverPoint[0]} y2={height - padding.bottom}
+              stroke={color} strokeWidth="1" strokeOpacity="0.5" strokeDasharray="3 2"
+            />
+            <circle
+              cx={hoverPoint[0]} cy={hoverPoint[1]}
+              r="5" fill={color} stroke="var(--card-bg)" strokeWidth="2"
+            />
+          </>
+        )}
       </svg>
     </div>
   );

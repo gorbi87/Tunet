@@ -492,6 +492,7 @@ export default function SensorModal({
                       noDataLabel={t('sensorInfo.noHistory')}
                       strokeColor="var(--text-primary)"
                       areaColor="var(--text-primary)"
+                      unit={displayUnit}
                     />
                   </div>
                 )}
@@ -581,6 +582,7 @@ export default function SensorModal({
                       noDataLabel={t('sensorInfo.noHistory')}
                       strokeColor="var(--text-primary)"
                       areaColor="var(--text-primary)"
+                      unit={displayUnit}
                     />
                   </div>
                 )}
