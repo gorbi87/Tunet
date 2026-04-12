@@ -146,18 +146,18 @@ const NavimowCard = ({
             </div>
           </div>
         </div>
-        <div className="flex shrink-0 flex-col gap-1 rounded-2xl bg-[var(--glass-bg)] p-1">
+        <div className="flex shrink-0 flex-row gap-1 rounded-2xl bg-[var(--glass-bg)] p-1">
           <button
             onClick={handleStart}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--text-primary)] transition-colors hover:bg-[var(--glass-bg-hover)] active:scale-95"
+            className="flex h-7 w-7 items-center justify-center rounded-xl text-[var(--text-primary)] transition-colors hover:bg-[var(--glass-bg-hover)] active:scale-95"
           >
-            {isMowing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
+            {isMowing ? <Pause className="h-3.5 w-3.5 fill-current" /> : <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />}
           </button>
           <button
             onClick={handleDock}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
+            className="flex h-7 w-7 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
           >
-            <Home className="h-4 w-4" />
+            <Home className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>

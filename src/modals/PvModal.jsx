@@ -91,7 +91,7 @@ function fmtBattTime(soc, maxKwh, powerW, charging) {
   return `${charging ? 'voll' : 'leer'} in ${time}`;
 }
 
-function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridExportW, batterySoc, batteryMaxEnergy, pvDaily }) {
+function PowerFlowSvg({ pvW, houseW, heatPumpW, batteryInW, batteryOutW, gridImportW, gridExportW, batterySoc, batteryMaxEnergy, pvDaily }) {
   const solarActive = pvW != null && pvW > 10;
   const battCharge = batteryInW != null && batteryInW > 10;
   const battDischarge = !battCharge && batteryOutW != null && batteryOutW > 10;
@@ -117,6 +117,9 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
   const INV   = { x: 130, y: 88,  w: 80,  h: 58, cx: 170, cy: 117 };
   const GRID  = { x: 253, y: 88,  w: 82,  h: 58, cx: 294, cy: 117 };
   const HOUSE = { x: 120, y: 172, w: 100, h: 44, cx: 170, cy: 194 };
+  const WP    = { x: 253, y: 172, w: 82,  h: 44, cx: 294, cy: 194 };
+  const wpActive = heatPumpW != null && heatPumpW > 10;
+  const WP_COLOR = '#f472b6';
 
   // Battery icon: tall enough to fit SOC% inside, centered in upper part of BATT box
   const battIconW = 60, battIconH = 26;
@@ -208,11 +211,25 @@ function PowerFlowSvg({ pvW, houseW, batteryInW, batteryOutW, gridImportW, gridE
         {gridExport ? 'Einspeisung' : gridImport ? 'Bezug' : 'Ausgeglichen'}
       </text>
 
+      {/* House → WP */}
+      <AnimatedLine x1={HOUSE.x + HOUSE.w} y1={HOUSE.cy} x2={WP.x} y2={WP.cy} color={WP_COLOR} active={wpActive} />
+      <MidArrow x1={HOUSE.x + HOUSE.w} y1={HOUSE.cy} x2={WP.x} y2={WP.cy} color={WP_COLOR} active={wpActive} />
+
       {/* ── House box ── */}
       <rect x={HOUSE.x} y={HOUSE.y} width={HOUSE.w} height={HOUSE.h} rx="8" fill="rgba(129,199,132,0.08)" stroke={HOUSE_COLOR} strokeWidth="1" strokeOpacity="0.4" />
       <text x={HOUSE.cx} y={HOUSE.y + 14} textAnchor="middle" fontSize="7" fontWeight="bold" fill={HOUSE_COLOR} letterSpacing="0.08em" opacity="0.7">HAUS</text>
       <text x={HOUSE.cx} y={HOUSE.y + 30} textAnchor="middle" fontSize="14" fontWeight="300" fill={HOUSE_COLOR}>{fmt(houseW)}</text>
       <text x={HOUSE.cx} y={HOUSE.y + 41} textAnchor="middle" fontSize="7" fill={HOUSE_COLOR} opacity="0.5">Verbrauch</text>
+
+      {/* ── WP box ── */}
+      <rect x={WP.x} y={WP.y} width={WP.w} height={WP.h} rx="8" fill="rgba(244,114,182,0.08)" stroke={WP_COLOR} strokeWidth="1" strokeOpacity={wpActive ? 0.6 : 0.25} />
+      <text x={WP.cx} y={WP.y + 14} textAnchor="middle" fontSize="7" fontWeight="bold" fill={WP_COLOR} letterSpacing="0.08em" opacity="0.7">WÄRMEPUMPE</text>
+      <text x={WP.cx} y={WP.y + 30} textAnchor="middle" fontSize="13" fontWeight="300" fill={wpActive ? WP_COLOR : 'var(--text-secondary)'}>
+        {wpActive ? fmt(heatPumpW) : '—'}
+      </text>
+      <text x={WP.cx} y={WP.y + 41} textAnchor="middle" fontSize="7" fill={WP_COLOR} opacity="0.5">
+        {wpActive ? 'aktiv' : 'inaktiv'}
+      </text>
     </svg>
   );
 }
@@ -468,6 +485,7 @@ export default function PvModal({
   const pvYearly = v(PV_ENTITY_IDS.pvYearly);
   const houseW = v(PV_ENTITY_IDS.houseW);
   const houseDaily = v(PV_ENTITY_IDS.houseDaily);
+  const heatPumpW = v('sensor.daikin_heizung_leistung');
   const batteryInW = v(PV_ENTITY_IDS.batteryInW);
   const batterySoc = v(PV_ENTITY_IDS.batterySoc);
   const batteryInDaily = v(PV_ENTITY_IDS.batteryInDaily);
@@ -591,6 +609,7 @@ export default function PvModal({
                   <PowerFlowSvg
                     pvW={pvW}
                     houseW={houseW}
+                    heatPumpW={heatPumpW}
                     batteryInW={batteryInW}
                     batteryOutW={batteryDischarging ? batteryOutW : 0}
                     gridImportW={gridImportW}

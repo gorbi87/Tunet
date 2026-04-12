@@ -66,6 +66,7 @@ const SPECIAL_CARD_PREFIXES = [
   'light_panel_card_',
   'cover_panel_card_',
   'security_panel_card_',
+  'haushaltsgeraete_card_',
 ];
 
 /**

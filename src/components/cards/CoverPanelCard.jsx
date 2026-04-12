@@ -344,7 +344,7 @@ const GroupActionBar = memo(({ tabId, callService, isMobile }) => {
   );
 
   return (
-    <div className="col-span-full flex flex-wrap items-center gap-2">
+    <div className="col-span-full flex items-center gap-2">
       {btn(ALL_DOWN_ENTITY, 'Alle runter')}
       {tabActions.map((a) => btn(a.entityId, a.label))}
     </div>

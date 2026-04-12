@@ -289,6 +289,12 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
+    case 'haushaltsgeraete': {
+      const haushaltsgeraeteCardId = `haushaltsgeraete_card_${Date.now()}`;
+      commitSingleCard(haushaltsgeraeteCardId, {});
+      return;
+    }
+
     case 'light_panel': {
       const lightPanelCardId = `light_panel_card_${Date.now()}`;
       commitSingleCard(lightPanelCardId, {});

@@ -1048,6 +1048,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="haushaltsgeraete"
+                  icon={Home}
+                  label="Haushaltsgeräte"
+                  isActive={addCardType === 'haushaltsgeraete'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="light_panel"
                   icon={Lightbulb}
                   label="Licht Panel"
@@ -1245,6 +1252,8 @@ function AddCardContent({
               renderSimpleAddSection(Camera, 'go2rtc Kamera hinzufügen', 'go2rtc Kamera hinzufügen')
             ) : addCardType === 'beregnung' ? (
               renderSimpleAddSection(Droplets, 'Beregnung Karte hinzufügen', 'Beregnung hinzufügen')
+            ) : addCardType === 'haushaltsgeraete' ? (
+              renderSimpleAddSection(Home, 'Waschmaschine & Geschirrspüler — erscheint nur wenn ein Gerät läuft', 'Haushaltsgeräte hinzufügen')
             ) : addCardType === 'light_panel' ? (
               renderSimpleAddSection(Lightbulb, 'Licht Panel hinzufügen (EG / OG / Außen / Automatik)', 'Licht Panel hinzufügen')
             ) : addCardType === 'cover_panel' ? (
