@@ -137,10 +137,11 @@ export default function SensorHistoryGraph({
     }
   }
 
-  // Generate unique IDs for gradients
-  const areaGradientId = `area-gradient-${Math.random().toString(36).substr(2, 9)}`;
-  const fadeGradientId = `fade-gradient-${Math.random().toString(36).substr(2, 9)}`;
-  const maskId = `mask-${Math.random().toString(36).substr(2, 9)}`;
+  // Stable unique IDs for gradients — must not change on re-render
+  const idSuffix = useMemo(() => Math.random().toString(36).substr(2, 9), []);
+  const areaGradientId = `area-gradient-${idSuffix}`;
+  const fadeGradientId = `fade-gradient-${idSuffix}`;
+  const maskId = `mask-${idSuffix}`;
 
   const handlePointerMove = (e) => {
     if (!svgRef.current || safeData.length === 0) return;
@@ -199,7 +200,6 @@ export default function SensorHistoryGraph({
         onMouseMove={handlePointerMove}
         onTouchMove={handlePointerMove}
         onMouseLeave={() => setHoverIdx(null)}
-        onTouchEnd={() => setHoverIdx(null)}
       >
         <defs>
           {/* Area gradient - more opaque at top, fades to bottom */}

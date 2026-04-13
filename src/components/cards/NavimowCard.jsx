@@ -164,12 +164,65 @@ const NavimowCard = ({
     );
   }
 
+  // Mobile: horizontales kompaktes Layout
+  if (isMobile) {
+    return (
+      <div
+        {...dragProps}
+        data-haptic={editMode ? undefined : 'card'}
+        onClick={(e) => { e.stopPropagation(); if (!editMode) onOpen(); }}
+        className={`glass-texture touch-feedback group relative flex h-full items-center justify-between gap-3 overflow-hidden rounded-3xl border p-4 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
+        style={{ ...cardStyle, backgroundColor: cardBg, borderColor: cardBorder }}
+      >
+        {controls}
+        {/* Icon */}
+        <div
+          className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl transition-all group-hover:scale-110 ${isMowing ? 'animate-pulse bg-[color-mix(in_srgb,var(--color-green-500,#22c55e)_15%,transparent)]' : 'bg-[var(--glass-bg)]'}`}
+        >
+          {renderIcon('h-5 w-5')}
+        </div>
+        {/* Name + Status */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <p className="truncate text-[10px] font-bold leading-none tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
+            {name}
+          </p>
+          <div className="mt-0.5 flex items-center gap-2">
+            <span className="text-lg font-thin leading-none text-[var(--text-primary)]">{statusText}</span>
+            {isErrorState && <AlertTriangle className="h-3.5 w-3.5 text-[var(--status-error-fg)]" />}
+          </div>
+          {showBattery && (
+            <div className="mt-1 flex items-center gap-1 text-[var(--text-secondary)]">
+              <Battery className="h-3 w-3" />
+              <span className="text-[10px] font-bold tracking-widest uppercase">{battery}%</span>
+            </div>
+          )}
+        </div>
+        {/* Buttons */}
+        <div className="flex shrink-0 flex-row gap-1 rounded-2xl bg-[var(--glass-bg)] p-1">
+          <button
+            onClick={handleStart}
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--text-primary)] transition-colors hover:bg-[var(--glass-bg-hover)] active:scale-95"
+          >
+            {isMowing ? <Pause className="h-3.5 w-3.5 fill-current" /> : <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />}
+          </button>
+          <button
+            onClick={handleDock}
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
+          >
+            <Home className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop: vertikales großes Layout
   return (
     <div
       {...dragProps}
       data-haptic={editMode ? undefined : 'card'}
       onClick={(e) => { e.stopPropagation(); if (!editMode) onOpen(); }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-7 font-sans transition-all duration-500 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'} ${isUnavailable ? 'opacity-70' : ''}`}
       style={{ ...cardStyle, backgroundColor: cardBg, borderColor: cardBorder }}
     >
       {controls}
@@ -196,27 +249,27 @@ const NavimowCard = ({
         </div>
       </div>
 
-      <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-end justify-between'}`}>
+      <div className="flex items-end justify-between">
         <div>
           <p className="mb-1 truncate text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
             {name}
           </p>
-          <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} leading-none font-thin text-[var(--text-primary)]`}>
+          <h3 className="text-3xl leading-none font-thin text-[var(--text-primary)]">
             {statusText}
           </h3>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleStart}
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--glass-bg)] text-[var(--text-primary)] transition-colors hover:bg-[var(--glass-bg-hover)] active:scale-95"
+            className="p-3 rounded-xl bg-[var(--glass-bg)] text-[var(--text-primary)] transition-colors hover:bg-[var(--glass-bg-hover)] active:scale-95"
           >
-            {isMowing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
+            {isMowing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="ml-0.5 h-5 w-5 fill-current" />}
           </button>
           <button
             onClick={handleDock}
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--glass-bg)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
+            className="p-3 rounded-xl bg-[var(--glass-bg)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
           >
-            <Home className="h-4 w-4" />
+            <Home className="h-5 w-5" />
           </button>
         </div>
       </div>

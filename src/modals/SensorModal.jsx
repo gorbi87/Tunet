@@ -292,7 +292,8 @@ export default function SensorModal({
       setHistory([]);
       setHistoryEvents([]);
     }
-  }, [isOpen, entity, conn, haUrl, haToken, historyHours, getShouldShowActivity, isNumeric]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, entityId, conn, haUrl, haToken, historyHours]);
 
   if (!isOpen || !entity) return null;
 
