@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.15.25] — 2026-04-14
+
+### Fixed
+- Frigate-Clips in der Produktivumgebung: CSP `media-src` um `blob:` erweitert, damit per fetch geladene Clips als Blob-URL abgespielt werden können.
+
+## [1.15.24] — 2026-04-14
+
+### Fixed
+- Frigate-Clips: Statt direktem `<video src>` wird der Clip nun per fetch als Blob geladen und lokal abgespielt, um Probleme mit Range-Requests im Proxy zu umgehen.
+
+
 ## [1.15.23] — 2026-04-14
 
 ### Added

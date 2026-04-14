@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.15.25
+
+### Fixed
+- Frigate-Clips in Produktion: CSP `media-src blob:` ergänzt für Blob-URL-Wiedergabe.
+
+## 1.15.24
+
+### Fixed
+- Frigate-Clips: Laden per fetch+Blob statt direktem video src (Range-Request-Problem im Proxy).
+
 ## 1.15.23
 
 ### Changed
