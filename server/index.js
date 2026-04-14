@@ -27,6 +27,8 @@ try {
 }
 
 const app = express();
+// Trust the HA ingress proxy (sets X-Forwarded-For) so rate-limiting works correctly
+app.set('trust proxy', 1);
 const homeAssistantAuth = createHomeAssistantAuthMiddleware();
 app.disable('x-powered-by');
 app.use((_req, res, next) => {
