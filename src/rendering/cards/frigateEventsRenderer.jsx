@@ -92,8 +92,25 @@ function FrigateClipModal({ event, frigateUrl, onClose }) {
               src={directUrl(`/api/events/${event.id}/clip.mp4`)}
               controls
               autoPlay
+              playsInline
               className="w-full"
               style={{ maxHeight: '70vh' }}
+              onError={(e) => {
+                // Fallback: show snapshot if clip fails (e.g. mixed-content on HTTPS)
+                const parent = e.currentTarget.parentNode;
+                const img = document.createElement('img');
+                img.src = directUrl(`/api/events/${event.id}/snapshot.jpg`);
+                img.className = 'w-full object-contain';
+                img.style.maxHeight = '70vh';
+                const link = document.createElement('a');
+                link.href = directUrl(`/api/events/${event.id}/clip.mp4`);
+                link.target = '_blank';
+                link.rel = 'noopener';
+                link.textContent = '▶ Clip in neuem Tab öffnen';
+                link.style.cssText = 'display:block;padding:8px;text-align:center;color:#60a5fa;font-size:12px;';
+                parent.replaceChild(img, e.currentTarget);
+                parent.appendChild(link);
+              }}
             />
           ) : (
             <img
