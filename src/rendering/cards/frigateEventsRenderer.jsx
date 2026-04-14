@@ -45,6 +45,8 @@ function formatDate(ts) {
 const DEFAULT_FRIGATE_URL = 'http://192.168.50.140:5000';
 
 function FrigateClipModal({ event, proxyUrl, onClose }) {
+  const [clipBlobUrl, setClipBlobUrl] = useState(null);
+  const [clipLoading, setClipLoading] = useState(!!event.has_clip);
   const [clipError, setClipError] = useState(false);
   const labelDe = LABEL_DE[event.label] || event.label;
   const color = LABEL_COLOR[event.label] || '#94a3b8';
@@ -54,6 +56,32 @@ function FrigateClipModal({ event, proxyUrl, onClose }) {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  useEffect(() => {
+    if (!event.has_clip) return;
+    let blobUrl = null;
+    const controller = new AbortController();
+    fetch(proxyUrl(`/api/events/${event.id}/clip.mp4`), { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then((blob) => {
+        blobUrl = URL.createObjectURL(blob);
+        setClipBlobUrl(blobUrl);
+        setClipLoading(false);
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          setClipError(true);
+          setClipLoading(false);
+        }
+      });
+    return () => {
+      controller.abort();
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, [event.id, event.has_clip, proxyUrl]);
 
   return createPortal(
     <div
@@ -88,16 +116,22 @@ function FrigateClipModal({ event, proxyUrl, onClose }) {
         {/* Media */}
         <div className="bg-black">
           {event.has_clip && !clipError ? (
-            <video
-              key={event.id}
-              src={proxyUrl(`/api/events/${event.id}/clip.mp4`)}
-              controls
-              autoPlay
-              playsInline
-              className="w-full"
-              style={{ maxHeight: '70vh' }}
-              onError={() => setClipError(true)}
-            />
+            clipLoading ? (
+              <div className="flex items-center justify-center" style={{ height: '40vh' }}>
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent opacity-60" />
+              </div>
+            ) : (
+              <video
+                key={clipBlobUrl}
+                src={clipBlobUrl}
+                controls
+                autoPlay
+                playsInline
+                className="w-full"
+                style={{ maxHeight: '70vh' }}
+                onError={() => setClipError(true)}
+              />
+            )
           ) : (
             <img
               src={proxyUrl(`/api/events/${event.id}/snapshot.jpg`)}
