@@ -44,7 +44,8 @@ function formatDate(ts) {
 
 const DEFAULT_FRIGATE_URL = 'http://192.168.50.140:5000';
 
-function FrigateClipModal({ event, proxyUrl, onClose }) {
+function FrigateClipModal({ event, frigateUrl, onClose }) {
+  const directUrl = (path) => `${frigateUrl}${path}`;
   const labelDe = LABEL_DE[event.label] || event.label;
   const color = LABEL_COLOR[event.label] || '#94a3b8';
 
@@ -88,7 +89,7 @@ function FrigateClipModal({ event, proxyUrl, onClose }) {
         <div className="bg-black">
           {event.has_clip ? (
             <video
-              src={proxyUrl(`/api/events/${event.id}/clip.mp4`)}
+              src={directUrl(`/api/events/${event.id}/clip.mp4`)}
               controls
               autoPlay
               className="w-full"
@@ -96,7 +97,7 @@ function FrigateClipModal({ event, proxyUrl, onClose }) {
             />
           ) : (
             <img
-              src={proxyUrl(`/api/events/${event.id}/snapshot.jpg`)}
+              src={directUrl(`/api/events/${event.id}/snapshot.jpg`)}
               alt={labelDe}
               className="w-full object-contain"
               style={{ maxHeight: '70vh' }}
@@ -248,7 +249,7 @@ const FrigateEventsCard = memo(function FrigateEventsCard({
       {selectedEvent && (
         <FrigateClipModal
           event={selectedEvent}
-          proxyUrl={proxyUrl}
+          frigateUrl={frigateUrl}
           onClose={() => setSelectedEvent(null)}
         />
       )}
