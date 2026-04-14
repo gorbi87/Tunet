@@ -1055,6 +1055,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="frigate_events"
+                  icon={Camera}
+                  label="Frigate Ereignisse"
+                  isActive={addCardType === 'frigate_events'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="light_panel"
                   icon={Lightbulb}
                   label="Licht Panel"
@@ -1254,6 +1261,8 @@ function AddCardContent({
               renderSimpleAddSection(Droplets, 'Beregnung Karte hinzufügen', 'Beregnung hinzufügen')
             ) : addCardType === 'haushaltsgeraete' ? (
               renderSimpleAddSection(Home, 'Waschmaschine & Geschirrspüler — erscheint nur wenn ein Gerät läuft', 'Haushaltsgeräte hinzufügen')
+            ) : addCardType === 'frigate_events' ? (
+              renderSimpleAddSection(Camera, 'Zeigt die letzten Frigate-Ereignisse als schmalen horizontalen Streifen', 'Frigate Ereignisse hinzufügen')
             ) : addCardType === 'light_panel' ? (
               renderSimpleAddSection(Lightbulb, 'Licht Panel hinzufügen (EG / OG / Außen / Automatik)', 'Licht Panel hinzufügen')
             ) : addCardType === 'cover_panel' ? (

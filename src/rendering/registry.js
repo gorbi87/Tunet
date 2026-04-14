@@ -33,6 +33,7 @@ import {
   renderSecurityPanelCard,
   renderNavimowCard,
   renderHaushaltsgeraeteCard,
+  renderFrigateEventsCard,
 } from './cards';
 
 /**
@@ -71,6 +72,7 @@ export const CARD_REGISTRY = [
   { prefix: 'spacer_card_', renderer: renderSpacerCard },
   { prefix: 'beregnung_card_', renderer: renderBeregnungCard },
   { prefix: 'haushaltsgeraete_card_', renderer: renderHaushaltsgeraeteCard },
+  { prefix: 'frigate_events_card_', renderer: renderFrigateEventsCard },
 ];
 
 export function dispatchCardRender(cardId, dragProps, getControls, cardStyle, settingsKey, ctx) {

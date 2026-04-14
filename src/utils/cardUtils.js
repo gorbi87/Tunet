@@ -67,6 +67,7 @@ const SPECIAL_CARD_PREFIXES = [
   'cover_panel_card_',
   'security_panel_card_',
   'haushaltsgeraete_card_',
+  'frigate_events_card_',
 ];
 
 /**

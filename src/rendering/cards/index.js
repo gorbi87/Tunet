@@ -29,3 +29,4 @@ export { renderCoverPanelCard } from './coverPanelRenderer';
 export { renderSecurityPanelCard } from './securityPanelRenderer';
 export { renderNavimowCard } from './navimowRenderer';
 export { renderHaushaltsgeraeteCard } from './haushaltsgeraeteRenderer';
+export { renderFrigateEventsCard } from './frigateEventsRenderer';

@@ -295,6 +295,12 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
+    case 'frigate_events': {
+      const frigateEventsCardId = `frigate_events_card_${Date.now()}`;
+      commitSingleCard(frigateEventsCardId, {});
+      return;
+    }
+
     case 'light_panel': {
       const lightPanelCardId = `light_panel_card_${Date.now()}`;
       commitSingleCard(lightPanelCardId, {});

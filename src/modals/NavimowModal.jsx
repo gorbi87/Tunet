@@ -328,7 +328,7 @@ export default function NavimowModal({ show, onClose, mowerId, entities, callSer
               <div className="flex flex-col items-center rounded-2xl bg-[var(--glass-bg)] py-3">
                 <span className="text-xl font-thin text-[var(--text-primary)]">{lastSession ? fmtDuration(lastSession.durationMs) : '—'}</span>
                 <span className="mt-1 text-[10px] font-bold tracking-widest text-[var(--text-secondary)] uppercase">Dauer</span>
-                <span className="text-[9px] text-[var(--text-muted)]">letzte Sitzung</span>
+                <span className="text-[9px] text-[var(--text-muted)]">letzter Einsatz</span>
               </div>
             </div>
           )}

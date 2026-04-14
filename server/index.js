@@ -110,7 +110,9 @@ app.get('/api/go2rtc-proxy', (req, res) => {
   let target;
   try { target = new URL(targetUrl); } catch { return res.status(400).end(); }
   const lib = target.protocol === 'https:' ? httpsRequest : httpRequest;
-  const proxyReq = lib(target.href, { timeout: 8000 }, (proxyRes) => {
+  const forwardHeaders = {};
+  if (req.headers['range']) forwardHeaders['range'] = req.headers['range'];
+  const proxyReq = lib(target.href, { timeout: 8000, headers: forwardHeaders }, (proxyRes) => {
     const contentType = (proxyRes.headers['content-type'] || '').toLowerCase();
     const isM3u8 = contentType.includes('mpegurl') || target.pathname.endsWith('.m3u8');
 

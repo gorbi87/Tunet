@@ -49,6 +49,8 @@ export const getCardGridSpan = (
   const rowPx = Number.isFinite(layoutMetrics?.rowPx) ? layoutMetrics.rowPx : 100;
   const gapPx = Number.isFinite(layoutMetrics?.gapPx) ? layoutMetrics.gapPx : 20;
 
+  if (cardId.startsWith('frigate_events_card_')) return 2;
+
   if (cardId.startsWith('spacer_card_')) {
     const rawHeightPx = Number(settings.heightPx);
     if (Number.isFinite(rawHeightPx) && rawHeightPx > 0) {
@@ -106,6 +108,7 @@ export const getCardColSpan = (cardId, getCardSettingsKey, cardSettings) => {
   if (cardId.startsWith('light_panel_card_')) return Number.MAX_SAFE_INTEGER;
   if (cardId.startsWith('cover_panel_card_')) return Number.MAX_SAFE_INTEGER;
   if (cardId.startsWith('security_panel_card_')) return Number.MAX_SAFE_INTEGER;
+  if (cardId.startsWith('frigate_events_card_')) return Number.MAX_SAFE_INTEGER;
   const settings = cardSettings[getCardSettingsKey(cardId)] || cardSettings[cardId] || {};
   // Divider spacers always span full width so nothing can slip next to them
   if (cardId.startsWith('spacer_card_') && settings.variant === 'divider') return Number.MAX_SAFE_INTEGER;
