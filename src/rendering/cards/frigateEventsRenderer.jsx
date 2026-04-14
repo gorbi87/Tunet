@@ -124,7 +124,7 @@ const FrigateEventsCard = memo(function FrigateEventsCard({
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   const proxyUrl = useCallback(
-    (path) => `./api/frigate-proxy?url=${encodeURIComponent(`${frigateUrl}${path}`)}`,
+    (path) => `./api/go2rtc-proxy?url=${encodeURIComponent(`${frigateUrl}${path}`)}`,
     [frigateUrl]
   );
 
