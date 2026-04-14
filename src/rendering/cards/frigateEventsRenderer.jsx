@@ -44,8 +44,8 @@ function formatDate(ts) {
 
 const DEFAULT_FRIGATE_URL = 'http://192.168.50.140:5000';
 
-function FrigateClipModal({ event, frigateUrl, onClose }) {
-  const directUrl = (path) => `${frigateUrl}${path}`;
+function FrigateClipModal({ event, proxyUrl, onClose }) {
+  const [clipError, setClipError] = useState(false);
   const labelDe = LABEL_DE[event.label] || event.label;
   const color = LABEL_COLOR[event.label] || '#94a3b8';
 
@@ -87,34 +87,20 @@ function FrigateClipModal({ event, frigateUrl, onClose }) {
 
         {/* Media */}
         <div className="bg-black">
-          {event.has_clip ? (
+          {event.has_clip && !clipError ? (
             <video
-              src={directUrl(`/api/events/${event.id}/clip.mp4`)}
+              key={event.id}
+              src={proxyUrl(`/api/events/${event.id}/clip.mp4`)}
               controls
               autoPlay
               playsInline
               className="w-full"
               style={{ maxHeight: '70vh' }}
-              onError={(e) => {
-                // Fallback: show snapshot if clip fails (e.g. mixed-content on HTTPS)
-                const parent = e.currentTarget.parentNode;
-                const img = document.createElement('img');
-                img.src = directUrl(`/api/events/${event.id}/snapshot.jpg`);
-                img.className = 'w-full object-contain';
-                img.style.maxHeight = '70vh';
-                const link = document.createElement('a');
-                link.href = directUrl(`/api/events/${event.id}/clip.mp4`);
-                link.target = '_blank';
-                link.rel = 'noopener';
-                link.textContent = '▶ Clip in neuem Tab öffnen';
-                link.style.cssText = 'display:block;padding:8px;text-align:center;color:#60a5fa;font-size:12px;';
-                parent.replaceChild(img, e.currentTarget);
-                parent.appendChild(link);
-              }}
+              onError={() => setClipError(true)}
             />
           ) : (
             <img
-              src={directUrl(`/api/events/${event.id}/snapshot.jpg`)}
+              src={proxyUrl(`/api/events/${event.id}/snapshot.jpg`)}
               alt={labelDe}
               className="w-full object-contain"
               style={{ maxHeight: '70vh' }}
@@ -266,7 +252,7 @@ const FrigateEventsCard = memo(function FrigateEventsCard({
       {selectedEvent && (
         <FrigateClipModal
           event={selectedEvent}
-          frigateUrl={frigateUrl}
+          proxyUrl={proxyUrl}
           onClose={() => setSelectedEvent(null)}
         />
       )}
