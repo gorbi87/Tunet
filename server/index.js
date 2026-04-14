@@ -49,6 +49,8 @@ app.use((_req, res, next) => {
     "img-src 'self' data: blob: http: https: https://cdn.jsdelivr.net https://cdn.simpleicons.org https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org",
     // WebSocket connections to the user's HA instance (any origin, since URL is user-configured)
     "connect-src 'self' ws: wss: http: https:",
+    // Video/audio: own origin + blob URLs (created from proxy-fetched clips)
+    "media-src 'self' blob:",
     // Leaflet map iframe
     "frame-src https://www.openstreetmap.org",
     // Block all object/embed/plugin
