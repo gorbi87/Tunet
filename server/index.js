@@ -99,6 +99,33 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', version: appVersion });
 });
 
+// Frigate proxy — dedicated endpoint for Frigate API/clips/thumbnails.
+// No timeout (local network), proper Range header forwarding for video seeking.
+app.get('/api/frigate-proxy', (req, res) => {
+  const { url: targetUrl } = req.query;
+  if (!targetUrl) return res.status(400).end();
+
+  let target;
+  try { target = new URL(targetUrl); } catch { return res.status(400).end(); }
+
+  const lib = target.protocol === 'https:' ? httpsRequest : httpRequest;
+  const forwardHeaders = {};
+  if (req.headers['range']) forwardHeaders['range'] = req.headers['range'];
+
+  const proxyReq = lib(target.href, { headers: forwardHeaders }, (proxyRes) => {
+    res.status(proxyRes.statusCode || 200);
+    for (const [k, v] of Object.entries(proxyRes.headers)) {
+      if (!['transfer-encoding', 'connection'].includes(k.toLowerCase())) res.setHeader(k, v);
+    }
+    res.setHeader('access-control-allow-origin', '*');
+    proxyRes.pipe(res);
+    proxyRes.on('error', () => { try { res.end(); } catch {} });
+  });
+  proxyReq.on('error', () => { try { res.status(502).end(); } catch {} });
+  req.on('close', () => { try { proxyReq.destroy(); } catch {} });
+  proxyReq.end();
+});
+
 // go2rtc HTTP proxy — avoids mixed-content blocking when Tunet is served over HTTPS.
 // For m3u8 playlists the proxy rewrites segment URLs so the browser can fetch
 // them through this same proxy (native HLS players resolve segments relative
