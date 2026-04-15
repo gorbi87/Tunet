@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Sun, X } from '../icons';
 import { PV_ENTITY_IDS } from '../components/cards/GenericPvCard';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
@@ -421,6 +422,7 @@ export default function PvModal({
   t,
 }) {
   const [mainTab, setMainTab] = useState('leistung');
+  const [energyFullscreen, setEnergyFullscreen] = useState(false);
   const [pvHistory, setPvHistory] = useState([]);
   const [histLoading, setHistLoading] = useState(false);
   const modalTitleId = 'pv-modal-title';
@@ -524,6 +526,7 @@ export default function PvModal({
   ];
 
   return (
+    <>
     <AccessibleModalShell
       open={show}
       onClose={onClose}
@@ -596,7 +599,7 @@ export default function PvModal({
           </div>{/* end fixed header */}
 
           {/* ── Scrollable content ── */}
-          <div className={`flex-1 ${mainTab === 'energie' ? 'overflow-hidden p-0' : `overflow-y-auto ${isCompact ? 'p-4' : 'p-8'}`}`}>
+          <div className={`flex-1 overflow-y-auto ${isCompact ? 'p-4' : 'p-8'}`}>
 
           {/* ── Tab: Leistung ── */}
           {mainTab === 'leistung' && (
@@ -783,16 +786,63 @@ export default function PvModal({
           )}
           {/* ── Tab: Energy Dashboard ── */}
           {mainTab === 'energie' && (
-            <iframe
-              src="/local/community/ha-energy-dashboard/index.html"
-              className="h-full w-full border-0"
-              title="Energy Dashboard"
-              sandbox="allow-scripts allow-same-origin allow-forms"
-            />
+            <div className="flex h-full flex-col items-center justify-center gap-6">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <div className="rounded-2xl p-4" style={{ backgroundColor: 'rgba(251,146,60,0.1)' }}>
+                  <Sun className="h-8 w-8" style={{ color: SOLAR_COLOR }} />
+                </div>
+                <p className="text-base font-medium text-[var(--text-primary)]">Energy Dashboard</p>
+                <p className="text-[11px] text-[var(--text-muted)]">Detaillierte Energieauswertung</p>
+              </div>
+              <button
+                onClick={() => setEnergyFullscreen(true)}
+                className="rounded-2xl px-6 py-3 text-sm font-semibold text-white transition-opacity active:opacity-70"
+                style={{ backgroundColor: SOLAR_COLOR }}
+              >
+                Im Vollbild öffnen
+              </button>
+            </div>
           )}
           </div>{/* end scrollable content */}
         </>
       )}
     </AccessibleModalShell>
+
+    {/* ── Energy Dashboard Fullscreen Overlay ── */}
+    {energyFullscreen && createPortal(
+      <div className="fixed inset-0 z-[500] flex flex-col bg-black">
+        {/* Back bar */}
+        <div
+          className="flex flex-shrink-0 items-center gap-3 px-4 py-3"
+          style={{ backgroundColor: 'rgba(0,0,0,0.85)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <button
+            onClick={() => setEnergyFullscreen(false)}
+            className="flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-semibold text-white transition-opacity active:opacity-70"
+            style={{ backgroundColor: 'rgba(251,146,60,0.2)', border: '1px solid rgba(251,146,60,0.4)' }}
+          >
+            <span style={{ color: SOLAR_COLOR }}>←</span>
+            <span style={{ color: SOLAR_COLOR }}>Zurück zu Solar</span>
+          </button>
+        </div>
+        {import.meta.env.DEV ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 text-white opacity-50">
+            <Sun className="h-10 w-10" style={{ color: SOLAR_COLOR }} />
+            <p className="text-sm">Nur in Home Assistant verfügbar</p>
+            <p className="text-[11px]">/local/community/ha-energy-dashboard/index.html</p>
+          </div>
+        ) : (
+          <iframe
+            src="/local/community/ha-energy-dashboard/index.html"
+            className="flex-1 border-0"
+            title="Energy Dashboard"
+            sandbox="allow-scripts allow-same-origin allow-forms"
+            style={{ width: '100%' }}
+          />
+        )}
+      </div>,
+      document.body
+    )}
+    </>
   );
 }

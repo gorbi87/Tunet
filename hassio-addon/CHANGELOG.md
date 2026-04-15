@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.27
+
+### Fixed
+- Energy Dashboard Fullscreen: JSX-Fragment-Fix, dev-Platzhalter im Iframe.
+
 ## 1.15.26
 
 ### Added

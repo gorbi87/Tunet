@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.15.27] — 2026-04-15
+
+### Fixed
+- Energy Dashboard Fullscreen: JSX-Fragment-Fehler behoben, dev-Platzhalter statt SPA-Fallback im Iframe.
+
+
 ## [1.15.26] — 2026-04-15
 
 ### Added
