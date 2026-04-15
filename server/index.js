@@ -105,7 +105,7 @@ app.get('/api/health', (_req, res) => {
 
 // Energy Dashboard proxy — fetches HA custom component static files using supervisor token.
 // Needed because HA 2024+ requires auth for custom component static paths (/ha-energy-dashboard/).
-app.get('/api/energy-dashboard-proxy/:filePath(*)', (req, res) => {
+app.get('/api/energy-dashboard-proxy/{*filePath}', (req, res) => {
   const supervisorToken = process.env.SUPERVISOR_TOKEN;
   if (!supervisorToken) return res.status(503).json({ error: 'SUPERVISOR_TOKEN not available' });
 

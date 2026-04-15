@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.31
+
+### Fixed
+- Energy Dashboard Proxy: Express v5 Wildcard-Syntax-Fix, behebt Server-Crash beim Start.
+
 ## 1.15.30
 
 ### Fixed

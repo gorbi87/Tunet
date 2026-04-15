@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.15.31] — 2026-04-15
+
+### Fixed
+- Energy Dashboard Proxy: Wildcard-Syntax für Express v5 path-to-regexp korrigiert (Server-Crash behoben).
+
+
 ## [1.15.30] — 2026-04-15
 
 ### Fixed
