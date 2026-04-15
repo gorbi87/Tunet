@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.30
+
+### Fixed
+- Energy Dashboard: Proxy mit SUPERVISOR_TOKEN für HA-Auth-gesicherte Static Paths.
+
 ## 1.15.29
 
 ### Fixed

@@ -790,7 +790,7 @@ export default function PvModal({
               </div>
             ) : (
               <iframe
-                src="/ha-energy-dashboard/"
+                src="./api/energy-dashboard-proxy/index.html"
                 className="h-full w-full border-0"
                 title="Energy Dashboard"
               />

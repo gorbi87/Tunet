@@ -103,6 +103,29 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', version: appVersion });
 });
 
+// Energy Dashboard proxy — fetches HA custom component static files using supervisor token.
+// Needed because HA 2024+ requires auth for custom component static paths (/ha-energy-dashboard/).
+app.get('/api/energy-dashboard-proxy/:filePath(*)', (req, res) => {
+  const supervisorToken = process.env.SUPERVISOR_TOKEN;
+  if (!supervisorToken) return res.status(503).json({ error: 'SUPERVISOR_TOKEN not available' });
+
+  const filePath = req.params.filePath || 'index.html';
+  const target = `http://supervisor/core/ha-energy-dashboard/${filePath}`;
+
+  const proxyReq = httpRequest(target, {
+    timeout: 10000,
+    headers: { Authorization: `Bearer ${supervisorToken}` },
+  }, (proxyRes) => {
+    res.status(proxyRes.statusCode || 200);
+    for (const [k, v] of Object.entries(proxyRes.headers)) {
+      if (!['transfer-encoding', 'connection'].includes(k.toLowerCase())) res.setHeader(k, v);
+    }
+    proxyRes.pipe(res);
+  });
+  proxyReq.on('error', () => { try { res.status(502).end(); } catch {} });
+  proxyReq.end();
+});
+
 // go2rtc HTTP proxy — avoids mixed-content blocking when Tunet is served over HTTPS.
 // For m3u8 playlists the proxy rewrites segment URLs so the browser can fetch
 // them through this same proxy (native HLS players resolve segments relative
