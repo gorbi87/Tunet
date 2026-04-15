@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.29
+
+### Fixed
+- Energy Dashboard: Pfad auf /ha-energy-dashboard/ korrigiert.
+
 ## 1.15.28
 
 ### Fixed
