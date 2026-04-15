@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.28
+
+### Fixed
+- Energy Dashboard Iframe: sandbox-Attribut entfernt.
+
 ## 1.15.27
 
 ### Fixed

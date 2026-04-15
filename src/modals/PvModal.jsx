@@ -836,7 +836,6 @@ export default function PvModal({
             src="/local/community/ha-energy-dashboard/index.html"
             className="flex-1 border-0"
             title="Energy Dashboard"
-            sandbox="allow-scripts allow-same-origin allow-forms"
             style={{ width: '100%' }}
           />
         )}
