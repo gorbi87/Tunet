@@ -520,6 +520,7 @@ export default function PvModal({
     { key: 'leistung', label: 'Leistung' },
     { key: 'prognose', label: 'Prognose' },
     { key: 'statistik', label: 'Statistik' },
+    { key: 'energie', label: 'Energy Dashboard' },
   ];
 
   return (
@@ -595,7 +596,7 @@ export default function PvModal({
           </div>{/* end fixed header */}
 
           {/* ── Scrollable content ── */}
-          <div className={`flex-1 overflow-y-auto ${isCompact ? 'p-4' : 'p-8'}`}>
+          <div className={`flex-1 ${mainTab === 'energie' ? 'overflow-hidden p-0' : `overflow-y-auto ${isCompact ? 'p-4' : 'p-8'}`}`}>
 
           {/* ── Tab: Leistung ── */}
           {mainTab === 'leistung' && (
@@ -779,6 +780,15 @@ export default function PvModal({
                 </div>
               </div>
             </div>
+          )}
+          {/* ── Tab: Energy Dashboard ── */}
+          {mainTab === 'energie' && (
+            <iframe
+              src="/local/community/ha-energy-dashboard/index.html"
+              className="h-full w-full border-0"
+              title="Energy Dashboard"
+              sandbox="allow-scripts allow-same-origin allow-forms"
+            />
           )}
           </div>{/* end scrollable content */}
         </>

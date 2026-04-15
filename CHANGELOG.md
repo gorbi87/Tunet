@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.15.26] — 2026-04-15
+
+### Added
+- PvModal: neuer Tab "Energy Dashboard" bettet das HA Energy Dashboard per Iframe ein.
+
+### Fixed
+- CSP frame-src um 'self' erweitert für HA-Panel-Iframes.
+
+
 ## [1.15.25] — 2026-04-14
 
 ### Fixed

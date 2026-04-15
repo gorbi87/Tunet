@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.15.26
+
+### Added
+- PvModal: Tab "Energy Dashboard" mit Iframe auf /local/community/ha-energy-dashboard/index.html.
+
+### Fixed
+- CSP frame-src 'self' für HA-Panel-Iframes.
+
 ## 1.15.25
 
 ### Fixed

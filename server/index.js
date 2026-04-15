@@ -51,8 +51,8 @@ app.use((_req, res, next) => {
     "connect-src 'self' ws: wss: http: https:",
     // Video/audio: own origin + blob URLs (created from proxy-fetched clips)
     "media-src 'self' blob:",
-    // Leaflet map iframe
-    "frame-src https://www.openstreetmap.org",
+    // Leaflet map iframe + HA panels (energy dashboard etc.)
+    "frame-src 'self' https://www.openstreetmap.org",
     // Block all object/embed/plugin
     "object-src 'none'",
     // Restrict base-uri to prevent base tag injection
