@@ -520,7 +520,6 @@ export default function PvModal({
     { key: 'leistung', label: 'Leistung' },
     { key: 'prognose', label: 'Prognose' },
     { key: 'statistik', label: 'Statistik' },
-    { key: 'energie', label: 'Energy Dashboard' },
   ];
 
   return (
@@ -782,20 +781,6 @@ export default function PvModal({
             </div>
           )}
           {/* ── Tab: Energy Dashboard ── */}
-          {mainTab === 'energie' && (
-            import.meta.env.DEV ? (
-              <div className="flex h-full flex-col items-center justify-center gap-3 opacity-50">
-                <Sun className="h-8 w-8" style={{ color: SOLAR_COLOR }} />
-                <p className="text-sm text-[var(--text-muted)]">Nur in Home Assistant verfügbar</p>
-              </div>
-            ) : (
-              <iframe
-                src="./api/energy-dashboard-proxy/index.html"
-                className="h-full w-full border-0"
-                title="Energy Dashboard"
-              />
-            )
-          )}
           </div>{/* end scrollable content */}
         </>
       )}

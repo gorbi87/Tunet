@@ -42,6 +42,7 @@ export function useEditModalProps({
     const isEditSpacer = !!editId && editId.startsWith('spacer_card_');
     const isEditCamera = !!editId && editId.startsWith('camera_card_');
     const isEditGo2rtcCamera = !!editId && editId.startsWith('go2rtc_camera_card_');
+    const isEditFrigateEvents = !!editId && editId.startsWith('frigate_events_card_');
     const isEditFan = !!editId && (editId.startsWith('fan.') || editId.startsWith('fan_card_'));
 
     const editSettings = isEditCar ? resolveCarSettings(editId, rawEditSettings) : rawEditSettings;
@@ -109,6 +110,7 @@ export function useEditModalProps({
       isEditSpacer,
       isEditCamera,
       isEditGo2rtcCamera,
+      isEditFrigateEvents,
       isEditSensor,
       isEditWeatherTemp,
       isEditFan,

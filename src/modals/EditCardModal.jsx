@@ -734,6 +734,7 @@ export default function EditCardModal({
   isEditSpacer,
   isEditCamera,
   isEditGo2rtcCamera,
+  isEditFrigateEvents,
   isEditRoom,
   isEditAndroidTV,
   isEditFan,
@@ -1818,6 +1819,24 @@ export default function EditCardModal({
                   Name des Streams in go2rtc (entspricht dem Frigate-Kameranamen)
                 </p>
               </div>
+            </div>
+          )}
+
+          {isEditFrigateEvents && editSettingsKey && (
+            <div className="space-y-2">
+              <label className="ml-1 text-xs font-bold text-[var(--text-muted)] uppercase">
+                Frigate URL
+              </label>
+              <input
+                type="text"
+                placeholder="http://192.168.50.140:5000"
+                value={editSettings.frigateUrl || ''}
+                onChange={(e) => saveCardSetting(editSettingsKey, 'frigateUrl', e.target.value.trim())}
+                className="w-full rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]"
+              />
+              <p className="ml-1 text-[10px] text-[var(--text-muted)]">
+                Basis-URL deiner Frigate-Instanz (z.B. http://192.168.50.140:5000)
+              </p>
             </div>
           )}
 

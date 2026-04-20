@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.15.32
+
+### Added
+- Frigate Events Card: Frigate-URL jetzt im Edit-Card-Modal konfigurierbar (kein Hardcode mehr).
+
+### Fixed
+- PvModal: Energy-Dashboard-Tab entfernt.
+- Server: Energy-Dashboard-Proxy-Endpunkt entfernt.
+
 ## 1.15.31
 
 ### Fixed
