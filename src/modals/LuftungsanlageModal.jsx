@@ -77,6 +77,32 @@ function ColoredHistoryGraph({ data, height = 120, thresholds, noDataLabel = 'Ke
   );
 }
 
+function ThresholdRow({ label, value, unit, onDec, onInc }) {
+  const display = value != null
+    ? `${Number.isInteger(value) ? value : value.toFixed(1)}${unit}`
+    : '—';
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="min-w-[56px] text-xs" style={{ color: 'var(--text-secondary)' }}>{label}</span>
+      <div className="flex items-center gap-2">
+        <button onClick={onDec}
+          className="flex h-6 w-6 items-center justify-center rounded-lg border text-sm font-bold transition-colors"
+          style={{ borderColor: 'var(--glass-border)', color: ACCENT, background: 'var(--glass-bg)' }}>
+          −
+        </button>
+        <span className="min-w-[64px] text-center text-xs font-mono" style={{ color: ACCENT }}>
+          {display}
+        </span>
+        <button onClick={onInc}
+          className="flex h-6 w-6 items-center justify-center rounded-lg border text-sm font-bold transition-colors"
+          style={{ borderColor: 'var(--glass-border)', color: ACCENT, background: 'var(--glass-bg)' }}>
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function SelectPills({ options, current, onSelect }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -125,7 +151,7 @@ function parseLastMode(raw) {
   const FAN_LABELS = { low: 'Stufe 1 Low', medium: 'Stufe 2 Medium', high: 'Stufe 3 High', off: 'Aus' };
   const fanLvl = FAN_LABELS[parts[2]] || parts[2] || '';
   if (parts[1] === 'auto') return { src: 'Automatik (Temp)', lvl: fanLvl };
-  if (parts[1] === 'aq')   return { src: 'Luftqualitäts-Override', lvl: fanLvl };
+  if (parts[1] === 'airquality' || parts[1] === 'aq') return { src: 'Luftqualitäts-Override', lvl: fanLvl };
   if (parts[1] === 'off')  return { src: 'Temp niedrig oder Sperre', lvl: 'Aus' };
   return { src: raw, lvl: '' };
 }
@@ -147,6 +173,10 @@ export default function LuftungsanlageModal({
   const [co2History, setCo2History] = useState([]);
   const [vocHistory, setVocHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [modeHistory, setModeHistory] = useState([]);
+  const [modeHistoryOpen, setModeHistoryOpen] = useState(false);
+  const [modeHistoryLoading, setModeHistoryLoading] = useState(false);
+  const [schwelleOpen, setSchwelleOpen] = useState(false);
   const modalTitleId = 'luftungsanlage-modal-title';
 
   useEffect(() => {
@@ -203,6 +233,48 @@ export default function LuftungsanlageModal({
     };
 
     fetchHistories();
+  }, [show, mainTab, conn, haUrl, haToken]);
+
+  useEffect(() => {
+    if (!show || mainTab !== 'automatik') return;
+    if (!conn && !haUrl) return;
+
+    const fetchModeHistory = async () => {
+      setModeHistoryLoading(true);
+      const end = new Date();
+      const start = new Date(end.getTime() - 48 * 60 * 60 * 1000);
+      try {
+        let raw = [];
+        try {
+          const data = await getHistoryRest(haUrl, haToken, {
+            entityId: LUFTUNGSANLAGE_ENTITY_IDS.lastMode,
+            start,
+            end,
+            minimal_response: false,
+            no_attributes: false,
+            significant_changes_only: true,
+          });
+          raw = Array.isArray(data?.[0]) ? data[0] : (Array.isArray(data) ? data : []);
+        } catch (_e) {
+          const wsData = await getHistory(conn, { entityId: LUFTUNGSANLAGE_ENTITY_IDS.lastMode, start, end });
+          raw = Array.isArray(wsData?.[0]) ? wsData[0] : (Array.isArray(wsData) ? wsData : []);
+        }
+        const parsed = raw
+          .filter((d) => d?.state && d.state !== 'unknown' && d.state !== 'unavailable')
+          .map((d) => ({
+            state: d.state,
+            time: new Date(d.last_changed || d.last_updated || d.lu || d.lc),
+          }))
+          .filter((d) => !isNaN(d.time.getTime()))
+          .reverse();
+        setModeHistory(parsed);
+      } catch (_e) {
+        setModeHistory([]);
+      }
+      setModeHistoryLoading(false);
+    };
+
+    fetchModeHistory();
   }, [show, mainTab, conn, haUrl, haToken]);
 
   if (!show) return null;
@@ -308,29 +380,42 @@ export default function LuftungsanlageModal({
 
   const { src: modeSrc, lvl: modeLvl } = parseLastMode(lastMode);
 
+  // Threshold values from input_number helpers (live, with sensible fallbacks)
+  const co2Schwelle = val(LUFTUNGSANLAGE_ENTITY_IDS.co2Schwelle) ?? 1500;
+  const vocSchwelle = val(LUFTUNGSANLAGE_ENTITY_IDS.vocSchwelle) ?? 400;
+  const feuchteSchwelle = val(LUFTUNGSANLAGE_ENTITY_IDS.feuchteSchwelle) ?? 65;
+  const tempDiffKalt = val(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffKalt) ?? 1.0;
+  const tempDiffKaltAus = val(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffKaltAus) ?? 2.0;
+  const tempDiffMild = val(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffMild) ?? 0.5;
+  const tempDiffMildAus = val(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffMildAus) ?? 1.5;
+
   // Automatik tab calculations (mirrors dashboard button-card logic)
   const isCold = outsideTemp != null && outsideTemp < 5;
   const isMild = outsideTemp != null && outsideTemp >= 5 && outsideTemp <= 15;
-  const tLow = isCold ? 1.0 : 0.5;
-  const tOff = isCold ? 2.0 : 2.5;
+  const tLow = isCold ? tempDiffKalt : tempDiffMild;
+  const tOff = isCold ? tempDiffKaltAus : tempDiffMildAus;
   const weatherLabel = isCold ? 'kalt (<5°C)' : isMild ? 'mild (5–15°C)' : 'warm (>15°C)';
   const diffTemp = insideTemp != null && zuluft != null ? insideTemp - zuluft : null;
   const tPct = diffTemp != null ? Math.min(100, Math.max(0, (diffTemp / (tOff + 1)) * 100)) : 0;
   const tColor = diffTemp == null ? '#aaaaaa' : diffTemp >= tOff ? '#ef9a9a' : diffTemp >= tLow ? '#ffb74d' : '#64b5f6';
-  const co2Pct = co2Eg != null ? Math.min(100, (co2Eg / 2000) * 100) : 0;
-  const co2CondColor = co2Eg == null ? '#aaaaaa' : co2Eg >= 1500 ? '#ef9a9a' : co2Eg >= 1200 ? '#ffb74d' : '#81c784';
-  const vocPct = vocOg != null ? Math.min(100, (vocOg / 500) * 100) : 0;
-  const vocCondColor = vocOg == null ? '#aaaaaa' : vocOg >= 400 ? '#ef9a9a' : vocOg >= 300 ? '#ffb74d' : '#81c784';
+  const co2Pct = co2Eg != null ? Math.min(100, (co2Eg / (co2Schwelle * 1.5)) * 100) : 0;
+  const co2CondColor = co2Eg == null ? '#aaaaaa' : co2Eg >= co2Schwelle ? '#ef9a9a' : co2Eg >= co2Schwelle * 0.8 ? '#ffb74d' : '#81c784';
+  const vocPct = vocOg != null ? Math.min(100, (vocOg / (vocSchwelle * 1.5)) * 100) : 0;
+  const vocCondColor = vocOg == null ? '#aaaaaa' : vocOg >= vocSchwelle ? '#ef9a9a' : vocOg >= vocSchwelle * 0.75 ? '#ffb74d' : '#81c784';
   const humidPct = feuchteEg != null ? Math.min(100, feuchteEg) : 0;
-  const humidCondColor = feuchteEg == null ? '#aaaaaa' : feuchteEg >= 65 ? '#ef9a9a' : feuchteEg >= 60 ? '#ffb74d' : '#81c784';
+  const humidCondColor = feuchteEg == null ? '#aaaaaa' : feuchteEg >= feuchteSchwelle ? '#ef9a9a' : feuchteEg >= feuchteSchwelle - 5 ? '#ffb74d' : '#81c784';
 
   const lastModeRaw = lastMode || '';
   const modeparts = lastModeRaw.split('_');
   const driverTemp = modeparts[1] === 'auto';
-  const driverAQ = modeparts[1] === 'aq';
+  const driverAQ = modeparts[1] === 'airquality' || modeparts[1] === 'aq';
 
   const autoOn = automationState === 'on';
   const saisonColor = saisonState?.startsWith('Win') ? '#64b5f6' : saisonState?.startsWith('Som') ? '#ffb74d' : '#81c784';
+
+  const setThreshold = (entityId, value) => {
+    callService?.('input_number', 'set_value', { entity_id: entityId, value });
+  };
 
   // Lock time display
   let lockLabel = 'Keine aktive Sperre';
@@ -703,25 +788,62 @@ export default function LuftungsanlageModal({
               </div>
 
               {/* Status card */}
-              <div className="popup-surface rounded-2xl p-4 space-y-2">
-                <div className="flex items-baseline justify-between">
-                  <p className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>{modeLvl || '—'}</p>
-                  <p className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>{modeSrc}</p>
-                </div>
-                <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
-                  {outsideTemp != null ? outsideTemp.toFixed(1) : '—'}°C außen
-                  {insideTemp != null ? ` / ${insideTemp.toFixed(1)}°C innen` : ''}
-                  {zuluft != null ? ` / ${zuluft.toFixed(1)}°C Zuluft` : ''}
-                </div>
-                <div className="text-[12px] font-medium" style={{ color: lockLabel.startsWith('Gesperrt') ? '#fb923c' : 'var(--text-muted)' }}>
-                  {lockLabel}
-                </div>
-              </div>
+              {(() => {
+                const parts = (lastMode || '').split('_');
+                const isAq = parts[1] === 'airquality' || parts[1] === 'aq';
+                const isAuto = parts[1] === 'auto';
+                const isWinterOff = parts[0] === 'winter' && parts[1] === 'off';
+                const isSummerOff = parts[0] === 'summer' && parts[1] === 'off';
+
+                let explanation = null;
+                if (isAq) {
+                  const reasons = [];
+                  if (co2Eg != null && co2Eg >= co2Schwelle) reasons.push(`CO₂ ${co2Eg.toFixed(0)} ppm`);
+                  if (vocOg != null && vocOg >= vocSchwelle) reasons.push(`VOC ${vocOg.toFixed(0)}`);
+                  if (feuchteEg != null && feuchteEg >= feuchteSchwelle) reasons.push(`Feuchte ${feuchteEg.toFixed(0)}%`);
+                  explanation = `Luft schlecht · ${reasons.join(', ') || 'Override aktiv'}`;
+                } else if (isAuto && parts[2] === 'medium') {
+                  explanation = diffTemp != null ? `ΔTemp ${diffTemp.toFixed(1)}°C < ${tLow.toFixed(1)}°C (Low-Schwelle)` : null;
+                } else if (isAuto && parts[2] === 'low') {
+                  explanation = diffTemp != null ? `ΔTemp ${diffTemp.toFixed(1)}°C zwischen ${tLow.toFixed(1)}–${tOff.toFixed(1)}°C` : null;
+                } else if (isWinterOff) {
+                  explanation = diffTemp != null ? `ΔTemp ${diffTemp.toFixed(1)}°C ≥ ${tOff.toFixed(1)}°C (Aus-Schwelle)` : null;
+                } else if (isSummerOff) {
+                  explanation = outsideTemp != null && insideTemp != null
+                    ? `Außen (${outsideTemp.toFixed(1)}°C) > Innen (${insideTemp.toFixed(1)}°C)`
+                    : null;
+                }
+
+                return (
+                  <div className="popup-surface rounded-2xl p-4 space-y-2">
+                    <div className="flex items-baseline justify-between">
+                      <p className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>{modeLvl || '—'}</p>
+                      <p className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>{modeSrc}</p>
+                    </div>
+                    {explanation && (
+                      <p className="text-[12px] font-medium" style={{ color: isAq ? '#ef9a9a' : '#64b5f6' }}>
+                        {explanation}
+                      </p>
+                    )}
+                    <div className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                      {outsideTemp != null ? outsideTemp.toFixed(1) : '—'}°C außen
+                      {insideTemp != null ? ` / ${insideTemp.toFixed(1)}°C innen` : ''}
+                      {zuluft != null ? ` / ${zuluft.toFixed(1)}°C Zuluft` : ''}
+                      {diffTemp != null ? ` · Δ ${diffTemp.toFixed(1)}°C` : ''}
+                    </div>
+                    {lockLabel.startsWith('Gesperrt') && (
+                      <div className="text-[12px] font-medium" style={{ color: '#fb923c' }}>
+                        {lockLabel}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Condition bars */}
               <div className="popup-surface rounded-2xl p-4 space-y-3">
                 <p className="text-[10px] font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'var(--text-muted)' }}>
-                  Bedingungen · {weatherLabel} · Stufe1 ab {tLow}° · Aus ab {tOff}°
+                  Bedingungen · {weatherLabel} · Low ab {tLow.toFixed(1)}° · Aus ab {tOff.toFixed(1)}°
                 </p>
 
                 {/* ΔTemp */}
@@ -735,14 +857,14 @@ export default function LuftungsanlageModal({
                     <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${tPct}%`, backgroundColor: tColor }} />
                   </div>
                   <span className="text-[10px] text-right min-w-[90px]" style={{ color: tColor }}>
-                    {diffTemp != null ? diffTemp.toFixed(1) : '—'}° ({tLow}°/−{tOff}°C)
+                    {diffTemp != null ? diffTemp.toFixed(1) : '—'}° / {tOff.toFixed(1)}°C
                   </span>
                 </div>
 
                 {/* CO₂ */}
                 <div
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-                  style={{ backgroundColor: driverAQ && co2Eg != null && co2Eg >= 1500 ? 'rgba(239,154,154,0.1)' : 'transparent' }}
+                  style={{ backgroundColor: driverAQ && co2Eg != null && co2Eg >= co2Schwelle ? 'rgba(239,154,154,0.1)' : 'transparent' }}
                 >
                   <div className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: co2CondColor }} />
                   <span className="w-[60px] flex-shrink-0 text-[10px]" style={{ color: 'var(--text-secondary)' }}>CO₂</span>
@@ -750,14 +872,14 @@ export default function LuftungsanlageModal({
                     <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${co2Pct}%`, backgroundColor: co2CondColor }} />
                   </div>
                   <span className="text-[10px] text-right min-w-[90px]" style={{ color: co2CondColor }}>
-                    {co2Eg != null ? co2Eg.toFixed(0) : '—'} / 1500 ppm
+                    {co2Eg != null ? co2Eg.toFixed(0) : '—'} / {co2Schwelle.toFixed(0)} ppm
                   </span>
                 </div>
 
                 {/* VOC */}
                 <div
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-                  style={{ backgroundColor: driverAQ && vocOg != null && vocOg >= 400 ? 'rgba(239,154,154,0.1)' : 'transparent' }}
+                  style={{ backgroundColor: driverAQ && vocOg != null && vocOg >= vocSchwelle ? 'rgba(239,154,154,0.1)' : 'transparent' }}
                 >
                   <div className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: vocCondColor }} />
                   <span className="w-[60px] flex-shrink-0 text-[10px]" style={{ color: 'var(--text-secondary)' }}>VOC</span>
@@ -765,14 +887,14 @@ export default function LuftungsanlageModal({
                     <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${vocPct}%`, backgroundColor: vocCondColor }} />
                   </div>
                   <span className="text-[10px] text-right min-w-[90px]" style={{ color: vocCondColor }}>
-                    {vocOg != null ? vocOg.toFixed(0) : '—'} / 400
+                    {vocOg != null ? vocOg.toFixed(0) : '—'} / {vocSchwelle.toFixed(0)}
                   </span>
                 </div>
 
                 {/* Feuchte */}
                 <div
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-                  style={{ backgroundColor: driverAQ && feuchteEg != null && feuchteEg >= 65 ? 'rgba(239,154,154,0.1)' : 'transparent' }}
+                  style={{ backgroundColor: driverAQ && feuchteEg != null && feuchteEg >= feuchteSchwelle ? 'rgba(239,154,154,0.1)' : 'transparent' }}
                 >
                   <div className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: humidCondColor }} />
                   <span className="w-[60px] flex-shrink-0 text-[10px]" style={{ color: 'var(--text-secondary)' }}>Feuchte</span>
@@ -780,9 +902,117 @@ export default function LuftungsanlageModal({
                     <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${humidPct}%`, backgroundColor: humidCondColor }} />
                   </div>
                   <span className="text-[10px] text-right min-w-[90px]" style={{ color: humidCondColor }}>
-                    {feuchteEg != null ? feuchteEg.toFixed(0) : '—'}% / 65%
+                    {feuchteEg != null ? feuchteEg.toFixed(0) : '—'}% / {feuchteSchwelle.toFixed(0)}%
                   </span>
                 </div>
+              </div>
+
+              {/* Schwellenwerte Editor */}
+              <div className="popup-surface rounded-2xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setSchwelleOpen((o) => !o)}
+                  className="flex w-full items-center justify-between p-4 text-left"
+                >
+                  <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                    Schwellenwerte
+                  </p>
+                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                    {schwelleOpen ? '▲' : '▼'}
+                  </span>
+                </button>
+                {schwelleOpen && (
+                  <div className="border-t px-4 pb-4 pt-3 space-y-4" style={{ borderColor: 'var(--glass-border)' }}>
+                    <div className="space-y-2">
+                      <p className="text-[10px] tracking-wider uppercase" style={{ color: 'var(--text-secondary)' }}>Luftqualität</p>
+                      <ThresholdRow label="CO₂" value={co2Schwelle} unit=" ppm"
+                        onDec={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.co2Schwelle, Math.max(500, co2Schwelle - 50))}
+                        onInc={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.co2Schwelle, Math.min(2000, co2Schwelle + 50))} />
+                      <ThresholdRow label="VOC" value={vocSchwelle} unit=""
+                        onDec={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.vocSchwelle, Math.max(100, vocSchwelle - 10))}
+                        onInc={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.vocSchwelle, Math.min(500, vocSchwelle + 10))} />
+                      <ThresholdRow label="Feuchte" value={feuchteSchwelle} unit="%"
+                        onDec={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.feuchteSchwelle, Math.max(40, feuchteSchwelle - 1))}
+                        onInc={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.feuchteSchwelle, Math.min(90, feuchteSchwelle + 1))} />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[10px] tracking-wider uppercase" style={{ color: 'var(--text-secondary)' }}>Temp-Diff kalt (&lt;5°C außen)</p>
+                      <ThresholdRow label="Low ab" value={tempDiffKalt} unit="°C"
+                        onDec={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffKalt, Math.max(0, Math.round((tempDiffKalt - 0.1) * 10) / 10))}
+                        onInc={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffKalt, Math.min(5, Math.round((tempDiffKalt + 0.1) * 10) / 10))} />
+                      <ThresholdRow label="Aus ab" value={tempDiffKaltAus} unit="°C"
+                        onDec={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffKaltAus, Math.max(0, Math.round((tempDiffKaltAus - 0.1) * 10) / 10))}
+                        onInc={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffKaltAus, Math.min(5, Math.round((tempDiffKaltAus + 0.1) * 10) / 10))} />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[10px] tracking-wider uppercase" style={{ color: 'var(--text-secondary)' }}>Temp-Diff mild/warm (≥5°C außen)</p>
+                      <ThresholdRow label="Low ab" value={tempDiffMild} unit="°C"
+                        onDec={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffMild, Math.max(0, Math.round((tempDiffMild - 0.1) * 10) / 10))}
+                        onInc={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffMild, Math.min(5, Math.round((tempDiffMild + 0.1) * 10) / 10))} />
+                      <ThresholdRow label="Aus ab" value={tempDiffMildAus} unit="°C"
+                        onDec={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffMildAus, Math.max(0, Math.round((tempDiffMildAus - 0.1) * 10) / 10))}
+                        onInc={() => setThreshold(LUFTUNGSANLAGE_ENTITY_IDS.tempDiffMildAus, Math.min(5, Math.round((tempDiffMildAus + 0.1) * 10) / 10))} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Schalt-Verlauf */}
+              <div className="popup-surface rounded-2xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setModeHistoryOpen((o) => !o)}
+                  className="flex w-full items-center justify-between p-4 text-left"
+                >
+                  <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                    Schalt-Verlauf (48h)
+                  </p>
+                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                    {modeHistoryOpen ? '▲' : '▼'}
+                  </span>
+                </button>
+                {modeHistoryOpen && (
+                  <div className="border-t px-4 pb-4 pt-3 space-y-1" style={{ borderColor: 'var(--glass-border)' }}>
+                    {modeHistoryLoading ? (
+                      <div className="flex h-12 items-center justify-center">
+                        <div className="h-5 w-5 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: ACCENT }} />
+                      </div>
+                    ) : modeHistory.length === 0 ? (
+                      <p className="py-2 text-center text-xs" style={{ color: 'var(--text-muted)' }}>Keine Daten</p>
+                    ) : (
+                      modeHistory.map((entry, i) => {
+                        const { src, lvl } = parseLastMode(entry.state);
+                        const now = new Date();
+                        const diff = now - entry.time;
+                        const isToday = entry.time.toDateString() === now.toDateString();
+                        const timeStr = isToday
+                          ? entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          : `gestern ${entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                        const aqEntry = entry.state.includes('airquality') || entry.state.includes('_aq_');
+                        const offEntry = entry.state.includes('_off');
+                        const dotColor = aqEntry ? '#ef9a9a' : offEntry ? 'var(--text-muted)' : '#64b5f6';
+                        return (
+                          <div key={i} className="flex items-start gap-3 py-1">
+                            <div className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full" style={{ backgroundColor: dotColor }} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-[11px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                  {lvl || '—'}
+                                </span>
+                                <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
+                                  {src}
+                                </span>
+                              </div>
+                            </div>
+                            <span className="flex-shrink-0 text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                              {timeStr}
+                            </span>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
