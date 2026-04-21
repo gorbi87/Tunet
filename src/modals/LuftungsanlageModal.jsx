@@ -267,7 +267,7 @@ export default function LuftungsanlageModal({
             end,
             minimal_response: false,
             no_attributes: false,
-            significant_changes_only: true,
+            significant_changes_only: false,
           });
           raw = Array.isArray(data?.[0]) ? data[0] : (Array.isArray(data) ? data : []);
         } catch (_e) {
