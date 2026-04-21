@@ -144,16 +144,31 @@ function getCo2Color(ppm) {
 }
 
 function parseLastMode(raw) {
-  if (!raw) return { src: '—', lvl: '' };
+  if (!raw) return { src: '—', lvl: '', detail: '' };
   const parts = raw.split('_');
-  if (parts[0] === 'boost') return { src: 'Boost-Modus', lvl: 'Stufe 3' };
-  if (parts[0] === 'manual') return { src: 'Manuell', lvl: '' };
-  const FAN_LABELS = { low: 'Stufe 1 Low', medium: 'Stufe 2 Medium', high: 'Stufe 3 High', off: 'Aus' };
+  if (parts[0] === 'boost') return { src: 'Boost-Modus', lvl: 'Stufe 3', detail: '' };
+  if (parts[0] === 'manual') return { src: 'Manuell', lvl: '', detail: '' };
+  const FAN_LABELS = { low: 'Low', medium: 'Medium', high: 'High', off: 'Aus' };
   const fanLvl = FAN_LABELS[parts[2]] || parts[2] || '';
-  if (parts[1] === 'auto') return { src: 'Automatik (Temp)', lvl: fanLvl };
-  if (parts[1] === 'airquality' || parts[1] === 'aq') return { src: 'Luftqualitäts-Override', lvl: fanLvl };
-  if (parts[1] === 'off')  return { src: 'Temp niedrig oder Sperre', lvl: 'Aus' };
-  return { src: raw, lvl: '' };
+  const season = parts[0] === 'winter' ? 'Winter' : parts[0] === 'summer' ? 'Sommer' : '';
+  if (parts[1] === 'auto') {
+    const detail = season === 'Winter'
+      ? (fanLvl === 'Medium' ? 'ΔTemp gering → wenig Wärmeverlust' : fanLvl === 'Low' ? 'ΔTemp mittel → etwas Wärmeverlust' : '')
+      : (fanLvl === 'Medium' ? 'ΔTemp gering → kühlt kaum' : fanLvl === 'Low' ? 'ΔTemp mittel' : '');
+    return { src: `Temp-Steuerung${season ? ` (${season})` : ''}`, lvl: fanLvl || 'An', detail };
+  }
+  if (parts[1] === 'airquality' || parts[1] === 'aq') {
+    return { src: 'Luftqualitäts-Override', lvl: fanLvl || 'An', detail: 'CO₂, VOC oder Feuchte über Schwelle' };
+  }
+  if (parts[1] === 'off') {
+    const detail = season === 'Winter'
+      ? 'ΔTemp zu groß → zu viel Wärmeverlust'
+      : season === 'Sommer'
+      ? 'Außenluft wärmer als Innenluft'
+      : 'Sperre aktiv oder Temp-Bedingung';
+    return { src: `Ausgeschaltet${season ? ` (${season})` : ''}`, lvl: 'Aus', detail };
+  }
+  return { src: raw, lvl: '', detail: '' };
 }
 
 export default function LuftungsanlageModal({
@@ -981,9 +996,8 @@ export default function LuftungsanlageModal({
                       <p className="py-2 text-center text-xs" style={{ color: 'var(--text-muted)' }}>Keine Daten</p>
                     ) : (
                       modeHistory.map((entry, i) => {
-                        const { src, lvl } = parseLastMode(entry.state);
+                        const { src, lvl, detail } = parseLastMode(entry.state);
                         const now = new Date();
-                        const diff = now - entry.time;
                         const isToday = entry.time.toDateString() === now.toDateString();
                         const timeStr = isToday
                           ? entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -992,7 +1006,7 @@ export default function LuftungsanlageModal({
                         const offEntry = entry.state.includes('_off');
                         const dotColor = aqEntry ? '#ef9a9a' : offEntry ? 'var(--text-muted)' : '#64b5f6';
                         return (
-                          <div key={i} className="flex items-start gap-3 py-1">
+                          <div key={i} className="flex items-start gap-3 py-1.5">
                             <div className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full" style={{ backgroundColor: dotColor }} />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-baseline gap-2">
@@ -1003,6 +1017,9 @@ export default function LuftungsanlageModal({
                                   {src}
                                 </span>
                               </div>
+                              {detail && (
+                                <p className="mt-0.5 text-[10px]" style={{ color: 'var(--text-muted)' }}>{detail}</p>
+                              )}
                             </div>
                             <span className="flex-shrink-0 text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
                               {timeStr}
