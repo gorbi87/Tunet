@@ -274,13 +274,13 @@ export default function LuftungsanlageModal({
           const wsData = await getHistory(conn, { entityId: LUFTUNGSANLAGE_ENTITY_IDS.lastMode, start, end });
           raw = Array.isArray(wsData?.[0]) ? wsData[0] : (Array.isArray(wsData) ? wsData : []);
         }
+        const toMs = (v) => (v != null && v < 1e12 ? v * 1000 : v);
         const parsed = raw
-          .filter((d) => d?.state && d.state !== 'unknown' && d.state !== 'unavailable')
           .map((d) => ({
-            state: d.state,
-            time: new Date(d.last_changed || d.last_updated || d.lu || d.lc),
+            state: d.state ?? d.s,
+            time: new Date(d.last_changed ?? d.last_updated ?? toMs(d.lc) ?? toMs(d.lu)),
           }))
-          .filter((d) => !isNaN(d.time.getTime()))
+          .filter((d) => d.state && d.state !== 'unknown' && d.state !== 'unavailable' && !isNaN(d.time.getTime()))
           .reverse();
         setModeHistory(parsed);
       } catch (_e) {
@@ -999,9 +999,13 @@ export default function LuftungsanlageModal({
                         const { src, lvl, detail } = parseLastMode(entry.state);
                         const now = new Date();
                         const isToday = entry.time.toDateString() === now.toDateString();
+                        const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+                        const isYesterday = entry.time.toDateString() === yesterday.toDateString();
                         const timeStr = isToday
                           ? entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                          : `gestern ${entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                          : isYesterday
+                          ? `gestern ${entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                          : entry.time.toLocaleDateString([], { day: '2-digit', month: '2-digit' }) + ' ' + entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const aqEntry = entry.state.includes('airquality') || entry.state.includes('_aq_');
                         const offEntry = entry.state.includes('_off');
                         const dotColor = aqEntry ? '#ef9a9a' : offEntry ? 'var(--text-muted)' : '#64b5f6';
