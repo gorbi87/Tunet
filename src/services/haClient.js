@@ -55,7 +55,7 @@ export async function getHistoryRest(
   token,
   {
     start,
-    end: _end,
+    end,
     entityId,
     minimal_response = false,
     no_attributes = false,
@@ -65,12 +65,14 @@ export async function getHistoryRest(
   if (!baseUrl) throw new Error('Missing HA url');
   const root = String(baseUrl).replace(/\/$/, '');
   const startIso = start.toISOString();
-  const params = new URLSearchParams({
+  const paramObj = {
     filter_entity_id: entityId,
     minimal_response: minimal_response ? '1' : '0',
     no_attributes: no_attributes ? '1' : '0',
     significant_changes_only: significant_changes_only ? '1' : '0',
-  });
+  };
+  if (end) paramObj.end_time = end.toISOString();
+  const params = new URLSearchParams(paramObj);
   const url = `${root}/api/history/period/${startIso}?${params.toString()}`;
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
