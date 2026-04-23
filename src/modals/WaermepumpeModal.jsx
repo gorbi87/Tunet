@@ -37,7 +37,8 @@ function derivePhase(wwIst, phaseBActive, wwSoll) {
   if (phaseBActive) return 'B';
   const soll = parseFloat(String(wwSoll).replace(' °C', ''));
   if (!isNaN(soll) && soll >= 60) return 'C';
-  if (wwIst != null && wwIst >= 53.5 && !phaseBActive) return 'A→B';
+  if (!isNaN(soll) && soll <= 48) return 'idle';
+  if (wwIst != null && wwIst >= 53.5) return 'A→B';
   return 'A';
 }
 
