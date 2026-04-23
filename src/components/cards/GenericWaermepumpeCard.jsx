@@ -19,6 +19,12 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   heizstabSelect: 'select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018',
   betriebsart: 'sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can',
   raumsoll: 'select.daikin_heizung_raumsoll_1',
+  saison: 'input_select.warmepumpe_saison',
+  automationWp: 'automation.pv_wp_steuerung_v2_3_3_phasen_logik_daikin',
+  phaseBBoolean: 'input_boolean.wp_phase_b_aktiv',
+  heizstabZyklen: 'counter.wp_heizstab_zyklen_phase_b',
+  kompressorStart: 'input_datetime.wp_kompressor_startzeit',
+  letzterWechsel: 'input_datetime.wp_letzter_wechsel',
 };
 
 const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({

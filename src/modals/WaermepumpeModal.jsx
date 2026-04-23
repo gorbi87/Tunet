@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Flame, X, Thermometer, Zap } from '../icons';
 import { WAERMEPUMPE_ENTITY_IDS } from '../components/cards/GenericWaermepumpeCard';
 import { HpsuHydraulicView } from '../components/HpsuHydraulicView';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
+import { getHistoryRest, getHistory } from '../services/haClient';
+
+const ACCENT = '#fb923c';
 
 function SelectDropdown({ entityId, entity, onSelect }) {
   if (!entity) return null;
@@ -29,6 +32,66 @@ function SelectDropdown({ entityId, entity, onSelect }) {
   );
 }
 
+// Phase A/B/C derived from entity states
+function derivePhase(wwIst, phaseBActive, wwSoll) {
+  if (phaseBActive) return 'B';
+  const soll = parseFloat(String(wwSoll).replace(' °C', ''));
+  if (!isNaN(soll) && soll >= 60) return 'C';
+  if (wwIst != null && wwIst >= 53.5 && !phaseBActive) return 'A→B';
+  return 'A';
+}
+
+function PhaseIndicator({ phase }) {
+  const phases = ['A', 'B', 'C'];
+  const colors = { A: '#64b5f6', B: '#ffb74d', C: '#ef9a9a' };
+  const labels = {
+    A: 'Kompressor bis 54°C',
+    B: 'Heizstab manuell',
+    C: 'Daikin intern',
+  };
+  const activePhase = phase === 'A→B' ? 'B' : phase;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        {phases.map((p) => {
+          const isActive = activePhase === p;
+          const color = colors[p];
+          return (
+            <div
+              key={p}
+              className="flex-1 rounded-xl border p-2 text-center transition-all"
+              style={
+                isActive
+                  ? { backgroundColor: `${color}22`, borderColor: color }
+                  : { backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }
+              }
+            >
+              <p
+                className="text-base font-bold"
+                style={{ color: isActive ? color : 'var(--text-muted)' }}
+              >
+                {p}
+              </p>
+              <p
+                className="text-[9px] leading-tight mt-0.5"
+                style={{ color: isActive ? color : 'var(--text-muted)' }}
+              >
+                {labels[p]}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+      {phase === 'A→B' && (
+        <p className="text-[11px] font-medium text-center" style={{ color: '#ffb74d' }}>
+          Übergang A→B (WW ≥ 53.5°C)
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function WaermepumpeModal({
   show,
   onClose,
@@ -36,13 +99,71 @@ export default function WaermepumpeModal({
   customNames,
   cardId,
   callService,
+  conn,
+  haUrl,
+  haToken,
   onOpenSensorModal,
   t,
 }) {
   const translate = t || ((key) => key);
   const [mainTab, setMainTab] = useState('overview');
   const [energyTab, setEnergyTab] = useState('today');
+  const [wwHistory, setWwHistory] = useState([]);
+  const [wwHistoryOpen, setWwHistoryOpen] = useState(false);
+  const [wwHistoryLoading, setWwHistoryLoading] = useState(false);
   const modalTitleId = 'waermepumpe-modal-title';
+
+  useEffect(() => {
+    if (!show || mainTab !== 'automatik') return;
+    if (!conn && !haUrl) return;
+
+    const fetchHistory = async () => {
+      setWwHistoryLoading(true);
+      const end = new Date();
+      const start = new Date(end.getTime() - 48 * 60 * 60 * 1000);
+      try {
+        let raw = [];
+        try {
+          const data = await getHistoryRest(haUrl, haToken, {
+            entityId: WAERMEPUMPE_ENTITY_IDS.wwSoll,
+            start,
+            end,
+            minimal_response: false,
+            no_attributes: false,
+            significant_changes_only: false,
+          });
+          raw = Array.isArray(data?.[0]) ? data[0] : (Array.isArray(data) ? data : []);
+        } catch (_e) {
+          const wsData = await getHistory(conn, {
+            entityId: WAERMEPUMPE_ENTITY_IDS.wwSoll,
+            start,
+            end,
+          });
+          raw = Array.isArray(wsData?.[0]) ? wsData[0] : (Array.isArray(wsData) ? wsData : []);
+        }
+        const toMs = (v) => (v != null && v < 1e12 ? v * 1000 : v);
+        const parsed = raw
+          .map((d) => ({
+            state: d.state ?? d.s,
+            time: new Date(d.last_changed ?? d.last_updated ?? toMs(d.lc) ?? toMs(d.lu)),
+          }))
+          .filter(
+            (d) =>
+              d.state &&
+              d.state !== 'unknown' &&
+              d.state !== 'unavailable' &&
+              !isNaN(d.time.getTime())
+          )
+          .reverse();
+        setWwHistory(parsed);
+      } catch (_e) {
+        setWwHistory([]);
+      }
+      setWwHistoryLoading(false);
+    };
+
+    fetchHistory();
+  }, [show, mainTab, conn, haUrl, haToken]);
 
   if (!show) return null;
 
@@ -53,17 +174,18 @@ export default function WaermepumpeModal({
     const v = parseFloat(e(id)?.state);
     return Number.isFinite(v) ? v : null;
   };
+  const str = (id) => e(id)?.state || null;
 
   const selectOption = (entityId, option) => {
     callService?.('select', 'select_option', { entity_id: entityId, option });
   };
 
+  // Overview values
   const kompressorAktiv = e(WAERMEPUMPE_ENTITY_IDS.kompressor)?.state === 'on';
   const wwTemp = val(WAERMEPUMPE_ENTITY_IDS.warmwasser);
   const vorlauf = val(WAERMEPUMPE_ENTITY_IDS.vorlauf);
   const ruecklauf = val(WAERMEPUMPE_ENTITY_IDS.ruecklauf);
   const aussentemp = val(WAERMEPUMPE_ENTITY_IDS.aussentemp);
-
   const stromHeute = val(WAERMEPUMPE_ENTITY_IDS.stromTaglich);
   const waermeHeute = val(WAERMEPUMPE_ENTITY_IDS.waermeTaglich);
   const stromMonat = val(WAERMEPUMPE_ENTITY_IDS.stromMonatlich);
@@ -79,10 +201,51 @@ export default function WaermepumpeModal({
     stromMonat != null && waermeMonat != null && stromMonat > 0
       ? (waermeMonat / stromMonat).toFixed(2)
       : null;
-
   const aktivStrom = energyTab === 'today' ? stromHeute : stromMonat;
   const aktivWaerme = energyTab === 'today' ? waermeHeute : waermeMonat;
   const aktivCop = energyTab === 'today' ? copHeute : copMonat;
+
+  // Automatik tab values
+  const saisonState = str(WAERMEPUMPE_ENTITY_IDS.saison);
+  const automationState = str(WAERMEPUMPE_ENTITY_IDS.automationWp);
+  const phaseBActive = e(WAERMEPUMPE_ENTITY_IDS.phaseBBoolean)?.state === 'on';
+  const heizstabZyklenVal = val(WAERMEPUMPE_ENTITY_IDS.heizstabZyklen) ?? 0;
+  const kompressorStartStr = str(WAERMEPUMPE_ENTITY_IDS.kompressorStart);
+  const wwSollState = str(WAERMEPUMPE_ENTITY_IDS.wwSoll);
+  const betriebsartState = str(WAERMEPUMPE_ENTITY_IDS.betriebsart);
+  const heizstabSelectState = str(WAERMEPUMPE_ENTITY_IDS.heizstabSelect);
+  const autoOn = automationState === 'on';
+
+  // BOH Kompressor-Laufzeit
+  let kompressorLaufzeitMin = 0;
+  const istWWZyklus = betriebsartState === 'Warmwasserbereitung';
+  if (kompressorStartStr && istWWZyklus) {
+    const startTs = new Date(kompressorStartStr.replace(' ', 'T')).getTime();
+    if (!isNaN(startTs)) {
+      kompressorLaufzeitMin = Math.max(0, (Date.now() - startTs) / 60000);
+    }
+  }
+  const bohWartezeit = 95; // from blueprint default
+  const bohPuffer = 15;
+  const bohSchwelle = bohWartezeit - bohPuffer;
+  const bohPct = Math.min(100, (kompressorLaufzeitMin / bohSchwelle) * 100);
+  const bohColor =
+    bohPct >= 100 ? '#ef9a9a' : bohPct >= 75 ? '#ffb74d' : '#64b5f6';
+
+  const phase = derivePhase(wwTemp, phaseBActive, wwSollState);
+  const saisonColor = saisonState?.startsWith('Win') ? '#64b5f6' : '#ffb74d';
+
+  const toggleAutomation = () => {
+    callService?.('automation', 'toggle', {
+      entity_id: WAERMEPUMPE_ENTITY_IDS.automationWp,
+    });
+  };
+  const setSaison = (option) => {
+    callService?.('input_select', 'select_option', {
+      entity_id: WAERMEPUMPE_ENTITY_IDS.saison,
+      option,
+    });
+  };
 
   const TempRow = ({ label, value, color = 'var(--text-primary)' }) => (
     <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3">
@@ -100,13 +263,13 @@ export default function WaermepumpeModal({
 
   const mainTabs = [
     { key: 'overview', label: translate('waermepumpe.tab.overview') || 'Übersicht' },
+    { key: 'automatik', label: 'Automatik' },
     { key: 'hydraulik', label: translate('waermepumpe.tab.hydraulik') || 'Hydraulik' },
   ];
 
-  // Compact mode: tablet/touch device or small height
-  const isCompact = window.innerHeight < 900 ||
+  const isCompact =
+    window.innerHeight < 900 ||
     window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-  // Phone: narrow viewport (smartphone, not tablet)
   const isPhone = window.innerWidth < 640;
 
   return (
@@ -114,13 +277,17 @@ export default function WaermepumpeModal({
       open={show}
       onClose={onClose}
       titleId={modalTitleId}
-      overlayClassName={isCompact
-        ? 'fixed inset-0 z-50 flex items-stretch justify-center'
-        : 'fixed inset-0 z-50 flex items-center justify-center p-6'}
+      overlayClassName={
+        isCompact
+          ? 'fixed inset-0 z-50 flex items-stretch justify-center'
+          : 'fixed inset-0 z-50 flex items-center justify-center p-6'
+      }
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName={isCompact
-        ? 'popup-anim relative flex flex-col w-full max-w-2xl h-full overflow-hidden rounded-none border font-sans backdrop-blur-xl'
-        : 'popup-anim relative flex flex-col w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[3rem] border font-sans backdrop-blur-xl'}
+      panelClassName={
+        isCompact
+          ? 'popup-anim relative flex flex-col w-full max-w-2xl h-full overflow-hidden rounded-none border font-sans backdrop-blur-xl'
+          : 'popup-anim relative flex flex-col w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[3rem] border font-sans backdrop-blur-xl'
+      }
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -129,23 +296,21 @@ export default function WaermepumpeModal({
     >
       {() => (
         <>
-          {/* ── Fixed header: close + icon/title + tabs ── */}
+          {/* ── Fixed header ── */}
           <div
             className={`flex-shrink-0 border-b ${isCompact ? 'p-4 pb-3' : 'p-8 pb-5'}`}
             style={{ borderColor: 'var(--glass-border)' }}
           >
-            {/* Close button */}
             <div className="absolute top-4 right-4 z-20">
               <button onClick={onClose} className="modal-close" aria-label={translate('common.close')}>
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Header row */}
             <div className="mb-4 flex items-center gap-3 pr-10 font-sans">
               <div
                 className="rounded-2xl p-3 transition-all duration-500"
-                style={{ backgroundColor: 'rgba(234, 88, 12, 0.15)', color: '#fb923c' }}
+                style={{ backgroundColor: 'rgba(234, 88, 12, 0.15)', color: ACCENT }}
               >
                 <Flame className="h-6 w-6" />
               </div>
@@ -159,7 +324,9 @@ export default function WaermepumpeModal({
                 <div
                   className="mt-1.5 inline-flex items-center gap-2 rounded-full border px-3 py-1 transition-all duration-500"
                   style={{
-                    backgroundColor: kompressorAktiv ? 'var(--status-success-bg)' : 'var(--glass-bg)',
+                    backgroundColor: kompressorAktiv
+                      ? 'var(--status-success-bg)'
+                      : 'var(--glass-bg)',
                     borderColor: kompressorAktiv
                       ? 'var(--status-success-border)'
                       : 'var(--glass-border)',
@@ -171,7 +338,9 @@ export default function WaermepumpeModal({
                   <p
                     className="text-[10px] font-bold tracking-widest uppercase italic"
                     style={{
-                      color: kompressorAktiv ? 'var(--status-success-fg)' : 'var(--text-secondary)',
+                      color: kompressorAktiv
+                        ? 'var(--status-success-fg)'
+                        : 'var(--text-secondary)',
                     }}
                   >
                     {kompressorAktiv
@@ -182,7 +351,6 @@ export default function WaermepumpeModal({
               </div>
             </div>
 
-            {/* Main tabs */}
             <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
               {mainTabs.map(({ key, label }) => (
                 <button
@@ -192,10 +360,10 @@ export default function WaermepumpeModal({
                   style={
                     mainTab === key
                       ? {
-                          backgroundColor: 'var(--accent-bg)',
-                          borderColor: 'var(--accent-color)',
-                          color: 'var(--accent-color)',
-                          border: '1px solid var(--accent-color)',
+                          backgroundColor: 'rgba(234,88,12,0.15)',
+                          borderColor: ACCENT,
+                          color: ACCENT,
+                          border: `1px solid ${ACCENT}`,
                         }
                       : { color: 'var(--text-secondary)' }
                   }
@@ -206,32 +374,38 @@ export default function WaermepumpeModal({
             </div>
           </div>
 
-          {/* ── Scrollable content area ── */}
+          {/* ── Scrollable content ── */}
           <div className={`flex-1 overflow-y-auto ${isCompact ? 'p-4' : 'p-8'}`}>
 
-            {/* Tab: Übersicht */}
+            {/* ── Tab: Übersicht ── */}
             {mainTab === 'overview' && (
               <>
-                {/* Temps + Energy grid — side-by-side from md */}
-                <div className={`grid items-start gap-4 font-sans ${isPhone ? 'grid-cols-1' : isCompact ? 'grid-cols-5' : 'grid-cols-1 lg:grid-cols-5'}`}>
-                  {/* Left: Temperatures */}
+                <div
+                  className={`grid items-start gap-4 font-sans ${
+                    isPhone ? 'grid-cols-1' : isCompact ? 'grid-cols-5' : 'grid-cols-1 lg:grid-cols-5'
+                  }`}
+                >
                   <div className={`space-y-2 ${isPhone ? '' : 'md:col-span-3'}`}>
                     <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
                       {translate('waermepumpe.temperatures')}
                     </p>
                     <div className="grid grid-cols-2 gap-3">
-                      {/* Warmwasser — klickbar für SensorModal */}
                       <button
                         onClick={() => onOpenSensorModal?.(WAERMEPUMPE_ENTITY_IDS.warmwasser)}
                         className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3 transition-all hover:opacity-80 active:scale-[0.98]"
                       >
-                        <p className="text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                        <p
+                          className="text-[10px] font-bold tracking-[0.15em] uppercase"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
                           {translate('waermepumpe.warmwasser')}
                         </p>
-                        <p className="text-xl font-light" style={{ color: '#fb923c' }}>
+                        <p className="text-xl font-light" style={{ color: ACCENT }}>
                           {wwTemp != null ? `${wwTemp.toFixed(1)} °C` : '—'}
                         </p>
-                        <span className="text-[9px] text-[var(--text-muted)] opacity-50">↗ Verlauf</span>
+                        <span className="text-[9px] text-[var(--text-muted)] opacity-50">
+                          ↗ Verlauf
+                        </span>
                       </button>
                       <TempRow label={translate('waermepumpe.aussentemp')} value={aussentemp} />
                       <TempRow
@@ -263,7 +437,8 @@ export default function WaermepumpeModal({
                             {heizstab} W
                             {heizstabTaglich != null && (
                               <span className="ml-2 text-[var(--text-muted)]">
-                                · {heizstabTaglich.toFixed(2)} kWh {translate('waermepumpe.heute')}
+                                · {heizstabTaglich.toFixed(2)} kWh{' '}
+                                {translate('waermepumpe.heute')}
                               </span>
                             )}
                           </p>
@@ -272,10 +447,11 @@ export default function WaermepumpeModal({
                     )}
                   </div>
 
-                  {/* Right: Energy stats */}
                   <div className={`space-y-2 ${isPhone ? '' : 'md:col-span-2'}`}>
-                    {/* Energy tab switcher */}
-                    <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'var(--glass-bg)' }}>
+                    <div
+                      className="flex rounded-2xl p-1"
+                      style={{ backgroundColor: 'var(--glass-bg)' }}
+                    >
                       {['today', 'month'].map((key) => (
                         <button
                           key={key}
@@ -299,19 +475,25 @@ export default function WaermepumpeModal({
                       ))}
                     </div>
 
-                    {/* COP */}
-                    <div className={`popup-surface transition-all ${isCompact
-                        ? 'flex items-center justify-between gap-3 rounded-2xl px-4 py-3'
-                        : 'flex flex-col items-center justify-center gap-2 rounded-3xl p-8'}`}>
+                    <div
+                      className={`popup-surface transition-all ${
+                        isCompact
+                          ? 'flex items-center justify-between gap-3 rounded-2xl px-4 py-3'
+                          : 'flex flex-col items-center justify-center gap-2 rounded-3xl p-8'
+                      }`}
+                    >
                       <p className="text-xs font-bold tracking-[0.2em] text-[var(--accent-color)] uppercase">
                         COP
                       </p>
-                      <span className={`leading-none font-light text-[var(--accent-color)] italic ${isCompact ? 'text-4xl' : 'text-6xl'}`}>
+                      <span
+                        className={`leading-none font-light text-[var(--accent-color)] italic ${
+                          isCompact ? 'text-4xl' : 'text-6xl'
+                        }`}
+                      >
                         {aktivCop ?? '—'}
                       </span>
                     </div>
 
-                    {/* Strom + Wärme */}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3">
                         <Zap className="h-4 w-4 text-[var(--accent-color)]" />
@@ -337,7 +519,7 @@ export default function WaermepumpeModal({
                   </div>
                 </div>
 
-                {/* Controls section */}
+                {/* Controls */}
                 <div
                   className="mt-3 border-t pt-3 font-sans"
                   style={{ borderColor: 'var(--glass-border)' }}
@@ -399,10 +581,370 @@ export default function WaermepumpeModal({
               </>
             )}
 
-            {/* Tab: Hydraulik */}
-            {mainTab === 'hydraulik' && (
-              <HpsuHydraulicView entities={entities} />
+            {/* ── Tab: Automatik ── */}
+            {mainTab === 'automatik' && (
+              <div className="space-y-5 font-sans">
+
+                {/* Automation toggle + Saison */}
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={toggleAutomation}
+                      className="rounded-full border px-4 py-1.5 text-[11px] font-bold tracking-wider uppercase transition-all"
+                      style={
+                        autoOn
+                          ? {
+                              backgroundColor: 'rgba(74,222,128,0.15)',
+                              borderColor: '#4ade80',
+                              color: '#4ade80',
+                            }
+                          : {
+                              backgroundColor: 'var(--glass-bg)',
+                              borderColor: 'var(--glass-border)',
+                              color: 'var(--text-muted)',
+                            }
+                      }
+                    >
+                      Automatik {autoOn ? 'Ein' : 'Aus'}
+                    </button>
+                    {saisonState && (
+                      <span
+                        className="rounded-full border px-3 py-1 text-[11px] font-bold tracking-wider uppercase"
+                        style={{
+                          backgroundColor: `${saisonColor}22`,
+                          borderColor: `${saisonColor}66`,
+                          color: saisonColor,
+                        }}
+                      >
+                        {saisonState}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    {['Sommer', 'Winter'].map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setSaison(opt)}
+                        className="rounded-full border px-3 py-1 text-[11px] font-bold tracking-wider uppercase transition-all"
+                        style={
+                          saisonState === opt
+                            ? {
+                                backgroundColor: `${saisonColor}22`,
+                                borderColor: saisonColor,
+                                color: saisonColor,
+                              }
+                            : {
+                                backgroundColor: 'var(--glass-bg)',
+                                borderColor: 'var(--glass-border)',
+                                color: 'var(--text-secondary)',
+                              }
+                        }
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Phasen-Anzeige (nur Sommer) */}
+                {saisonState === 'Sommer' && (
+                  <div className="popup-surface rounded-2xl p-4 space-y-3">
+                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                      PV-Überschuss · 3-Phasen WW
+                    </p>
+                    <PhaseIndicator phase={phase} />
+
+                    {/* WW-Ist / WW-Soll */}
+                    <div className="grid grid-cols-2 gap-3 mt-1">
+                      <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
+                        <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Ist</p>
+                        <p className="text-lg font-light" style={{ color: ACCENT }}>
+                          {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
+                        <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Soll</p>
+                        <p className="text-lg font-light" style={{ color: 'var(--text-primary)' }}>
+                          {wwSollState || '—'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Betriebsart */}
+                    {betriebsartState && (
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-2 w-2 flex-shrink-0 rounded-full"
+                          style={{
+                            backgroundColor: istWWZyklus ? '#4ade80' : 'var(--text-muted)',
+                          }}
+                        />
+                        <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                          {betriebsartState}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Winter Status */}
+                {saisonState === 'Winter' && (
+                  <div className="popup-surface rounded-2xl p-4 space-y-2">
+                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                      Status Winter
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
+                        <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Ist</p>
+                        <p className="text-lg font-light" style={{ color: ACCENT }}>
+                          {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
+                        <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Soll</p>
+                        <p className="text-lg font-light" style={{ color: 'var(--text-primary)' }}>
+                          {wwSollState || '—'}
+                        </p>
+                      </div>
+                    </div>
+                    {betriebsartState && (
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-2 w-2 flex-shrink-0 rounded-full"
+                          style={{ backgroundColor: kompressorAktiv ? '#4ade80' : 'var(--text-muted)' }}
+                        />
+                        <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                          {betriebsartState}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Phase B Details */}
+                {saisonState === 'Sommer' && (
+                  <div className="popup-surface rounded-2xl p-4 space-y-3">
+                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                      Phase B · Heizstab-Zyklen
+                    </p>
+
+                    {/* Zyklen Zähler */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex gap-1.5">
+                        {[1, 2, 3].map((n) => (
+                          <div
+                            key={n}
+                            className="h-3 w-8 rounded-full"
+                            style={{
+                              backgroundColor:
+                                n <= heizstabZyklenVal
+                                  ? '#ffb74d'
+                                  : 'var(--glass-border)',
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm font-medium" style={{ color: heizstabZyklenVal > 0 ? '#ffb74d' : 'var(--text-muted)' }}>
+                        {heizstabZyklenVal}/3 Zyklen
+                      </span>
+                      {phaseBActive && (
+                        <span
+                          className="ml-auto rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
+                          style={{
+                            backgroundColor: 'rgba(255,183,77,0.15)',
+                            borderColor: '#ffb74d',
+                            color: '#ffb74d',
+                          }}
+                        >
+                          Aktiv
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Heizstab-Select aktuell */}
+                    {heizstabSelectState && (
+                      <div className="flex items-center gap-2">
+                        <Zap
+                          className="h-3.5 w-3.5 flex-shrink-0"
+                          style={{ color: heizstabSelectState !== 'Aus' ? '#ef9a9a' : 'var(--text-muted)' }}
+                        />
+                        <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                          Heizstab: {heizstabSelectState}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* BOH-Schutz (Kompressor-Laufzeit) */}
+                {saisonState === 'Sommer' && (
+                  <div className="popup-surface rounded-2xl p-4 space-y-2">
+                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                      BOH-Schutz · Kompressor-Laufzeit
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="relative flex-1 h-2 rounded-full overflow-hidden"
+                        style={{ backgroundColor: 'var(--glass-border)' }}
+                      >
+                        <div
+                          className="absolute inset-y-0 left-0 rounded-full transition-all"
+                          style={{ width: `${bohPct}%`, backgroundColor: bohColor }}
+                        />
+                      </div>
+                      <span
+                        className="flex-shrink-0 text-[11px] font-medium tabular-nums"
+                        style={{ color: bohColor, minWidth: '80px', textAlign: 'right' }}
+                      >
+                        {kompressorLaufzeitMin.toFixed(0)} / {bohSchwelle} min
+                      </span>
+                    </div>
+                    {bohPct >= 75 && (
+                      <p className="text-[11px]" style={{ color: bohColor }}>
+                        {bohPct >= 100
+                          ? '⚠️ BOH-Schwelle erreicht – Heizstab-Schutz aktiv'
+                          : `Noch ~${(bohSchwelle - kompressorLaufzeitMin).toFixed(0)} min bis BOH-Eingriff`}
+                      </p>
+                    )}
+                    {!istWWZyklus && (
+                      <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                        Kein aktiver WW-Zyklus · Timer pausiert
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Schalt-Verlauf (WW-Soll) */}
+                <div className="popup-surface rounded-2xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setWwHistoryOpen((o) => !o)}
+                    className="flex w-full items-center justify-between p-4 text-left"
+                  >
+                    <p
+                      className="text-[10px] font-bold tracking-[0.2em] uppercase"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      WW-Soll Verlauf (48h)
+                    </p>
+                    <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                      {wwHistoryOpen ? '▲' : '▼'}
+                    </span>
+                  </button>
+                  {wwHistoryOpen && (
+                    <div
+                      className="border-t px-4 pb-4 pt-3 space-y-1"
+                      style={{ borderColor: 'var(--glass-border)' }}
+                    >
+                      {wwHistoryLoading ? (
+                        <div className="flex h-12 items-center justify-center">
+                          <div
+                            className="h-5 w-5 animate-spin rounded-full border-b-2 opacity-30"
+                            style={{ borderColor: ACCENT }}
+                          />
+                        </div>
+                      ) : wwHistory.length === 0 ? (
+                        <p
+                          className="py-2 text-center text-xs"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          Keine Daten
+                        </p>
+                      ) : (
+                        wwHistory.map((entry, i) => {
+                          const now = new Date();
+                          const isToday =
+                            entry.time.toDateString() === now.toDateString();
+                          const yesterday = new Date(now);
+                          yesterday.setDate(yesterday.getDate() - 1);
+                          const isYesterday =
+                            entry.time.toDateString() === yesterday.toDateString();
+                          const timeStr = isToday
+                            ? entry.time.toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })
+                            : isYesterday
+                            ? `gestern ${entry.time.toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}`
+                            : entry.time.toLocaleDateString([], {
+                                day: '2-digit',
+                                month: '2-digit',
+                              }) +
+                              ' ' +
+                              entry.time.toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              });
+
+                          const soll = parseFloat(
+                            String(entry.state).replace(' °C', '')
+                          );
+                          const dotColor =
+                            soll >= 65
+                              ? '#ef9a9a'
+                              : soll >= 54
+                              ? ACCENT
+                              : soll <= 50
+                              ? '#64b5f6'
+                              : 'var(--text-muted)';
+
+                          // Human-readable label for WW-Soll value
+                          const phaseLabel =
+                            soll >= 65
+                              ? 'Phase C'
+                              : soll >= 54
+                              ? 'Phase A'
+                              : soll === 50
+                              ? 'Phase B'
+                              : soll <= 48
+                              ? 'Standby / Abend'
+                              : entry.state;
+
+                          return (
+                            <div key={i} className="flex items-start gap-3 py-1.5">
+                              <div
+                                className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                                style={{ backgroundColor: dotColor }}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-baseline gap-2">
+                                  <span
+                                    className="text-[11px] font-semibold"
+                                    style={{ color: 'var(--text-primary)' }}
+                                  >
+                                    {entry.state}
+                                  </span>
+                                  <span
+                                    className="text-[10px]"
+                                    style={{ color: dotColor }}
+                                  >
+                                    {phaseLabel}
+                                  </span>
+                                </div>
+                              </div>
+                              <span
+                                className="flex-shrink-0 text-[10px] tabular-nums"
+                                style={{ color: 'var(--text-muted)' }}
+                              >
+                                {timeStr}
+                              </span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
+
+            {/* ── Tab: Hydraulik ── */}
+            {mainTab === 'hydraulik' && <HpsuHydraulicView entities={entities} />}
           </div>
         </>
       )}
