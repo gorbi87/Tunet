@@ -101,6 +101,8 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   const minusPreisAktiv = entities?.[WAERMEPUMPE_ENTITY_IDS.minusPreisBoolean]?.state === 'on';
   const octopusPreisVal = parseFloat(entities?.[WAERMEPUMPE_ENTITY_IDS.octopusPreis]?.state);
   const octopusPreisAktuell = Number.isFinite(octopusPreisVal) ? octopusPreisVal : null;
+  const heizstabSelectState = entities?.[WAERMEPUMPE_ENTITY_IDS.heizstabSelect]?.state;
+  const heizstabLaeuft = heizstabSelectState != null && heizstabSelectState !== 'Aus';
 
   if (settings.size === 'small') {
     return (
@@ -170,16 +172,34 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
               style={{ strokeWidth: 1.5 }}
             />
           </div>
-          <div
-            className={`flex items-center gap-1 rounded-full border ${isUltraCompact ? 'px-1.5 py-0.5' : 'px-3 py-1'}`}
-            style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
-          >
-            <span
-              className={`rounded-full ${isUltraCompact ? 'h-1.5 w-1.5' : 'h-2 w-2'} ${kompressorColor}`}
-            />
-            <span className={`font-bold uppercase text-[var(--text-secondary)] ${isUltraCompact ? 'text-[9px] tracking-wide' : 'text-xs tracking-widest'}`}>
-              {statusLabel}
-            </span>
+          <div className="flex items-center gap-1.5">
+            {(minusPreisAktiv || (octopusPreisAktuell !== null && octopusPreisAktuell < 0)) && (
+              <div
+                className={`flex items-center rounded-full border ${isUltraCompact ? 'px-1.5 py-0.5' : 'px-2 py-0.5'}`}
+                style={{
+                  backgroundColor: heizstabLaeuft ? 'rgba(74,222,128,0.12)' : 'rgba(251,191,36,0.10)',
+                  borderColor: heizstabLaeuft ? 'rgba(74,222,128,0.5)' : 'rgba(251,191,36,0.5)',
+                }}
+              >
+                <span
+                  className={`font-bold ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}
+                  style={{ color: heizstabLaeuft ? '#4ade80' : '#fbbf24' }}
+                >
+                  ⚡ {octopusPreisAktuell != null ? `${octopusPreisAktuell.toFixed(3)}` : '−'}
+                </span>
+              </div>
+            )}
+            <div
+              className={`flex items-center gap-1 rounded-full border ${isUltraCompact ? 'px-1.5 py-0.5' : 'px-3 py-1'}`}
+              style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
+            >
+              <span
+                className={`rounded-full ${isUltraCompact ? 'h-1.5 w-1.5' : 'h-2 w-2'} ${kompressorColor}`}
+              />
+              <span className={`font-bold uppercase text-[var(--text-secondary)] ${isUltraCompact ? 'text-[9px] tracking-wide' : 'text-xs tracking-widest'}`}>
+                {statusLabel}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -212,17 +232,6 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
             </div>
           )}
         </div>
-
-        {/* Minus-Preis Badge */}
-        {minusPreisAktiv && (
-          <div className={`flex items-center gap-1.5 rounded-full border ${isUltraCompact ? 'mt-1.5 px-2 py-0.5' : 'mt-2 px-2.5 py-1'}`}
-            style={{ backgroundColor: 'rgba(74,222,128,0.12)', borderColor: 'rgba(74,222,128,0.5)' }}
-          >
-            <span className={`font-bold tracking-widest uppercase text-[#4ade80] ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}>
-              ⚡ {octopusPreisAktuell != null ? `${octopusPreisAktuell.toFixed(4)} €/kWh` : 'Minus-Preis'} · Heizstab 9kW
-            </span>
-          </div>
-        )}
 
         {/* Bottom row: COP + Strom */}
         <div className={`flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'mt-2 pt-2' : 'mt-4 pt-3'}`}>

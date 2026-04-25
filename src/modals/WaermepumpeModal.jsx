@@ -218,6 +218,7 @@ export default function WaermepumpeModal({
   const wwSollState = str(WAERMEPUMPE_ENTITY_IDS.wwSoll);
   const betriebsartState = str(WAERMEPUMPE_ENTITY_IDS.betriebsart);
   const heizstabSelectState = str(WAERMEPUMPE_ENTITY_IDS.heizstabSelect);
+  const heizstabLaeuft = heizstabSelectState != null && heizstabSelectState !== 'Aus';
   const autoOn = automationState === 'on';
 
   // BOH Kompressor-Laufzeit
@@ -653,25 +654,35 @@ export default function WaermepumpeModal({
                 </div>
 
                 {/* Minus-Preis Banner */}
-                {minusPreisAktiv && (
+                {(minusPreisAktiv || (octopusPreisAktuell !== null && octopusPreisAktuell < 0)) && (
                   <div
                     className="rounded-2xl border p-4 space-y-1"
-                    style={{ backgroundColor: 'rgba(74,222,128,0.08)', borderColor: 'rgba(74,222,128,0.4)' }}
+                    style={{
+                      backgroundColor: heizstabLaeuft ? 'rgba(74,222,128,0.08)' : 'rgba(251,191,36,0.08)',
+                      borderColor: heizstabLaeuft ? 'rgba(74,222,128,0.4)' : 'rgba(251,191,36,0.4)',
+                    }}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: '#4ade80' }}>
+                      <span className="text-[10px] font-bold tracking-[0.2em] uppercase"
+                        style={{ color: heizstabLaeuft ? '#4ade80' : '#fbbf24' }}
+                      >
                         ⚡ Minus-Preis Modus aktiv
                       </span>
                       <span
                         className="ml-auto rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
-                        style={{ backgroundColor: 'rgba(74,222,128,0.15)', borderColor: '#4ade80', color: '#4ade80' }}
+                        style={{
+                          backgroundColor: heizstabLaeuft ? 'rgba(74,222,128,0.15)' : 'rgba(251,191,36,0.15)',
+                          borderColor: heizstabLaeuft ? '#4ade80' : '#fbbf24',
+                          color: heizstabLaeuft ? '#4ade80' : '#fbbf24',
+                        }}
                       >
-                        Heizstab 9kW
+                        {heizstabLaeuft ? `Heizstab ${heizstabSelectState}` : 'WW voll · pausiert'}
                       </span>
                     </div>
                     {octopusPreisAktuell != null && (
-                      <p className="text-sm font-light" style={{ color: '#4ade80' }}>
-                        {octopusPreisAktuell.toFixed(4)} €/kWh · Kompressor gesperrt
+                      <p className="text-sm font-light" style={{ color: heizstabLaeuft ? '#4ade80' : '#fbbf24' }}>
+                        {octopusPreisAktuell.toFixed(4)} €/kWh ·{' '}
+                        {heizstabLaeuft ? `Heizstab ${heizstabSelectState} aktiv` : 'WW voll – Heizstab pausiert'}
                       </p>
                     )}
                   </div>
