@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.41
+
+### Changed
+- Add release notes.
+
 ## 1.15.40
 
 ### Changed

@@ -210,6 +210,9 @@ export default function WaermepumpeModal({
   const saisonState = str(WAERMEPUMPE_ENTITY_IDS.saison);
   const automationState = str(WAERMEPUMPE_ENTITY_IDS.automationWp);
   const phaseBActive = e(WAERMEPUMPE_ENTITY_IDS.phaseBBoolean)?.state === 'on';
+  const minusPreisAktiv = e(WAERMEPUMPE_ENTITY_IDS.minusPreisBoolean)?.state === 'on';
+  const octopusPreisVal = parseFloat(e(WAERMEPUMPE_ENTITY_IDS.octopusPreis)?.state);
+  const octopusPreisAktuell = Number.isFinite(octopusPreisVal) ? octopusPreisVal : null;
   const heizstabZyklenVal = val(WAERMEPUMPE_ENTITY_IDS.heizstabZyklen) ?? 0;
   const kompressorStartStr = str(WAERMEPUMPE_ENTITY_IDS.kompressorStart);
   const wwSollState = str(WAERMEPUMPE_ENTITY_IDS.wwSoll);
@@ -649,6 +652,31 @@ export default function WaermepumpeModal({
                   </div>
                 </div>
 
+                {/* Minus-Preis Banner */}
+                {minusPreisAktiv && (
+                  <div
+                    className="rounded-2xl border p-4 space-y-1"
+                    style={{ backgroundColor: 'rgba(74,222,128,0.08)', borderColor: 'rgba(74,222,128,0.4)' }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: '#4ade80' }}>
+                        ⚡ Minus-Preis Modus aktiv
+                      </span>
+                      <span
+                        className="ml-auto rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
+                        style={{ backgroundColor: 'rgba(74,222,128,0.15)', borderColor: '#4ade80', color: '#4ade80' }}
+                      >
+                        Heizstab 9kW
+                      </span>
+                    </div>
+                    {octopusPreisAktuell != null && (
+                      <p className="text-sm font-light" style={{ color: '#4ade80' }}>
+                        {octopusPreisAktuell.toFixed(4)} €/kWh · Kompressor gesperrt
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Phasen-Anzeige (nur Sommer) */}
                 {saisonState === 'Sommer' && (
                   <div className="popup-surface rounded-2xl p-4 space-y-3">
@@ -902,6 +930,8 @@ export default function WaermepumpeModal({
                               ? 'Phase A'
                               : soll === 50
                               ? 'Phase B'
+                              : soll === 40
+                              ? 'Idle / Minus-Preis'
                               : soll <= 48
                               ? 'Standby / Abend'
                               : entry.state;

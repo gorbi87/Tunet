@@ -87,7 +87,7 @@ const GenericOctopusCard = memo(function GenericOctopusCard({
     }
   }
 
-  const priceDisplay = currentPrice > 0 ? currentPrice.toFixed(decimals) : '0';
+  const priceDisplay = Number.isFinite(currentPrice) ? currentPrice.toFixed(decimals) : '0';
 
   if (settings.size === 'small') {
     let indicatorClass = 'bg-[var(--accent-color)] ring-[var(--accent-color)]';

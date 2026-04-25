@@ -25,6 +25,8 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   heizstabZyklen: 'counter.wp_heizstab_zyklen_phase_b',
   kompressorStart: 'input_datetime.wp_kompressor_startzeit',
   letzterWechsel: 'input_datetime.wp_letzter_wechsel',
+  minusPreisBoolean: 'input_boolean.wp_minus_preis_modus_aktiv',
+  octopusPreis: 'sensor.octopus_a_c856c4a4_electricity_price',
 };
 
 const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
@@ -95,6 +97,10 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   const statusLabel = kompressorAktiv
     ? (betriebsartShort || translate('waermepumpe.kompressor.on'))
     : translate('waermepumpe.kompressor.off');
+
+  const minusPreisAktiv = entities?.[WAERMEPUMPE_ENTITY_IDS.minusPreisBoolean]?.state === 'on';
+  const octopusPreisVal = parseFloat(entities?.[WAERMEPUMPE_ENTITY_IDS.octopusPreis]?.state);
+  const octopusPreisAktuell = Number.isFinite(octopusPreisVal) ? octopusPreisVal : null;
 
   if (settings.size === 'small') {
     return (
@@ -206,6 +212,17 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
             </div>
           )}
         </div>
+
+        {/* Minus-Preis Badge */}
+        {minusPreisAktiv && (
+          <div className={`flex items-center gap-1.5 rounded-full border ${isUltraCompact ? 'mt-1.5 px-2 py-0.5' : 'mt-2 px-2.5 py-1'}`}
+            style={{ backgroundColor: 'rgba(74,222,128,0.12)', borderColor: 'rgba(74,222,128,0.5)' }}
+          >
+            <span className={`font-bold tracking-widest uppercase text-[#4ade80] ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}>
+              ⚡ {octopusPreisAktuell != null ? `${octopusPreisAktuell.toFixed(4)} €/kWh` : 'Minus-Preis'} · Heizstab 9kW
+            </span>
+          </div>
+        )}
 
         {/* Bottom row: COP + Strom */}
         <div className={`flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'mt-2 pt-2' : 'mt-4 pt-3'}`}>
