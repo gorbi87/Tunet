@@ -5,16 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.15.43] — 2026-04-26
+
+### Added
+- WP-Karte: Countdown-Anzeige "⚡ in ~Xh" wenn negativer Octopus-Strompreis innerhalb der nächsten 12h erwartet wird
+- WP-Modal: Banner mit Countdown und Hinweis "WW-Ziel: 48°C" wenn negativer Slot bevorsteht
+
 ## [1.15.42] — 2026-04-25
 
 ### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
+- Minus-Preis Modus: Heizstab 9kW läuft automatisch bei negativem Octopus-Strompreis, Kompressor bleibt aus
+- Vorausschauende Logik: WP heizt WW nur bis 48°C wenn negativer Preisslot in den nächsten 12h kommt
+- WP-Karte: Anzeige des aktuellen negativen Strompreises als grüne/gelbe Pill
+- WP-Modal: Banner für aktiven Minus-Preis Modus mit Heizstab-Status
 
 ### Fixed
-- Add release notes.
+- Octopus-Karte: Negative Strompreise werden jetzt korrekt angezeigt (vorher 0 €/kWh)
 
 
 ## [1.15.41] — 2026-04-25

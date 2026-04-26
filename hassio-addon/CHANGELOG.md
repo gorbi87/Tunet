@@ -1,9 +1,21 @@
 # Changelog
 
+## 1.15.43
+
+### Added
+- WP-Karte: Countdown "⚡ in ~Xh" wenn negativer Octopus-Strompreis in den nächsten 12h erwartet wird
+- WP-Modal: Banner mit Countdown und WW-Ziel 48°C Hinweis bei bevorstehendem negativem Slot
+
 ## 1.15.42
 
-### Changed
-- Add release notes.
+### Added
+- Minus-Preis Modus: Heizstab 9kW bei negativem Octopus-Preis, Kompressor bleibt aus
+- Vorausschauende Logik: WP begrenzt WW auf 48°C wenn negativer Slot innerhalb 12h kommt
+- WP-Karte: Minus-Preis Anzeige als Pill (grün = Heizstab aktiv, gelb = WW voll/pausiert)
+- WP-Modal: Banner für aktiven Minus-Preis Modus
+
+### Fixed
+- Octopus-Karte: Negative Preise werden korrekt angezeigt statt 0 €/kWh
 
 ## 1.15.41
 

@@ -104,6 +104,25 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   const heizstabSelectState = entities?.[WAERMEPUMPE_ENTITY_IDS.heizstabSelect]?.state;
   const heizstabLaeuft = heizstabSelectState != null && heizstabSelectState !== 'Aus';
 
+  // Find next upcoming negative price slot within 12h
+  const octopusRates = entities?.[WAERMEPUMPE_ENTITY_IDS.octopusPreis]?.attributes?.rates;
+  const minusPreisKommtInH = (() => {
+    if (!Array.isArray(octopusRates) || octopusPreisAktuell < 0) return null;
+    const nowTs = Date.now();
+    const lookaheadMs = 12 * 3600 * 1000;
+    let earliest = null;
+    for (const r of octopusRates) {
+      if (typeof r.value_inc_vat === 'number' && r.value_inc_vat < 0) {
+        const startTs = new Date(r.start).getTime();
+        if (startTs > nowTs && startTs < nowTs + lookaheadMs) {
+          if (earliest === null || startTs < earliest) earliest = startTs;
+        }
+      }
+    }
+    if (earliest === null) return null;
+    return Math.ceil((earliest - nowTs) / 3600000 * 10) / 10;
+  })();
+
   if (settings.size === 'small') {
     return (
       <div
@@ -186,6 +205,19 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
                   style={{ color: heizstabLaeuft ? '#4ade80' : '#fbbf24' }}
                 >
                   ⚡ {octopusPreisAktuell != null ? `${octopusPreisAktuell.toFixed(3)}` : '−'}
+                </span>
+              </div>
+            )}
+            {minusPreisKommtInH !== null && (
+              <div
+                className={`flex items-center rounded-full border ${isUltraCompact ? 'px-1.5 py-0.5' : 'px-2 py-0.5'}`}
+                style={{ backgroundColor: 'rgba(251,191,36,0.10)', borderColor: 'rgba(251,191,36,0.5)' }}
+              >
+                <span
+                  className={`font-bold ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}
+                  style={{ color: '#fbbf24' }}
+                >
+                  ⚡ in ~{minusPreisKommtInH}h
                 </span>
               </div>
             )}

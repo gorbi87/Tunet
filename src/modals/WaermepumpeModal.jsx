@@ -221,6 +221,25 @@ export default function WaermepumpeModal({
   const heizstabLaeuft = heizstabSelectState != null && heizstabSelectState !== 'Aus';
   const autoOn = automationState === 'on';
 
+  // Upcoming negative price within 12h
+  const octopusRatesModal = e(WAERMEPUMPE_ENTITY_IDS.octopusPreis)?.attributes?.rates;
+  const minusPreisKommtInH = (() => {
+    if (!Array.isArray(octopusRatesModal) || octopusPreisAktuell < 0) return null;
+    const nowTs = Date.now();
+    const lookaheadMs = 12 * 3600 * 1000;
+    let earliest = null;
+    for (const r of octopusRatesModal) {
+      if (typeof r.value_inc_vat === 'number' && r.value_inc_vat < 0) {
+        const startTs = new Date(r.start).getTime();
+        if (startTs > nowTs && startTs < nowTs + lookaheadMs) {
+          if (earliest === null || startTs < earliest) earliest = startTs;
+        }
+      }
+    }
+    if (earliest === null) return null;
+    return Math.ceil((earliest - nowTs) / 3600000 * 10) / 10;
+  })();
+
   // BOH Kompressor-Laufzeit
   let kompressorLaufzeitMin = 0;
   const istWWZyklus = betriebsartState === 'Warmwasserbereitung';
@@ -685,6 +704,29 @@ export default function WaermepumpeModal({
                         {heizstabLaeuft ? `Heizstab ${heizstabSelectState} aktiv` : 'WW voll – Heizstab pausiert'}
                       </p>
                     )}
+                  </div>
+                )}
+
+                {/* Minus-Preis kommt bald */}
+                {minusPreisKommtInH !== null && (
+                  <div
+                    className="rounded-2xl border p-4 space-y-1"
+                    style={{ backgroundColor: 'rgba(251,191,36,0.06)', borderColor: 'rgba(251,191,36,0.4)' }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: '#fbbf24' }}>
+                        ⚡ Minus-Preis in ~{minusPreisKommtInH}h
+                      </span>
+                      <span
+                        className="ml-auto rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
+                        style={{ backgroundColor: 'rgba(251,191,36,0.15)', borderColor: '#fbbf24', color: '#fbbf24' }}
+                      >
+                        WW-Ziel: 48°C
+                      </span>
+                    </div>
+                    <p className="text-sm font-light" style={{ color: '#fbbf24' }}>
+                      WP heizt nur bis 48°C mit PV – Heizstab 9kW startet beim negativen Slot.
+                    </p>
                   </div>
                 )}
 
