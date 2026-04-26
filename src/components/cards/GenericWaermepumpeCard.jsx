@@ -27,6 +27,8 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   letzterWechsel: 'input_datetime.wp_letzter_wechsel',
   minusPreisBoolean: 'input_boolean.wp_minus_preis_modus_aktiv',
   octopusPreis: 'sensor.octopus_a_c856c4a4_electricity_price',
+  leistungWw: 'number.daikin_heizung_leistung_ww',
+  bohWartezeit: 'number.daikin_heizung_wartezeit_boh',
 };
 
 const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
@@ -103,6 +105,11 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   const octopusPreisAktuell = Number.isFinite(octopusPreisVal) ? octopusPreisVal : null;
   const heizstabSelectState = entities?.[WAERMEPUMPE_ENTITY_IDS.heizstabSelect]?.state;
   const heizstabLaeuft = heizstabSelectState != null && heizstabSelectState !== 'Aus';
+  const isMinusPreisVisible = minusPreisAktiv || (octopusPreisAktuell !== null && octopusPreisAktuell < 0);
+  // BOH phase: minus-preis active, heizstab off, kompressor in WW → Daikin BOH has taken over
+  const isBohPhase = isMinusPreisVisible && !heizstabLaeuft && kompressorAktiv && betriebsart === 'Warmwasserbereitung';
+  // Target reached: minus-preis active, heizstab off, kompressor not in WW (or WW ≥ 64°C)
+  const isMinusPreisPause = isMinusPreisVisible && !heizstabLaeuft && !isBohPhase;
 
   // Find next upcoming negative price slot within 12h
   const octopusRates = entities?.[WAERMEPUMPE_ENTITY_IDS.octopusPreis]?.attributes?.rates;
@@ -192,19 +199,35 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
             />
           </div>
           <div className="flex items-center gap-1.5">
-            {(minusPreisAktiv || (octopusPreisAktuell !== null && octopusPreisAktuell < 0)) && (
+            {isMinusPreisVisible && (
               <div
                 className={`flex items-center rounded-full border ${isUltraCompact ? 'px-1.5 py-0.5' : 'px-2 py-0.5'}`}
                 style={{
-                  backgroundColor: heizstabLaeuft ? 'rgba(74,222,128,0.12)' : 'rgba(251,191,36,0.10)',
-                  borderColor: heizstabLaeuft ? 'rgba(74,222,128,0.5)' : 'rgba(251,191,36,0.5)',
+                  backgroundColor: heizstabLaeuft
+                    ? 'rgba(74,222,128,0.12)'
+                    : isBohPhase
+                    ? 'rgba(56,189,248,0.12)'
+                    : 'rgba(251,191,36,0.10)',
+                  borderColor: heizstabLaeuft
+                    ? 'rgba(74,222,128,0.5)'
+                    : isBohPhase
+                    ? 'rgba(56,189,248,0.5)'
+                    : 'rgba(251,191,36,0.5)',
                 }}
               >
                 <span
                   className={`font-bold ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}
-                  style={{ color: heizstabLaeuft ? '#4ade80' : '#fbbf24' }}
+                  style={{
+                    color: heizstabLaeuft ? '#4ade80' : isBohPhase ? '#38bdf8' : '#fbbf24',
+                  }}
                 >
-                  ⚡ {octopusPreisAktuell != null ? `${octopusPreisAktuell.toFixed(3)}` : '−'}
+                  {heizstabLaeuft
+                    ? `⚡ ${heizstabSelectState}`
+                    : isBohPhase
+                    ? '⚡ BOH'
+                    : isMinusPreisPause
+                    ? '⚡ voll'
+                    : `⚡ ${octopusPreisAktuell != null ? octopusPreisAktuell.toFixed(3) : '−'}`}
                 </span>
               </div>
             )}

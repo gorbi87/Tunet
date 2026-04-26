@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.15.44] — 2026-04-26
+
+### Added
+- WP-Modal: BOH-Ablauf-Sektion mit 3-Phasen-Timeline (Heizstab → Übergabe → BOH Daikin) und Fortschrittsbalken
+- WP-Modal: Minus-Preis-Banner zeigt jetzt WW-Soll, Leistung WW und BOH-Wartezeit direkt an
+- WP-Modal: Phasen-Anzeige und Phase-B-Details werden während Minus-Preis ausgeblendet (BOH-Ablauf ersetzt sie)
+- WP-Karte: Minus-Preis-Pill unterscheidet jetzt zwischen Heizstab (grün), BOH aktiv (blau) und WW voll (gelb)
+
+### Changed
+- WP-Modal: BOH-Wartezeit wird jetzt aus dem echten Entity-Wert gelesen statt hardcoded auf 95 min
+- WP-Modal: WW-Soll-Verlauf zeigt 65°C als "Minus-Preis / Phase C" und 48°C als "Minus-Preis kommt"
+
+### Fixed
+- Add release notes.
+
+
 ## [1.15.43] — 2026-04-26
 
 ### Added

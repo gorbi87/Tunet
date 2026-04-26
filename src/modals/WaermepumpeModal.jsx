@@ -219,6 +219,8 @@ export default function WaermepumpeModal({
   const betriebsartState = str(WAERMEPUMPE_ENTITY_IDS.betriebsart);
   const heizstabSelectState = str(WAERMEPUMPE_ENTITY_IDS.heizstabSelect);
   const heizstabLaeuft = heizstabSelectState != null && heizstabSelectState !== 'Aus';
+  const leistungWwVal = val(WAERMEPUMPE_ENTITY_IDS.leistungWw);
+  const bohWartezeitVal = val(WAERMEPUMPE_ENTITY_IDS.bohWartezeit) ?? 95;
   const autoOn = automationState === 'on';
 
   // Upcoming negative price within 12h
@@ -249,12 +251,20 @@ export default function WaermepumpeModal({
       kompressorLaufzeitMin = Math.max(0, (Date.now() - startTs) / 60000);
     }
   }
-  const bohWartezeit = 95; // from blueprint default
-  const bohPuffer = 15;
-  const bohSchwelle = bohWartezeit - bohPuffer;
+  // Blueprint re-triggers heizstab off at boh_wartezeit - 3 min so Daikin BOH takes over at boh_wartezeit
+  const bohSchwelle = bohWartezeitVal - 3;
   const bohPct = Math.min(100, (kompressorLaufzeitMin / bohSchwelle) * 100);
   const bohColor =
     bohPct >= 100 ? '#ef9a9a' : bohPct >= 75 ? '#ffb74d' : '#64b5f6';
+
+  // Minus-Preis BOH phase derivation
+  const bohAblaufPhase = (() => {
+    if (!minusPreisAktiv) return null;
+    if (!istWWZyklus || !kompressorAktiv) return 'waiting';
+    if (kompressorLaufzeitMin < bohSchwelle) return 'heizstab';
+    if (kompressorLaufzeitMin < bohWartezeitVal) return 'uebergabe';
+    return 'boh';
+  })();
 
   const phase = derivePhase(wwTemp, phaseBActive, wwSollState);
   const saisonColor = saisonState?.startsWith('Win') ? '#64b5f6' : '#ffb74d';
@@ -673,37 +683,139 @@ export default function WaermepumpeModal({
                 </div>
 
                 {/* Minus-Preis Banner */}
-                {(minusPreisAktiv || (octopusPreisAktuell !== null && octopusPreisAktuell < 0)) && (
-                  <div
-                    className="rounded-2xl border p-4 space-y-1"
-                    style={{
-                      backgroundColor: heizstabLaeuft ? 'rgba(74,222,128,0.08)' : 'rgba(251,191,36,0.08)',
-                      borderColor: heizstabLaeuft ? 'rgba(74,222,128,0.4)' : 'rgba(251,191,36,0.4)',
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold tracking-[0.2em] uppercase"
-                        style={{ color: heizstabLaeuft ? '#4ade80' : '#fbbf24' }}
-                      >
-                        ⚡ Minus-Preis Modus aktiv
-                      </span>
-                      <span
-                        className="ml-auto rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
-                        style={{
-                          backgroundColor: heizstabLaeuft ? 'rgba(74,222,128,0.15)' : 'rgba(251,191,36,0.15)',
-                          borderColor: heizstabLaeuft ? '#4ade80' : '#fbbf24',
-                          color: heizstabLaeuft ? '#4ade80' : '#fbbf24',
-                        }}
-                      >
-                        {heizstabLaeuft ? `Heizstab ${heizstabSelectState}` : 'WW voll · pausiert'}
-                      </span>
+                {(minusPreisAktiv || (octopusPreisAktuell !== null && octopusPreisAktuell < 0)) && (() => {
+                  const isBoh = bohAblaufPhase === 'boh' || bohAblaufPhase === 'uebergabe';
+                  const pillColor = heizstabLaeuft ? '#4ade80' : isBoh ? '#38bdf8' : '#fbbf24';
+                  const pillBg = heizstabLaeuft ? 'rgba(74,222,128,0.08)' : isBoh ? 'rgba(56,189,248,0.08)' : 'rgba(251,191,36,0.08)';
+                  const pillBorder = heizstabLaeuft ? 'rgba(74,222,128,0.4)' : isBoh ? 'rgba(56,189,248,0.4)' : 'rgba(251,191,36,0.4)';
+                  const pillLabel = heizstabLaeuft
+                    ? `Heizstab ${heizstabSelectState}`
+                    : isBoh
+                    ? 'BOH aktiv · Daikin intern'
+                    : bohAblaufPhase === 'waiting'
+                    ? 'Kompressor startet …'
+                    : 'WW voll · pausiert';
+                  return (
+                    <div className="rounded-2xl border p-4 space-y-2" style={{ backgroundColor: pillBg, borderColor: pillBorder }}>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: pillColor }}>
+                          ⚡ Minus-Preis Modus aktiv
+                        </span>
+                        <span
+                          className="ml-auto rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
+                          style={{ backgroundColor: `${pillColor}26`, borderColor: pillColor, color: pillColor }}
+                        >
+                          {pillLabel}
+                        </span>
+                      </div>
+                      {octopusPreisAktuell != null && (
+                        <p className="text-sm font-light" style={{ color: pillColor }}>
+                          {octopusPreisAktuell.toFixed(4)} €/kWh · WW-Soll {wwSollState} · Leistung WW {leistungWwVal ?? '—'} kW
+                        </p>
+                      )}
                     </div>
-                    {octopusPreisAktuell != null && (
-                      <p className="text-sm font-light" style={{ color: heizstabLaeuft ? '#4ade80' : '#fbbf24' }}>
-                        {octopusPreisAktuell.toFixed(4)} €/kWh ·{' '}
-                        {heizstabLaeuft ? `Heizstab ${heizstabSelectState} aktiv` : 'WW voll – Heizstab pausiert'}
+                  );
+                })()}
+
+                {/* Minus-Preis BOH-Ablauf Timeline */}
+                {minusPreisAktiv && (
+                  <div className="popup-surface rounded-2xl p-4 space-y-3">
+                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                      Minus-Preis · BOH-Ablauf
+                    </p>
+
+                    {/* Three-phase indicator */}
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { key: 'heizstab', label: 'Heizstab', sub: `0 – ${bohSchwelle.toFixed(0)} min`, color: '#4ade80' },
+                        { key: 'uebergabe', label: 'Übergabe', sub: `${bohSchwelle.toFixed(0)} – ${bohWartezeitVal} min`, color: '#fbbf24' },
+                        { key: 'boh', label: 'BOH Daikin', sub: `${bohWartezeitVal} min+`, color: '#38bdf8' },
+                      ].map(({ key, label, sub, color }) => {
+                        const isActive = bohAblaufPhase === key;
+                        const isDone =
+                          (key === 'heizstab' && (bohAblaufPhase === 'uebergabe' || bohAblaufPhase === 'boh')) ||
+                          (key === 'uebergabe' && bohAblaufPhase === 'boh');
+                        return (
+                          <div
+                            key={key}
+                            className="rounded-xl border p-2 text-center transition-all"
+                            style={
+                              isActive
+                                ? { backgroundColor: `${color}22`, borderColor: color }
+                                : isDone
+                                ? { backgroundColor: `${color}10`, borderColor: `${color}44` }
+                                : { backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }
+                            }
+                          >
+                            <p className="text-[11px] font-bold" style={{ color: isActive ? color : isDone ? `${color}99` : 'var(--text-muted)' }}>
+                              {label}
+                            </p>
+                            <p className="text-[9px] leading-tight mt-0.5" style={{ color: isActive ? color : 'var(--text-muted)' }}>
+                              {sub}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Progress bar: 0 → boh_wartezeit, marker at bohSchwelle */}
+                    {istWWZyklus && (
+                      <div className="space-y-1">
+                        <div className="relative h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--glass-border)' }}>
+                          {/* Progress fill */}
+                          <div
+                            className="absolute inset-y-0 left-0 rounded-full transition-all"
+                            style={{
+                              width: `${Math.min(100, (kompressorLaufzeitMin / bohWartezeitVal) * 100)}%`,
+                              backgroundColor:
+                                bohAblaufPhase === 'boh' ? '#38bdf8' :
+                                bohAblaufPhase === 'uebergabe' ? '#fbbf24' : '#4ade80',
+                            }}
+                          />
+                          {/* Marker at Übergabe threshold */}
+                          <div
+                            className="absolute inset-y-0 w-0.5"
+                            style={{
+                              left: `${(bohSchwelle / bohWartezeitVal) * 100}%`,
+                              backgroundColor: 'rgba(251,191,36,0.7)',
+                            }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-[9px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                          <span>{kompressorLaufzeitMin.toFixed(0)} min</span>
+                          <span>/ {bohWartezeitVal} min BOH-Wartezeit</span>
+                        </div>
+                      </div>
+                    )}
+                    {!istWWZyklus && (
+                      <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                        {bohAblaufPhase === 'waiting'
+                          ? 'Kompressor startet WW-Zyklus …'
+                          : 'WW-Zyklus abgeschlossen · Kompressor Standby'}
                       </p>
                     )}
+
+                    {/* Config summary */}
+                    <div className="flex gap-4 pt-1 border-t" style={{ borderColor: 'var(--glass-border)' }}>
+                      <div>
+                        <p className="text-[9px] font-bold tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>Leistung WW</p>
+                        <p className="text-sm font-light" style={{ color: leistungWwVal === 9 ? '#4ade80' : 'var(--text-primary)' }}>
+                          {leistungWwVal ?? '—'} kW
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-bold tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>BOH-Wartezeit</p>
+                        <p className="text-sm font-light" style={{ color: bohWartezeitVal <= 20 ? '#4ade80' : 'var(--text-primary)' }}>
+                          {bohWartezeitVal} min
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-bold tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>WW-Soll</p>
+                        <p className="text-sm font-light" style={{ color: '#38bdf8' }}>
+                          {wwSollState || '—'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -730,8 +842,8 @@ export default function WaermepumpeModal({
                   </div>
                 )}
 
-                {/* Phasen-Anzeige (nur Sommer) */}
-                {saisonState === 'Sommer' && (
+                {/* Phasen-Anzeige (nur Sommer, nicht während Minus-Preis) */}
+                {saisonState === 'Sommer' && !minusPreisAktiv && (
                   <div className="popup-surface rounded-2xl p-4 space-y-3">
                     <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
                       PV-Überschuss · 3-Phasen WW
@@ -806,7 +918,7 @@ export default function WaermepumpeModal({
                 )}
 
                 {/* Phase B Details */}
-                {saisonState === 'Sommer' && (
+                {saisonState === 'Sommer' && !minusPreisAktiv && (
                   <div className="popup-surface rounded-2xl p-4 space-y-3">
                     <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
                       Phase B · Heizstab-Zyklen
@@ -861,7 +973,7 @@ export default function WaermepumpeModal({
                 )}
 
                 {/* BOH-Schutz (Kompressor-Laufzeit) */}
-                {saisonState === 'Sommer' && (
+                {saisonState === 'Sommer' && !minusPreisAktiv && (
                   <div className="popup-surface rounded-2xl p-4 space-y-2">
                     <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
                       BOH-Schutz · Kompressor-Laufzeit
@@ -978,13 +1090,15 @@ export default function WaermepumpeModal({
                           // Human-readable label for WW-Soll value
                           const phaseLabel =
                             soll >= 65
-                              ? 'Phase C'
+                              ? 'Minus-Preis / Phase C'
                               : soll >= 54
                               ? 'Phase A'
                               : soll === 50
                               ? 'Phase B'
+                              : soll === 48
+                              ? 'Minus-Preis kommt'
                               : soll === 40
-                              ? 'Idle / Minus-Preis'
+                              ? 'Idle'
                               : soll <= 48
                               ? 'Standby / Abend'
                               : entry.state;
