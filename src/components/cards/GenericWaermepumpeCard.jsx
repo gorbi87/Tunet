@@ -3,7 +3,7 @@ import { Flame } from '../../icons';
 import { getIconComponent } from '../../icons';
 
 export const WAERMEPUMPE_ENTITY_IDS = {
-  kompressor: 'binary_sensor.warmepumpe_kompressor_aktiv',
+  kompressor: 'binary_sensor.daikin_heizung_status_kompressor',
   aussentemp: 'sensor.daikin_heizung_aussentemperatur',
   vorlauf: 'sensor.daikin_heizung_vorlauftemeratur_tv',
   ruecklauf: 'sensor.daikin_heizung_r_cklauftemperatur',

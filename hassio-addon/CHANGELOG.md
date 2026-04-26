@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.45
+
+### Fixed
+- WP-Karte: Kompressor-Status nutzt jetzt `binary_sensor.daikin_heizung_status_kompressor` statt Betriebsart (Betriebsart kann WW anzeigen obwohl Kompressor nicht läuft)
+
 ## 1.15.44
 
 ### Changed
