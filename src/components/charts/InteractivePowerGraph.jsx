@@ -78,6 +78,11 @@ export default function InteractivePowerGraph({ data, currentIndex, t, locale, l
   const pathData = getBezierPath(points);
   const areaData = `${pathData} L ${width},${chartBottom} L 0,${chartBottom} Z`;
   const currentPointData = points[currentIndex] || points[0];
+
+  const hasNegative = min < 0 && max > 0;
+  const zeroY = hasNegative
+    ? chartBottom - ((0 - min) / range) * chartHeight
+    : null;
   const hoverPointData = (hoverIndex !== null ? points[hoverIndex] : currentPointData) || points[0];
 
   const handleMouseMove = (e) => {
@@ -118,6 +123,18 @@ export default function InteractivePowerGraph({ data, currentIndex, t, locale, l
       <div className="relative h-60 w-full" onMouseLeave={() => setHoverIndex(null)}>
         <div className="pointer-events-none absolute top-0 left-0 flex h-full flex-col justify-between py-1 text-xs font-bold text-[var(--text-muted)]">
           <span>{max.toFixed(0)}</span>
+          {hasNegative && (
+            <span
+              className="absolute"
+              style={{
+                top: `${(zeroY / height) * 100}%`,
+                transform: 'translateY(-50%)',
+                color: 'rgba(255,255,255,0.5)',
+              }}
+            >
+              0
+            </span>
+          )}
           <span>{min.toFixed(0)}</span>
         </div>
         {/* "Now" indicator */}
@@ -159,6 +176,19 @@ export default function InteractivePowerGraph({ data, currentIndex, t, locale, l
             strokeLinecap="round"
             strokeLinejoin="round"
           />
+          {/* Zero line */}
+          {zeroY !== null && (
+            <line
+              x1={0}
+              y1={zeroY}
+              x2={width}
+              y2={zeroY}
+              stroke="rgba(255,255,255,0.35)"
+              strokeWidth="1.5"
+              strokeDasharray="6 4"
+            />
+          )}
+
           {/* Current time permanent indicator */}
           <line
             x1={currentPointData.x}
