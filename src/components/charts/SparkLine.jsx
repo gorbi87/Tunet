@@ -76,6 +76,13 @@ export default function SparkLine({
 
   const pathData = createBezierPath(points, 0.3);
   const areaData = `${pathData} L ${width},${chartBottom} L 0,${chartBottom} Z`;
+
+  // Zero line: only relevant when data spans positive and negative values
+  const hasNegative = min < 0 && max > 0;
+  const zeroY = hasNegative
+    ? chartBottom - ((0 - min) / range) * chartHeight
+    : null;
+
   const normalizedCurrentIndex =
     Number.isInteger(currentIndex) && currentIndex >= 0 && currentIndex < values.length
       ? currentIndex
@@ -120,18 +127,27 @@ export default function SparkLine({
           </defs>
 
           {barValues.map((value, index) => {
-            const intensity = (value - min) / range;
-            const barHeight = Math.max(8, intensity * chartHeight);
             const x = index * slotWidth + (slotWidth - barWidth) / 2;
-            const y = chartBottom - barHeight;
-            const isCurrent = index === activeBarIndex;
             const fill = getValueColor(value);
+            const isCurrent = index === activeBarIndex;
+
+            let barY, barHeight;
+            if (zeroY !== null) {
+              // Bars grow from zero: positive upward, negative downward
+              const pixelsPerUnit = chartHeight / range;
+              barHeight = Math.max(4, Math.abs(value) * pixelsPerUnit);
+              barY = value >= 0 ? zeroY - barHeight : zeroY;
+            } else {
+              const intensity = (value - min) / range;
+              barHeight = Math.max(8, intensity * chartHeight);
+              barY = chartBottom - barHeight;
+            }
 
             return (
               <g key={`bar-${index}`}>
                 <rect
                   x={x}
-                  y={y}
+                  y={barY}
                   width={barWidth}
                   height={barHeight}
                   rx={Math.min(barWidth / 2, 3)}
@@ -140,7 +156,7 @@ export default function SparkLine({
                 />
                 <rect
                   x={x}
-                  y={y}
+                  y={barY}
                   width={barWidth}
                   height={Math.min(barHeight, 18)}
                   rx={Math.min(barWidth / 2, 3)}
@@ -150,9 +166,9 @@ export default function SparkLine({
                 {isCurrent && (
                   <rect
                     x={Math.max(0, x - 1)}
-                    y={Math.max(0, y - 1)}
+                    y={Math.max(0, barY - 1)}
                     width={Math.min(width - x + 1, barWidth + 2)}
-                    height={Math.min(height - y + 1, barHeight + 2)}
+                    height={Math.min(height - barY + 1, barHeight + 2)}
                     rx={Math.min((barWidth + 2) / 2, 4)}
                     fill="none"
                     stroke={fill}
@@ -163,6 +179,19 @@ export default function SparkLine({
               </g>
             );
           })}
+
+          {/* Zero line */}
+          {zeroY !== null && (
+            <line
+              x1={0}
+              y1={zeroY}
+              x2={width}
+              y2={zeroY}
+              stroke="rgba(255,255,255,0.35)"
+              strokeWidth="1"
+              strokeDasharray="4 3"
+            />
+          )}
         </svg>
         {fade && (
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--glass-bg)] opacity-60" />
@@ -219,6 +248,19 @@ export default function SparkLine({
           strokeLinecap="round"
           strokeLinejoin="round"
         />
+
+        {/* Zero line */}
+        {zeroY !== null && (
+          <line
+            x1={0}
+            y1={zeroY}
+            x2={width}
+            y2={zeroY}
+            stroke="rgba(255,255,255,0.35)"
+            strokeWidth="1"
+            strokeDasharray="4 3"
+          />
+        )}
 
         {/* Current point marker */}
         <circle
