@@ -79,6 +79,12 @@ export default function InteractivePowerGraph({ data, currentIndex, t, locale, l
   const areaData = `${pathData} L ${width},${chartBottom} L 0,${chartBottom} Z`;
   const currentPointData = points[currentIndex] || points[0];
 
+  const fmtAxisLabel = (v) => {
+    const decimals = Math.abs(v) < 1 ? 2 : 0;
+    const n = parseFloat(v.toFixed(decimals));
+    return (n === 0 ? 0 : n).toString();
+  };
+
   const hasNegative = min < 0 && max > 0;
   const zeroY = hasNegative
     ? chartBottom - ((0 - min) / range) * chartHeight
@@ -122,7 +128,7 @@ export default function InteractivePowerGraph({ data, currentIndex, t, locale, l
       </div>
       <div className="relative h-60 w-full" onMouseLeave={() => setHoverIndex(null)}>
         <div className="pointer-events-none absolute top-0 left-0 flex h-full flex-col justify-between py-1 text-xs font-bold text-[var(--text-muted)]">
-          <span>{max.toFixed(0)}</span>
+          <span>{fmtAxisLabel(max)}</span>
           {hasNegative && (
             <span
               className="absolute"
@@ -135,7 +141,7 @@ export default function InteractivePowerGraph({ data, currentIndex, t, locale, l
               0
             </span>
           )}
-          <span>{min.toFixed(0)}</span>
+          <span>{fmtAxisLabel(min)}</span>
         </div>
         {/* "Now" indicator */}
         <div className="pointer-events-none absolute top-0 left-0 h-full" style={{ width: '100%' }}>
