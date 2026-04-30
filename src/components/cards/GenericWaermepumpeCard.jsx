@@ -29,6 +29,7 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   octopusPreis: 'sensor.octopus_a_c856c4a4_electricity_price',
   leistungWw: 'number.daikin_heizung_leistung_ww',
   bohWartezeit: 'number.daikin_heizung_wartezeit_boh',
+  phaseCTempSnapshot: 'input_number.wp_phase_c_ww_temp_letzte',
 };
 
 const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
@@ -101,6 +102,26 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
     : translate('waermepumpe.kompressor.off');
 
   const minusPreisAktiv = entities?.[WAERMEPUMPE_ENTITY_IDS.minusPreisBoolean]?.state === 'on';
+
+  // Phase-Erkennung für Fortschrittsbalken
+  const wwSollStr = entities?.[WAERMEPUMPE_ENTITY_IDS.wwSoll]?.state ?? '';
+  const wwSollNum = parseFloat(wwSollStr) || null;
+  const phaseBActive = entities?.[WAERMEPUMPE_ENTITY_IDS.phaseBBoolean]?.state === 'on';
+  const letzteWwTemp = parseFloat(entities?.[WAERMEPUMPE_ENTITY_IDS.phaseCTempSnapshot]?.state) || 0;
+
+  const isPhaseB = phaseBActive && !minusPreisAktiv;
+  const isPhaseC = !phaseBActive && !minusPreisAktiv && wwSollNum === 65 && wwTemp != null && wwTemp >= 55;
+  const isPhaseA = !phaseBActive && !isPhaseC && !minusPreisAktiv && wwSollNum != null && wwSollNum >= 52 && isWW;
+  const wwZyklusAktiv = isPhaseA || isPhaseB || isPhaseC;
+
+  const phaseColor = isPhaseC ? '#c084fc' : isPhaseB ? '#fb923c' : '#60a5fa';
+  const phaseName = isPhaseC ? 'C' : isPhaseB ? 'B' : 'A';
+  const phaseTarget = isPhaseC ? 65 : isPhaseB ? 55 : (wwSollNum || 54);
+  const phasePct = wwTemp != null && wwZyklusAktiv
+    ? Math.min(100, Math.max(0, (wwTemp - 40) / (phaseTarget - 40) * 100))
+    : null;
+  const tempDelta = isPhaseC && letzteWwTemp > 0 && wwTemp != null ? wwTemp - letzteWwTemp : null;
+
   const octopusPreisVal = parseFloat(entities?.[WAERMEPUMPE_ENTITY_IDS.octopusPreis]?.state);
   const octopusPreisAktuell = Number.isFinite(octopusPreisVal) ? octopusPreisVal : null;
   const heizstabSelectState = entities?.[WAERMEPUMPE_ENTITY_IDS.heizstabSelect]?.state;
@@ -287,6 +308,46 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
             </div>
           )}
         </div>
+
+        {/* Phase-Fortschrittsbalken (nur wenn WW-Zyklus aktiv, nicht ultraCompact) */}
+        {wwZyklusAktiv && phasePct != null && !isUltraCompact && (
+          <div className={isDenseMobile ? 'mt-3' : 'mt-4'}>
+            <div className="mb-1.5 flex items-center justify-between">
+              <span
+                className="text-[9px] font-bold tracking-widest uppercase"
+                style={{ color: phaseColor }}
+              >
+                Phase {phaseName}
+                {isPhaseC && !kompressorAktiv && ' · Daikin intern'}
+                {isPhaseC && kompressorAktiv && ' · Kompressor'}
+              </span>
+              {tempDelta != null && (
+                <span
+                  className="text-[9px] font-mono tabular-nums"
+                  style={{ color: tempDelta > 0.2 ? phaseColor : 'var(--text-muted)' }}
+                >
+                  {tempDelta > 0 ? '+' : ''}{tempDelta.toFixed(1)}°C
+                </span>
+              )}
+            </div>
+            <div
+              className="h-1 w-full overflow-hidden rounded-full"
+              style={{ backgroundColor: 'var(--glass-bg)' }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{ width: `${phasePct}%`, backgroundColor: phaseColor }}
+              />
+            </div>
+            <div
+              className="mt-1 flex justify-between"
+              style={{ fontSize: '9px', color: 'var(--text-muted)' }}
+            >
+              <span>{wwTemp?.toFixed(1)}°C</span>
+              <span style={{ color: phaseColor }}>→ {phaseTarget}°C</span>
+            </div>
+          </div>
+        )}
 
         {/* Bottom row: COP + Strom */}
         <div className={`flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'mt-2 pt-2' : 'mt-4 pt-3'}`}>

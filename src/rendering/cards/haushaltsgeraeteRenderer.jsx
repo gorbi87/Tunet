@@ -3,7 +3,7 @@ import { Icon as MdiIcon } from '@mdi/react';
 import { mdiWashingMachine, mdiDishwasher } from '@mdi/js';
 import { getSettings } from '../helpers';
 
-const ACTIVE_STATES = new Set(['run', 'pause', 'actionrequired', 'delayedstart', 'finished']);
+const ACTIVE_STATES = new Set(['run', 'pause', 'actionrequired', 'delayedstart']);
 
 const PROGRAM_LABELS = {
   // Waschmaschine

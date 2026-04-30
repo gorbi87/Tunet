@@ -221,6 +221,7 @@ export default function WaermepumpeModal({
   const heizstabLaeuft = heizstabSelectState != null && heizstabSelectState !== 'Aus';
   const leistungWwVal = val(WAERMEPUMPE_ENTITY_IDS.leistungWw);
   const bohWartezeitVal = val(WAERMEPUMPE_ENTITY_IDS.bohWartezeit) ?? 95;
+  const letzteWwTempVal = val(WAERMEPUMPE_ENTITY_IDS.phaseCTempSnapshot);
   const autoOn = automationState === 'on';
 
   // Upcoming negative price within 12h
@@ -967,6 +968,94 @@ export default function WaermepumpeModal({
                         <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
                           Heizstab: {heizstabSelectState}
                         </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Phase C Details */}
+                {saisonState === 'Sommer' && !minusPreisAktiv && phase === 'C' && (
+                  <div className="popup-surface rounded-2xl p-4 space-y-3">
+                    <p
+                      className="text-[10px] font-bold tracking-[0.2em] uppercase"
+                      style={{ color: '#c084fc' }}
+                    >
+                      Phase C · Daikin intern
+                    </p>
+
+                    {/* Fortschrittsbalken 55→65°C */}
+                    <div>
+                      <div className="mb-1.5 flex justify-between">
+                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                          Heizfortschritt
+                        </span>
+                        <span className="text-[10px] font-medium" style={{ color: '#c084fc' }}>
+                          {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'} → 65°C
+                        </span>
+                      </div>
+                      <div
+                        className="relative h-2 w-full overflow-hidden rounded-full"
+                        style={{ backgroundColor: 'var(--glass-border)' }}
+                      >
+                        <div
+                          className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+                          style={{
+                            width: `${Math.min(100, Math.max(0, ((wwTemp ?? 55) - 55) / 10 * 100))}%`,
+                            backgroundColor: '#c084fc',
+                          }}
+                        />
+                      </div>
+                      <div className="mt-1 flex justify-between" style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                        <span>55°C</span>
+                        <span>65°C</span>
+                      </div>
+                    </div>
+
+                    {/* Δ-Temperatur seit letztem 5-min-Check */}
+                    {letzteWwTempVal != null && letzteWwTempVal > 0 && wwTemp != null && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                            Letzte Messung
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-mono tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                              {letzteWwTempVal.toFixed(1)}°C
+                            </span>
+                            <span
+                              className="text-[11px] font-mono font-bold tabular-nums"
+                              style={{
+                                color: (wwTemp - letzteWwTempVal) > 0.3
+                                  ? '#4ade80'
+                                  : (wwTemp - letzteWwTempVal) > 0
+                                  ? '#fbbf24'
+                                  : 'var(--text-muted)',
+                              }}
+                            >
+                              {(wwTemp - letzteWwTempVal) >= 0 ? '+' : ''}
+                              {(wwTemp - letzteWwTempVal).toFixed(2)}°C
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="h-2 w-2 flex-shrink-0 rounded-full"
+                            style={{
+                              backgroundColor: (wwTemp - letzteWwTempVal) > 0.3
+                                ? '#4ade80'
+                                : (wwTemp - letzteWwTempVal) > 0
+                                ? '#fbbf24'
+                                : 'var(--text-muted)',
+                            }}
+                          />
+                          <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                            {(wwTemp - letzteWwTempVal) > 0.3
+                              ? 'Heizstab aktiv – Temperatur steigt'
+                              : (wwTemp - letzteWwTempVal) > 0
+                              ? 'Minimaler Anstieg – Plateau nähert sich'
+                              : 'Plateau erreicht – Abschalten bald'}
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
