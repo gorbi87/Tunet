@@ -173,7 +173,7 @@ export default function PageNavigation({
 }) {
   const { pagesConfig, persistConfig, pageSettings, headerSettings } = usePages();
   const { setShowAddPageModal } = useModalActions();
-  const showLabelsOnMobile = headerSettings?.showPagePillLabelsOnMobile ?? false;
+  const showLabelsOnMobile = headerSettings?.showPagePillLabelsOnMobile ?? true;
   const [dragOverId, setDragOverId] = useState(null);
   const [showManager, setShowManager] = useState(false);
   const pageOrder = pagesConfig?.pages || [];
