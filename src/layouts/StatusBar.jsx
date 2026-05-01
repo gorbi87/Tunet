@@ -1,7 +1,15 @@
-import { Edit2 } from '../icons';
+import { Edit2, Droplets } from '../icons';
 import StatusPill from '../components/cards/StatusPill';
 import { useHomeAssistant, useModalState, usePages } from '../contexts';
 import { isSonosMediaEntity } from '../utils';
+
+const BEREGNUNG_ZONES = [
+  { key: 'z1', name: 'Terrasse R', sensorId: 'binary_sensor.irrigation_unlimited_c1_z1' },
+  { key: 'z3', name: 'Terrasse L', sensorId: 'binary_sensor.irrigation_unlimited_c1_z3' },
+  { key: 'z2', name: 'Rasen',      sensorId: 'binary_sensor.irrigation_unlimited_c1_z2' },
+  { key: 'z4', name: 'Vorgarten R',sensorId: 'binary_sensor.irrigation_unlimited_c1_z4' },
+  { key: 'z5', name: 'Vorgarten L',sensorId: 'binary_sensor.irrigation_unlimited_c1_z5' },
+];
 
 /**
  * StatusBar component showing various status indicators
@@ -34,6 +42,7 @@ export default function StatusBar({
     setShowAlarmModal,
     setShowStatusPillsConfig,
     setShowEntityCountModal,
+    setShowBeregnungModal,
   } = useModalState();
 
   const getSonosEntities = () =>
@@ -98,7 +107,7 @@ export default function StatusBar({
 
   return (
     <div className="mt-0 flex w-full items-center justify-between font-sans">
-      <div className={`flex min-w-0 items-center ${isMobile ? 'gap-1.5 overflow-x-auto overflow-y-hidden scrollbar-hide' : 'flex-wrap gap-2.5'}`}>
+      <div className={`flex min-w-0 items-center ${isMobile ? 'gap-1.5 overflow-x-auto scrollbar-hide pt-2 -mt-2' : 'flex-wrap gap-2.5'}`}>
         {/* Edit button (only in edit mode) - at first position */}
         {editMode && (
           <button
@@ -112,6 +121,56 @@ export default function StatusBar({
             </span>
           </button>
         )}
+
+        {/* Beregnung-Pill: automatisch wenn mindestens eine Zone aktiv */}
+        {(() => {
+          const activeZones = BEREGNUNG_ZONES.filter(
+            (z) => entities?.[z.sensorId]?.state === 'on'
+          );
+          if (activeZones.length === 0) return null;
+          const label = activeZones.length === 1
+            ? activeZones[0].name
+            : `${activeZones.length} Zonen`;
+          return (
+            <button
+              key="beregnung-pill"
+              onClick={() => setShowBeregnungModal?.('beregnung')}
+              className={`relative flex items-center rounded-2xl transition-all hover:opacity-80 active:scale-95 animate-pulse ${isMobile ? 'h-8 w-8 p-1.5 justify-center' : 'h-9 px-2.5 gap-1.5'}`}
+              style={{ backgroundColor: 'rgba(52,211,153,0.12)' }}
+            >
+              <div
+                className={`rounded-xl ${isMobile ? 'p-1' : 'p-1.5'}`}
+                style={{ backgroundColor: 'rgba(52,211,153,0.2)' }}
+              >
+                <Droplets
+                  className={isMobile ? 'h-3 w-3' : 'h-4 w-4'}
+                  style={{ color: '#34d399', strokeWidth: 1.5 }}
+                />
+              </div>
+              {!isMobile && (
+                <div className="flex flex-col items-start">
+                  <span
+                    className="text-xs font-bold leading-tight text-left"
+                    style={{ color: '#34d399' }}
+                  >
+                    {label}
+                  </span>
+                  <span
+                    className="text-xs font-medium leading-tight text-left"
+                    style={{ color: 'rgba(52,211,153,0.7)' }}
+                  >
+                    Beregnung
+                  </span>
+                </div>
+              )}
+              {isMobile && activeZones.length > 1 && (
+                <div className="absolute -top-2 -right-2 h-[18px] min-w-[18px] text-[10px] z-10 flex items-center justify-center rounded-full bg-gray-600 px-1.5 font-bold text-white shadow-sm">
+                  {activeZones.length}
+                </div>
+              )}
+            </button>
+          );
+        })()}
 
         {/* Configurable status pills */}
         {statusPillsConfig
@@ -133,6 +192,7 @@ export default function StatusBar({
                   getA={getA}
                   t={t}
                   isMobile={isMobile}
+                  iconOnly={isMobile}
                   onClick={
                     pill.clickable !== false && alarmEntityId
                       ? () => setShowAlarmModal(alarmEntityId)
@@ -176,6 +236,7 @@ export default function StatusBar({
                   isMediaActive={isMediaActive}
                   t={t}
                   isMobile={isMobile}
+                  iconOnly={isMobile}
                   badge={
                     pill.showCount
                       ? pill.type === 'emby'
@@ -241,6 +302,7 @@ export default function StatusBar({
                   isMediaActive={isSonosActive}
                   t={t}
                   isMobile={isMobile}
+                  iconOnly={isMobile}
                   badge={pill.showCount && sonosPlayingCount > 0 ? sonosPlayingCount : undefined}
                   onClick={
                     pill.clickable
@@ -299,6 +361,7 @@ export default function StatusBar({
                   getA={getA}
                   t={t}
                   isMobile={isMobile}
+                  iconOnly={isMobile}
                 />
               ));
             }
@@ -315,6 +378,7 @@ export default function StatusBar({
                   getA={getA}
                   t={t}
                   isMobile={isMobile}
+                  iconOnly={isMobile}
                   onClick={entityIds.length > 0 ? () => setShowEntityCountModal({ entityIds, activeState, label: pill.label || '', singularLabel: pill.singularLabel || '' }) : undefined}
                 />
               );
@@ -329,6 +393,7 @@ export default function StatusBar({
                 getA={getA}
                 t={t}
                 isMobile={isMobile}
+                iconOnly={isMobile}
               />
             );
           })}

@@ -39,6 +39,7 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
   isMediaActive,
   badge,
   isMobile,
+  iconOnly = false,
 }) {
   const { unitsMode } = useConfig();
   const { haConfig } = useHomeAssistantMeta();
@@ -163,10 +164,9 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     const animated =
       pill.animated !== false &&
       (state === 'arming' || state === 'pending' || state === 'disarming');
-    const heightClass = isMobile ? 'h-8' : 'h-9';
-    const paddingClass = isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
+    const heightClass = iconOnly ? 'h-8 w-8' : isMobile ? 'h-8' : 'h-9';
+    const paddingClass = iconOnly ? 'p-1.5 justify-center' : isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
-    const textSize = isMobile ? 'text-[10px]' : 'text-xs';
 
     const Wrapper = onClick ? 'button' : 'div';
     const wrapperProps = onClick
@@ -198,22 +198,18 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
             />
           )}
         </div>
-        <div className="flex min-w-0 flex-col items-start">
-          <span
-            className={`${textSize} text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}
-            title={statusText}
-          >
-            {statusText}
-          </span>
-          {sublabelText && (
-            <span
-              className={`${textSize} text-left font-medium ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
-              title={sublabelText}
-            >
-              {sublabelText}
+        {!iconOnly && (
+          <div className="flex min-w-0 flex-col items-start">
+            <span className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`} title={statusText}>
+              {statusText}
             </span>
-          )}
-        </div>
+            {sublabelText && (
+              <span className={`text-xs text-left font-medium ${sublabelColor} ${textMaxWidthClass} block w-full truncate`} title={sublabelText}>
+                {sublabelText}
+              </span>
+            )}
+          </div>
+        )}
       </Wrapper>
     );
   }
@@ -354,11 +350,9 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
 
     const animated = pill.animated !== false && isPlaying;
 
-    // Mobile adjustments
-    const heightClass = isMobile ? 'h-8' : 'h-9';
-    const paddingClass = isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
+    const heightClass = iconOnly ? 'h-8 w-8' : isMobile ? 'h-8' : 'h-9';
+    const paddingClass = iconOnly ? 'p-1.5 justify-center' : isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
-    const textSize = isMobile ? 'text-[10px]' : 'text-xs';
 
     const Wrapper = pill.clickable && onClick ? 'button' : 'div';
     const wrapperProps =
@@ -373,9 +367,11 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
             style: { backgroundColor: bgColor },
           };
 
+    const countBadge = iconOnly && count > 1 ? count : badge;
+
     return (
       <Wrapper {...wrapperProps}>
-        {picture && pill.showCover !== false ? (
+        {picture && pill.showCover !== false && !iconOnly ? (
           <div
             className={`${isMobile ? 'h-6 w-6 rounded-lg' : 'h-8 w-8 rounded-xl'} relative flex-shrink-0 overflow-hidden bg-[var(--glass-bg)]`}
           >
@@ -394,29 +390,25 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
             <IconComponent className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
           </div>
         )}
-        <div className="flex min-w-0 flex-col items-start">
-          {displayLabel && (
-            <span
-              className={`${textSize} text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}
-              title={displayLabel}
-            >
-              {displayLabel}
-            </span>
-          )}
-          {sublabel && (
-            <span
-              className={`${textSize} text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
-              title={sublabel}
-            >
-              {sublabel}
-            </span>
-          )}
-        </div>
-        {badge > 0 && (
+        {!iconOnly && (
+          <div className="flex min-w-0 flex-col items-start">
+            {displayLabel && (
+              <span className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`} title={displayLabel}>
+                {displayLabel}
+              </span>
+            )}
+            {sublabel && (
+              <span className={`text-xs text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`} title={sublabel}>
+                {sublabel}
+              </span>
+            )}
+          </div>
+        )}
+        {countBadge > 0 && (
           <div
             className={`absolute -top-2 -right-2 ${isMobile ? 'h-[18px] min-w-[18px] text-[10px]' : 'h-[22px] min-w-[22px] text-xs'} z-10 flex items-center justify-center rounded-full border border-transparent bg-gray-600 px-1.5 font-bold text-white shadow-sm`}
           >
-            {badge}
+            {countBadge}
           </div>
         )}
       </Wrapper>
@@ -441,29 +433,35 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     const labelColor = resolveHeadingColorClass(pill.labelColor);
     const sublabelColor = pill.sublabelColor || 'text-[var(--text-muted)]';
     const IconComponent = pill.icon ? getIconComponent(pill.icon) || Activity : Activity;
-    const heightClass = isMobile ? 'h-8' : 'h-9';
-    const paddingClass = isMobile ? 'px-1.5 gap-1.5' : 'px-2.5 gap-2';
+    const heightClass = iconOnly ? 'h-8 w-8' : isMobile ? 'h-8' : 'h-9';
+    const paddingClass = iconOnly ? 'p-1.5 justify-center' : isMobile ? 'px-1.5 gap-1.5' : 'px-2.5 gap-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
-    const textSize = isMobile ? 'text-[10px]' : 'text-xs';
     const Wrapper = onClick ? 'button' : 'div';
     const wrapperProps = onClick
-      ? { onClick, className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95`, style: { backgroundColor: bgColor } }
-      : { className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl`, style: { backgroundColor: bgColor } };
+      ? { onClick, className: `relative flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95`, style: { backgroundColor: bgColor } }
+      : { className: `relative flex items-center ${heightClass} ${paddingClass} rounded-2xl`, style: { backgroundColor: bgColor } };
     return (
       <Wrapper {...wrapperProps}>
         <div className={`${iconPadding} rounded-xl ${iconColor}`} style={{ backgroundColor: iconBgColor }}>
           <IconComponent className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
         </div>
-        <div className="flex min-w-0 flex-col items-start">
-          <span className={`${textSize} text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}>
-            {displayLabel}
-          </span>
-          {pill.sublabel && (
-            <span className={`${textSize} text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}>
-              {pill.sublabel}
+        {!iconOnly && (
+          <div className="flex min-w-0 flex-col items-start">
+            <span className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}>
+              {displayLabel}
             </span>
-          )}
-        </div>
+            {pill.sublabel && (
+              <span className={`text-xs text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}>
+                {pill.sublabel}
+              </span>
+            )}
+          </div>
+        )}
+        {iconOnly && count > 1 && (
+          <div className="absolute -top-2 -right-2 h-[18px] min-w-[18px] text-[10px] z-10 flex items-center justify-center rounded-full bg-gray-600 px-1.5 font-bold text-white shadow-sm">
+            {count}
+          </div>
+        )}
       </Wrapper>
     );
   }
@@ -474,10 +472,9 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     const state = entity?.state;
     if (!bin || !state || !['Heute', 'Morgen', 'in 2 Tagen'].includes(state)) return null;
 
-    const heightClass = isMobile ? 'h-8' : 'h-9';
-    const paddingClass = isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
+    const heightClass = iconOnly ? 'h-8 w-8' : isMobile ? 'h-8' : 'h-9';
+    const paddingClass = iconOnly ? 'p-1.5 justify-center' : isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
-    const textSize = isMobile ? 'text-[10px]' : 'text-xs';
 
     return (
       <div
@@ -490,18 +487,16 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
         >
           <MdiIcon path={bin.mdiPath} size={isMobile ? 0.65 : 0.75} color={bin.color} />
         </div>
-        <div className="flex min-w-0 flex-col items-start">
-          <span
-            className={`${textSize} text-left leading-tight font-bold text-[var(--text-primary)] ${textMaxWidthClass} block w-full truncate`}
-          >
-            {bin.name}
-          </span>
-          <span
-            className={`${textSize} text-left font-medium text-[var(--text-muted)] ${textMaxWidthClass} block w-full truncate`}
-          >
-            {state}
-          </span>
-        </div>
+        {!iconOnly && (
+          <div className="flex min-w-0 flex-col items-start">
+            <span className={`text-xs text-left leading-tight font-bold text-[var(--text-primary)] ${textMaxWidthClass} block w-full truncate`}>
+              {bin.name}
+            </span>
+            <span className={`text-xs text-left font-medium text-[var(--text-muted)] ${textMaxWidthClass} block w-full truncate`}>
+              {state}
+            </span>
+          </div>
+        )}
       </div>
     );
   }
@@ -534,11 +529,9 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     pill.animated !== false &&
     (entity.state === 'on' || entity.state === 'playing' || pill.animateAlways);
 
-  // Mobile adjustments
-  const heightClass = isMobile ? 'h-8' : 'h-9';
-  const paddingClass = isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
+  const heightClass = iconOnly ? 'h-8 w-8' : isMobile ? 'h-8' : 'h-9';
+  const paddingClass = iconOnly ? 'p-1.5 justify-center' : isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
   const iconPadding = isMobile ? 'p-1' : 'p-1.5';
-  const textSize = isMobile ? 'text-[10px]' : 'text-xs';
 
   const Wrapper = onClick ? 'button' : 'div';
   const wrapperProps = onClick
@@ -560,22 +553,18 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
       >
         <IconComponent className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
       </div>
-      <div className="flex min-w-0 flex-col items-start">
-        <span
-          className={`${textSize} text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}
-          title={label}
-        >
-          {label}
-        </span>
-        {sublabel && (
-          <span
-            className={`${textSize} text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
-            title={sublabel}
-          >
-            {sublabel}
+      {!iconOnly && (
+        <div className="flex min-w-0 flex-col items-start">
+          <span className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`} title={label}>
+            {label}
           </span>
-        )}
-      </div>
+          {sublabel && (
+            <span className={`text-xs text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`} title={sublabel}>
+              {sublabel}
+            </span>
+          )}
+        </div>
+      )}
     </Wrapper>
   );
 });
