@@ -53,6 +53,11 @@ export function useDashboardStateCoordinator(deps) {
     setShowAlarmModal: deps.setShowAlarmModal,
     setShowCameraModal: deps.setShowCameraModal,
     setShowGo2rtcCameraModal: deps.setShowGo2rtcCameraModal,
+    setShowWaermepumpeModal: deps.setShowWaermepumpeModal,
+    setShowLuftungsanlageModal: deps.setShowLuftungsanlageModal,
+    setShowPvModal: deps.setShowPvModal,
+    setShowBeregnungModal: deps.setShowBeregnungModal,
+    setShowNavimowModal: deps.setShowNavimowModal,
   };
   const mediaActions = mediaModalActions || {
     setActiveMediaModal: deps.setActiveMediaModal,
@@ -84,6 +89,11 @@ export function useDashboardStateCoordinator(deps) {
     setShowAlarmModal,
     setShowCameraModal,
     setShowGo2rtcCameraModal,
+    setShowWaermepumpeModal,
+    setShowLuftungsanlageModal,
+    setShowPvModal,
+    setShowBeregnungModal,
+    setShowNavimowModal,
   } = entityActions;
 
   const {
@@ -123,6 +133,11 @@ export function useDashboardStateCoordinator(deps) {
       setActiveMediaGroupKey,
       setActiveMediaGroupIds,
       setActiveMediaSessionSensorIds,
+      setShowWaermepumpeModal,
+      setShowLuftungsanlageModal,
+      setShowPvModal,
+      setShowBeregnungModal,
+      setShowNavimowModal,
     }),
     [
       closeAllModals,
@@ -151,6 +166,11 @@ export function useDashboardStateCoordinator(deps) {
       setActiveMediaGroupKey,
       setActiveMediaGroupIds,
       setActiveMediaSessionSensorIds,
+      setShowWaermepumpeModal,
+      setShowLuftungsanlageModal,
+      setShowPvModal,
+      setShowBeregnungModal,
+      setShowNavimowModal,
     ]
   );
 

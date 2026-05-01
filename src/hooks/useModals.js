@@ -112,6 +112,11 @@ function buildModalActions(setModalValue, closeAllModals, hasOpenModal) {
     setShowWeatherModal: setters.setShowWeatherModal,
     setShowAlarmModal: setters.setShowAlarmModal,
     setShowAlarmActionModal: setters.setShowAlarmActionModal,
+    setShowWaermepumpeModal: setters.setShowWaermepumpeModal,
+    setShowLuftungsanlageModal: setters.setShowLuftungsanlageModal,
+    setShowPvModal: setters.setShowPvModal,
+    setShowBeregnungModal: setters.setShowBeregnungModal,
+    setShowNavimowModal: setters.setShowNavimowModal,
   };
 
   const mediaModalActions = {
