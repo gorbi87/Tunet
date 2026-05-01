@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.15.50] — 2026-05-01
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+
+## [1.15.49] — 2026-04-30
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+
+## [1.15.48] — 2026-04-30
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+
+## [1.15.47] — 2026-04-30
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+
 ## [1.15.46] — 2026-04-30
 
 ### Added

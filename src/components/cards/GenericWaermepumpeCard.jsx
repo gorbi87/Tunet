@@ -219,7 +219,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
               style={{ strokeWidth: 1.5 }}
             />
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className={`flex gap-1.5 ${isDenseMobile || isUltraCompact ? 'flex-col items-end gap-1' : 'flex-row items-center'}`}>
             {isMinusPreisVisible && (
               <div
                 className={`flex items-center rounded-full border ${isUltraCompact ? 'px-1.5 py-0.5' : 'px-2 py-0.5'}`}
@@ -237,7 +237,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
                 }}
               >
                 <span
-                  className={`font-bold ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}
+                  className={`whitespace-nowrap font-bold ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}
                   style={{
                     color: heizstabLaeuft ? '#4ade80' : isBohPhase ? '#38bdf8' : '#fbbf24',
                   }}
@@ -248,7 +248,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
                     ? '⚡ BOH'
                     : isMinusPreisPause
                     ? '⚡ voll'
-                    : `⚡ ${octopusPreisAktuell != null ? octopusPreisAktuell.toFixed(3) : '−'}`}
+                    : `⚡ ${octopusPreisAktuell != null ? octopusPreisAktuell.toFixed(2) : '−'}`}
                 </span>
               </div>
             )}
@@ -258,10 +258,10 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
                 style={{ backgroundColor: 'rgba(251,191,36,0.10)', borderColor: 'rgba(251,191,36,0.5)' }}
               >
                 <span
-                  className={`font-bold ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}
+                  className={`whitespace-nowrap font-bold ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}
                   style={{ color: '#fbbf24' }}
                 >
-                  ⚡ in ~{minusPreisKommtInH}h
+                  ⚡ ~{minusPreisKommtInH}h
                 </span>
               </div>
             )}
