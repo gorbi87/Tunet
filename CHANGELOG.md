@@ -512,6 +512,106 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add release notes.
 
 
+## [1.18.0] — 2026-04-30
+
+### Added
+- Added a Home Assistant Lock card with lock, unlock, and open/unlatch controls for `lock.*` entities (#148).
+
+### Changed
+- Registered Lock cards across add-card, edit, rendering, resize, visibility, and popup flows.
+
+### Fixed
+- Matched Home Assistant lock states including `open` and `opening`, and pass lock codes when a lock advertises `code_format`.
+- Retried settings-sync revision conflicts when the local device has unsynced changes, instead of replacing them with stale server data.
+
+
+## [1.17.0] — 2026-04-30
+
+### Added
+- Added Cards-only dashboard mode for tablet/kiosk setups, hiding the header, status pills, page navigation, Settings, Add, and Edit controls while keeping dashboard cards visible (#149).
+- To enable it, open Settings, go to Header, expand Visibility, and turn on **Show only cards**. To leave cards-only mode, press `Esc` on a keyboard or long-press an empty area of the dashboard.
+
+### Changed
+- Split specialized dashboard pages into lazy-loaded chunks so the main app bundle stays under the CI size gate.
+
+### Fixed
+- Kept critical recovery UI available in cards-only mode, including connection/auth warning surfaces, so users are not locked out of setup or troubleshooting.
+
+
+## [1.16.2] — 2026-04-24
+
+### Added
+- Small release preview for the refreshed Status Pills feature.
+- Adds new animation presets for Status Pills.
+
+<p>
+  <img src="public/release-assets/image.png" alt="Status Pills release preview" width="430" />
+</p>
+
+### Changed
+- Refined Status Pills with animation presets, expanded color choices, clearer icon-only naming, and more predictable manual heading behavior.
+- Reduced unnecessary profile/settings bootstrap work when profile prefetch is intentionally disabled.
+
+### Fixed
+- Kept Status Pills heading and subtitle visibility settings stable across reopen and reload, and committed pending condition values when saving.
+- Prevented newly added visible sensor and alarm pills from disappearing after save by requiring an entity selection before the pill can be saved.
+- Improved Home Assistant backend auth logging and Docker fallback URL handling for easier connection troubleshooting.
+
+## [1.16.1] — 2026-04-20
+
+### Added
+- No user-facing additions in this patch release.
+
+### Changed
+- Added PR reference for French locale support in release notes (#142).
+- Expanded i18n parity coverage to include French keys and placeholders.
+
+### Fixed
+- Fixed a runtime locale mapping gap where selecting `fr` still fell back to English.
+- Added missing French language options in Settings and Theme language dropdowns.
+
+
+## [1.16.0] — 2026-04-20
+
+### Added
+- Added a new `lawn_mower` card type with small and large layouts, plus start/pause/dock controls.
+- Added a dedicated mower popup with status, battery, zone, and quick actions.
+- Added French language support (`fr`) to the dashboard locale bundle (#142).
+
+### Changed
+- Expanded card/add-flow and rendering registry support for mower entities across card creation, popups, and orchestration wiring.
+- Improved Media/Sonos page UX with clearer empty states, better styling, and stronger action/accessibility labels.
+
+### Fixed
+- Restored profile/settings availability in more Docker environments by adding `host.containers.internal` as a backend Home Assistant fallback when localhost mapping is used.
+- Enabled small/large resize controls for mower cards in edit mode.
+
+
+## [1.15.4] — 2026-04-14
+
+### Added
+- Sensor card support for Home Assistant `select.*` and `input_select.*` entities, including option changes directly from the card or popup (#135).
+
+### Changed
+- Styled the sensor select dropdown to match the dashboard's glass dropdown controls across card and modal views.
+
+### Fixed
+- Kept long select-card names and dropdown controls inside the card bounds on compact layouts.
+- Prevented repeated history CORS noise and unnecessary profile/settings retry requests when interacting with sensor select popups.
+
+
+## [1.15.3] — 2026-04-11
+
+### Added
+- No user-facing additions in this patch release.
+
+### Changed
+- Updated Weather card icon CDN source to the maintained Meteocons repository path.
+
+### Fixed
+- Restored missing Weather card condition icons caused by a broken upstream `@master` CDN reference (#134).
+
+
 ## [1.15.2] — 2026-04-05
 
 ### Added

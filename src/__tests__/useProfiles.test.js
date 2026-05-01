@@ -35,6 +35,7 @@ vi.mock('../services/snapshot', () => ({
 
 import { fetchProfiles, createProfile, updateProfile } from '../services/profileApi';
 import { collectSnapshot, isValidSnapshot } from '../services/snapshot';
+import { useSettingsSync } from '../hooks/useSettingsSync';
 
 describe('useProfiles', () => {
   beforeEach(() => {
@@ -42,6 +43,19 @@ describe('useProfiles', () => {
     fetchProfiles.mockResolvedValue([]);
     collectSnapshot.mockReturnValue({ version: 1, layout: {}, appearance: {} });
     isValidSnapshot.mockReturnValue(true);
+  });
+
+  it('does not prefetch profiles when disabled', () => {
+    renderHook(() =>
+      useProfiles({ haUser: { id: 'user-1' }, contextSetters: {}, prefetchProfiles: false })
+    );
+
+    expect(fetchProfiles).not.toHaveBeenCalled();
+    expect(useSettingsSync).toHaveBeenCalledWith({
+      haUserId: 'user-1',
+      contextSettersRef: expect.objectContaining({ current: {} }),
+      autoBootstrap: false,
+    });
   });
 
   it('saveProfile sends validated snapshot payload and prepends saved profile', async () => {

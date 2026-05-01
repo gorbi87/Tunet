@@ -40,6 +40,8 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     setShowCostModal,
     setActiveVacuumId,
     setShowVacuumModal,
+    setActiveMowerId,
+    setShowMowerModal,
     setShowFanModal,
     setShowAndroidTVModal,
     setActiveCarModal,
@@ -93,8 +95,23 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     return true;
   }
 
+  if (cardId.startsWith('lawn_mower.')) {
+    closeAndOpen(() => {
+      setActiveMowerId?.(cardId);
+      setShowMowerModal?.(true);
+    });
+    return true;
+  }
+
   if (cardId.startsWith('fan.') || cardId.startsWith('fan_card_')) {
     closeAndOpen(() => setShowFanModal(cardId));
+    return true;
+  }
+
+  if (cardId.startsWith('lock_card_')) {
+    const lockId = typeof settings?.lockId === 'string' ? settings.lockId : null;
+    if (!lockId) return false;
+    closeAndOpen(() => setShowSensorInfoModal(lockId));
     return true;
   }
 

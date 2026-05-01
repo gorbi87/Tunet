@@ -21,7 +21,10 @@ import {
 const RESIZABLE_PREFIXES = [
   'light_',
   'light.',
+  'lock_card_',
+  'lock.',
   'vacuum.',
+  'lawn_mower.',
   'automation.',
   'climate_card_',
   'cost_card_',

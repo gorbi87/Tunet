@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import SensorCard from '../components/cards/SensorCard';
 
@@ -32,7 +32,7 @@ const baseProps = (overrides = {}) => ({
   controls: null,
   onControl: vi.fn(),
   onOpen: vi.fn(),
-  t: (key) => ({ 'common.on': 'On', 'common.off': 'Off' }[key] || key),
+  t: (key) => ({ 'common.on': 'On', 'common.off': 'Off' })[key] || key,
   ...overrides,
 });
 
@@ -77,14 +77,12 @@ describe('SensorCard', () => {
         {...baseProps({
           settings: { size: 'large' },
           t: (key) =>
-            (
-              {
-                'status.on': 'Enabled',
-                'status.off': 'Disabled',
-                'common.on': 'Turn on',
-                'common.off': 'Turn off',
-              }[key] || key
-            ),
+            ({
+              'status.on': 'Enabled',
+              'status.off': 'Disabled',
+              'common.on': 'Turn on',
+              'common.off': 'Turn off',
+            })[key] || key,
         })}
         isMobile
       />
@@ -162,5 +160,37 @@ describe('SensorCard', () => {
 
     expect(container.querySelector('svg[width="64"][height="64"]')).not.toBeNull();
     expect(screen.getByText('565.2').className).toContain('text-[1.3rem]');
+  });
+
+  it('uses the styled dropdown for select entities and triggers select_option without opening the card', () => {
+    const onControl = vi.fn();
+    const onOpen = vi.fn();
+
+    const { container } = render(
+      <SensorCard
+        {...baseProps({
+          entity: {
+            entity_id: 'select.hvac_mode',
+            state: 'Eco',
+            attributes: {
+              friendly_name: 'HVAC Mode',
+              options: ['Eco', 'Boost', 'Away'],
+            },
+          },
+          name: 'HVAC Mode',
+          onControl,
+          onOpen,
+          settings: { size: 'large' },
+        })}
+      />
+    );
+
+    expect(container.querySelector('select')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'sensor.select.label: Eco' }));
+    fireEvent.click(screen.getByRole('option', { name: 'Boost' }));
+
+    expect(onControl).toHaveBeenCalledWith('select_option', 'Boost');
+    expect(onOpen).not.toHaveBeenCalled();
   });
 });

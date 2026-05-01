@@ -211,6 +211,8 @@
  * @property {(newSettings: HeaderSettings) => void} updateHeaderSettings
  * @property {SectionSpacing} sectionSpacing
  * @property {(partial: Partial<SectionSpacing>) => void} updateSectionSpacing
+ * @property {boolean} cardsOnlyMode
+ * @property {(nextValue: boolean) => void} updateCardsOnlyMode
  * @property {(newSettings: CardSettingsMap) => void} persistCardSettings
  * @property {number} gridGapH
  * @property {(val: number) => void} setGridGapH
@@ -267,6 +269,8 @@
  * @property {(newConfig: PagesConfig) => void} persistConfig
  * @property {CardSettingsMap} cardSettings
  * @property {(newSettings: CardSettingsMap) => void} persistCardSettings
+ * @property {string[]} hiddenCards
+ * @property {(newHidden: string[]) => void} persistHiddenCards
  * @property {(cardId: string) => string} getCardSettingsKey
  * @property {(id: string, setting: string, value: unknown) => void} saveCardSetting
  * @property {(show: boolean) => void} setShowAddCardModal
@@ -327,6 +331,7 @@
  * @property {string | null} showPersonModal
  * @property {string | null} showAndroidTVModal
  * @property {string | null} showVacuumModal
+ * @property {string | null} showMowerModal
  * @property {string | null} showFanModal
  * @property {string | null} showSensorInfoModal
  * @property {string | null} showCalendarModal
@@ -360,6 +365,7 @@
  * @property {(value: string | null) => void} setShowPersonModal
  * @property {(value: string | null) => void} setShowAndroidTVModal
  * @property {(value: string | null) => void} setShowVacuumModal
+ * @property {(value: string | null) => void} setShowMowerModal
  * @property {(value: string | null) => void} setShowFanModal
  * @property {(value: string | null) => void} setShowSensorInfoModal
  * @property {(value: string | null) => void} setShowCalendarModal
@@ -393,6 +399,7 @@
  * @property {(value: string | null) => void} setShowPersonModal
  * @property {(value: string | null) => void} setShowAndroidTVModal
  * @property {(value: string | null) => void} setShowVacuumModal
+ * @property {(value: string | null) => void} setShowMowerModal
  * @property {(value: string | null) => void} setShowFanModal
  * @property {(value: string | null) => void} setShowSensorInfoModal
  * @property {(value: string | null) => void} setShowCalendarModal

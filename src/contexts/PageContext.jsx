@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { DEFAULT_PAGES_CONFIG } from '../config/defaults';
 import { MAX_GRID_COLUMNS, MIN_GRID_COLUMNS } from '../hooks/useResponsiveGrid';
 
@@ -52,11 +52,43 @@ const DEFAULT_SECTION_SPACING = {
   navToGrid: 24,
 };
 
+const CARDS_ONLY_MODE_KEY = 'tunet_cards_only_mode';
+
 const normalizeGridColumns = (value) => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return 4;
   return Math.max(MIN_GRID_COLUMNS, Math.min(Math.round(parsed), MAX_GRID_COLUMNS));
 };
+
+const coercePillBoolean = (value, fallback) => {
+  if (value === true || value === false) return value;
+  if (value === 'true' || value === '1' || value === 1) return true;
+  if (value === 'false' || value === '0' || value === 0) return false;
+  return fallback;
+};
+
+const coerceConditionEnabled = (value) => {
+  if (value === true || value === false) return value;
+  if (value === 'true' || value === '1' || value === 1) return true;
+  if (value === 'false' || value === '0' || value === 0) return false;
+  return undefined;
+};
+
+function normalizeStatusPillConfig(pill) {
+  if (!pill || typeof pill !== 'object') return pill;
+
+  return {
+    ...pill,
+    visible: coercePillBoolean(pill.visible, true),
+    clickable: coercePillBoolean(pill.clickable, false),
+    animated: coercePillBoolean(pill.animated, true),
+    showLabel: coercePillBoolean(pill.showLabel, true),
+    showSublabel: coercePillBoolean(pill.showSublabel, true),
+    showCover: coercePillBoolean(pill.showCover, true),
+    showCount: coercePillBoolean(pill.showCount, false),
+    conditionEnabled: coerceConditionEnabled(pill.conditionEnabled),
+  };
+}
 
 const ROOM_CARD_DEFAULTS = {
   showLightChip: true,
@@ -158,28 +190,35 @@ function loadStatusPillsConfig() {
 
   let modified = false;
   const next = parsed.map((pill) => {
-    if (!pill || typeof pill !== 'object' || pill.type !== 'sonos') return pill;
+    const normalizedPill = normalizeStatusPillConfig(pill);
+    if (normalizedPill !== pill) {
+      modified = true;
+    }
+
+    if (!normalizedPill || typeof normalizedPill !== 'object' || normalizedPill.type !== 'sonos') {
+      return normalizedPill;
+    }
 
     const updates = {};
-    if (typeof pill.clickable !== 'boolean') {
+    if (typeof normalizedPill.clickable !== 'boolean') {
       updates.clickable = true;
       modified = true;
     }
-    if (typeof pill.showCount !== 'boolean') {
+    if (typeof normalizedPill.showCount !== 'boolean') {
       updates.showCount = true;
       modified = true;
     }
-    if (typeof pill.sonosHeadingSource !== 'string') {
+    if (typeof normalizedPill.sonosHeadingSource !== 'string') {
       updates.sonosHeadingSource = 'song';
       modified = true;
     }
-    if (typeof pill.sonosSubheadingSource !== 'string') {
+    if (typeof normalizedPill.sonosSubheadingSource !== 'string') {
       updates.sonosSubheadingSource = 'artist_player';
       modified = true;
     }
 
-    if (Object.keys(updates).length === 0) return pill;
-    return { ...pill, ...updates };
+    if (Object.keys(updates).length === 0) return normalizedPill;
+    return { ...normalizedPill, ...updates };
   });
 
   if (modified) writeJSON('tunet_status_pills_config', next);
@@ -213,6 +252,7 @@ export const PageProvider = ({ children }) => {
   const [cardBorderRadius, setCardBorderRadius] = useState(16);
   const [headerScale, setHeaderScale] = useState(1);
   const [sectionSpacing, setSectionSpacing] = useState(DEFAULT_SECTION_SPACING);
+  const [cardsOnlyMode, setCardsOnlyMode] = useState(() => readBoolean(CARDS_ONLY_MODE_KEY, false));
   const [headerTitle, setHeaderTitle] = useState(
     () => localStorage.getItem('tunet_header_title') || ''
   );
@@ -298,19 +338,23 @@ export const PageProvider = ({ children }) => {
     writeJSON('tunet_pages_config', pagesConfig);
   }, [pagesConfig]);
 
-  const saveCustomName = (id, name) => {
-    const newNames = { ...customNames, [id]: name };
-    setCustomNames(newNames);
-    writeJSON('tunet_custom_names', newNames);
-  };
+  const saveCustomName = useCallback((id, name) => {
+    setCustomNames((prev) => {
+      const newNames = { ...prev, [id]: name };
+      writeJSON('tunet_custom_names', newNames);
+      return newNames;
+    });
+  }, []);
 
-  const saveCustomIcon = (id, iconName) => {
-    const newIcons = { ...customIcons, [id]: iconName };
-    setCustomIcons(newIcons);
-    writeJSON('tunet_custom_icons', newIcons);
-  };
+  const saveCustomIcon = useCallback((id, iconName) => {
+    setCustomIcons((prev) => {
+      const newIcons = { ...prev, [id]: iconName };
+      writeJSON('tunet_custom_icons', newIcons);
+      return newIcons;
+    });
+  }, []);
 
-  const saveCardSetting = (id, setting, value) => {
+  const saveCardSetting = useCallback((id, setting, value) => {
     setCardSettings((prev) => {
       const newSettings = {
         ...prev,
@@ -319,9 +363,9 @@ export const PageProvider = ({ children }) => {
       writeJSON('tunet_card_settings', newSettings);
       return newSettings;
     });
-  };
+  }, []);
 
-  const savePageSetting = (id, setting, value) => {
+  const savePageSetting = useCallback((id, setting, value) => {
     setPageSettings((prev) => {
       const newSettings = {
         ...prev,
@@ -330,59 +374,73 @@ export const PageProvider = ({ children }) => {
       writeJSON('tunet_page_settings', newSettings);
       return newSettings;
     });
-  };
+  }, []);
 
-  const persistPageSettings = (newSettings) => {
+  const persistPageSettings = useCallback((newSettings) => {
     setPageSettings(newSettings);
     writeJSON('tunet_page_settings', newSettings);
-  };
+  }, []);
 
-  const persistCustomNames = (newNames) => {
+  const persistCustomNames = useCallback((newNames) => {
     setCustomNames(newNames);
     writeJSON('tunet_custom_names', newNames);
-  };
+  }, []);
 
-  const persistCustomIcons = (newIcons) => {
+  const persistCustomIcons = useCallback((newIcons) => {
     setCustomIcons(newIcons);
     writeJSON('tunet_custom_icons', newIcons);
-  };
+  }, []);
 
-  const persistHiddenCards = (newHidden) => {
+  const persistHiddenCards = useCallback((newHidden) => {
     setHiddenCards(newHidden);
     writeJSON('tunet_hidden_cards', newHidden);
-  };
+  }, []);
 
-  const toggleCardVisibility = (cardId) => {
-    const newHidden = hiddenCards.includes(cardId)
-      ? hiddenCards.filter((id) => id !== cardId)
-      : [...hiddenCards, cardId];
-    setHiddenCards(newHidden);
-    writeJSON('tunet_hidden_cards', newHidden);
-  };
+  const toggleCardVisibility = useCallback((cardId) => {
+    setHiddenCards((prev) => {
+      const newHidden = prev.includes(cardId)
+        ? prev.filter((id) => id !== cardId)
+        : [...prev, cardId];
+      writeJSON('tunet_hidden_cards', newHidden);
+      return newHidden;
+    });
+  }, []);
 
-  const updateHeaderScale = (newScale) => {
+  const updateHeaderScale = useCallback((newScale) => {
     setHeaderScale(newScale);
     try {
       localStorage.setItem('tunet_header_scale', String(newScale));
     } catch (error) {
       console.error('Failed to save header scale:', error);
     }
-  };
+  }, []);
 
-  const updateHeaderTitle = (newTitle) => {
+  const updateHeaderTitle = useCallback((newTitle) => {
     setHeaderTitle(newTitle);
     try {
       localStorage.setItem('tunet_header_title', newTitle);
     } catch (error) {
       console.error('Failed to save header title:', error);
     }
-  };
+  }, []);
 
-  const updateSectionSpacing = (partial) => {
-    const nextSpacing = { ...sectionSpacing, ...partial };
-    setSectionSpacing(nextSpacing);
-    writeJSON('tunet_section_spacing', nextSpacing);
-  };
+  const updateSectionSpacing = useCallback((partial) => {
+    setSectionSpacing((prev) => {
+      const nextSpacing = { ...prev, ...partial };
+      writeJSON('tunet_section_spacing', nextSpacing);
+      return nextSpacing;
+    });
+  }, []);
+
+  const updateCardsOnlyMode = useCallback((nextValue) => {
+    const enabled = Boolean(nextValue);
+    setCardsOnlyMode(enabled);
+    try {
+      localStorage.setItem(CARDS_ONLY_MODE_KEY, enabled ? '1' : '0');
+    } catch (error) {
+      console.error('Failed to save cards-only mode:', error);
+    }
+  }, []);
 
   const [headerSettings, setHeaderSettings] = useState(() => {
     const saved = readJSON('tunet_header_settings');
@@ -392,25 +450,80 @@ export const PageProvider = ({ children }) => {
     };
   });
 
-  const updateHeaderSettings = (newSettings) => {
+  const updateHeaderSettings = useCallback((newSettings) => {
     setHeaderSettings(newSettings);
     writeJSON('tunet_header_settings', newSettings);
-  };
+  }, []);
 
   const [statusPillsConfig, setStatusPillsConfig] = useState(loadStatusPillsConfig);
 
-  const saveStatusPillsConfig = (newConfig) => {
-    setStatusPillsConfig(newConfig);
-    writeJSON('tunet_status_pills_config', newConfig);
-  };
+  const saveStatusPillsConfig = useCallback((newConfig) => {
+    const normalized = Array.isArray(newConfig)
+      ? newConfig.map((pill) => normalizeStatusPillConfig(pill))
+      : [];
+    setStatusPillsConfig(normalized);
+    writeJSON('tunet_status_pills_config', normalized);
+  }, []);
 
-  const persistConfig = (newConfig) => {
+  const persistConfig = useCallback((newConfig) => {
     setPagesConfig(newConfig);
     writeJSON('tunet_pages_config', newConfig);
-  };
+  }, []);
+
+  const persistCardSettings = useCallback((newSettings) => {
+    setCardSettings(newSettings);
+    writeJSON('tunet_card_settings', newSettings);
+  }, []);
+
+  const setGridColumnsPersisted = useCallback((val) => {
+    const next = normalizeGridColumns(val);
+    setGridColumns(next);
+    try {
+      localStorage.setItem('tunet_grid_columns', String(next));
+    } catch (error) {
+      console.error('Failed to save grid columns:', error);
+    }
+  }, []);
+
+  const setDynamicGridColumnsPersisted = useCallback((val) => {
+    const next = Boolean(val);
+    setDynamicGridColumns(next);
+    try {
+      localStorage.setItem('tunet_grid_columns_dynamic', next ? '1' : '0');
+    } catch (error) {
+      console.error('Failed to save dynamic grid columns setting:', error);
+    }
+  }, []);
+
+  const setGridGapHPersisted = useCallback((val) => {
+    setGridGapH(val);
+    try {
+      localStorage.setItem('tunet_grid_gap_h', String(val));
+    } catch (error) {
+      console.error('Failed to save grid gap h:', error);
+    }
+  }, []);
+
+  const setGridGapVPersisted = useCallback((val) => {
+    setGridGapV(val);
+    try {
+      localStorage.setItem('tunet_grid_gap_v', String(val));
+    } catch (error) {
+      console.error('Failed to save grid gap v:', error);
+    }
+  }, []);
+
+  const setCardBorderRadiusPersisted = useCallback((val) => {
+    setCardBorderRadius(val);
+    try {
+      localStorage.setItem('tunet_card_border_radius', String(val));
+    } catch (error) {
+      console.error('Failed to save card border radius:', error);
+    }
+  }, []);
 
   /** @type {PageContextValue} */
-  const value = {
+  const value = useMemo(() => ({
     pagesConfig,
     setPagesConfig,
     persistConfig,
@@ -431,25 +544,9 @@ export const PageProvider = ({ children }) => {
     persistHiddenCards,
     savePageSetting,
     gridColumns,
-    setGridColumns: (val) => {
-      const next = normalizeGridColumns(val);
-      setGridColumns(next);
-      try {
-        localStorage.setItem('tunet_grid_columns', String(next));
-      } catch (error) {
-        console.error('Failed to save grid columns:', error);
-      }
-    },
+    setGridColumns: setGridColumnsPersisted,
     dynamicGridColumns,
-    setDynamicGridColumns: (val) => {
-      const next = Boolean(val);
-      setDynamicGridColumns(next);
-      try {
-        localStorage.setItem('tunet_grid_columns_dynamic', next ? '1' : '0');
-      } catch (error) {
-        console.error('Failed to save dynamic grid columns setting:', error);
-      }
-    },
+    setDynamicGridColumns: setDynamicGridColumnsPersisted,
     headerScale,
     updateHeaderScale,
     headerTitle,
@@ -458,40 +555,58 @@ export const PageProvider = ({ children }) => {
     updateHeaderSettings,
     sectionSpacing,
     updateSectionSpacing,
-    persistCardSettings: (newSettings) => {
-      setCardSettings(newSettings);
-      writeJSON('tunet_card_settings', newSettings);
-    },
+    cardsOnlyMode,
+    updateCardsOnlyMode,
+    persistCardSettings,
     gridGapH,
-    setGridGapH: (val) => {
-      setGridGapH(val);
-      try {
-        localStorage.setItem('tunet_grid_gap_h', String(val));
-      } catch (error) {
-        console.error('Failed to save grid gap h:', error);
-      }
-    },
+    setGridGapH: setGridGapHPersisted,
     gridGapV,
-    setGridGapV: (val) => {
-      setGridGapV(val);
-      try {
-        localStorage.setItem('tunet_grid_gap_v', String(val));
-      } catch (error) {
-        console.error('Failed to save grid gap v:', error);
-      }
-    },
+    setGridGapV: setGridGapVPersisted,
     statusPillsConfig,
     saveStatusPillsConfig,
     cardBorderRadius,
-    setCardBorderRadius: (val) => {
-      setCardBorderRadius(val);
-      try {
-        localStorage.setItem('tunet_card_border_radius', String(val));
-      } catch (error) {
-        console.error('Failed to save card border radius:', error);
-      }
-    },
-  };
+    setCardBorderRadius: setCardBorderRadiusPersisted,
+  }), [
+    pagesConfig,
+    persistConfig,
+    cardSettings,
+    saveCardSetting,
+    customNames,
+    saveCustomName,
+    customIcons,
+    saveCustomIcon,
+    hiddenCards,
+    toggleCardVisibility,
+    pageSettings,
+    persistPageSettings,
+    persistCustomNames,
+    persistCustomIcons,
+    persistHiddenCards,
+    savePageSetting,
+    gridColumns,
+    setGridColumnsPersisted,
+    dynamicGridColumns,
+    setDynamicGridColumnsPersisted,
+    headerScale,
+    updateHeaderScale,
+    headerTitle,
+    updateHeaderTitle,
+    headerSettings,
+    updateHeaderSettings,
+    sectionSpacing,
+    updateSectionSpacing,
+    cardsOnlyMode,
+    updateCardsOnlyMode,
+    persistCardSettings,
+    gridGapH,
+    setGridGapHPersisted,
+    gridGapV,
+    setGridGapVPersisted,
+    statusPillsConfig,
+    saveStatusPillsConfig,
+    cardBorderRadius,
+    setCardBorderRadiusPersisted,
+  ]);
 
   return <PageContext.Provider value={value}>{children}</PageContext.Provider>;
 };

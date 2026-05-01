@@ -22,6 +22,7 @@ const SensorModal = lazy(() => import('../../modals/SensorModal'));
 const TodoModal = lazy(() => import('../../modals/TodoModal'));
 const RoomModal = lazy(() => import('../../modals/RoomModal'));
 const VacuumModal = lazy(() => import('../../modals/VacuumModal'));
+const MowerModal = lazy(() => import('../../modals/MowerModal'));
 const WaermepumpeModal = lazy(() => import('../../modals/WaermepumpeModal'));
 const LuftungsanlageModal = lazy(() => import('../../modals/LuftungsanlageModal'));
 const PvModal = lazy(() => import('../../modals/PvModal'));
@@ -50,6 +51,8 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     setShowAndroidTVModal,
     showVacuumModal,
     setShowVacuumModal,
+    showMowerModal,
+    setShowMowerModal,
     showFanModal,
     setShowFanModal,
     showSensorInfoModal,
@@ -74,6 +77,8 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     setShowWeatherModal,
     activeVacuumId,
     setActiveVacuumId,
+    activeMowerId,
+    setActiveMowerId,
     showWaermepumpeModal,
     setShowWaermepumpeModal,
     showLuftungsanlageModal,
@@ -247,6 +252,23 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
               />
             );
           })()}
+        </ModalSuspense>
+      )}
+
+      {showMowerModal && activeMowerId && entities[activeMowerId] && (
+        <ModalSuspense>
+          <MowerModal
+            show={showMowerModal}
+            onClose={() => {
+              setShowMowerModal(false);
+              setActiveMowerId(null);
+            }}
+            entities={entities}
+            callService={callService}
+            getA={getA}
+            t={t}
+            mowerId={activeMowerId}
+          />
         </ModalSuspense>
       )}
 
@@ -497,6 +519,7 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
             haToken={
               config.authMethod === 'oauth' ? authRef?.current?.accessToken || '' : config.token
             }
+            callService={callService}
             t={t}
           />
         </ModalSuspense>

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { en, nb, nn, sv, de, zh, DEFAULT_LANGUAGE, normalizeLanguage } from './i18n';
+import { en, nb, nn, sv, de, zh, fr, DEFAULT_LANGUAGE, normalizeLanguage } from './i18n';
 import { LayoutGrid } from './icons';
 
 import { DashboardLayout } from './layouts';
@@ -14,9 +14,12 @@ import {
   useConfig,
   useAppUiStateContext,
   useHomeAssistant,
+  useModalActions,
+  useModalSelector,
   useModalState,
   usePages,
 } from './contexts';
+import ModalManager from './rendering/ModalManager';
 
 import {
   useSmartTheme,
@@ -43,7 +46,7 @@ import {
   requestTokensFromOtherTabs,
   subscribeToOAuthTokenChanges,
 } from './services/oauthStorage';
-import { scheduleLikelyModalPrefetch } from './utils/prefetchModals';
+import { scheduleLikelyModalPrefetch, scheduleModalPrefetch } from './utils/prefetchModals';
 
 /** @typedef {import('./types/dashboard').AppContentProps} AppContentProps */
 
@@ -120,13 +123,15 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     updateHeaderSettings,
     sectionSpacing,
     updateSectionSpacing,
+    cardsOnlyMode,
+    updateCardsOnlyMode,
     persistCardSettings,
     statusPillsConfig,
     saveStatusPillsConfig,
   } = usePages();
 
   const { entities, entitiesLoaded, connected, conn, activeUrl, authRef } = useHomeAssistant();
-  const translations = useMemo(() => ({ en, nb, nn, sv, de, zh }), []);
+  const translations = useMemo(() => ({ en, nb, nn, sv, de, zh, fr }), []);
   const appFontFamilyMap = useMemo(
     () => ({
       sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
@@ -158,65 +163,21 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
   const resolvedHeaderTitle = headerTitle || t('page.home');
 
   // Modal state management
-  const modals = useModalState();
+  const modalActions = useModalActions();
   const {
-    entityModalActions: groupedEntityModalActions,
-    mediaModalActions: groupedMediaModalActions,
-    managementModalActions: groupedManagementModalActions,
-    activeMediaModal,
-    activeMediaId,
-    showAddCardModal,
-    showConfigModal,
-    showAddPageModal,
+    entityModalActions,
+    mediaModalActions,
+    managementModalActions,
     hasOpenModal,
     closeAllModals,
-  } = modals;
+  } = modalActions;
+  const activeMediaModal = useModalSelector((state) => state.activeMediaModal);
+  const activeMediaId = useModalSelector((state) => state.activeMediaId);
+  const showAddCardModal = useModalSelector((state) => state.showAddCardModal);
+  const showConfigModal = useModalSelector((state) => state.showConfigModal);
+  const showAddPageModal = useModalSelector((state) => state.showAddPageModal);
 
-  const entityModalActions = groupedEntityModalActions || {
-    setShowNordpoolModal: modals.setShowNordpoolModal,
-    setShowCostModal: modals.setShowCostModal,
-    setActiveClimateEntityModal: modals.setActiveClimateEntityModal,
-    setShowLightModal: modals.setShowLightModal,
-    setActiveCarModal: modals.setActiveCarModal,
-    setShowPersonModal: modals.setShowPersonModal,
-    setShowAndroidTVModal: modals.setShowAndroidTVModal,
-    setShowVacuumModal: modals.setShowVacuumModal,
-    setShowFanModal: modals.setShowFanModal,
-    setShowSensorInfoModal: modals.setShowSensorInfoModal,
-    setShowCalendarModal: modals.setShowCalendarModal,
-    setShowTodoModal: modals.setShowTodoModal,
-    setShowRoomModal: modals.setShowRoomModal,
-    setShowCoverModal: modals.setShowCoverModal,
-    setShowCameraModal: modals.setShowCameraModal,
-    setShowGo2rtcCameraModal: modals.setShowGo2rtcCameraModal,
-    setShowBeregnungModal: modals.setShowBeregnungModal,
-    setShowNavimowModal: modals.setShowNavimowModal,
-    setShowWeatherModal: modals.setShowWeatherModal,
-    setShowAlarmModal: modals.setShowAlarmModal,
-    setShowAlarmActionModal: modals.setShowAlarmActionModal,
-    setShowSecurityLockModal: modals.setShowSecurityLockModal,
-    setShowSecurityContactsModal: modals.setShowSecurityContactsModal,
-  };
-  const mediaModalActions = groupedMediaModalActions || {
-    setActiveMediaModal: modals.setActiveMediaModal,
-    setActiveMediaGroupKey: modals.setActiveMediaGroupKey,
-    setActiveMediaGroupIds: modals.setActiveMediaGroupIds,
-    setActiveMediaSessionSensorIds: modals.setActiveMediaSessionSensorIds,
-    setActiveMediaId: modals.setActiveMediaId,
-  };
-  const managementModalActions = groupedManagementModalActions || {
-    setShowAddCardModal: modals.setShowAddCardModal,
-    setShowConfigModal: modals.setShowConfigModal,
-    setShowAddPageModal: modals.setShowAddPageModal,
-    setShowHeaderEditModal: modals.setShowHeaderEditModal,
-    setShowEditCardModal: modals.setShowEditCardModal,
-    setShowStatusPillsConfig: modals.setShowStatusPillsConfig,
-  };
-
-  const {
-    setShowPersonModal,
-    setShowAlarmActionModal,
-  } = entityModalActions;
+  const { setShowPersonModal, setShowAlarmActionModal } = entityModalActions;
   const { setActiveMediaId } = mediaModalActions;
   const {
     setShowAddCardModal,
@@ -229,6 +190,8 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
   const {
     activeVacuumId,
     setActiveVacuumId,
+    activeMowerId,
+    setActiveMowerId,
     showThemeSidebar,
     setShowThemeSidebar,
     showLayoutSidebar,
@@ -238,6 +201,28 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     editMode,
     setEditMode,
   } = useAppUiStateContext();
+
+  useEffect(() => {
+    if (!cardsOnlyMode || !editMode) return;
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new window.CustomEvent('tunet:edit-done'));
+    }
+    setEditMode(false);
+  }, [cardsOnlyMode, editMode, setEditMode]);
+
+  useEffect(() => {
+    if (!editMode) return undefined;
+    return scheduleModalPrefetch([
+      'editCard',
+      'addCard',
+      'statusPills',
+      'themeSidebar',
+      'layoutSidebar',
+      'headerSidebar',
+    ]);
+  }, [editMode]);
+
+  const visibleEditMode = cardsOnlyMode ? false : editMode;
 
   const { activePage, setActivePage } = usePageRouting();
 
@@ -395,7 +380,7 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
         key={id}
         id={id}
         entities={entities}
-        editMode={editMode}
+        editMode={visibleEditMode}
         customNames={customNames}
         customIcons={customIcons}
         cardSettings={cardSettings}
@@ -419,7 +404,7 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     ),
     [
       entities,
-      editMode,
+      visibleEditMode,
       customNames,
       customIcons,
       cardSettings,
@@ -442,7 +427,7 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     activePage,
     cardSettings,
     getCardSettingsKey,
-    editMode,
+    editMode: visibleEditMode,
     modalActions: popupModalActions,
     enabled: hasEnabledPopupTriggers,
   });
@@ -494,6 +479,8 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     persistConfig,
     cardSettings,
     persistCardSettings,
+    hiddenCards,
+    persistHiddenCards,
     getCardSettingsKey,
     saveCardSetting,
     setShowAddCardModal,
@@ -527,7 +514,7 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
   });
 
   const { renderCard, gridLayout, draggingId, touchPath } = useCardRendering({
-    editMode,
+    editMode: visibleEditMode,
     pagesConfig,
     setPagesConfig,
     persistConfig,
@@ -560,6 +547,7 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     entityModalActions,
     mediaModalActions,
     setActiveVacuumId,
+    setActiveMowerId,
     setShowAlarmActionModal,
     setShowEditCardModal: guardedSetShowEditCardModal,
     setEditCardSettingsKey,
@@ -575,7 +563,6 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     dashboardGridCards,
     dashboardGridActions,
     modalManagerCore,
-    modalManagerState,
     modalManagerAppearance,
     modalManagerLayout,
     modalManagerOnboarding,
@@ -587,7 +574,7 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     activePage,
     pagesConfig,
     pageSettings,
-    editMode,
+    editMode: visibleEditMode,
     isMediaPage,
     isSonosPage,
     isLightsPage,
@@ -625,9 +612,10 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     t,
     language,
     setLanguage,
-    modals,
     activeVacuumId,
     setActiveVacuumId,
+    activeMowerId,
+    setActiveMowerId,
     showThemeSidebar,
     setShowThemeSidebar,
     showLayoutSidebar,
@@ -670,6 +658,8 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     setCardBorderRadius,
     sectionSpacing,
     updateSectionSpacing,
+    cardsOnlyMode,
+    updateCardsOnlyMode,
     headerTitle,
     headerScale,
     headerSettings,
@@ -761,64 +751,138 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     saveStatusPillsConfig,
   });
 
+  const appUiModalState = useMemo(
+    () => ({
+      activeVacuumId,
+      setActiveVacuumId,
+      activeMowerId,
+      setActiveMowerId,
+      showThemeSidebar,
+      setShowThemeSidebar,
+      showLayoutSidebar,
+      setShowLayoutSidebar,
+      editCardSettingsKey,
+      setEditCardSettingsKey,
+      configTab,
+      setConfigTab,
+    }),
+    [
+      activeVacuumId,
+      setActiveVacuumId,
+      activeMowerId,
+      setActiveMowerId,
+      showThemeSidebar,
+      setShowThemeSidebar,
+      showLayoutSidebar,
+      setShowLayoutSidebar,
+      editCardSettingsKey,
+      setEditCardSettingsKey,
+      configTab,
+      setConfigTab,
+    ]
+  );
+
   return (
-    <DashboardLayout
-      resolvedAppFontFamily={resolvedAppFontFamily}
-      editMode={editMode}
-      draggingId={draggingId}
-      touchPath={touchPath}
-      isMobile={isMobile}
-      gridColCount={gridColCount}
-      dynamicGridColumns={dynamicGridColumns}
-      isCompactCards={isCompactCards}
-      now={now}
-      resolvedHeaderTitle={resolvedHeaderTitle}
-      headerScale={headerScale}
-      headerSettings={headerSettings}
-      setShowHeaderEditModal={setShowHeaderEditModal}
-      t={t}
-      sectionSpacing={sectionSpacing}
-      pagesConfig={pagesConfig}
-      personStatus={personStatus}
-      requestSettingsAccess={requestSettingsAccess}
-      setAddCardTargetPage={setAddCardTargetPage}
-      setShowAddCardModal={setShowAddCardModal}
-      setConfigTab={setConfigTab}
-      isSonosActive={isSonosActive}
-      isMediaActive={isMediaActive}
-      getA={getA}
-      getEntityImageUrl={getEntityImageUrl}
-      pages={pages}
-      activePage={activePage}
-      setActivePage={setActivePage}
-      setEditingPage={setEditingPage}
-      guardedSetEditMode={guardedSetEditMode}
-      guardedSetShowAddCardModal={guardedSetShowAddCardModal}
-      guardedSetShowConfigModal={guardedSetShowConfigModal}
-      guardedSetShowThemeSidebar={guardedSetShowThemeSidebar}
-      guardedSetShowLayoutSidebar={guardedSetShowLayoutSidebar}
-      guardedSetShowHeaderEditModal={guardedSetShowHeaderEditModal}
-      connected={connected}
-      updateCount={updateCount}
-      dashboardGridPage={dashboardGridPage}
-      dashboardGridMedia={dashboardGridMedia}
-      dashboardGridGrid={dashboardGridGrid}
-      dashboardGridCards={dashboardGridCards}
-      dashboardGridActions={dashboardGridActions}
-      modalManagerCore={modalManagerCore}
-      modalManagerState={modalManagerState}
-      modalManagerAppearance={modalManagerAppearance}
-      modalManagerLayout={modalManagerLayout}
-      modalManagerOnboarding={modalManagerOnboarding}
-      modalManagerPageManagement={modalManagerPageManagement}
-      modalManagerEntityHelpers={modalManagerEntityHelpers}
-      modalManagerAddCard={modalManagerAddCard}
-      modalManagerCardConfig={modalManagerCardConfig}
+    <>
+      <DashboardLayout
+        resolvedAppFontFamily={resolvedAppFontFamily}
+        editMode={visibleEditMode}
+        draggingId={draggingId}
+        touchPath={touchPath}
+        isMobile={isMobile}
+        gridColCount={gridColCount}
+        dynamicGridColumns={dynamicGridColumns}
+        isCompactCards={isCompactCards}
+        now={now}
+        resolvedHeaderTitle={resolvedHeaderTitle}
+        headerScale={headerScale}
+        headerSettings={headerSettings}
+        setShowHeaderEditModal={setShowHeaderEditModal}
+        t={t}
+        sectionSpacing={sectionSpacing}
+        cardsOnlyMode={cardsOnlyMode}
+        updateCardsOnlyMode={updateCardsOnlyMode}
+        pagesConfig={pagesConfig}
+        personStatus={personStatus}
+        requestSettingsAccess={requestSettingsAccess}
+        setAddCardTargetPage={setAddCardTargetPage}
+        setShowAddCardModal={setShowAddCardModal}
+        setConfigTab={setConfigTab}
+        isSonosActive={isSonosActive}
+        isMediaActive={isMediaActive}
+        getA={getA}
+        getEntityImageUrl={getEntityImageUrl}
+        pages={pages}
+        activePage={activePage}
+        setActivePage={setActivePage}
+        setEditingPage={setEditingPage}
+        guardedSetEditMode={guardedSetEditMode}
+        guardedSetShowAddCardModal={guardedSetShowAddCardModal}
+        guardedSetShowConfigModal={guardedSetShowConfigModal}
+        guardedSetShowThemeSidebar={guardedSetShowThemeSidebar}
+        guardedSetShowLayoutSidebar={guardedSetShowLayoutSidebar}
+        guardedSetShowHeaderEditModal={guardedSetShowHeaderEditModal}
+        connected={connected}
+        updateCount={updateCount}
+        dashboardGridPage={dashboardGridPage}
+        dashboardGridMedia={dashboardGridMedia}
+        dashboardGridGrid={dashboardGridGrid}
+        dashboardGridCards={dashboardGridCards}
+        dashboardGridActions={dashboardGridActions}
+        showPinLockModal={showPinLockModal}
+        closePinLockModal={closePinLockModal}
+        handlePinSubmit={handlePinSubmit}
+        pinLockError={pinLockError}
+      />
+      <ModalHost
+        core={modalManagerCore}
+        appUiState={appUiModalState}
+        appearance={modalManagerAppearance}
+        layout={modalManagerLayout}
+        onboarding={modalManagerOnboarding}
+        pageManagement={modalManagerPageManagement}
+        entityHelpers={modalManagerEntityHelpers}
+        addCard={modalManagerAddCard}
+        cardConfig={modalManagerCardConfig}
+        mediaTick={mediaTick}
+      />
+    </>
+  );
+}
+
+function ModalHost({
+  core,
+  appUiState,
+  appearance,
+  layout,
+  onboarding,
+  pageManagement,
+  entityHelpers,
+  addCard,
+  cardConfig,
+  mediaTick,
+}) {
+  const modalState = useModalState();
+  const combinedModalState = useMemo(
+    () => ({
+      ...modalState,
+      ...appUiState,
+    }),
+    [modalState, appUiState]
+  );
+
+  return (
+    <ModalManager
+      core={core}
+      modalState={combinedModalState}
+      appearance={appearance}
+      layout={layout}
+      onboarding={onboarding}
+      pageManagement={pageManagement}
+      entityHelpers={entityHelpers}
+      addCard={addCard}
+      cardConfig={cardConfig}
       mediaTick={mediaTick}
-      showPinLockModal={showPinLockModal}
-      closePinLockModal={closePinLockModal}
-      handlePinSubmit={handlePinSubmit}
-      pinLockError={pinLockError}
     />
   );
 }

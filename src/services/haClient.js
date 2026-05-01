@@ -50,6 +50,18 @@ export async function getHistory(
   return Array.isArray(historyData) ? historyData : [];
 }
 
+export function canUseHistoryRest(baseUrl, currentOrigin = globalThis?.window?.location?.origin) {
+  if (!baseUrl) return false;
+  if (!currentOrigin) return true;
+
+  try {
+    const targetUrl = new URL(baseUrl, currentOrigin);
+    return targetUrl.origin === currentOrigin;
+  } catch {
+    return false;
+  }
+}
+
 export async function getHistoryRest(
   baseUrl,
   token,
@@ -321,7 +333,10 @@ export async function getRelatedEntityIds(conn, sourceEntityId, options = {}) {
 
   const sourceDeviceId = source.device_id || null;
   const sourceConfigEntries = new Set(
-    [source.config_entry_id, ...(Array.isArray(source.config_entry_ids) ? source.config_entry_ids : [])].filter(Boolean)
+    [
+      source.config_entry_id,
+      ...(Array.isArray(source.config_entry_ids) ? source.config_entry_ids : []),
+    ].filter(Boolean)
   );
 
   const related = entityReg.filter((entry) => {
@@ -334,7 +349,8 @@ export async function getRelatedEntityIds(conn, sourceEntityId, options = {}) {
       ...(Array.isArray(entry.config_entry_ids) ? entry.config_entry_ids : []),
     ].filter(Boolean);
     const sameConfigEntry =
-      sourceConfigEntries.size > 0 && entryConfigIds.some((configId) => sourceConfigEntries.has(configId));
+      sourceConfigEntries.size > 0 &&
+      entryConfigIds.some((configId) => sourceConfigEntries.has(configId));
 
     if (!sameDevice && !sameConfigEntry) return false;
 

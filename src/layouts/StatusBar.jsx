@@ -1,6 +1,6 @@
 import { Edit2, Droplets } from '../icons';
 import StatusPill from '../components/cards/StatusPill';
-import { useHomeAssistant, useModalState, usePages } from '../contexts';
+import { useHomeAssistant, useModalActions, usePages } from '../contexts';
 import { isSonosMediaEntity } from '../utils';
 
 const BEREGNUNG_ZONES = [
@@ -43,7 +43,7 @@ export default function StatusBar({
     setShowStatusPillsConfig,
     setShowEntityCountModal,
     setShowBeregnungModal,
-  } = useModalState();
+  } = useModalActions();
 
   const getSonosEntities = () =>
     Object.keys(entities)

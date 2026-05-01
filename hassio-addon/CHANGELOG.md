@@ -244,15 +244,97 @@
 ### Changed
 - Add release notes.
 
+## 1.18.0
+
+### Added
+- Includes dashboard release `1.18.0`.
+- Adds a Home Assistant Lock card with lock, unlock, and open/unlatch controls for `lock.*` entities (#148).
+
+### Changed
+- Registers Lock cards across dashboard add/edit/render flows.
+
+### Fixed
+- Handles Home Assistant `open`/`opening` lock states and code-protected lock actions.
+- Retries settings-sync revision conflicts when the local device has unsynced changes.
+
+**Full Changelog**: https://github.com/oyvhov/Tunet/compare/v1.17.0...v1.18.0
+
+## 1.17.0
+
+### Added
+- Includes dashboard release `1.17.0`.
+- Adds Cards-only dashboard mode for tablet/kiosk setups, hiding the header, status pills, page navigation, Settings, Add, and Edit controls while keeping dashboard cards visible (#149).
+- To enable it, open Settings, go to Header, expand Visibility, and turn on **Show only cards**. To leave cards-only mode, press `Esc` on a keyboard or long-press an empty area of the dashboard.
+
+### Changed
+- Splits specialized dashboard pages into lazy-loaded chunks so the main app bundle stays under the CI size gate.
+
+### Fixed
+- Keeps critical recovery UI available in cards-only mode, including connection/auth warning surfaces, so users are not locked out of setup or troubleshooting.
+
+**Full Changelog**: https://github.com/oyvhov/Tunet/compare/v1.16.2...v1.17.0
+
+## 1.16.2
+
+### Added
+- Includes dashboard release `1.16.2`.
+- Small release preview for the refreshed Status Pills feature.
+- Adds new animation presets for Status Pills.
+
+<p>
+  <img src="https://raw.githubusercontent.com/oyvhov/Tunet/v1.16.2/public/release-assets/image.png" alt="Status Pills release preview" width="430" />
+</p>
+
+### Changed
+- Refines Status Pills with animation presets, expanded color choices, clearer icon-only naming, and more predictable manual heading behavior.
+- Reduces unnecessary profile/settings bootstrap work when profile prefetch is intentionally disabled.
+
+### Fixed
+- Keeps Status Pills heading and subtitle visibility settings stable across reopen and reload, and commits pending condition values when saving.
+- Prevents newly added visible sensor and alarm pills from disappearing after save by requiring an entity selection before the pill can be saved.
+- Improves Home Assistant backend auth logging and Docker fallback URL handling for easier connection troubleshooting.
+
+**Full Changelog**: https://github.com/oyvhov/Tunet/compare/v1.16.1...v1.16.2
+
+## 1.16.1
+
+### Added
+- Includes dashboard release `1.16.1`.
+
+### Changed
+- Improves localization verification by extending i18n parity checks to cover French.
+
+### Fixed
+- Restores full French UI activation by wiring `fr` into runtime translation mapping and language selectors.
+
+## 1.16.0
+
+### Added
+- Includes dashboard release `1.16.0`.
+- Adds support for mower cards and mower popup controls for `lawn_mower.*` entities.
+
+### Changed
+- Improves Media/Sonos page presentation with empty-state messaging, stronger action labels, and more resilient grouping behavior.
+
+### Fixed
+- Improves backend Home Assistant URL fallback handling for Docker-hosted setups, reducing profile/settings backend unavailable errors.
+
 ## 1.15.4
 
 ### Changed
-- Add release notes.
+- Includes dashboard release `1.15.4`.
+- Adds sensor-card support for Home Assistant `select.*` and `input_select.*` entities (#135).
+
+### Fixed
+- Keeps styled sensor select dropdowns and related popup activity inside clean card bounds without noisy retry spam.
 
 ## 1.15.3
 
 ### Changed
-- Add release notes.
+- Includes dashboard release `1.15.3`.
+
+### Fixed
+- Restores missing Weather card condition icons by switching to a stable Meteocons CDN path (#134).
 
 ## 1.15.2
 

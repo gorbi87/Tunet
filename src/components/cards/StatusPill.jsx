@@ -17,6 +17,7 @@ import {
   getEffectiveUnitMode,
   inferUnitKind,
 } from '../../utils';
+import { getPillAnimationConfig } from '../../utils/statusPillPresentation';
 
 /**
  * Generic configurable status pill
@@ -47,6 +48,13 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
   const effectiveUnitMode = getEffectiveUnitMode(unitsMode, haConfig);
   const isConditionEnabled = pill.conditionEnabled !== false;
   const textMaxWidthClass = isMobile ? 'max-w-[16ch]' : 'max-w-[26ch]';
+  const showLabel = pill.showLabel !== false;
+  const showSublabel = pill.showSublabel !== false;
+
+  const mergeStyle = (baseStyle, extraStyle) => {
+    if (!extraStyle) return baseStyle;
+    return { ...(baseStyle || {}), ...extraStyle };
+  };
 
   const capitalizeFirst = (value) => {
     if (!value) return value;
@@ -56,6 +64,12 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
   const resolveHeadingColorClass = (value) => {
     if (typeof value !== 'string' || !value.trim()) return 'text-[var(--text-primary)]';
     return value === 'text-[var(--text-secondary)]' ? 'text-[var(--text-primary)]' : value;
+  };
+
+  const getCustomLabel = () => {
+    if (typeof pill?.label === 'string' && pill.label.trim().length > 0) return pill.label;
+    if (typeof pill?.name === 'string' && pill.name.trim().length > 0) return pill.name;
+    return '';
   };
 
   const getDefaultSublabelWithUnit = () => {
@@ -153,31 +167,41 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
 
     const state = entity?.state || 'unknown';
     const statusText = getAlarmStateLabel(state);
+    const customLabel = getCustomLabel();
     const sublabelText =
-      pill.sublabel || pill.label || entity?.attributes?.friendly_name || entity?.entity_id || '';
+      pill.sublabel || customLabel || entity?.attributes?.friendly_name || entity?.entity_id || '';
     const alarmVisual = getAlarmVisual(state);
     const AlarmIcon = alarmVisual.Icon || Lock;
     const bgColor = pill.bgColor || 'rgba(255, 255, 255, 0.03)';
     const labelColor = pill.labelColor || 'text-[var(--text-primary)]';
     const sublabelColor = pill.sublabelColor || 'text-[var(--text-secondary)]';
 
-    const animated =
-      pill.animated !== false &&
-      (state === 'arming' || state === 'pending' || state === 'disarming');
+    const animation = getPillAnimationConfig(pill, {
+      active: state === 'arming' || state === 'pending' || state === 'disarming',
+    });
+    const hasVisibleText = !iconOnly && (showLabel || (showSublabel && Boolean(sublabelText)));
     const heightClass = iconOnly ? 'h-8 w-8' : isMobile ? 'h-8' : 'h-9';
-    const paddingClass = iconOnly ? 'p-1.5 justify-center' : isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
+    const paddingClass = iconOnly
+      ? 'p-1.5 justify-center'
+      : hasVisibleText
+        ? isMobile
+          ? 'shrink-0 px-1.5 py-0.5 gap-1.5'
+          : 'px-2.5 py-1 gap-2'
+        : isMobile
+          ? 'shrink-0 p-1.5'
+          : 'p-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
 
     const Wrapper = onClick ? 'button' : 'div';
     const wrapperProps = onClick
       ? {
           onClick,
-          className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animated ? 'animate-pulse' : ''}`,
-          style: { backgroundColor: bgColor },
+          className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animation.wrapperClass}`,
+          style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
         }
       : {
-          className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl ${animated ? 'animate-pulse' : ''}`,
-          style: { backgroundColor: bgColor },
+          className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl ${animation.wrapperClass}`,
+          style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
         };
 
     return (
@@ -188,23 +212,32 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
               path={alarmVisual.mdiPath}
               size={isMobile ? 0.75 : 0.9}
               color={alarmVisual.iconColor}
-              className={animated ? 'animate-spin' : ''}
+              className={animation.iconClass}
+              style={animation.iconStyle}
             />
           ) : (
             <AlarmIcon
-              className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} ${animated ? 'animate-spin' : ''}`}
+              className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} ${animation.iconClass}`}
               color={alarmVisual.iconColor}
-              style={{ color: alarmVisual.iconColor }}
+              style={mergeStyle({ color: alarmVisual.iconColor }, animation.iconStyle)}
             />
           )}
         </div>
-        {!iconOnly && (
+        {hasVisibleText && (
           <div className="flex min-w-0 flex-col items-start">
-            <span className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`} title={statusText}>
-              {statusText}
-            </span>
-            {sublabelText && (
-              <span className={`text-xs text-left font-medium ${sublabelColor} ${textMaxWidthClass} block w-full truncate`} title={sublabelText}>
+            {showLabel && (
+              <span
+                className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}
+                title={statusText}
+              >
+                {statusText}
+              </span>
+            )}
+            {showSublabel && sublabelText && (
+              <span
+                className={`text-xs text-left font-medium ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
+                title={sublabelText}
+              >
                 {sublabelText}
               </span>
             )}
@@ -294,8 +327,6 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
               ? title
               : artist;
 
-    const noMediaLabel = t('media.noMedia') || 'No media';
-    const sonosHeadingSource = pill.sonosHeadingSource || 'song';
     const sonosSubheadingSource = pill.sonosSubheadingSource || 'artist_player';
 
     const composeDual = (first, second) => [first, second].filter(Boolean).join(' - ');
@@ -322,24 +353,18 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
       }
     };
 
-    const resolvedSonosHeading = resolveSonosText(sonosHeadingSource);
     const resolvedSonosSubheading = resolveSonosText(sonosSubheadingSource);
-    const sonosAutoLabel =
-      sonosHeadingSource === 'none'
-        ? null
-        : resolvedSonosHeading ||
-          title ||
-          friendlyName ||
-          (!hasMediaMetadata ? noMediaLabel : 'Media');
 
-    const label = pill.label || autoLabel;
+    const customLabel = getCustomLabel();
+    const label = customLabel || autoLabel;
     const sublabel =
       pill.type === 'sonos' && !hasMediaMetadata
         ? null
         : pill.type === 'sonos' && !pill.sublabel
           ? resolvedSonosSubheading || null
           : pill.sublabel || autoSublabel;
-    const displayLabel = pill.type === 'sonos' && !pill.label ? sonosAutoLabel : label;
+    const displayLabel = showLabel ? label : null;
+    const displaySublabel = showSublabel ? sublabel : null;
 
     const IconComponent = pill.icon ? getIconComponent(pill.icon) || Clapperboard : Clapperboard;
     const bgColor = pill.bgColor || 'rgba(255, 255, 255, 0.03)';
@@ -348,10 +373,20 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     const labelColor = resolveHeadingColorClass(pill.labelColor);
     const sublabelColor = pill.sublabelColor || 'text-[var(--text-muted)]';
 
-    const animated = pill.animated !== false && isPlaying;
+    const animation = getPillAnimationConfig(pill, { active: isPlaying });
+    const hasVisibleText = !iconOnly && Boolean(displayLabel || displaySublabel);
 
+    // Mobile adjustments
     const heightClass = iconOnly ? 'h-8 w-8' : isMobile ? 'h-8' : 'h-9';
-    const paddingClass = iconOnly ? 'p-1.5 justify-center' : isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
+    const paddingClass = iconOnly
+      ? 'p-1.5 justify-center'
+      : hasVisibleText
+        ? isMobile
+          ? 'shrink-0 px-1.5 py-0.5 gap-1.5'
+          : 'px-2.5 py-1 gap-2'
+        : isMobile
+          ? 'shrink-0 p-1.5'
+          : 'p-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
 
     const Wrapper = pill.clickable && onClick ? 'button' : 'div';
@@ -359,12 +394,12 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
       pill.clickable && onClick
         ? {
             onClick,
-            className: `relative flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95`,
-            style: { backgroundColor: bgColor },
+            className: `relative flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animation.wrapperClass}`,
+            style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
           }
         : {
-            className: `relative flex items-center ${heightClass} ${paddingClass} rounded-2xl`,
-            style: { backgroundColor: bgColor },
+            className: `relative flex items-center ${heightClass} ${paddingClass} rounded-2xl ${animation.wrapperClass}`,
+            style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
           };
 
     const countBadge = iconOnly && count > 1 ? count : badge;
@@ -378,28 +413,37 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
             <img
               src={picture}
               alt=""
-              className={`h-full w-full object-cover ${animated ? 'animate-spin' : ''}`}
-              style={{ animationDuration: '10s' }}
+              className={`h-full w-full object-cover ${animation.iconClass}`}
+              style={animation.iconStyle}
             />
           </div>
         ) : (
           <div
-            className={`${iconPadding} rounded-xl ${iconColor} ${animated ? 'animate-pulse' : ''}`}
+            className={`${iconPadding} rounded-xl ${iconColor}`}
             style={{ backgroundColor: iconBgColor }}
           >
-            <IconComponent className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+            <IconComponent
+              className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} ${animation.iconClass}`}
+              style={animation.iconStyle}
+            />
           </div>
         )}
-        {!iconOnly && (
+        {hasVisibleText && (
           <div className="flex min-w-0 flex-col items-start">
             {displayLabel && (
-              <span className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`} title={displayLabel}>
+              <span
+                className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}
+                title={displayLabel}
+              >
                 {displayLabel}
               </span>
             )}
-            {sublabel && (
-              <span className={`text-xs text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`} title={sublabel}>
-                {sublabel}
+            {displaySublabel && (
+              <span
+                className={`text-xs text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
+                title={displaySublabel}
+              >
+                {displaySublabel}
               </span>
             )}
           </div>
@@ -511,9 +555,14 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     return null;
 
   // Get display values
-  const label = pill.label || entity.attributes?.friendly_name || entity.entity_id;
+  const customLabel = getCustomLabel();
+  const label = showLabel ? customLabel || entity.attributes?.friendly_name || entity.entity_id : null;
   const hasCustomSublabel = typeof pill.sublabel === 'string' && pill.sublabel.trim().length > 0;
-  const sublabel = hasCustomSublabel ? pill.sublabel : getDefaultSublabelWithUnit();
+  const sublabel = showSublabel
+    ? hasCustomSublabel
+      ? pill.sublabel
+      : getDefaultSublabelWithUnit()
+    : null;
 
   // Get icon
   const IconComponent = pill.icon ? getIconComponent(pill.icon) || Activity : Activity;
@@ -525,24 +574,37 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
   const labelColor = resolveHeadingColorClass(pill.labelColor);
   const sublabelColor = pill.sublabelColor || 'text-[var(--text-muted)]';
 
-  const animated =
-    pill.animated !== false &&
-    (entity.state === 'on' || entity.state === 'playing' || pill.animateAlways);
+  const animation = getPillAnimationConfig(pill, {
+    // The pill is only rendered if its condition matches (see check above), so
+    // by definition any selected animation preset should run while it's visible.
+    // Keeping `pill.animateAlways` as a backwards-compatible no-op flag.
+    active: true,
+  });
+  const hasVisibleText = !iconOnly && Boolean(label || sublabel);
 
+  // Mobile adjustments
   const heightClass = iconOnly ? 'h-8 w-8' : isMobile ? 'h-8' : 'h-9';
-  const paddingClass = iconOnly ? 'p-1.5 justify-center' : isMobile ? 'shrink-0 px-1.5 gap-1.5' : 'px-2.5 gap-2';
+  const paddingClass = iconOnly
+    ? 'p-1.5 justify-center'
+    : hasVisibleText
+      ? isMobile
+        ? 'shrink-0 px-1.5 py-0.5 gap-1.5'
+        : 'px-2.5 py-1 gap-2'
+      : isMobile
+        ? 'shrink-0 p-1.5'
+        : 'p-2';
   const iconPadding = isMobile ? 'p-1' : 'p-1.5';
 
   const Wrapper = onClick ? 'button' : 'div';
   const wrapperProps = onClick
     ? {
         onClick,
-        className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animated ? 'animate-pulse' : ''}`,
-        style: { backgroundColor: bgColor },
+        className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animation.wrapperClass}`,
+        style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
       }
     : {
-        className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl ${animated ? 'animate-pulse' : ''}`,
-        style: { backgroundColor: bgColor },
+        className: `flex items-center ${heightClass} ${paddingClass} rounded-2xl ${animation.wrapperClass}`,
+        style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
       };
 
   return (
@@ -551,15 +613,26 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
         className={`${iconPadding} rounded-xl ${iconColor}`}
         style={{ backgroundColor: iconBgColor }}
       >
-        <IconComponent className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+        <IconComponent
+          className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} ${animation.iconClass}`}
+          style={animation.iconStyle}
+        />
       </div>
-      {!iconOnly && (
+      {hasVisibleText && (
         <div className="flex min-w-0 flex-col items-start">
-          <span className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`} title={label}>
-            {label}
-          </span>
+          {label && (
+            <span
+              className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}
+              title={label}
+            >
+              {label}
+            </span>
+          )}
           {sublabel && (
-            <span className={`text-xs text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`} title={sublabel}>
+            <span
+              className={`text-xs text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
+              title={sublabel}
+            >
               {sublabel}
             </span>
           )}

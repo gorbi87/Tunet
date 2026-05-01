@@ -24,6 +24,8 @@ export function useAddCard({
   persistConfig,
   cardSettings,
   persistCardSettings,
+  hiddenCards,
+  persistHiddenCards,
   getCardSettingsKey,
   saveCardSetting,
   setShowAddCardModal,
@@ -114,6 +116,7 @@ export function useAddCard({
   const getAddCardAvailableLabel = () => {
     if (addCardTargetPage === 'header') return t('addCard.available.people');
     if (addCardTargetPage === 'settings') return t('addCard.available.allEntities');
+    if (addCardType === 'lock') return t('addCard.available.locks');
     if (addCardType === 'vacuum') return t('addCard.available.vacuums');
     if (addCardType === 'navimow') return 'Navimow';
     if (addCardType === 'fan') return t('addCard.available.fans');
@@ -137,6 +140,8 @@ export function useAddCard({
         ? 'addCard.item.people'
         : addCardTargetPage === 'settings'
           ? 'addCard.item.entities'
+          : addCardType === 'lock'
+            ? 'addCard.item.locks'
           : addCardType === 'vacuum'
             ? 'addCard.item.vacuums'
             : addCardType === 'fan'
@@ -190,6 +195,8 @@ export function useAddCard({
       selectedSpacerVariant: options.spacerVariant || selectedSpacerVariant,
       cardSettings,
       persistCardSettings,
+      hiddenCards,
+      persistHiddenCards,
       getCardSettingsKey,
       setSelectedEntities,
       setShowAddCardModal,

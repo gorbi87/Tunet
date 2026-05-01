@@ -82,12 +82,12 @@ export default function Header({
     : { hour: '2-digit', minute: '2-digit', hour12: false };
 
   const timeStr = now.toLocaleTimeString(locale, timeOptions);
-  const headingFontSize = isMobile
-    ? `calc(clamp(1.25rem, 5vw, 1.5rem) * ${headerScale})`
-    : `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale})`;
-  const clockFontSize = isMobile
-    ? `calc(clamp(1.25rem, 5vw, 1.5rem) * ${headerScale} * ${clockScale})`
-    : `calc(clamp(3rem, 5vw, 3.75rem) * ${headerScale} * ${clockScale})`;
+  const headingFontSize = `calc(${
+    isMobile ? 'clamp(2.75rem, 14vw, 3.75rem)' : 'clamp(3rem, 5vw, 3.75rem)'
+  } * ${headerScale})`;
+  const clockFontSize = `calc(${
+    isMobile ? 'clamp(2.4rem, 12vw, 3.25rem)' : 'clamp(3rem, 5vw, 3.75rem)'
+  } * ${headerScale} * ${clockScale})`;
 
   const isBattery = headerSettings?.headerStyle === 'battery';
   const batteryVariant = headerSettings?.batteryVariant || 'glass';
@@ -204,8 +204,10 @@ export default function Header({
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-4 leading-none">
-        <div className="flex items-center gap-4">
+      <div
+        className={`flex items-start justify-between leading-none ${isMobile ? 'flex-col items-center gap-4 text-center' : 'gap-10'}`}
+      >
+        <div className={`flex items-center gap-4 ${isMobile ? 'w-full justify-center' : ''}`}>
           {headerSettings.showTitle && (
             <h1 className="leading-none select-none" style={titleStyle}>
               {headerTitle || 'Tunet'}{import.meta.env.DEV && <span className="ml-2 text-[0.3em] font-bold tracking-widest uppercase text-[var(--accent-color)] opacity-60 align-middle">Dev</span>}
@@ -237,7 +239,13 @@ export default function Header({
         </p>
       )}
 
-      <div className={`flex w-full flex-col ${isMobile ? 'gap-2 pt-2' : 'gap-6 pt-6 md:gap-3 md:pt-3'}`}>{children}</div>
+      <div
+        className={`flex w-full flex-col ${
+          isMobile ? 'gap-4 pt-4' : 'gap-6 pt-6 md:gap-3 md:pt-3'
+        }`}
+      >
+        {children}
+      </div>
     </header>
   );
 }
