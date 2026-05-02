@@ -117,6 +117,8 @@ function buildModalActions(setModalValue, closeAllModals, hasOpenModal) {
     setShowPvModal: setters.setShowPvModal,
     setShowBeregnungModal: setters.setShowBeregnungModal,
     setShowNavimowModal: setters.setShowNavimowModal,
+    setShowSecurityLockModal: setters.setShowSecurityLockModal,
+    setShowSecurityContactsModal: setters.setShowSecurityContactsModal,
   };
 
   const mediaModalActions = {
