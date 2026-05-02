@@ -47,7 +47,10 @@ if (typeof globalThis.WebSocket === 'undefined') {
   globalThis.WebSocket = NodeWebSocket;
 }
 
-const isSupervisorIngressTrustEnabled = () => process.env.TUNET_TRUST_SUPERVISOR_INGRESS === '1';
+// In shared mode the supervisor's Ingress headers are always trusted —
+// the admin has configured a shared token, so all HA users share the dashboard.
+const isSupervisorIngressTrustEnabled = () =>
+  process.env.TUNET_TRUST_SUPERVISOR_INGRESS === '1' || isSharedMode();
 const isSharedMode = () => !!(process.env.HA_URL && process.env.HA_TOKEN);
 const SHARED_USER_ID = '__shared__';
 
@@ -67,8 +70,11 @@ const isTrustedIngressRequest = (req) => {
     return false;
   }
 
+  // Use the actual TCP peer address (socket), not req.ip — with trust proxy
+  // enabled req.ip contains the forwarded browser IP from X-Forwarded-For,
+  // not the supervisor's address.
   const remoteAddress = normalizeRemoteAddress(
-    req.ip || req.socket?.remoteAddress || req.connection?.remoteAddress || ''
+    req.socket?.remoteAddress || req.connection?.remoteAddress || ''
   );
 
   return TRUSTED_INGRESS_IPS.has(remoteAddress);
