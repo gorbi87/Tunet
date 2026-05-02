@@ -17,6 +17,19 @@ import { collectSnapshot, applySnapshot, isValidSnapshot } from '../services/sna
 const SHARED_DEVICE_ID = 'shared';
 const getOrCreateDeviceId = () => SHARED_DEVICE_ID;
 
+// Returns true if the data has at least one card on any page or in the header.
+// Used to avoid pushing an empty/default state to the server from a fresh device.
+const hasMeaningfulContent = (data) => {
+  if (!data || typeof data !== 'object') return false;
+  const pagesConfig = data.layout?.pagesConfig ?? data.pagesConfig;
+  if (!pagesConfig || typeof pagesConfig !== 'object') return false;
+  const pages = Array.isArray(pagesConfig.pages) ? pagesConfig.pages : [];
+  return (
+    pages.some((id) => Array.isArray(pagesConfig[id]) && pagesConfig[id].length > 0) ||
+    (Array.isArray(pagesConfig.header) && pagesConfig.header.length > 0)
+  );
+};
+
 const clampHistoryKeepLimit = (value) => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return 50;
@@ -401,17 +414,23 @@ export function useSettingsSync({ haUserId, contextSettersRef, autoBootstrap = t
         return;
       }
 
-      if (!row) {
-        try {
-          await pushCurrentToServerRef.current?.({ force: true });
-        } catch {
-          // ignore bootstrap errors
-        }
-      } else if (row.data && typeof row.data === 'object') {
-        // Apply the shared server state on every fresh load so the
-        // dashboard is immediately populated without needing a manual
-        // "load from server" click.
+      const serverHasContent = row && typeof row.data === 'object' && hasMeaningfulContent(row.data);
+
+      if (serverHasContent) {
+        // Server has a real dashboard — apply it so all devices stay in sync.
         applySnapshot(row.data, contextSettersRef.current);
+      } else {
+        // Server is empty or has no data yet. Push local state only if it
+        // has actual cards — prevents a fresh device from overwriting the
+        // server with an empty default and wiping other devices' dashboards.
+        const localSnapshot = collectSnapshot();
+        if (isValidSnapshot(localSnapshot) && hasMeaningfulContent(localSnapshot.layout)) {
+          try {
+            await pushCurrentToServerRef.current?.({ force: true });
+          } catch {
+            // ignore bootstrap errors
+          }
+        }
       }
 
       if (disposed || backgroundSyncSuspendedRef.current) return;
