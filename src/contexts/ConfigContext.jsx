@@ -269,7 +269,7 @@ export const ConfigProvider = ({ children }) => {
   // Fetch shared HA config from server (set via addon options ha_url / ha_token).
   // Overwrites any previously saved per-device credentials so all devices share one identity.
   useEffect(() => {
-    fetch('/api/ha-config')
+    fetch('./api/ha-config')
       .then((r) => (r.ok ? r.json() : null))
       .then((serverCfg) => {
         if (serverCfg?.url && serverCfg?.token) {
