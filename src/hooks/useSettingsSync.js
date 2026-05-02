@@ -398,6 +398,23 @@ export function useSettingsSync({ haUserId, contextSettersRef, autoBootstrap = t
     [enabled, haUserId, pushCurrentToServer]
   );
 
+  // On mount: if local state has no cards and the server has a shared dashboard,
+  // apply it immediately — before HA auth resolves. This ensures a fresh device
+  // (e.g. iPhone first launch) gets the correct dashboard without waiting for
+  // the full auth + bootstrap cycle.
+  useEffect(() => {
+    const localSnapshot = collectSnapshot();
+    if (hasMeaningfulContent(localSnapshot?.layout)) return;
+
+    fetch('./api/shared-dashboard')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data || !hasMeaningfulContent(data)) return;
+        applySnapshot(data, contextSettersRef.current || {});
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!autoBootstrap || !haUserId || backgroundSyncSuspended) return;
     let disposed = false;

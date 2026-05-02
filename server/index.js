@@ -113,6 +113,23 @@ app.get('/api/ha-config', (_req, res) => {
   return res.json({ url: haUrl, token: haToken });
 });
 
+// Shared-dashboard endpoint — returns the current dashboard data for the shared user.
+// No auth required so fresh devices (iPhone) can load the dashboard immediately on
+// first visit, before HA auth is established.
+app.get('/api/shared-dashboard', (_req, res) => {
+  if (!process.env.HA_URL || !process.env.HA_TOKEN) return res.json(null);
+  try {
+    const row = db
+      .prepare('SELECT data FROM current_settings WHERE ha_user_id = ? AND device_id = ?')
+      .get('__shared__', '__shared_device__');
+    if (!row?.data) return res.json(null);
+    const parsed = JSON.parse(row.data);
+    return res.json(parsed);
+  } catch {
+    return res.json(null);
+  }
+});
+
 // go2rtc HTTP proxy — avoids mixed-content blocking when Tunet is served over HTTPS.
 // For m3u8 playlists the proxy rewrites segment URLs so the browser can fetch
 // them through this same proxy (native HLS players resolve segments relative
