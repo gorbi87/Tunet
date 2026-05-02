@@ -48,6 +48,8 @@ if (typeof globalThis.WebSocket === 'undefined') {
 }
 
 const isSupervisorIngressTrustEnabled = () => process.env.TUNET_TRUST_SUPERVISOR_INGRESS === '1';
+const isSharedMode = () => !!(process.env.HA_URL && process.env.HA_TOKEN);
+const SHARED_USER_ID = '__shared__';
 
 const normalizeRemoteAddress = (rawAddress) => {
   if (typeof rawAddress !== 'string' || !rawAddress.trim()) return '';
@@ -378,7 +380,9 @@ export const createHomeAssistantAuthMiddleware = ({
   return async (req, res, next) => {
     const trustedSupervisorUser = getTrustedSupervisorUser(req);
     if (trustedSupervisorUser) {
-      req.authenticatedHaUser = trustedSupervisorUser;
+      req.authenticatedHaUser = isSharedMode()
+        ? { ...trustedSupervisorUser, id: SHARED_USER_ID }
+        : trustedSupervisorUser;
       req.authenticatedHaUrl = null;
       next();
       return;
@@ -402,7 +406,7 @@ export const createHomeAssistantAuthMiddleware = ({
     for (const haUrl of haUrls) {
       try {
         const user = await validateHomeAssistantUser({ haUrl, accessToken });
-        req.authenticatedHaUser = user;
+        req.authenticatedHaUser = isSharedMode() ? { ...user, id: SHARED_USER_ID } : user;
         req.authenticatedHaUrl = haUrl;
         next();
         return;

@@ -12,6 +12,7 @@ import profilesRouter from './routes/profiles.js';
 import iconsRouter from './routes/icons.js';
 import settingsRouter from './routes/settings.js';
 import { createHomeAssistantAuthMiddleware } from './haAuth.js';
+import db from './db.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3002', 10);
@@ -317,6 +318,52 @@ httpServer.on('upgrade', (req, socket, head) => {
     wss.emit('connection', ws, req, { base, src });
   });
 });
+
+// Shared mode: migrate existing user data to __shared__ once on startup
+if (process.env.HA_URL && process.env.HA_TOKEN) {
+  try {
+    const SHARED = '__shared__';
+
+    const hasSharedProfiles = db.prepare('SELECT 1 FROM profiles WHERE ha_user_id = ? LIMIT 1').get(SHARED);
+    if (!hasSharedProfiles) {
+      const sourceUserId = db.prepare(
+        "SELECT ha_user_id FROM profiles WHERE ha_user_id != ? ORDER BY updated_at DESC LIMIT 1"
+      ).get(SHARED)?.ha_user_id;
+      if (sourceUserId) {
+        const rows = db.prepare('SELECT * FROM profiles WHERE ha_user_id = ?').all(sourceUserId);
+        const stmt = db.prepare(
+          'INSERT OR IGNORE INTO profiles (id, ha_user_id, name, device_label, data, data_enc, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        for (const p of rows) stmt.run(p.id, SHARED, p.name, p.device_label, p.data, p.data_enc, p.created_at, p.updated_at);
+        console.log(`[server] Migrated ${rows.length} profile(s) from ${sourceUserId} to __shared__`);
+      }
+    }
+
+    const hasSharedSettings = db.prepare('SELECT 1 FROM current_settings WHERE ha_user_id = ? LIMIT 1').get(SHARED);
+    if (!hasSharedSettings) {
+      const sourceUserId = db.prepare(
+        "SELECT ha_user_id FROM current_settings WHERE ha_user_id != ? ORDER BY updated_at DESC LIMIT 1"
+      ).get(SHARED)?.ha_user_id;
+      if (sourceUserId) {
+        const rows = db.prepare('SELECT * FROM current_settings WHERE ha_user_id = ?').all(sourceUserId);
+        const settingsStmt = db.prepare(
+          'INSERT OR IGNORE INTO current_settings (ha_user_id, device_id, data, data_enc, revision, updated_at, device_label) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        );
+        const histStmt = db.prepare(
+          'INSERT OR IGNORE INTO current_settings_history (ha_user_id, device_id, revision, data, data_enc, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
+        );
+        for (const s of rows) {
+          settingsStmt.run(SHARED, s.device_id, s.data, s.data_enc, s.revision, s.updated_at, s.device_label || null);
+          const hist = db.prepare('SELECT * FROM current_settings_history WHERE ha_user_id = ? AND device_id = ?').all(sourceUserId, s.device_id);
+          for (const h of hist) histStmt.run(SHARED, h.device_id, h.revision, h.data, h.data_enc, h.updated_at);
+        }
+        console.log(`[server] Migrated ${rows.length} device setting(s) from ${sourceUserId} to __shared__`);
+      }
+    }
+  } catch (err) {
+    console.error('[server] Shared mode migration failed:', err);
+  }
+}
 
 httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(

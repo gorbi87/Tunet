@@ -253,7 +253,27 @@ router.get('/current', (req, res) => {
         )
         .get(ha_user_id, device_id);
 
-  if (!row) return res.json(null);
+  if (!row) {
+    // In shared mode, seed a new device from the most recently active shared device
+    if (ha_user_id === '__shared__' && !revision) {
+      const fallback = db
+        .prepare(
+          "SELECT * FROM current_settings WHERE ha_user_id = '__shared__' ORDER BY updated_at DESC LIMIT 1"
+        )
+        .get();
+      if (fallback) {
+        return res.json({
+          ha_user_id,
+          device_id,
+          data: parseStoredData(fallback, `settings/current:${ha_user_id}:${device_id}:seed`),
+          revision: 0,
+          device_label: null,
+          updated_at: fallback.updated_at,
+        });
+      }
+    }
+    return res.json(null);
+  }
   return res.json({
     ha_user_id: row.ha_user_id,
     device_id: row.device_id,
