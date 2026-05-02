@@ -388,15 +388,30 @@ export const createHomeAssistantAuthMiddleware = ({
       return;
     }
 
-    const haUrls = getHomeAssistantUrlCandidates(req);
-    if (!haUrls.length) {
-      sendJsonError(res, 401, 'Missing or invalid x-ha-url header');
-      return;
-    }
-
     const accessToken = getBearerToken(req);
     if (!accessToken) {
       sendJsonError(res, 401, 'Missing Authorization bearer token');
+      return;
+    }
+
+    // In shared mode, if the bearer token matches the configured HA_TOKEN,
+    // skip WebSocket validation — the admin set this token, no roundtrip needed.
+    if (isSharedMode() && accessToken === process.env.HA_TOKEN) {
+      req.authenticatedHaUser = {
+        id: SHARED_USER_ID,
+        name: '',
+        is_admin: false,
+        is_owner: false,
+        source: 'shared-token',
+      };
+      req.authenticatedHaUrl = null;
+      next();
+      return;
+    }
+
+    const haUrls = getHomeAssistantUrlCandidates(req);
+    if (!haUrls.length) {
+      sendJsonError(res, 401, 'Missing or invalid x-ha-url header');
       return;
     }
 
