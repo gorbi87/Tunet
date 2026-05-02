@@ -1,6 +1,6 @@
 name: 'Tunet (gorbi87)'
 description: 'A modern, responsive dashboard for Home Assistant (custom fork)'
-version: "1.18.5"
+version: "1.18.6"
 slug: 'tunet-gorbi87'
 url: 'https://github.com/gorbi87/Tunet'
 init: false
@@ -26,7 +26,7 @@ options:
   data_encryption_key: ''
   data_encryption_salt: ''
 schema:
-  ha_url: 'url?'
+  ha_url: 'str?'
   ha_token: 'password?'
   data_encryption_mode: 'list(off|dual|enc_only)?'
   data_encryption_key: 'password?'
