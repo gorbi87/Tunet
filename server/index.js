@@ -319,15 +319,20 @@ httpServer.on('upgrade', (req, socket, head) => {
   });
 });
 
-// Shared mode: migrate existing user data to __shared__ once on startup
+// Shared mode: migrate existing user data to __shared__ on startup.
+// Runs whenever the shared slot is missing OR contains only an empty/default
+// dashboard (e.g. a fresh device pushed its default state before any real
+// data was present — those empty writes must not permanently block migration).
 if (process.env.HA_URL && process.env.HA_TOKEN) {
   try {
     const SHARED = '__shared__';
+    const SHARED_DEVICE = '__shared_device__';
 
+    // ── Profiles ──────────────────────────────────────────────────────────
     const hasSharedProfiles = db.prepare('SELECT 1 FROM profiles WHERE ha_user_id = ? LIMIT 1').get(SHARED);
     if (!hasSharedProfiles) {
       const sourceUserId = db.prepare(
-        "SELECT ha_user_id FROM profiles WHERE ha_user_id != ? ORDER BY updated_at DESC LIMIT 1"
+        'SELECT ha_user_id FROM profiles WHERE ha_user_id != ? ORDER BY updated_at DESC LIMIT 1'
       ).get(SHARED)?.ha_user_id;
       if (sourceUserId) {
         const rows = db.prepare('SELECT * FROM profiles WHERE ha_user_id = ?').all(sourceUserId);
@@ -339,17 +344,46 @@ if (process.env.HA_URL && process.env.HA_TOKEN) {
       }
     }
 
-    const SHARED_DEVICE = '__shared_device__';
+    // ── Settings ──────────────────────────────────────────────────────────
+    // Helper: returns true only if plaintext data contains at least one card.
+    const sharedSlotHasMeaningfulContent = (row) => {
+      if (!row) return false;
+      try {
+        const parsed = JSON.parse(row.data || '{}');
+        const pagesConfig = parsed?.layout?.pagesConfig ?? parsed?.pagesConfig;
+        if (!pagesConfig) return false;
+        const pages = Array.isArray(pagesConfig.pages) ? pagesConfig.pages : [];
+        return (
+          pages.some((id) => Array.isArray(pagesConfig[id]) && pagesConfig[id].length > 0) ||
+          (Array.isArray(pagesConfig.header) && pagesConfig.header.length > 0)
+        );
+      } catch {
+        // Can't parse — treat as meaningful (might be encrypted) to avoid accidental deletion
+        return true;
+      }
+    };
+
+    const existingShared = db.prepare(
+      'SELECT data, data_enc FROM current_settings WHERE ha_user_id = ? AND device_id = ? LIMIT 1'
+    ).get(SHARED, SHARED_DEVICE);
+
+    if (existingShared && !sharedSlotHasMeaningfulContent(existingShared)) {
+      // The shared slot contains only an empty/default state (e.g. pushed by a
+      // fresh device that had no local data). Clear it so migration can run again.
+      db.prepare('DELETE FROM current_settings WHERE ha_user_id = ? AND device_id = ?').run(SHARED, SHARED_DEVICE);
+      db.prepare('DELETE FROM current_settings_history WHERE ha_user_id = ? AND device_id = ?').run(SHARED, SHARED_DEVICE);
+      console.log('[server] Cleared empty __shared__ settings slot — re-running migration from real user data');
+    }
+
     const hasSharedDeviceSettings = db.prepare(
       'SELECT 1 FROM current_settings WHERE ha_user_id = ? AND device_id = ? LIMIT 1'
     ).get(SHARED, SHARED_DEVICE);
+
     if (!hasSharedDeviceSettings) {
-      // Prefer any existing __shared__ entry (from previous migration), then fall back to real users
-      const sourceRow = db.prepare(
-        'SELECT * FROM current_settings WHERE ha_user_id = ? ORDER BY updated_at DESC LIMIT 1'
-      ).get(SHARED) || db.prepare(
-        'SELECT * FROM current_settings WHERE ha_user_id != ? ORDER BY updated_at DESC LIMIT 1'
-      ).get(SHARED);
+      // Prefer data already stored under __shared__ (any device), then fall back to any real user
+      const sourceRow =
+        db.prepare('SELECT * FROM current_settings WHERE ha_user_id = ? ORDER BY updated_at DESC LIMIT 1').get(SHARED) ||
+        db.prepare('SELECT * FROM current_settings WHERE ha_user_id != ? ORDER BY updated_at DESC LIMIT 1').get(SHARED);
       if (sourceRow) {
         db.prepare(
           'INSERT OR IGNORE INTO current_settings (ha_user_id, device_id, data, data_enc, revision, updated_at, device_label) VALUES (?, ?, ?, ?, ?, ?, ?)'
@@ -362,6 +396,8 @@ if (process.env.HA_URL && process.env.HA_TOKEN) {
         );
         for (const h of hist) histStmt.run(SHARED, SHARED_DEVICE, h.revision, h.data, h.data_enc, h.updated_at);
         console.log(`[server] Migrated settings to (__shared__, __shared_device__) from (${sourceRow.ha_user_id}, ${sourceRow.device_id})`);
+      } else {
+        console.log('[server] No source settings found for shared mode migration — will populate on first device save');
       }
     }
   } catch (err) {
