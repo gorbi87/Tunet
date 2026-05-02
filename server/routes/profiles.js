@@ -23,6 +23,14 @@ const profilesRateLimiter = rateLimit({
 
 router.use(profilesRateLimiter);
 
+// Shared mode: accept any ha_user_id from client and normalize to __shared__
+router.use((req, _res, next) => {
+  if (req.authenticatedHaUser?.id !== '__shared__') return next();
+  if (req.query.ha_user_id) req.query.ha_user_id = '__shared__';
+  if (req.body?.ha_user_id) req.body.ha_user_id = '__shared__';
+  next();
+});
+
 const safeParseJson = (raw, fallback = null) => {
   try {
     return JSON.parse(raw);

@@ -339,25 +339,29 @@ if (process.env.HA_URL && process.env.HA_TOKEN) {
       }
     }
 
-    const hasSharedSettings = db.prepare('SELECT 1 FROM current_settings WHERE ha_user_id = ? LIMIT 1').get(SHARED);
-    if (!hasSharedSettings) {
-      const sourceUserId = db.prepare(
-        "SELECT ha_user_id FROM current_settings WHERE ha_user_id != ? ORDER BY updated_at DESC LIMIT 1"
-      ).get(SHARED)?.ha_user_id;
-      if (sourceUserId) {
-        const rows = db.prepare('SELECT * FROM current_settings WHERE ha_user_id = ?').all(sourceUserId);
-        const settingsStmt = db.prepare(
+    const SHARED_DEVICE = '__shared_device__';
+    const hasSharedDeviceSettings = db.prepare(
+      'SELECT 1 FROM current_settings WHERE ha_user_id = ? AND device_id = ? LIMIT 1'
+    ).get(SHARED, SHARED_DEVICE);
+    if (!hasSharedDeviceSettings) {
+      // Prefer any existing __shared__ entry (from previous migration), then fall back to real users
+      const sourceRow = db.prepare(
+        'SELECT * FROM current_settings WHERE ha_user_id = ? ORDER BY updated_at DESC LIMIT 1'
+      ).get(SHARED) || db.prepare(
+        'SELECT * FROM current_settings WHERE ha_user_id != ? ORDER BY updated_at DESC LIMIT 1'
+      ).get(SHARED);
+      if (sourceRow) {
+        db.prepare(
           'INSERT OR IGNORE INTO current_settings (ha_user_id, device_id, data, data_enc, revision, updated_at, device_label) VALUES (?, ?, ?, ?, ?, ?, ?)'
-        );
+        ).run(SHARED, SHARED_DEVICE, sourceRow.data, sourceRow.data_enc, sourceRow.revision, sourceRow.updated_at, null);
+        const hist = db.prepare(
+          'SELECT * FROM current_settings_history WHERE ha_user_id = ? AND device_id = ?'
+        ).all(sourceRow.ha_user_id, sourceRow.device_id);
         const histStmt = db.prepare(
           'INSERT OR IGNORE INTO current_settings_history (ha_user_id, device_id, revision, data, data_enc, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
         );
-        for (const s of rows) {
-          settingsStmt.run(SHARED, s.device_id, s.data, s.data_enc, s.revision, s.updated_at, s.device_label || null);
-          const hist = db.prepare('SELECT * FROM current_settings_history WHERE ha_user_id = ? AND device_id = ?').all(sourceUserId, s.device_id);
-          for (const h of hist) histStmt.run(SHARED, h.device_id, h.revision, h.data, h.data_enc, h.updated_at);
-        }
-        console.log(`[server] Migrated ${rows.length} device setting(s) from ${sourceUserId} to __shared__`);
+        for (const h of hist) histStmt.run(SHARED, SHARED_DEVICE, h.revision, h.data, h.data_enc, h.updated_at);
+        console.log(`[server] Migrated settings to (__shared__, __shared_device__) from (${sourceRow.ha_user_id}, ${sourceRow.device_id})`);
       }
     }
   } catch (err) {

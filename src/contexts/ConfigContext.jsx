@@ -272,13 +272,21 @@ export const ConfigProvider = ({ children }) => {
     fetch('./api/ha-config')
       .then((r) => (r.ok ? r.json() : null))
       .then((serverCfg) => {
-        if (serverCfg?.url && serverCfg?.token) {
+        if (serverCfg?.token) {
           try {
-            localStorage.setItem('ha_url', serverCfg.url);
             localStorage.setItem('ha_token', serverCfg.token);
             localStorage.setItem('ha_auth_method', 'token');
+            // Only set URL if device has none configured yet
+            if (serverCfg.url && !localStorage.getItem('ha_url')) {
+              localStorage.setItem('ha_url', serverCfg.url);
+            }
           } catch {}
-          setConfig((prev) => ({ ...prev, url: serverCfg.url, token: serverCfg.token, authMethod: 'token' }));
+          setConfig((prev) => ({
+            ...prev,
+            url: prev.url || serverCfg.url,
+            token: serverCfg.token,
+            authMethod: 'token',
+          }));
         }
       })
       .catch(() => {});

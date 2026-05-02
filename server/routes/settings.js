@@ -26,6 +26,21 @@ const settingsRateLimiter = rateLimit({
 
 router.use(settingsRateLimiter);
 
+// Shared mode: normalize ha_user_id to __shared__ and device_id to __shared_device__
+// so all devices read/write the same single dashboard state
+router.use((req, _res, next) => {
+  if (req.authenticatedHaUser?.id !== '__shared__') return next();
+  if (req.query.ha_user_id) req.query.ha_user_id = '__shared__';
+  if (req.query.device_id) req.query.device_id = '__shared_device__';
+  if (req.body) {
+    if (req.body.ha_user_id) req.body.ha_user_id = '__shared__';
+    if (req.body.device_id) req.body.device_id = '__shared_device__';
+    if (req.body.source_device_id) req.body.source_device_id = '__shared_device__';
+    if (req.body.target_device_id) req.body.target_device_id = '__shared_device__';
+  }
+  next();
+});
+
 const safeParseJson = (raw, fallback = null) => {
   try {
     return JSON.parse(raw);
@@ -253,27 +268,7 @@ router.get('/current', (req, res) => {
         )
         .get(ha_user_id, device_id);
 
-  if (!row) {
-    // In shared mode, seed a new device from the most recently active shared device
-    if (ha_user_id === '__shared__' && !revision) {
-      const fallback = db
-        .prepare(
-          "SELECT * FROM current_settings WHERE ha_user_id = '__shared__' ORDER BY updated_at DESC LIMIT 1"
-        )
-        .get();
-      if (fallback) {
-        return res.json({
-          ha_user_id,
-          device_id,
-          data: parseStoredData(fallback, `settings/current:${ha_user_id}:${device_id}:seed`),
-          revision: 0,
-          device_label: null,
-          updated_at: fallback.updated_at,
-        });
-      }
-    }
-    return res.json(null);
-  }
+  if (!row) return res.json(null);
   return res.json({
     ha_user_id: row.ha_user_id,
     device_id: row.device_id,
