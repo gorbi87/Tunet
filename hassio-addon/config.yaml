@@ -1,6 +1,6 @@
 name: 'Tunet (gorbi87)'
 description: 'A modern, responsive dashboard for Home Assistant (custom fork)'
-version: "1.18.4"
+version: "1.18.5"
 slug: 'tunet-gorbi87'
 url: 'https://github.com/gorbi87/Tunet'
 init: false
@@ -20,10 +20,14 @@ ports:
 ports_description:
   3002/tcp: 'Tunet Web Interface (not needed when using Ingress)'
 options:
+  ha_url: ''
+  ha_token: ''
   data_encryption_mode: 'off'
   data_encryption_key: ''
   data_encryption_salt: ''
 schema:
+  ha_url: 'url?'
+  ha_token: 'password?'
   data_encryption_mode: 'list(off|dual|enc_only)?'
   data_encryption_key: 'password?'
   data_encryption_salt: 'password?'

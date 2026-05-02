@@ -266,6 +266,24 @@ export const ConfigProvider = ({ children }) => {
     return { url: '', fallbackUrl: '', token: '', authMethod: 'oauth' };
   });
 
+  // Fetch shared HA config from server (set via addon options ha_url / ha_token).
+  // Overwrites any previously saved per-device credentials so all devices share one identity.
+  useEffect(() => {
+    fetch('/api/ha-config')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((serverCfg) => {
+        if (serverCfg?.url && serverCfg?.token) {
+          try {
+            localStorage.setItem('ha_url', serverCfg.url);
+            localStorage.setItem('ha_token', serverCfg.token);
+            localStorage.setItem('ha_auth_method', 'token');
+          } catch {}
+          setConfig((prev) => ({ ...prev, url: serverCfg.url, token: serverCfg.token, authMethod: 'token' }));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Apply theme to DOM
   useEffect(() => {
     const themeKey = themes[currentTheme] ? currentTheme : 'dark';

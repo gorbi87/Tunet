@@ -103,6 +103,15 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', version: appVersion });
 });
 
+// Shared HA config — served from addon options (HA_URL + HA_TOKEN env vars).
+// No auth required: allows all devices to auto-connect without per-device setup.
+app.get('/api/ha-config', (_req, res) => {
+  const haUrl = process.env.HA_URL || '';
+  const haToken = process.env.HA_TOKEN || '';
+  if (!haUrl || !haToken) return res.json(null);
+  return res.json({ url: haUrl, token: haToken });
+});
+
 // go2rtc HTTP proxy — avoids mixed-content blocking when Tunet is served over HTTPS.
 // For m3u8 playlists the proxy rewrites segment URLs so the browser can fetch
 // them through this same proxy (native HLS players resolve segments relative

@@ -926,6 +926,13 @@ export default function App() {
     });
   }, [config.authMethod, config.url, isOAuthCallback, oauthTokenRevision, showOnboarding]);
 
+  // Dismiss onboarding when a server-supplied token arrives asynchronously
+  useEffect(() => {
+    if (config.token && showOnboarding) {
+      setShowOnboarding(false);
+    }
+  }, [config.token, showOnboarding]);
+
   // During onboarding, block token connections but ALLOW OAuth (including callbacks)
   const haConfig = showOnboarding
     ? config.authMethod === 'oauth'
