@@ -387,11 +387,11 @@ export const createHomeAssistantAuthMiddleware = ({
   validateHomeAssistantUser = resolveValidatedHomeAssistantUser,
 } = {}) => {
   return async (req, res, next) => {
+    // HA Ingress: trust the supervisor and use the actual HA user ID directly.
+    // This mirrors the pre-merge behaviour: same HA user → same profile slot on all devices.
     const trustedSupervisorUser = getTrustedSupervisorUser(req);
     if (trustedSupervisorUser) {
-      req.authenticatedHaUser = isSharedMode()
-        ? { ...trustedSupervisorUser, id: SHARED_USER_ID }
-        : trustedSupervisorUser;
+      req.authenticatedHaUser = trustedSupervisorUser;
       req.authenticatedHaUrl = null;
       next();
       return;
@@ -403,8 +403,7 @@ export const createHomeAssistantAuthMiddleware = ({
       return;
     }
 
-    // In shared mode, if the bearer token matches the configured HA_TOKEN,
-    // skip WebSocket validation — the admin set this token, no roundtrip needed.
+    // Direct (non-ingress) access with the shared HA_TOKEN: skip WebSocket validation.
     if (isSharedMode() && accessToken === process.env.HA_TOKEN) {
       req.authenticatedHaUser = {
         id: SHARED_USER_ID,
@@ -430,7 +429,7 @@ export const createHomeAssistantAuthMiddleware = ({
     for (const haUrl of haUrls) {
       try {
         const user = await validateHomeAssistantUser({ haUrl, accessToken });
-        req.authenticatedHaUser = isSharedMode() ? { ...user, id: SHARED_USER_ID } : user;
+        req.authenticatedHaUser = user;
         req.authenticatedHaUrl = haUrl;
         next();
         return;

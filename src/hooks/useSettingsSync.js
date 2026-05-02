@@ -416,7 +416,7 @@ export function useSettingsSync({ haUserId, contextSettersRef, autoBootstrap = t
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!autoBootstrap || !haUserId || backgroundSyncSuspended) return;
+    if (!autoBootstrap || !haUserId) return;
     let disposed = false;
 
     const bootstrap = async () => {
@@ -424,10 +424,8 @@ export function useSettingsSync({ haUserId, contextSettersRef, autoBootstrap = t
       if (disposed) return;
 
       if (row === READ_CURRENT_FAILED) {
-        if (!backgroundSyncSuspendedRef.current) {
-          await refreshKnownDevices();
-          await refreshHistory();
-        }
+        await refreshKnownDevices();
+        await refreshHistory();
         return;
       }
 
@@ -450,7 +448,7 @@ export function useSettingsSync({ haUserId, contextSettersRef, autoBootstrap = t
         }
       }
 
-      if (disposed || backgroundSyncSuspendedRef.current) return;
+      if (disposed) return;
       await refreshKnownDevices();
       await refreshHistory();
     };
@@ -462,19 +460,18 @@ export function useSettingsSync({ haUserId, contextSettersRef, autoBootstrap = t
   }, [
     autoBootstrap,
     haUserId,
-    backgroundSyncSuspended,
     readCurrentFromServer,
     refreshKnownDevices,
     refreshHistory,
   ]);
 
   useEffect(() => {
-    if (!autoBootstrap || !haUserId || backgroundSyncSuspended) return;
+    if (!autoBootstrap || !haUserId) return;
     const id = setInterval(() => {
       reconcileFromServer();
     }, 4000);
     return () => clearInterval(id);
-  }, [autoBootstrap, haUserId, reconcileFromServer, backgroundSyncSuspended]);
+  }, [autoBootstrap, haUserId, reconcileFromServer]);
 
   useEffect(() => {
     if (!haUserId || typeof globalThis.window === 'undefined') return undefined;
