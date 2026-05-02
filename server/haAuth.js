@@ -51,7 +51,10 @@ if (typeof globalThis.WebSocket === 'undefined') {
 // the admin has configured a shared token, so all HA users share the dashboard.
 const isSupervisorIngressTrustEnabled = () =>
   process.env.TUNET_TRUST_SUPERVISOR_INGRESS === '1' || isSharedMode();
-const isSharedMode = () => !!(process.env.HA_URL && process.env.HA_TOKEN);
+// Shared mode is active when a shared HA_TOKEN is configured in the addon options.
+// HA_URL is optional — when clients access via HA Ingress they resolve the URL from
+// window.location.origin so the admin does not have to fill in ha_url.
+const isSharedMode = () => !!process.env.HA_TOKEN;
 const SHARED_USER_ID = '__shared__';
 
 const normalizeRemoteAddress = (rawAddress) => {

@@ -104,12 +104,13 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', version: appVersion });
 });
 
-// Shared HA config — served from addon options (HA_URL + HA_TOKEN env vars).
-// No auth required: allows all devices to auto-connect without per-device setup.
+// Shared HA config — served from addon options (HA_TOKEN required, HA_URL optional).
+// When accessed through HA Ingress the client derives the URL from window.location.origin,
+// so ha_url in the addon options is not required for ingress users.
 app.get('/api/ha-config', (_req, res) => {
-  const haUrl = process.env.HA_URL || '';
   const haToken = process.env.HA_TOKEN || '';
-  if (!haUrl || !haToken) return res.json(null);
+  if (!haToken) return res.json(null);
+  const haUrl = process.env.HA_URL || null;
   return res.json({ url: haUrl, token: haToken });
 });
 
@@ -117,7 +118,7 @@ app.get('/api/ha-config', (_req, res) => {
 // No auth required so fresh devices (iPhone) can load the dashboard immediately on
 // first visit, before HA auth is established.
 app.get('/api/shared-dashboard', (_req, res) => {
-  if (!process.env.HA_URL || !process.env.HA_TOKEN) return res.json(null);
+  if (!process.env.HA_TOKEN) return res.json(null);
   try {
     const row = db
       .prepare('SELECT data FROM current_settings WHERE ha_user_id = ? AND device_id = ?')
