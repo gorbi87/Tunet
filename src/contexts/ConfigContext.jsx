@@ -272,22 +272,27 @@ export const ConfigProvider = ({ children }) => {
     fetch('./api/ha-config')
       .then((r) => (r.ok ? r.json() : null))
       .then((serverCfg) => {
-        if (serverCfg?.token) {
-          try {
-            localStorage.setItem('ha_token', serverCfg.token);
-            localStorage.setItem('ha_auth_method', 'token');
-            // Only set URL if device has none configured yet
-            if (serverCfg.url && !localStorage.getItem('ha_url')) {
-              localStorage.setItem('ha_url', serverCfg.url);
-            }
-          } catch {}
-          setConfig((prev) => ({
-            ...prev,
-            url: prev.url || serverCfg.url,
-            token: serverCfg.token,
-            authMethod: 'token',
-          }));
-        }
+        if (!serverCfg?.token) return;
+        // Under HA Ingress the page is served over HTTPS — use window.location.origin
+        // so the HA WebSocket connection uses HTTPS/WSS (avoids mixed-content block).
+        // Outside ingress keep the existing URL or fall back to the server-provided one.
+        const isIngress = /\/api\/hassio_ingress\//.test(
+          globalThis.window?.location?.pathname || ''
+        );
+        const haUrl = isIngress
+          ? globalThis.window.location.origin
+          : undefined;
+        try {
+          localStorage.setItem('ha_token', serverCfg.token);
+          localStorage.setItem('ha_auth_method', 'token');
+          if (haUrl) localStorage.setItem('ha_url', haUrl);
+        } catch {}
+        setConfig((prev) => ({
+          ...prev,
+          ...(haUrl ? { url: haUrl } : {}),
+          token: serverCfg.token,
+          authMethod: 'token',
+        }));
       })
       .catch(() => {});
   }, []);
