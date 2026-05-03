@@ -403,6 +403,12 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
           };
 
     const countBadge = iconOnly && count > 1 ? count : badge;
+    // Badge protrudes 8 px right of the wrapper via absolute -right-2.
+    // In the mobile scroll container (overflow-x-auto) this gets clipped,
+    // so add a matching right margin to push it back into the scroll area.
+    if (countBadge > 0 && wrapperProps.className !== undefined) {
+      wrapperProps.className += ' mr-2';
+    }
 
     return (
       <Wrapper {...wrapperProps}>
