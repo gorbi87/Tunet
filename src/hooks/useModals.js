@@ -119,6 +119,7 @@ function buildModalActions(setModalValue, closeAllModals, hasOpenModal) {
     setShowNavimowModal: setters.setShowNavimowModal,
     setShowSecurityLockModal: setters.setShowSecurityLockModal,
     setShowSecurityContactsModal: setters.setShowSecurityContactsModal,
+    setShowGo2rtcCameraModal: setters.setShowGo2rtcCameraModal,
   };
 
   const mediaModalActions = {
