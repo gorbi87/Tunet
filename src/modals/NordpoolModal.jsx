@@ -154,7 +154,7 @@ export default function NordpoolModal({
         <div className="grid grid-cols-1 items-start gap-12 font-sans lg:grid-cols-5">
           {/* Left Column - Graph (Span 3) */}
           <div className="lg:col-span-3">
-            {displayPriceData && displayPriceData.length > 0 && (
+            {displayPriceData && displayPriceData.length > 0 ? (
               <div className="w-full">
                 <InteractivePowerGraph
                   key={`graph-${showWithSupport}`}
@@ -165,6 +165,18 @@ export default function NordpoolModal({
                   language={language}
                   unit={currency}
                 />
+              </div>
+            ) : (
+              <div className="flex h-48 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed"
+                style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--glass-bg)' }}
+              >
+                <Zap className="h-8 w-8 opacity-30" style={{ color: '#fbbf24' }} />
+                <p className="text-center text-sm font-medium text-[var(--text-secondary)]">
+                  Keine Preisdaten verfügbar
+                </p>
+                <p className="text-center text-xs text-[var(--text-muted)] max-w-[200px]">
+                  Octopus hat noch keine Preise für heute geliefert. Bitte später erneut prüfen.
+                </p>
               </div>
             )}
           </div>

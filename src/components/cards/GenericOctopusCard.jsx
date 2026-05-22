@@ -205,12 +205,18 @@ const GenericOctopusCard = memo(function GenericOctopusCard({
         </div>
       </div>
       <div className="absolute inset-x-0 bottom-0">
-        <SparkLine
-          data={fullPriceData}
-          currentIndex={currentPriceIndex}
-          height={isUltraCompact ? 56 : isDenseMobile ? 72 : 84}
-          variant={settings.graphStyle === 'bar' ? 'bar' : 'line'}
-        />
+        {fullPriceData.length > 0 ? (
+          <SparkLine
+            data={fullPriceData}
+            currentIndex={currentPriceIndex}
+            height={isUltraCompact ? 56 : isDenseMobile ? 72 : 84}
+            variant={settings.graphStyle === 'bar' ? 'bar' : 'line'}
+          />
+        ) : (
+          <p className={`text-center font-medium text-[var(--text-muted)] opacity-50 ${isUltraCompact ? 'pb-1 text-[8px]' : isDenseMobile ? 'pb-2 text-[9px]' : 'pb-3 text-[10px]'}`}>
+            Keine Preisdaten
+          </p>
+        )}
       </div>
     </div>
   );

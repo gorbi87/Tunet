@@ -12,7 +12,6 @@ export function prepareOctopusData(
   if (!entity) return null;
 
   const rates = Array.isArray(entity.attributes?.rates) ? entity.attributes.rates : [];
-  if (rates.length === 0) return null;
 
   const now = new Date();
 
