@@ -39,6 +39,7 @@ const REMOVABLE_PREFIXES = [
   'luftungsanlage_card_',
   'pv_card_',
   'beregnung_card_',
+  'pool_card_',
   'fan.',
 ];
 
@@ -71,6 +72,7 @@ const SPECIAL_CARD_PREFIXES = [
   'security_panel_card_',
   'haushaltsgeraete_card_',
   'frigate_events_card_',
+  'pool_card_',
 ];
 
 /**

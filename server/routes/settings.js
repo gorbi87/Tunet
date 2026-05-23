@@ -26,10 +26,13 @@ const settingsRateLimiter = rateLimit({
 
 router.use(settingsRateLimiter);
 
-// Shared mode: normalize ha_user_id to __shared__ and device_id to __shared_device__
-// so all devices read/write the same single dashboard state
+// Shared mode: normalize ALL authenticated users to __shared__ so every device
+// and every HA user reads/writes the same single dashboard state.
 router.use((req, _res, next) => {
-  if (req.authenticatedHaUser?.id !== '__shared__') return next();
+  if (!process.env.HA_TOKEN) return next();
+  if (req.authenticatedHaUser) {
+    req.authenticatedHaUser = { ...req.authenticatedHaUser, id: '__shared__' };
+  }
   if (req.query.ha_user_id) req.query.ha_user_id = '__shared__';
   if (req.query.device_id) req.query.device_id = '__shared_device__';
   if (req.body) {

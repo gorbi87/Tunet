@@ -23,9 +23,13 @@ const profilesRateLimiter = rateLimit({
 
 router.use(profilesRateLimiter);
 
-// Shared mode: accept any ha_user_id from client and normalize to __shared__
+// Shared mode: normalize ALL authenticated users to __shared__ so every HA user
+// sees the same profiles.
 router.use((req, _res, next) => {
-  if (req.authenticatedHaUser?.id !== '__shared__') return next();
+  if (!process.env.HA_TOKEN) return next();
+  if (req.authenticatedHaUser) {
+    req.authenticatedHaUser = { ...req.authenticatedHaUser, id: '__shared__' };
+  }
   if (req.query.ha_user_id) req.query.ha_user_id = '__shared__';
   if (req.body?.ha_user_id) req.body.ha_user_id = '__shared__';
   next();

@@ -316,6 +316,12 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
+    case 'pool': {
+      const poolCardId = `pool_card_${Date.now()}`;
+      commitSingleCard(poolCardId, {});
+      return;
+    }
+
     case 'haushaltsgeraete': {
       const haushaltsgeraeteCardId = `haushaltsgeraete_card_${Date.now()}`;
       commitSingleCard(haushaltsgeraeteCardId, {});

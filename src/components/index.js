@@ -24,6 +24,7 @@ export { default as TodoCard } from './cards/TodoCard';
 export { default as VacuumCard } from './cards/VacuumCard';
 export { default as MowerCard } from './cards/MowerCard';
 export { default as NavimowCard } from './cards/NavimowCard';
+export { default as PoolCard } from './cards/PoolCard';
 export { default as WeatherTempCard } from './cards/WeatherTempCard';
 
 // ── Charts ───────────────────────────────────────────────────────────────

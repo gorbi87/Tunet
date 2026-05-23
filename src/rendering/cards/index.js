@@ -32,3 +32,4 @@ export { renderCoverPanelCard } from './coverPanelRenderer';
 export { renderSecurityPanelCard } from './securityPanelRenderer';
 export { renderHaushaltsgeraeteCard } from './haushaltsgeraeteRenderer';
 export { renderFrigateEventsCard } from './frigateEventsRenderer';
+export { renderPoolCard } from './poolRenderer';

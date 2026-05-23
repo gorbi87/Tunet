@@ -36,6 +36,7 @@ import {
   renderSecurityPanelCard,
   renderHaushaltsgeraeteCard,
   renderFrigateEventsCard,
+  renderPoolCard,
 } from './cards';
 
 /**
@@ -77,6 +78,7 @@ export const CARD_REGISTRY = [
   { prefix: 'beregnung_card_', renderer: renderBeregnungCard },
   { prefix: 'haushaltsgeraete_card_', renderer: renderHaushaltsgeraeteCard },
   { prefix: 'frigate_events_card_', renderer: renderFrigateEventsCard },
+  { prefix: 'pool_card_', renderer: renderPoolCard },
 ];
 
 export function dispatchCardRender(cardId, dragProps, getControls, cardStyle, settingsKey, ctx) {

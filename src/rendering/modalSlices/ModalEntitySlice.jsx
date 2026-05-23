@@ -31,6 +31,7 @@ const NavimowModal = lazy(() => import('../../modals/NavimowModal'));
 const EntityCountModal = lazy(() => import('../../modals/EntityCountModal'));
 const SecurityLockModal = lazy(() => import('../../modals/SecurityLockModal'));
 const SecurityContactsModal = lazy(() => import('../../modals/SecurityContactsModal'));
+const PoolModal = lazy(() => import('../../modals/PoolModal'));
 
 export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, resolveCarSettings }) {
   const { entities, conn, activeUrl, authRef, config, t, language } = core;
@@ -95,6 +96,8 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     setShowSecurityLockModal,
     showSecurityContactsModal,
     setShowSecurityContactsModal,
+    showPoolModal,
+    setShowPoolModal,
   } = modals;
   const { cardSettings, saveCardSetting, customNames, customIcons, getCardSettingsKey } =
     cardConfig;
@@ -645,6 +648,17 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
             onClose={() => setShowSecurityContactsModal(null)}
             contactsInfo={showSecurityContactsModal}
             entities={entities}
+          />
+        </ModalSuspense>
+      )}
+
+      {showPoolModal && (
+        <ModalSuspense>
+          <PoolModal
+            show={true}
+            onClose={() => setShowPoolModal(null)}
+            entities={entities}
+            callService={callService}
           />
         </ModalSuspense>
       )}

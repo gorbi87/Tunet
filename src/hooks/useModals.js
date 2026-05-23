@@ -45,6 +45,7 @@ const MODAL_DEFAULTS = {
   showEntityCountModal: null,
   showSecurityLockModal: null,
   showSecurityContactsModal: null,
+  showPoolModal: null,
 };
 
 // Keys checked by hasOpenModal
@@ -82,6 +83,7 @@ const OPEN_CHECK_KEYS = [
   'showEntityCountModal',
   'showSecurityLockModal',
   'showSecurityContactsModal',
+  'showPoolModal',
 ];
 
 function buildModalActions(setModalValue, closeAllModals, hasOpenModal) {
@@ -120,6 +122,7 @@ function buildModalActions(setModalValue, closeAllModals, hasOpenModal) {
     setShowSecurityLockModal: setters.setShowSecurityLockModal,
     setShowSecurityContactsModal: setters.setShowSecurityContactsModal,
     setShowGo2rtcCameraModal: setters.setShowGo2rtcCameraModal,
+    setShowPoolModal: setters.setShowPoolModal,
   };
 
   const mediaModalActions = {

@@ -1061,6 +1061,13 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
+                  type="pool"
+                  icon={Droplets}
+                  label="Pool"
+                  isActive={addCardType === 'pool'}
+                  onSelect={setAddCardType}
+                />
+                <TypeButton
                   type="haushaltsgeraete"
                   icon={Home}
                   label="Haushaltsgeräte"
@@ -1272,6 +1279,8 @@ function AddCardContent({
               renderSimpleAddSection(Camera, 'go2rtc Kamera hinzufügen', 'go2rtc Kamera hinzufügen')
             ) : addCardType === 'beregnung' ? (
               renderSimpleAddSection(Droplets, 'Beregnung Karte hinzufügen', 'Beregnung hinzufügen')
+            ) : addCardType === 'pool' ? (
+              renderSimpleAddSection(Droplets, 'Pool Karte hinzufügen (Poolsteuerung D1 mit BlueConnect)', 'Pool hinzufügen')
             ) : addCardType === 'haushaltsgeraete' ? (
               renderSimpleAddSection(Home, 'Waschmaschine & Geschirrspüler — erscheint nur wenn ein Gerät läuft', 'Haushaltsgeräte hinzufügen')
             ) : addCardType === 'frigate_events' ? (

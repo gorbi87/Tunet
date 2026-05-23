@@ -69,6 +69,7 @@ export function useCardRendering({
   setShowLuftungsanlageModal: legacySetShowLuftungsanlageModal,
   setShowPvModal: legacySetShowPvModal,
   setShowBeregnungModal: legacySetShowBeregnungModal,
+  setShowPoolModal: legacySetShowPoolModal,
   setActiveMediaId: legacySetActiveMediaId,
   setActiveMediaGroupKey: legacySetActiveMediaGroupKey,
   setActiveMediaGroupIds: legacySetActiveMediaGroupIds,
@@ -100,6 +101,7 @@ export function useCardRendering({
     setShowLuftungsanlageModal: legacySetShowLuftungsanlageModal,
     setShowPvModal: legacySetShowPvModal,
     setShowBeregnungModal: legacySetShowBeregnungModal,
+    setShowPoolModal: legacySetShowPoolModal,
     setShowNavimowModal: () => {},
     setShowSecurityLockModal: () => {},
     setShowSecurityContactsModal: () => {},
@@ -136,6 +138,7 @@ export function useCardRendering({
     setShowNavimowModal,
     setShowSecurityLockModal,
     setShowSecurityContactsModal,
+    setShowPoolModal,
   } = resolvedEntityModalActions;
   const { setActiveMediaId, setActiveMediaGroupKey, setActiveMediaGroupIds, setActiveMediaModal } =
     resolvedMediaModalActions;
@@ -389,6 +392,7 @@ export function useCardRendering({
         setShowLuftungsanlageModal,
         setShowPvModal,
         setShowBeregnungModal,
+        setShowPoolModal,
         setShowNavimowModal,
         setShowSecurityLockModal,
         setShowSecurityContactsModal,
@@ -483,6 +487,7 @@ export function useCardRendering({
       setShowLuftungsanlageModal,
       setShowPvModal,
       setShowBeregnungModal,
+      setShowPoolModal,
       setShowNavimowModal,
       setShowSecurityLockModal,
       setShowSecurityContactsModal,
