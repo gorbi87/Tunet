@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.24
+
+### Fixed
+- Server: shared-slot migration no longer deletes encrypted dashboard data on addon restart.
+
 ## 1.18.23
 
 ### Changed

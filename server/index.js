@@ -363,11 +363,17 @@ if (process.env.HA_URL && process.env.HA_TOKEN) {
     }
 
     // ── Settings ──────────────────────────────────────────────────────────
-    // Helper: returns true only if plaintext data contains at least one card.
+    // Helper: returns true if the shared slot contains real dashboard data.
+    // Treats encrypted rows (data_enc present) as always meaningful to avoid
+    // accidentally deleting real data that can't be read in plaintext.
     const sharedSlotHasMeaningfulContent = (row) => {
       if (!row) return false;
+      // Encrypted rows: data_enc holds the real content — keep it.
+      if (row.data_enc) return true;
       try {
         const parsed = JSON.parse(row.data || '{}');
+        // Enc-only stub without data_enc — corrupted row, but keep it to be safe.
+        if (parsed._enc_only) return true;
         const pagesConfig = parsed?.layout?.pagesConfig ?? parsed?.pagesConfig;
         if (!pagesConfig) return false;
         const pages = Array.isArray(pagesConfig.pages) ? pagesConfig.pages : [];
@@ -376,7 +382,7 @@ if (process.env.HA_URL && process.env.HA_TOKEN) {
           (Array.isArray(pagesConfig.header) && pagesConfig.header.length > 0)
         );
       } catch {
-        // Can't parse — treat as meaningful (might be encrypted) to avoid accidental deletion
+        // Can't parse plaintext — treat as meaningful to avoid accidental deletion.
         return true;
       }
     };
