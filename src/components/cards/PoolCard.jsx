@@ -7,17 +7,13 @@ const WAERMEPUMPE = 'switch.poolsteuerung_d1_blueconnect_w_rmepumpe';
 const BLUERIIOT_CONNECTION = 'binary_sensor.poolsteuerung_d1_blueconnect_blueriiot_connection_state';
 const BLUERIIOT_PH  = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_ph';
 const BLUERIIOT_ORP = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_orp';
-const BLUERIIOT_PH_STATE  = 'binary_sensor.poolsteuerung_d1_blueconnect_blueriiot_ph_state';
-const BLUERIIOT_ORP_STATE = 'binary_sensor.poolsteuerung_d1_blueconnect_blueriiot_orp_state';
 
-function StatusChip({ label, active, warn }) {
-  const color = warn
-    ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-    : active
-      ? 'bg-[var(--status-success-bg)] text-[var(--status-success-fg)] border-[var(--status-success-border)]'
-      : 'bg-[var(--glass-bg)] text-[var(--text-muted)] border-[var(--glass-border)]';
+const phColor  = (v) => v < 7.2 ? '#fb923c' : v <= 7.6 ? '#4ade80' : '#f87171';
+const orpColor = (v) => v < 650 ? '#f87171' : v <= 750 ? '#4ade80' : '#fb923c';
+
+function StatusChip({ label }) {
   return (
-    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${color}`}>
+    <span className="rounded-full border border-[var(--status-success-border)] bg-[var(--status-success-bg)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[var(--status-success-fg)]">
       {label}
     </span>
   );
@@ -43,11 +39,9 @@ const PoolCard = memo(function PoolCard({
   const vorlauf    = entities[VORLAUF];
   const filterpumpe = entities[FILTERPUMPE];
   const waermepumpe = entities[WAERMEPUMPE];
-  const blueConnected = entities[BLUERIIOT_CONNECTION]?.state === 'on';
-  const ph  = entities[BLUERIIOT_PH];
-  const orp = entities[BLUERIIOT_ORP];
-  const phState  = entities[BLUERIIOT_PH_STATE]?.state;
-  const orpState = entities[BLUERIIOT_ORP_STATE]?.state;
+  const phVal  = parseFloat(entities[BLUERIIOT_PH]?.state);
+  const orpVal = parseFloat(entities[BLUERIIOT_ORP]?.state);
+  const blueConnected = entities[BLUERIIOT_CONNECTION]?.state === 'on' || Number.isFinite(phVal);
 
   const temp = vorlauf ? parseFloat(vorlauf.state) : null;
   const tempDisplay = Number.isFinite(temp) ? temp.toFixed(1) : '–';
@@ -55,40 +49,13 @@ const PoolCard = memo(function PoolCard({
   const filterOn = filterpumpe?.state === 'on';
   const waermeOn = waermepumpe?.state === 'on';
 
-  if (isUltraCompact) {
-    return (
-      <div
-        key={cardId}
-        {...dragProps}
-        data-haptic={editMode ? undefined : 'card'}
-        onClick={(e) => { e.stopPropagation(); if (!editMode && onOpen) onOpen(); }}
-        className={`glass-texture touch-feedback group relative flex h-full items-center justify-between gap-3 overflow-hidden rounded-3xl border p-3 pl-4 font-sans transition-colors duration-500 ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
-        style={cardStyle}
-      >
-        {controls}
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(56,189,248,0.12)', color: '#38bdf8' }}>
-            <FaWaterLadder className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-[9px] font-bold uppercase tracking-widest text-[var(--text-secondary)] opacity-60">{name}</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-light text-[var(--text-primary)]">{tempDisplay}</span>
-              <span className="text-[10px] text-[var(--text-muted)]">°C</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
       key={cardId}
       {...dragProps}
       data-haptic={editMode ? undefined : 'card'}
       onClick={(e) => { e.stopPropagation(); if (!editMode && onOpen) onOpen(); }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isUltraCompact ? 'p-3' : isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
       style={cardStyle}
     >
       {controls}
@@ -96,42 +63,57 @@ const PoolCard = memo(function PoolCard({
       <div className="relative z-10">
         <div className="flex items-start justify-between">
           <div
-            className={`transition-transform duration-500 group-hover:scale-110 ${isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
+            className={`transition-transform duration-500 group-hover:scale-110 ${isUltraCompact ? 'rounded-lg p-2' : isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
             style={{ backgroundColor: 'rgba(56,189,248,0.12)', color: '#38bdf8' }}
           >
-            <FaWaterLadder className={isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'} />
+            <FaWaterLadder className={isUltraCompact ? 'h-3 w-3' : isDenseMobile ? 'h-4 w-4' : 'h-5 w-5'} />
           </div>
-          <div className="flex flex-wrap justify-end gap-1">
-            {filterOn && <StatusChip label="Filter" active />}
-            {waermeOn && <StatusChip label="Heizung" active />}
-          </div>
+          {isUltraCompact ? (
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`h-2 w-2 rounded-full transition-colors ${filterOn ? 'bg-[var(--status-success-fg)]' : 'bg-[var(--glass-border)]'}`}
+                title="Filterpumpe"
+              />
+              <span
+                className={`h-2 w-2 rounded-full transition-colors ${waermeOn ? 'bg-[var(--status-success-fg)]' : 'bg-[var(--glass-border)]'}`}
+                title="Wärmepumpe"
+              />
+            </div>
+          ) : (
+            <div className="flex flex-wrap justify-end gap-1">
+              {filterOn && <StatusChip label="Filter" />}
+              {waermeOn && <StatusChip label="Heizung" />}
+            </div>
+          )}
         </div>
 
-        <div className={isDenseMobile ? 'mt-3' : 'mt-4'}>
-          <p className={`${isDenseMobile ? 'mb-1 text-[10px]' : 'mb-0.5 text-xs'} leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60`} style={{ letterSpacing: '0.05em' }}>
+        <div className={isUltraCompact ? 'mt-1.5' : isDenseMobile ? 'mt-3' : 'mt-4'}>
+          <p className={`${isUltraCompact ? 'mb-0.5 text-[9px]' : isDenseMobile ? 'mb-1 text-[10px]' : 'mb-0.5 text-xs'} leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60`} style={{ letterSpacing: '0.05em' }}>
             {name}
           </p>
           <div className="flex items-baseline gap-1 leading-none">
-            <span className={`font-thin text-[var(--text-primary)] ${isDenseMobile ? 'text-3xl' : 'text-4xl'}`}>{tempDisplay}</span>
-            <span className={`font-medium text-[var(--text-muted)] ${isDenseMobile ? 'text-sm' : 'text-base'}`}>°C</span>
+            <span className={`font-thin text-[var(--text-primary)] ${isUltraCompact ? 'text-2xl' : isDenseMobile ? 'text-3xl' : 'text-4xl'}`}>{tempDisplay}</span>
+            <span className={`font-medium text-[var(--text-muted)] ${isUltraCompact ? 'text-xs' : isDenseMobile ? 'text-sm' : 'text-base'}`}>°C</span>
           </div>
         </div>
 
-        {blueConnected && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {ph && (
-              <StatusChip
-                label={`pH ${parseFloat(ph.state).toFixed(1)}`}
-                active={phState === 'on'}
-                warn={phState === 'off'}
-              />
+        {blueConnected && (Number.isFinite(phVal) || Number.isFinite(orpVal)) && (
+          <div className={`flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'mt-2 pt-2' : isDenseMobile ? 'mt-3 pt-2' : 'mt-4 pt-3'}`}>
+            {Number.isFinite(phVal) && (
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">pH</span>
+                <span className={`font-light ${isUltraCompact ? 'text-sm' : isDenseMobile ? 'text-sm' : 'text-lg'}`} style={{ color: phColor(phVal) }}>
+                  {phVal.toFixed(1)}
+                </span>
+              </div>
             )}
-            {orp && (
-              <StatusChip
-                label={`ORP ${Math.round(parseFloat(orp.state))}`}
-                active={orpState === 'on'}
-                warn={orpState === 'off'}
-              />
+            {Number.isFinite(orpVal) && (
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">ORP</span>
+                <span className={`font-light ${isUltraCompact ? 'text-sm' : isDenseMobile ? 'text-sm' : 'text-lg'}`} style={{ color: orpColor(orpVal) }}>
+                  {Math.round(orpVal)} <span className="text-[10px] text-[var(--text-muted)]">mV</span>
+                </span>
+              </div>
             )}
           </div>
         )}
