@@ -30,7 +30,8 @@ router.use((req, _res, next) => {
   if (req.authenticatedHaUser) {
     req.authenticatedHaUser = { ...req.authenticatedHaUser, id: '__shared__' };
   }
-  if (req.query.ha_user_id) req.query.ha_user_id = '__shared__';
+  // Express 5: req.query is a computed getter — assigning to it is silently discarded.
+  req._sharedMode = { ha_user_id: '__shared__' };
   if (req.body?.ha_user_id) req.body.ha_user_id = '__shared__';
   next();
 });
@@ -73,7 +74,7 @@ router.get('/', (req, res) => {
   const requestUserId = ensureRequestUser(req, res);
   if (!requestUserId) return;
 
-  const { ha_user_id } = req.query;
+  const ha_user_id = req._sharedMode?.ha_user_id ?? req.query.ha_user_id;
   if (!ha_user_id) {
     return res.status(400).json({ error: 'ha_user_id query parameter is required' });
   }

@@ -33,8 +33,9 @@ router.use((req, _res, next) => {
   if (req.authenticatedHaUser) {
     req.authenticatedHaUser = { ...req.authenticatedHaUser, id: '__shared__' };
   }
-  if (req.query.ha_user_id) req.query.ha_user_id = '__shared__';
-  if (req.query.device_id) req.query.device_id = '__shared_device__';
+  // Express 5: req.query is a computed getter — assigning to it is silently discarded.
+  // Store normalized IDs here; use resolveQueryParams() in handlers.
+  req._sharedMode = { ha_user_id: '__shared__', device_id: '__shared_device__' };
   if (req.body) {
     if (req.body.ha_user_id) req.body.ha_user_id = '__shared__';
     if (req.body.device_id) req.body.device_id = '__shared_device__';
@@ -43,6 +44,10 @@ router.use((req, _res, next) => {
   }
   next();
 });
+
+// Merges req._sharedMode overrides on top of req.query so handlers always get
+// the correct normalized IDs in shared mode.
+const resolveQueryParams = (req) => ({ ...req.query, ...(req._sharedMode ?? {}) });
 
 const safeParseJson = (raw, fallback = null) => {
   try {
@@ -245,7 +250,7 @@ router.get('/current', (req, res) => {
   const requestUserId = ensureRequestUser(req, res);
   if (!requestUserId) return;
 
-  const { ha_user_id, device_id, revision } = req.query;
+  const { ha_user_id, device_id, revision } = resolveQueryParams(req);
   if (!ha_user_id || !device_id) {
     return res
       .status(400)
@@ -289,7 +294,7 @@ router.get('/history', (req, res) => {
   const requestUserId = ensureRequestUser(req, res);
   if (!requestUserId) return;
 
-  const { ha_user_id, device_id, limit } = req.query;
+  const { ha_user_id, device_id, limit } = resolveQueryParams(req);
   if (!ha_user_id || !device_id) {
     return res
       .status(400)
@@ -317,7 +322,7 @@ router.delete('/history', (req, res) => {
   const requestUserId = ensureRequestUser(req, res);
   if (!requestUserId) return;
 
-  const { ha_user_id, device_id, keep_latest } = req.query;
+  const { ha_user_id, device_id, keep_latest } = resolveQueryParams(req);
   if (!ha_user_id || !device_id) {
     return res
       .status(400)
@@ -376,7 +381,7 @@ router.get('/devices', (req, res) => {
   const requestUserId = ensureRequestUser(req, res);
   if (!requestUserId) return;
 
-  const { ha_user_id } = req.query;
+  const { ha_user_id } = resolveQueryParams(req);
   if (!ha_user_id) {
     return res.status(400).json({ error: 'ha_user_id query parameter is required' });
   }
@@ -400,7 +405,7 @@ router.delete('/devices', (req, res) => {
   const requestUserId = ensureRequestUser(req, res);
   if (!requestUserId) return;
 
-  const { ha_user_id, device_id } = req.query;
+  const { ha_user_id, device_id } = resolveQueryParams(req);
   if (!ha_user_id || !device_id) {
     return res
       .status(400)

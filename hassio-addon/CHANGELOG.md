@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.25
+
+### Fixed
+- Server: fix 403 "Forbidden: user mismatch" errors in shared mode caused by Express 5 `req.query` immutability — settings and profiles API endpoints now work correctly, restoring dashboard sync and profile access on all devices.
+
 ## 1.18.24
 
 ### Fixed

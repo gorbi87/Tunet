@@ -1,7 +1,7 @@
 {
   "name": "tunet-dashboard",
   "private": true,
-  "version": "1.18.24",
+  "version": "1.18.25",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oyvhov/tunet.git"

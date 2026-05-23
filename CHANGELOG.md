@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.25] — 2026-05-23
+
+### Fixed
+- Server: fix Express 5 `req.query` immutability bug in shared mode — query-based API endpoints (`GET /api/settings/current`, `/history`, `/devices`, `GET /api/profiles`) now correctly normalize `ha_user_id` to `__shared__`, resolving 403 "Forbidden: user mismatch" errors that blocked dashboard sync and profile access.
+
+
 ## [1.18.24] — 2026-05-23
 
 ### Fixed
