@@ -114,6 +114,13 @@ export function isCardHiddenByLogic(
     hiddenByBaseLogic = !hasEntities;
   }
 
+  if (cardId.startsWith('haushaltsgeraete_card_')) {
+    const APPLIANCE_ACTIVE = new Set(['run', 'pause', 'actionrequired', 'delayedstart']);
+    const washerActive = APPLIANCE_ACTIVE.has(entities['sensor.waschmaschine_betriebszustand']?.state);
+    const dishActive = APPLIANCE_ACTIVE.has(entities['sensor.geschirrspuler_betriebszustand']?.state);
+    return !washerActive && !dishActive;
+  }
+
   if (
     activePage === 'settings' &&
     !['car'].includes(cardId) &&

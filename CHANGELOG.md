@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.26] — 2026-05-23
+
+### Changed
+- Dashboard grid repacks visible cards in view mode: conditionally hidden cards no longer leave empty gaps — remaining cards fill in automatically. Edit mode is unchanged (explicit positions for drag & drop).
+
+### Fixed
+- Haushaltsgeräte card is now correctly treated as hidden by logic when both washer and dishwasher are inactive, so the grid repack picks it up and adjacent cards fill its slot.
+
+
 ## [1.18.25] — 2026-05-23
 
 ### Fixed

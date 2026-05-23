@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { LayoutGrid, Plus, UserCircle2 } from '../icons';
 import CardErrorBoundary from '../components/ui/CardErrorBoundary';
 import { formatDuration } from '../utils';
+import { buildGridLayout } from '../utils/gridLayout';
 
 const MediaPage = lazy(() => import('../components/pages/MediaPage'));
 const LightsPage = lazy(() => import('../components/pages/LightsPage'));
@@ -185,6 +186,24 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
     );
   }
 
+  // In view mode repack visible cards to fill gaps left by conditionally hidden ones.
+  // Edit mode keeps the original layout so drag-to-rearrange works unchanged.
+  const viewModeLayout = !editMode
+    ? buildGridLayout(
+        (pagesConfig[activePage] || [])
+          .filter((id) => gridLayout[id])
+          .filter((id) => !hiddenCards.includes(id) && !isCardHiddenByLogic(id))
+          .sort((a, b) => {
+            const pa = gridLayout[a], pb = gridLayout[b];
+            if (pa.row !== pb.row) return pa.row - pb.row;
+            return pa.col - pb.col;
+          }),
+        gridColCount,
+        (id) => gridLayout[id]?.span || 2,
+        (id) => gridLayout[id]?.colSpan || 1,
+      )
+    : null;
+
   return (
     <div
       key={activePage}
@@ -206,7 +225,7 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
         })
         .map(({ id }) => {
           const index = cardIndexMap.get(id) ?? -1;
-          const placement = gridLayout[id];
+          const placement = (!editMode && viewModeLayout?.[id]) ? viewModeLayout[id] : gridLayout[id];
           const isCalendarCard = id.startsWith('calendar_card_');
           const isTodoCard = id.startsWith('todo_card_');
           const isLargeCard = isCalendarCard || isTodoCard;

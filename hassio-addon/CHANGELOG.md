@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.18.26
+
+### Changed
+- Dashboard: conditionally hidden cards no longer leave empty gaps — visible cards repack automatically.
+
+### Fixed
+- Haushaltsgeräte card correctly treated as hidden when washer and dishwasher are both inactive.
+
 ## 1.18.25
 
 ### Fixed
