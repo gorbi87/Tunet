@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.23
+
+### Changed
+- Service worker cache-busting: cache names now include the app version so browsers detect updates on every release.
+
 ## 1.18.22
 
 ### Changed

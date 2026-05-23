@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.23] — 2026-05-23
+
+### Changed
+- Service worker cache names now include the app version so browsers detect updates on every release.
+- Release script (`release:prep`) automatically updates `APP_VERSION` in `public/sw.js`.
+
+
 ## [1.18.22] — 2026-05-23
 
 ### Added

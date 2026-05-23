@@ -14,6 +14,7 @@ const paths = {
   addonConfig: path.join(root, 'hassio-addon', 'config.yaml'),
   addonChangelog: path.join(root, 'hassio-addon', 'CHANGELOG.md'),
   addonDockerfile: path.join(root, 'hassio-addon', 'Dockerfile'),
+  sw: path.join(root, 'public', 'sw.js'),
 };
 
 const releaseFiles = [
@@ -22,6 +23,7 @@ const releaseFiles = [
   'CHANGELOG.md',
   'hassio-addon/config.yaml',
   'hassio-addon/CHANGELOG.md',
+  'public/sw.js',
 ];
 
 const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -364,12 +366,13 @@ async function runPrep(args) {
     fail('release:prep requires --version.');
   }
 
-  const [pkg, lock, mainChangelog, addonConfig, addonChangelog] = await Promise.all([
+  const [pkg, lock, mainChangelog, addonConfig, addonChangelog, sw] = await Promise.all([
     readJson(paths.pkg),
     readJson(paths.lock),
     readFile(paths.changelog, 'utf8'),
     readFile(paths.addonConfig, 'utf8'),
     readFile(paths.addonChangelog, 'utf8'),
+    readFile(paths.sw, 'utf8'),
   ]);
 
   pkg.version = version;
@@ -385,6 +388,8 @@ async function runPrep(args) {
     `## ${version}`,
     ['### Changed', '- Add release notes.'].join('\n')
   );
+  const nextSw = sw.replace(/^const APP_VERSION = '[^']+';/m, `const APP_VERSION = '${version}';`);
+  if (nextSw === sw) fail('Could not update APP_VERSION in public/sw.js.');
 
   await Promise.all([
     writeJson(paths.pkg, pkg),
@@ -392,6 +397,7 @@ async function runPrep(args) {
     writeFile(paths.addonConfig, nextAddonConfig, 'utf8'),
     writeFile(paths.changelog, nextMainChangelog, 'utf8'),
     writeFile(paths.addonChangelog, nextAddonChangelog, 'utf8'),
+    writeFile(paths.sw, nextSw, 'utf8'),
   ]);
 
   console.log(`✅ Prepared release files: version=${version}, date=${releaseDate}`);
