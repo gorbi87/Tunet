@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.27] — 2026-05-23
+
+### Fixed
+- Pool-Modal: Durchfluss wird von l/min in l/h umgerechnet (×60) da der Sensor in l/min liefert.
+
+
 ## [1.18.26] — 2026-05-23
 
 ### Changed

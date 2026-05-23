@@ -81,6 +81,10 @@ export default function PoolModal({ show, onClose, entities, callService }) {
   const vorlauf    = entities[VORLAUF];
   const ruecklauf  = entities[RUECKLAUF];
   const durchfluss = entities[DURCHFLUSS];
+  const durchflussLh = (() => {
+    const n = parseFloat(durchfluss?.state);
+    return Number.isFinite(n) ? String(Math.round(n * 60)) : null;
+  })();
   const filterpumpe = entities[FILTERPUMPE];
   const waermepumpe = entities[WAERMEPUMPE];
   const shellyPower  = entities[SHELLY_POWER];
@@ -159,7 +163,7 @@ export default function PoolModal({ show, onClose, entities, callService }) {
               <DataRow label="Vorlauf"   value={val(vorlauf)}   unit="°C" />
               <DataRow label="Rücklauf"  value={val(ruecklauf)} unit="°C" />
               <DataRow label="Differenz" value={differenz}       unit="K" />
-              <DataRow label="Durchfluss" value={val(durchfluss, 0)} unit="l/h" />
+              <DataRow label="Durchfluss" value={durchflussLh ?? '–'} unit="l/h" />
             </div>
 
             {/* BlueConnect */}

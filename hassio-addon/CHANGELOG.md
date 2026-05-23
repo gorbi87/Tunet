@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.27
+
+### Fixed
+- Pool-Modal: Durchfluss korrekt in l/h (Sensor liefert l/min, Umrechnung ×60).
+
 ## 1.18.26
 
 ### Changed
