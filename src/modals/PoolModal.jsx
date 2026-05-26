@@ -501,6 +501,14 @@ export default function PoolModal({ show, onClose, entities, callService }) {
                           </p>
                         )}
                       </div>
+                      {Number.isFinite(chlorVal) && chlorVal > 0 && (
+                        <div className="mt-3 flex items-center justify-between border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
+                          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Letzte Dosiermenge</span>
+                          <span className="text-sm font-semibold tabular-nums" style={{ color: ACCENT }}>
+                            {chlorVal.toFixed(0)} ml
+                          </span>
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
