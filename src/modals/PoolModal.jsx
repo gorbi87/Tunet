@@ -25,6 +25,7 @@ const BLUERIIOT_CONDUCT    = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_cond
 const BLUERIIOT_LAST_UPD   = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_last_update';
 const BLUERIIOT_READ       = 'switch.poolsteuerung_d1_blueconnect_blueriiot_read_sensors';
 const CHLOR_AUTO           = 'automation.automatische_chlordosierung_variabel';
+const LETZTE_DOSIERMENGE   = 'input_number.pool_letzte_dosiermenge';
 
 const ACCENT = '#38bdf8';
 const POOL_VOLUMEN_L = 8300;
@@ -501,12 +502,18 @@ export default function PoolModal({ show, onClose, entities, callService }) {
                           </p>
                         )}
                       </div>
-                      <div className="mt-3 flex items-center justify-between border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
-                        <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Letzte Dosiermenge</span>
-                        <span className="text-sm font-semibold tabular-nums" style={{ color: Number.isFinite(chlorVal) && chlorVal > 0 ? ACCENT : 'var(--text-muted)' }}>
-                          {Number.isFinite(chlorVal) && chlorVal > 0 ? `${chlorVal.toFixed(0)} ml` : 'Noch nicht gelaufen'}
-                        </span>
-                      </div>
+                      {(() => {
+                        const letzteDosis = parseFloat(entities[LETZTE_DOSIERMENGE]?.state);
+                        const hasDosis = Number.isFinite(letzteDosis) && letzteDosis > 0;
+                        return (
+                          <div className="mt-3 flex items-center justify-between border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
+                            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Letzte Dosiermenge</span>
+                            <span className="text-sm font-semibold tabular-nums" style={{ color: hasDosis ? ACCENT : 'var(--text-muted)' }}>
+                              {hasDosis ? `${letzteDosis.toFixed(0)} ml` : 'Noch nicht gelaufen'}
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })()}
