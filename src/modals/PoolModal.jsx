@@ -26,16 +26,19 @@ const BLUERIIOT_LAST_UPD   = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_last
 const BLUERIIOT_READ       = 'switch.poolsteuerung_d1_blueconnect_blueriiot_read_sensors';
 
 const ACCENT = '#38bdf8';
+const POOL_VOLUMEN_L = 8300;
+const CHLOR_KONZENTRATION = 0.135; // Summer Fun Professional 12–15%, Mittelwert 13.5%
+const CHLOR_ZIEL_MGL = 0.5;       // Zielwert freies Chlor in mg/l
 
 const PH_SCALE = {
-  min: 6.8, max: 8.0,
+  min: 6.8, max: 7.8,
   stops: [
     { at: 6.8, color: '#ef4444' },
     { at: 7.0, color: '#f97316' },
     { at: 7.2, color: '#22c55e' },
-    { at: 7.6, color: '#22c55e' },
-    { at: 7.8, color: '#f97316' },
-    { at: 8.0, color: '#ef4444' },
+    { at: 7.4, color: '#22c55e' },
+    { at: 7.6, color: '#f97316' },
+    { at: 7.8, color: '#ef4444' },
   ],
   labels: ['niedrig', 'optimal', 'hoch'],
 };
@@ -292,7 +295,7 @@ export default function PoolModal({ show, onClose, entities, callService }) {
                         label="pH"
                         value={Number.isFinite(phVal) ? phVal.toFixed(2) : '–'}
                         color={Number.isFinite(phVal)
-                          ? phVal < 7.2 ? '#f97316' : phVal <= 7.6 ? '#22c55e' : '#ef4444'
+                          ? phVal < 7.0 ? '#ef4444' : phVal < 7.2 ? '#f97316' : phVal <= 7.4 ? '#22c55e' : phVal <= 7.6 ? '#f97316' : '#ef4444'
                           : undefined}
                       />
                       <InfoTile
@@ -371,6 +374,45 @@ export default function PoolModal({ show, onClose, entities, callService }) {
                   <InfoTile label="Schätzwert" value={val(entities[CHLOR_SCHAETZ], 2)} unit="mg/l" />
                   <InfoTile label="Gesamtzähler" value={val(entities[CHLOR_COUNTER], 0)} unit="ml" />
                 </div>
+
+                {/* Dosierempfehlung */}
+                {(() => {
+                  const current = parseFloat(entities[CHLOR_SCHAETZ]?.state);
+                  if (!Number.isFinite(current)) return null;
+                  const delta = CHLOR_ZIEL_MGL - current;
+                  if (delta <= 0) {
+                    return (
+                      <div className="mb-4 rounded-2xl border p-4 text-center"
+                        style={{ borderColor: 'var(--status-success-border)', backgroundColor: 'var(--status-success-bg)' }}>
+                        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--status-success-fg)' }}>
+                          Chlorgehalt optimal
+                        </p>
+                        <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                          Kein Chlor erforderlich
+                        </p>
+                      </div>
+                    );
+                  }
+                  const ml = Math.round(delta * POOL_VOLUMEN_L / (CHLOR_KONZENTRATION * 1000));
+                  return (
+                    <div className="mb-4 rounded-2xl border p-4"
+                      style={{ borderColor: ACCENT, backgroundColor: 'rgba(56,189,248,0.08)' }}>
+                      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                        Dosierempfehlung
+                      </p>
+                      <div className="flex items-end gap-2">
+                        <span className="text-3xl font-light" style={{ color: ACCENT }}>{ml}</span>
+                        <span className="mb-1 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>ml</span>
+                        <span className="mb-1 ml-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                          um auf {CHLOR_ZIEL_MGL} mg/l zu kommen
+                        </span>
+                      </div>
+                      <p className="mt-2 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                        Summer Fun 12–15% · 8300 L · Istwert {current.toFixed(2)} mg/l
+                      </p>
+                    </div>
+                  );
+                })()}
 
                 <div className="popup-surface mb-4 rounded-2xl p-5">
                   <SectionTitle>Chlordosierung</SectionTitle>

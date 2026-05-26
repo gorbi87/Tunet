@@ -8,7 +8,7 @@ const BLUERIIOT_CONNECTION = 'binary_sensor.poolsteuerung_d1_blueconnect_bluerii
 const BLUERIIOT_PH  = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_ph';
 const BLUERIIOT_ORP = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_orp';
 
-const phColor  = (v) => v < 7.2 ? '#fb923c' : v <= 7.6 ? '#4ade80' : '#f87171';
+const phColor  = (v) => v < 7.0 ? '#f87171' : v < 7.2 ? '#fb923c' : v <= 7.4 ? '#4ade80' : v <= 7.6 ? '#fb923c' : '#f87171';
 const orpColor = (v) => v < 650 ? '#f87171' : v <= 750 ? '#4ade80' : '#fb923c';
 
 function StatusChip({ label }) {
