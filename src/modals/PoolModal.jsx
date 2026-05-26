@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from '../icons';
+import { X, ChevronDown } from '../icons';
 import { FaWaterLadder } from 'react-icons/fa6';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 
@@ -26,6 +26,7 @@ const BLUERIIOT_LAST_UPD   = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_last
 const BLUERIIOT_READ       = 'switch.poolsteuerung_d1_blueconnect_blueriiot_read_sensors';
 const CHLOR_AUTO           = 'automation.automatische_chlordosierung_variabel';
 const LETZTE_DOSIERMENGE   = 'input_number.pool_letzte_dosiermenge';
+const CHLOR_TAGES          = 'input_number.pool_chlor_tagesverbrauch';
 
 const ACCENT = '#38bdf8';
 const POOL_VOLUMEN_L = 8300;
@@ -162,6 +163,7 @@ const TABS = [
 
 export default function PoolModal({ show, onClose, entities, callService }) {
   const [tab, setTab] = useState('wasser');
+  const [verbrauchOpen, setVerbrauchOpen] = useState(false);
   const modalTitleId = 'pool-modal-title';
 
   if (!show) return null;
@@ -372,10 +374,49 @@ export default function PoolModal({ show, onClose, entities, callService }) {
             {/* Tab: Chlor */}
             {tab === 'chlor' && (
               <>
-                <div className="mb-4 grid grid-cols-2 gap-3">
-                  <InfoTile label="Schätzwert" value={val(entities[CHLOR_SCHAETZ], 2)} unit="mg/l" />
-                  <InfoTile label="Gesamtzähler" value={val(entities[CHLOR_COUNTER], 0)} unit="ml" />
+                <div className="mb-4">
+                  <InfoTile label="Schätzwert Chlor" value={val(entities[CHLOR_SCHAETZ], 2)} unit="mg/l" />
                 </div>
+
+                {/* Verbrauch — ausklappbar */}
+                {(() => {
+                  const tages = parseFloat(entities[CHLOR_TAGES]?.state);
+                  const gesamt = parseFloat(entities[CHLOR_COUNTER]?.state);
+                  const tagesDisplay = Number.isFinite(tages) ? `${tages.toFixed(0)} ml` : '–';
+                  const gesamtLiter = Number.isFinite(gesamt) ? (gesamt / 1000).toFixed(2) : '–';
+                  return (
+                    <div className="popup-surface mb-4 overflow-hidden rounded-2xl">
+                      <button
+                        onClick={() => setVerbrauchOpen(v => !v)}
+                        className="flex w-full items-center justify-between p-5 pb-4"
+                      >
+                        <div>
+                          <p className="text-left text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                            Verbrauch
+                          </p>
+                          {!verbrauchOpen && (
+                            <p className="mt-0.5 text-left text-xs" style={{ color: 'var(--text-secondary)' }}>
+                              Heute: {tagesDisplay} · Gesamt: {gesamtLiter} L
+                            </p>
+                          )}
+                        </div>
+                        <ChevronDown
+                          className="h-4 w-4 flex-shrink-0 transition-transform duration-200"
+                          style={{
+                            color: 'var(--text-muted)',
+                            transform: verbrauchOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                          }}
+                        />
+                      </button>
+                      {verbrauchOpen && (
+                        <div className="grid grid-cols-2 gap-3 px-5 pb-5">
+                          <InfoTile label="Heute" value={Number.isFinite(tages) ? tages.toFixed(0) : '–'} unit="ml" />
+                          <InfoTile label="Gesamt" value={gesamtLiter} unit="L" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Dosierempfehlung */}
                 {(() => {
