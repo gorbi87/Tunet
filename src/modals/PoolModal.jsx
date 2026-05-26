@@ -26,6 +26,7 @@ const BLUERIIOT_LAST_UPD   = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_last
 const BLUERIIOT_READ       = 'switch.poolsteuerung_d1_blueconnect_blueriiot_read_sensors';
 const CHLOR_AUTO           = 'automation.automatische_chlordosierung_variabel';
 const LETZTE_DOSIERMENGE   = 'input_number.pool_letzte_dosiermenge';
+const LETZTE_DOSIERUNG_AUTO = 'input_boolean.pool_letzte_dosierung_automatisch';
 const CHLOR_TAGES          = 'input_number.pool_chlor_tagesverbrauch';
 
 const ACCENT = '#38bdf8';
@@ -500,7 +501,13 @@ export default function PoolModal({ show, onClose, entities, callService }) {
                     </button>
                   </div>
                   <button
-                    onClick={() => callService('button', 'press', { entity_id: CHLORZUGABE })}
+                    onClick={() => {
+                      if (Number.isFinite(chlorVal) && chlorVal > 0) {
+                        callService('input_number', 'set_value', { entity_id: LETZTE_DOSIERMENGE, value: chlorVal });
+                      }
+                      callService('input_boolean', 'turn_off', { entity_id: LETZTE_DOSIERUNG_AUTO });
+                      callService('button', 'press', { entity_id: CHLORZUGABE });
+                    }}
                     className="w-full rounded-xl border py-2.5 text-xs font-semibold transition-colors hover:opacity-80"
                     style={{ borderColor: ACCENT, backgroundColor: 'rgba(56,189,248,0.1)', color: ACCENT }}
                   >
@@ -546,12 +553,27 @@ export default function PoolModal({ show, onClose, entities, callService }) {
                       {(() => {
                         const letzteDosis = parseFloat(entities[LETZTE_DOSIERMENGE]?.state);
                         const hasDosis = Number.isFinite(letzteDosis) && letzteDosis > 0;
+                        const isAuto = entities[LETZTE_DOSIERUNG_AUTO]?.state === 'on';
                         return (
-                          <div className="mt-3 flex items-center justify-between border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
-                            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Letzte Dosiermenge</span>
-                            <span className="text-sm font-semibold tabular-nums" style={{ color: hasDosis ? ACCENT : 'var(--text-muted)' }}>
-                              {hasDosis ? `${letzteDosis.toFixed(0)} ml` : 'Noch nicht gelaufen'}
-                            </span>
+                          <div className="mt-3 border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Letzte Dosiermenge</span>
+                              <span className="text-sm font-semibold tabular-nums" style={{ color: hasDosis ? ACCENT : 'var(--text-muted)' }}>
+                                {hasDosis ? `${letzteDosis.toFixed(0)} ml` : 'Noch nicht gelaufen'}
+                              </span>
+                            </div>
+                            {hasDosis && (
+                              <div className="mt-1 flex justify-end">
+                                <span
+                                  className="rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest"
+                                  style={isAuto
+                                    ? { backgroundColor: 'rgba(56,189,248,0.12)', borderColor: ACCENT, color: ACCENT }
+                                    : { backgroundColor: 'rgba(251,146,60,0.1)', borderColor: 'rgba(251,146,60,0.4)', color: '#fb923c' }}
+                                >
+                                  {isAuto ? 'Automatisch' : 'Manuell'}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         );
                       })()}
