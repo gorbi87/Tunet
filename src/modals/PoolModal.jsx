@@ -24,6 +24,7 @@ const BLUERIIOT_TEMP       = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_temp
 const BLUERIIOT_CONDUCT    = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_conductivity';
 const BLUERIIOT_LAST_UPD   = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_last_update';
 const BLUERIIOT_READ       = 'switch.poolsteuerung_d1_blueconnect_blueriiot_read_sensors';
+const CHLOR_AUTO           = 'automation.automatische_chlordosierung_variabel';
 
 const ACCENT = '#38bdf8';
 const POOL_VOLUMEN_L = 8300;
@@ -464,6 +465,45 @@ export default function PoolModal({ show, onClose, entities, callService }) {
                     Chlorzugabe starten
                   </button>
                 </div>
+
+                {/* Automatische Dosierung */}
+                {(() => {
+                  const auto = entities[CHLOR_AUTO];
+                  const autoOn = auto?.state === 'on';
+                  const lastTriggered = auto?.attributes?.last_triggered;
+                  const lastTriggeredDisplay = (() => {
+                    if (!lastTriggered) return null;
+                    const d = new Date(lastTriggered);
+                    if (!Number.isFinite(d.getTime())) return null;
+                    const today = new Date();
+                    const isToday = d.toDateString() === today.toDateString();
+                    return isToday
+                      ? d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+                      : d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                  })();
+                  return (
+                    <div className="popup-surface mt-4 rounded-2xl p-5">
+                      <SectionTitle>Automatische Dosierung</SectionTitle>
+                      <SwitchRow
+                        label="Stündlich dosieren"
+                        on={autoOn}
+                        onToggle={() => callService('automation', autoOn ? 'turn_off' : 'turn_on', { entity_id: CHLOR_AUTO })}
+                      />
+                      <div className="mt-2 rounded-xl p-3" style={{ backgroundColor: 'var(--glass-bg)' }}>
+                        <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                          {autoOn
+                            ? 'Aktiv · Messung & Dosierung stündlich zur vollen Stunde wenn Filterpumpe läuft'
+                            : 'Inaktiv · Keine automatische Dosierung'}
+                        </p>
+                        {lastTriggeredDisplay && (
+                          <p className="mt-1 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                            Zuletzt ausgeführt: {lastTriggeredDisplay}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
               </>
             )}
 
