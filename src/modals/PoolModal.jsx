@@ -299,17 +299,13 @@ export default function PoolModal({ show, onClose, entities, callService }) {
                       <InfoTile
                         label="pH"
                         value={Number.isFinite(phVal) ? phVal.toFixed(2) : '–'}
-                        color={Number.isFinite(phVal)
-                          ? phVal < 7.0 ? '#ef4444' : phVal < 7.2 ? '#f97316' : phVal <= 7.4 ? '#22c55e' : phVal <= 7.6 ? '#f97316' : '#ef4444'
-                          : undefined}
+                        color={Number.isFinite(phVal) ? interpolateColor(PH_SCALE.stops, phVal, PH_SCALE.min, PH_SCALE.max) : undefined}
                       />
                       <InfoTile
                         label="ORP / Redox"
                         value={Number.isFinite(orpVal) ? Math.round(orpVal) : '–'}
                         unit="mV"
-                        color={Number.isFinite(orpVal)
-                          ? orpVal < 650 ? '#ef4444' : orpVal <= 750 ? '#22c55e' : '#f97316'
-                          : undefined}
+                        color={Number.isFinite(orpVal) ? interpolateColor(ORP_SCALE.stops, orpVal, ORP_SCALE.min, ORP_SCALE.max) : undefined}
                       />
                     </div>
 

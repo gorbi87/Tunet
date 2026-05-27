@@ -8,8 +8,20 @@ const BLUERIIOT_CONNECTION = 'binary_sensor.poolsteuerung_d1_blueconnect_bluerii
 const BLUERIIOT_PH  = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_ph';
 const BLUERIIOT_ORP = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_orp';
 
-const phColor  = (v) => v < 7.0 ? '#f87171' : v < 7.2 ? '#fb923c' : v <= 7.4 ? '#4ade80' : v <= 7.6 ? '#fb923c' : '#f87171';
-const orpColor = (v) => v < 650 ? '#f87171' : v <= 750 ? '#4ade80' : '#fb923c';
+const PH_STOPS  = [{ at: 6.8, color: '#ef4444' }, { at: 7.0, color: '#f97316' }, { at: 7.2, color: '#22c55e' }, { at: 7.4, color: '#22c55e' }, { at: 7.6, color: '#f97316' }, { at: 7.8, color: '#ef4444' }];
+const ORP_STOPS = [{ at: 400, color: '#ef4444' }, { at: 550, color: '#f97316' }, { at: 650, color: '#22c55e' }, { at: 750, color: '#22c55e' }, { at: 850, color: '#f97316' }, { at: 900, color: '#ef4444' }];
+function scaleColor(stops, v, min, max) {
+  const c = Math.max(min, Math.min(max, v));
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (c <= stops[i + 1].at) {
+      const t = (c - stops[i].at) / (stops[i + 1].at - stops[i].at);
+      return t < 0.5 ? stops[i].color : stops[i + 1].color;
+    }
+  }
+  return stops[stops.length - 1].color;
+}
+const phColor  = (v) => scaleColor(PH_STOPS,  v, 6.8, 7.8);
+const orpColor = (v) => scaleColor(ORP_STOPS, v, 400, 900);
 
 function StatusChip({ label }) {
   return (

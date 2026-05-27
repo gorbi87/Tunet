@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.37
+
+### Changed
+- Add release notes.
+
 ## 1.18.36
 
 ### Changed
