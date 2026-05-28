@@ -1,4 +1,4 @@
-﻿# Tunet Dashboard
+﻿# Casa Dashboard
 
 A modern React dashboard for Home Assistant with real-time entity control, energy monitoring, and multi-device profile sync.
 

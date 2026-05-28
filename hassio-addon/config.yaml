@@ -1,8 +1,8 @@
-name: 'Tunet (gorbi87)'
+name: 'Casa'
 description: 'A modern, responsive dashboard for Home Assistant (custom fork)'
-version: "1.18.37"
+version: "1.18.38"
 slug: 'tunet-gorbi87'
-url: 'https://github.com/gorbi87/Tunet'
+url: 'https://github.com/gorbi87/Casa'
 init: false
 startup: application
 arch:
@@ -14,11 +14,11 @@ auth_api: true
 ingress: true
 ingress_port: 3002
 panel_icon: 'mdi:view-dashboard-variant'
-panel_title: 'Tunet'
+panel_title: 'Casa'
 ports:
   3002/tcp: null
 ports_description:
-  3002/tcp: 'Tunet Web Interface (not needed when using Ingress)'
+  3002/tcp: 'Casa Web Interface (not needed when using Ingress)'
 options:
   ha_url: ''
   ha_token: ''
