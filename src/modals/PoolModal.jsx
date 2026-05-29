@@ -550,16 +550,30 @@ export default function PoolModal({ show, onClose, entities, callService }) {
                         const letzteDosis = parseFloat(entities[LETZTE_DOSIERMENGE]?.state);
                         const hasDosis = Number.isFinite(letzteDosis) && letzteDosis > 0;
                         const isAuto = entities[LETZTE_DOSIERUNG_AUTO]?.state === 'on';
+                        const lastChanged = entities[LETZTE_DOSIERMENGE]?.last_changed;
+                        const zeitstempel = (() => {
+                          if (!lastChanged) return null;
+                          const d = new Date(lastChanged);
+                          if (!Number.isFinite(d.getTime())) return null;
+                          const today = new Date();
+                          const isToday = d.toDateString() === today.toDateString();
+                          return isToday
+                            ? d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+                            : d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                        })();
                         return (
                           <div className="mt-3 border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
                             <div className="flex items-center justify-between">
-                              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Letzte Dosiermenge</span>
+                              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Letzte Dosierung</span>
                               <span className="text-sm font-semibold tabular-nums" style={{ color: hasDosis ? ACCENT : 'var(--text-muted)' }}>
                                 {hasDosis ? `${letzteDosis.toFixed(0)} ml` : 'Noch nicht gelaufen'}
                               </span>
                             </div>
                             {hasDosis && (
-                              <div className="mt-1 flex justify-end">
+                              <div className="mt-1 flex items-center justify-between">
+                                <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                                  {zeitstempel ?? ''}
+                                </span>
                                 <span
                                   className="rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest"
                                   style={isAuto
