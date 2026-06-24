@@ -246,7 +246,7 @@ export default function WaermepumpeModal({
   // BOH Kompressor-Laufzeit
   let kompressorLaufzeitMin = 0;
   const istWWZyklus = betriebsartState === 'Warmwasserbereitung';
-  if (kompressorStartStr && istWWZyklus) {
+  if (kompressorStartStr && istWWZyklus && kompressorAktiv) {
     const startTs = new Date(kompressorStartStr.replace(' ', 'T')).getTime();
     if (!isNaN(startTs)) {
       kompressorLaufzeitMin = Math.max(0, (Date.now() - startTs) / 60000);
