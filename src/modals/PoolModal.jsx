@@ -32,7 +32,7 @@ const CHLOR_TAGES          = 'input_number.pool_chlor_tagesverbrauch';
 const ACCENT = '#38bdf8';
 const POOL_VOLUMEN_L = 8300;
 const CHLOR_KONZENTRATION = 0.135; // Summer Fun Professional 12–15%, Mittelwert 13.5%
-const CHLOR_ZIEL_MGL = 0.5;       // Zielwert freies Chlor in mg/l
+const CHLOR_ZIEL_MGL = 1.0;       // Zielwert freies Chlor in mg/l
 
 const PH_SCALE = {
   min: 6.8, max: 7.8,
