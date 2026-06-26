@@ -25,8 +25,9 @@ const BLUERIIOT_CONDUCT    = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_cond
 const BLUERIIOT_LAST_UPD   = 'sensor.poolsteuerung_d1_blueconnect_blueriiot_last_update';
 const BLUERIIOT_READ       = 'switch.poolsteuerung_d1_blueconnect_blueriiot_read_sensors';
 const CHLOR_AUTO           = 'automation.automatische_chlordosierung_variabel';
-const LETZTE_DOSIERMENGE   = 'input_number.pool_letzte_dosiermenge';
-const LETZTE_DOSIERUNG_AUTO = 'input_boolean.pool_letzte_dosierung_automatisch';
+const LETZTE_DOSIERMENGE        = 'input_number.pool_letzte_dosiermenge';
+const LETZTE_DOSIERUNG_AUTO     = 'input_boolean.pool_letzte_dosierung_automatisch';
+const LETZTE_DOSIERUNG_ZEITPUNKT = 'input_datetime.pool_letzte_dosierung_zeitpunkt';
 const CHLOR_TAGES          = 'input_number.pool_chlor_tagesverbrauch';
 
 const ACCENT = '#38bdf8';
@@ -550,10 +551,10 @@ export default function PoolModal({ show, onClose, entities, callService }) {
                         const letzteDosis = parseFloat(entities[LETZTE_DOSIERMENGE]?.state);
                         const hasDosis = Number.isFinite(letzteDosis) && letzteDosis > 0;
                         const isAuto = entities[LETZTE_DOSIERUNG_AUTO]?.state === 'on';
-                        const lastChanged = entities[LETZTE_DOSIERMENGE]?.last_changed;
+                        const zeitstempelRaw = entities[LETZTE_DOSIERUNG_ZEITPUNKT]?.state;
                         const zeitstempel = (() => {
-                          if (!lastChanged) return null;
-                          const d = new Date(lastChanged);
+                          if (!zeitstempelRaw || zeitstempelRaw === 'unknown' || zeitstempelRaw === 'unavailable') return null;
+                          const d = new Date(zeitstempelRaw);
                           if (!Number.isFinite(d.getTime())) return null;
                           const today = new Date();
                           const isToday = d.toDateString() === today.toDateString();
