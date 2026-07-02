@@ -30,6 +30,7 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   leistungWw: 'number.daikin_heizung_leistung_ww',
   bohWartezeit: 'number.daikin_heizung_wartezeit_boh',
   phaseCTempSnapshot: 'input_number.wp_phase_c_ww_temp_letzte',
+  kuehlung: 'input_boolean.wp_kuhlung_aktiv',
 };
 
 const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({

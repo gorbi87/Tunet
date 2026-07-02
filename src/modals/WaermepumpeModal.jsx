@@ -211,6 +211,7 @@ export default function WaermepumpeModal({
   const automationState = str(WAERMEPUMPE_ENTITY_IDS.automationWp);
   const phaseBActive = e(WAERMEPUMPE_ENTITY_IDS.phaseBBoolean)?.state === 'on';
   const minusPreisAktiv = e(WAERMEPUMPE_ENTITY_IDS.minusPreisBoolean)?.state === 'on';
+  const kuehlungAktiv = e(WAERMEPUMPE_ENTITY_IDS.kuehlung)?.state === 'on';
   const octopusPreisVal = parseFloat(e(WAERMEPUMPE_ENTITY_IDS.octopusPreis)?.state);
   const octopusPreisAktuell = Number.isFinite(octopusPreisVal) ? octopusPreisVal : null;
   const heizstabZyklenVal = val(WAERMEPUMPE_ENTITY_IDS.heizstabZyklen) ?? 0;
@@ -279,6 +280,11 @@ export default function WaermepumpeModal({
     callService?.('input_select', 'select_option', {
       entity_id: WAERMEPUMPE_ENTITY_IDS.saison,
       option,
+    });
+  };
+  const toggleKuehlung = () => {
+    callService?.('input_boolean', kuehlungAktiv ? 'turn_off' : 'turn_on', {
+      entity_id: WAERMEPUMPE_ENTITY_IDS.kuehlung,
     });
   };
 
@@ -643,6 +649,28 @@ export default function WaermepumpeModal({
                     >
                       Automatik {autoOn ? 'Ein' : 'Aus'}
                     </button>
+                    {saisonState === 'Sommer' && (
+                      <button
+                        type="button"
+                        onClick={toggleKuehlung}
+                        className="rounded-full border px-4 py-1.5 text-[11px] font-bold tracking-wider uppercase transition-all"
+                        style={
+                          kuehlungAktiv
+                            ? {
+                                backgroundColor: 'rgba(56,189,248,0.15)',
+                                borderColor: '#38bdf8',
+                                color: '#38bdf8',
+                              }
+                            : {
+                                backgroundColor: 'var(--glass-bg)',
+                                borderColor: 'var(--glass-border)',
+                                color: 'var(--text-muted)',
+                              }
+                        }
+                      >
+                        Kühlung {kuehlungAktiv ? 'Ein' : 'Aus'}
+                      </button>
+                    )}
                     {saisonState && (
                       <span
                         className="rounded-full border px-3 py-1 text-[11px] font-bold tracking-wider uppercase"
