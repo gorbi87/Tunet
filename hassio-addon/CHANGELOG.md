@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.20.4
+
+### Changed
+- Includes dashboard release `1.20.4` with current dependencies and the Node 26 builder.
+
+### Fixed
+- Adds the native build toolchain required to install better-sqlite3 13.
+
 ## 1.20.3
 
 ### Changed

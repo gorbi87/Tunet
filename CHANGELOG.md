@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.20.4] — 2026-07-24
+
+### Changed
+- Updated production and development dependencies, GitHub Actions, and runtime versions.
+- Moved CI to Node 24 and container builders to Node 26.
+
+### Fixed
+- Added native build tooling and deterministic npm installs for better-sqlite3 13.
+- Updated the changed-file formatting check to parse JSON-safe filenames.
+
 ## [1.20.3] — 2026-06-08
 
 ### Changed
