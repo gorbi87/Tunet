@@ -1,4 +1,3 @@
-ARG BUILD_FROM
 ARG BUILD_VERSION
 # ── Stage 1: Build from source ────────────────────────────────────────
 FROM node:26-alpine AS builder
@@ -23,8 +22,13 @@ RUN apk add --no-cache curl tar python3 make g++ \
  && npm run build
 
 # ── Stage 2: Production image ────────────────────────────────────────
-ARG BUILD_FROM
-FROM ${BUILD_FROM:-ghcr.io/hassio-addons/base:16.3.2}
+FROM ghcr.io/hassio-addons/base:21.0.0
+ARG BUILD_VERSION
+ARG BUILD_ARCH
+LABEL \
+	io.hass.version="${BUILD_VERSION}" \
+	io.hass.type="app" \
+	io.hass.arch="${BUILD_ARCH}"
 
 RUN apk add --no-cache nodejs npm python3 make g++
 

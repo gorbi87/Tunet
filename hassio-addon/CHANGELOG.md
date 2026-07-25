@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Updates the Home Assistant app base image and build metadata to restore installs from the App Store (#188).
+
 ## 1.20.4
 
 ### Changed
