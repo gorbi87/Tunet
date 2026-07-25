@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.20.5] — 2026-07-25
+
+### Changed
+- Migrated Home Assistant app build metadata into the Dockerfile and removed the unsupported `armv7` target.
+
+### Fixed
+- Restored App Store installs by updating the app base image to resolve the musl package conflict (#188).
+
 ## [1.20.4] — 2026-07-24
 
 ### Changed

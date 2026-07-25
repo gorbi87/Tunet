@@ -1,9 +1,12 @@
 # Changelog
 
-## Unreleased
+## 1.20.5
+
+### Changed
+- Migrates deprecated build metadata into the Dockerfile and removes the unsupported `armv7` target.
 
 ### Fixed
-- Updates the Home Assistant app base image and build metadata to restore installs from the App Store (#188).
+- Restores App Store installs by updating the app base image to resolve the musl package conflict (#188).
 
 ## 1.20.4
 
