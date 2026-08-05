@@ -22,6 +22,7 @@ import {
 } from '../icons';
 import StatusPill from '../components/cards/StatusPill';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
+import { normalizeDecimalPlaces } from '../utils';
 import {
   DEFAULT_PILL_ANIMATION_PRESET,
   normalizePillAnimationPreset,
@@ -38,6 +39,7 @@ import {
   buildStatusGroupPillVisuals,
   getStatusGroupSelectionMode,
   getStatusGroupPresetText,
+  getStatusGroupThreshold,
   resolveStatusGroupCandidates,
   resolveStatusGroupPill,
 } from '../utils/statusGroupPills';
@@ -147,6 +149,10 @@ export default function StatusPillsConfigModal({
             ? pill.groupEntityIds
             : []
           : pill.groupEntityIds,
+      groupThreshold:
+        pill.type === STATUS_GROUP_PILL_TYPE
+          ? getStatusGroupThreshold({ ...pill, groupPreset })
+          : pill.groupThreshold,
       hideWhenEmpty:
         pill.type === STATUS_GROUP_PILL_TYPE ? pill.hideWhenEmpty !== false : pill.hideWhenEmpty,
       icon: pill.icon || groupVisuals.icon,
@@ -155,6 +161,7 @@ export default function StatusPillsConfigModal({
       animationPreset: normalizePillAnimationPreset(pill),
       showLabel: pill.showLabel !== false,
       showSublabel: pill.showSublabel !== false,
+      decimals: normalizeDecimalPlaces(pill.decimals),
     };
   };
 
@@ -267,10 +274,13 @@ export default function StatusPillsConfigModal({
           : pill.type === STATUS_GROUP_PILL_TYPE
             ? []
             : undefined,
+      groupThreshold:
+        pill.type === STATUS_GROUP_PILL_TYPE ? getStatusGroupThreshold(pill) : undefined,
       hideWhenEmpty:
         pill.type === STATUS_GROUP_PILL_TYPE ? pill.hideWhenEmpty !== false : undefined,
       unitSource: pill.unitSource === 'custom' ? 'custom' : 'ha',
       customUnit: typeof pill.customUnit === 'string' ? pill.customUnit : '',
+      decimals: normalizeDecimalPlaces(pill.decimals),
       mediaFilter: typeof pill.mediaFilter === 'string' ? pill.mediaFilter : '',
       mediaFilterMode:
         typeof pill.mediaFilterMode === 'string' ? pill.mediaFilterMode : 'startsWith',
@@ -336,6 +346,7 @@ export default function StatusPillsConfigModal({
       conditionEnabled: false,
       unitSource: 'ha',
       customUnit: '',
+      decimals: null,
       clickable: isGroupPill || pillType === 'sonos' || pillType === 'alarm',
       animated: true,
       animationPreset: DEFAULT_PILL_ANIMATION_PRESET,
@@ -1259,7 +1270,7 @@ export default function StatusPillsConfigModal({
 
                           {pill.type === STATUS_GROUP_PILL_TYPE && groupPreviewData && (
                             <div className="space-y-3">
-                              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
                                 {groupPresetOptions.map((preset) => {
                                   const PresetIcon =
                                     getIconComponent(preset.icon) || getIconComponent('Activity');
@@ -1268,33 +1279,70 @@ export default function StatusPillsConfigModal({
                                     <button
                                       key={preset.id}
                                       type="button"
+                                      aria-label={preset.label}
                                       onClick={() =>
                                         updatePill(pill.id, {
                                           groupPreset: preset.id,
                                           groupSelectionMode: STATUS_GROUP_SELECTION_ALL,
                                           groupEntityIds: [],
+                                          groupThreshold: Number.isFinite(preset.defaultThreshold)
+                                            ? preset.defaultThreshold
+                                            : undefined,
                                           ...buildStatusGroupPillVisuals(preset.id),
                                         })
                                       }
-                                      className={`flex min-h-24 flex-col items-start justify-between rounded-2xl border p-3 text-left transition-all ${
+                                      className={`flex min-h-24 min-w-0 flex-col items-start justify-between rounded-2xl border p-2 text-left transition-all ${
                                         isSelected
                                           ? 'border-[var(--accent-color)] bg-[var(--accent-bg)] text-[var(--accent-color)]'
                                           : 'border-[var(--glass-border)]/35 bg-transparent text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)]'
                                       }`}
                                     >
                                       <span
-                                        className={`flex h-9 w-9 items-center justify-center rounded-xl ${preset.iconColor}`}
+                                        className={`flex h-8 w-8 items-center justify-center rounded-lg ${preset.iconColor}`}
                                         style={{ backgroundColor: preset.iconBgColor }}
                                       >
                                         <PresetIcon className="h-4 w-4" />
                                       </span>
-                                      <span className="text-sm font-bold text-[var(--text-primary)]">
-                                        {preset.label}
+                                      <span className="w-full text-xs leading-tight font-bold break-words text-[var(--text-primary)]">
+                                        {preset.label.replaceAll('/', '/\u200B')}
                                       </span>
                                     </button>
                                   );
                                 })}
                               </div>
+
+                              {Number.isFinite(groupPreviewData.preset.defaultThreshold) && (
+                                <div className="flex items-center justify-between gap-4 rounded-xl border border-[var(--glass-border)]/35 bg-transparent p-3">
+                                  <label
+                                    htmlFor={`group-threshold-${pill.id}`}
+                                    className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase"
+                                  >
+                                    {getTranslation(
+                                      'statusPills.groupThreshold',
+                                      'Low battery threshold'
+                                    )}
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      id={`group-threshold-${pill.id}`}
+                                      type="number"
+                                      min={groupPreviewData.preset.minThreshold}
+                                      max={groupPreviewData.preset.maxThreshold}
+                                      step="1"
+                                      value={getStatusGroupThreshold(pill)}
+                                      onChange={(event) =>
+                                        updatePill(pill.id, {
+                                          groupThreshold: Number(event.target.value),
+                                        })
+                                      }
+                                      className="w-20 rounded-lg border-0 bg-[var(--glass-bg)] px-3 py-2 text-right text-sm font-bold text-[var(--text-primary)] outline-none"
+                                    />
+                                    <span className="text-sm font-bold text-[var(--text-secondary)]">
+                                      %
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
 
                               <div className="rounded-xl border border-[var(--glass-border)]/35 bg-transparent p-3">
                                 <div className="mb-2 flex items-center justify-between gap-3">
@@ -2187,6 +2235,46 @@ export default function StatusPillsConfigModal({
                               </div>
                             </div>
                           </div>
+                          {pill.type === 'conditional' && (
+                            <div className="space-y-1 rounded-xl border border-[var(--glass-border)]/35 bg-transparent p-3">
+                              <label
+                                htmlFor={`status-pill-decimals-${pill.id}`}
+                                className="text-[10px] font-bold text-[var(--text-muted)] uppercase"
+                              >
+                                {getTranslation('statusPills.decimalPlaces', 'Decimal places')}
+                              </label>
+                              <select
+                                id={`status-pill-decimals-${pill.id}`}
+                                aria-label={getTranslation(
+                                  'statusPills.decimalPlaces',
+                                  'Decimal places'
+                                )}
+                                value={
+                                  normalizeDecimalPlaces(pill.decimals) === null
+                                    ? ''
+                                    : normalizeDecimalPlaces(pill.decimals)
+                                }
+                                onChange={(e) =>
+                                  updatePill(pill.id, {
+                                    decimals:
+                                      e.target.value === ''
+                                        ? null
+                                        : normalizeDecimalPlaces(e.target.value),
+                                  })
+                                }
+                                className="w-full rounded-lg border-0 bg-[var(--modal-bg)] px-3 py-1.5 text-xs font-bold text-[var(--text-primary)] outline-none"
+                              >
+                                <option value="">
+                                  {getTranslation('statusPills.automatic', 'Automatic')}
+                                </option>
+                                {Array.from({ length: 7 }, (_, decimalPlaces) => (
+                                  <option key={decimalPlaces} value={decimalPlaces}>
+                                    {decimalPlaces}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
                           <div className="flex flex-wrap gap-2">
                             <button
                               onClick={() => updatePill(pill.id, { clickable: !pill.clickable })}

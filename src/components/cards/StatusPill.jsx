@@ -16,6 +16,7 @@ import {
   getDisplayUnitForKind,
   getEffectiveUnitMode,
   inferUnitKind,
+  normalizeDecimalPlaces,
 } from '../../utils';
 import { getPillAnimationConfig } from '../../utils/statusPillPresentation';
 
@@ -88,6 +89,17 @@ const StatusPill = memo(
       const selectedUnit = unitSource === 'custom' ? customUnit : capitalizeFirst(haUnit);
       const inferredUnitKind = inferUnitKind(entity?.attributes?.device_class, haUnit);
       const parsedNumericState = parseFloat(normalizedState.replace(',', '.'));
+      const configuredDecimals = normalizeDecimalPlaces(pill?.decimals);
+      const formatNumericState = () => {
+        if (configuredDecimals === null || !Number.isFinite(parsedNumericState)) {
+          return normalizedState;
+        }
+
+        return formatUnitValue(parsedNumericState, {
+          fallback: normalizedState,
+          decimals: configuredDecimals,
+        });
+      };
 
       if (unitSource === 'ha' && inferredUnitKind && Number.isFinite(parsedNumericState)) {
         const converted = convertValueByKind(parsedNumericState, {
@@ -97,16 +109,19 @@ const StatusPill = memo(
         });
         const convertedUnit = getDisplayUnitForKind(inferredUnitKind, effectiveUnitMode);
         if (Number.isFinite(converted) && convertedUnit) {
-          return `${formatUnitValue(converted, { fallback: normalizedState })} ${convertedUnit}`;
+          return `${formatUnitValue(converted, {
+            fallback: normalizedState,
+            ...(configuredDecimals === null ? {} : { decimals: configuredDecimals }),
+          })} ${convertedUnit}`;
         }
       }
 
-      if (!selectedUnit) return normalizedState;
+      if (!selectedUnit) return formatNumericState();
 
       const lowerState = normalizedState.toLowerCase();
       const lowerUnit = selectedUnit.toLowerCase();
       const alreadyContainsUnit = lowerState.endsWith(` ${lowerUnit}`) || lowerState === lowerUnit;
-      return alreadyContainsUnit ? normalizedState : `${normalizedState} ${selectedUnit}`;
+      return alreadyContainsUnit ? normalizedState : `${formatNumericState()} ${selectedUnit}`;
     };
 
     const getAlarmStateLabel = (state) => {

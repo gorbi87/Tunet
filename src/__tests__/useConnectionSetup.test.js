@@ -57,7 +57,9 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-afterEach(() => {});
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 // ═════════════════════════════════════════════════════════════════════════
 // Initial state
@@ -256,5 +258,36 @@ describe('useConnectionSetup › setters', () => {
     const { result } = renderHook(() => useConnectionSetup(makeProps()));
     act(() => result.current.setOnboardingUrlError('Invalid URL'));
     expect(result.current.onboardingUrlError).toBe('Invalid URL');
+  });
+});
+
+describe('useConnectionSetup startOAuthLogin', () => {
+  it('uses the explicit URL draft and persists it only when login starts', async () => {
+    const setItem = vi.fn();
+    vi.stubGlobal('localStorage', { setItem });
+    const props = makeProps({
+      config: { url: 'https://old-ha.example', token: '', authMethod: 'oauth' },
+    });
+    const { result } = renderHook(() => useConnectionSetup(props));
+
+    await act(async () => {
+      result.current.startOAuthLogin('  https://new-ha.example/  ');
+      await Promise.resolve();
+    });
+
+    expect(getAuth).toHaveBeenCalledWith(
+      expect.objectContaining({ hassUrl: 'https://new-ha.example' })
+    );
+    expect(setItem).toHaveBeenCalledWith('ha_url', 'https://new-ha.example');
+    expect(setItem).toHaveBeenCalledWith('ha_auth_method', 'oauth');
+    expect(props.setConfig).not.toHaveBeenCalled();
+  });
+
+  it('does not start OAuth for an invalid URL draft', () => {
+    const { result } = renderHook(() => useConnectionSetup(makeProps()));
+
+    act(() => result.current.startOAuthLogin('h'));
+
+    expect(getAuth).not.toHaveBeenCalled();
   });
 });

@@ -156,6 +156,9 @@
 .sensor-card-controls .control-off {
   order: 1;
 }
+.binary-timeline__axis-intermediate {
+  display: none;
+}
 @container (min-width: 248px) {
   .vacuum-card-controls {
     flex-direction: row;
@@ -177,6 +180,11 @@
   }
   .sensor-card-controls .control-off {
     order: 0;
+  }
+}
+@container (min-width: 420px) {
+  .binary-timeline__axis-intermediate {
+    display: inline;
   }
 }
 .popup-surface {

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { resolveStatusGroupCandidates, resolveStatusGroupPill } from '../utils/statusGroupPills';
+import {
+  getStatusGroupThreshold,
+  resolveStatusGroupCandidates,
+  resolveStatusGroupPill,
+} from '../utils/statusGroupPills';
 
 const t = (key) =>
   ({
@@ -7,6 +11,8 @@ const t = (key) =>
     'statusPills.groupPresetLightsOnEmpty': 'No lights on',
     'statusPills.groupPresetOpeningsOpen': 'Open doors/windows',
     'statusPills.groupPresetCoversOpen': 'Open covers',
+    'statusPills.groupPresetLowBattery': 'Low battery',
+    'statusPills.groupPresetLowBatteryEmpty': 'No low batteries',
   })[key] || key;
 
 describe('statusGroupPills', () => {
@@ -38,6 +44,22 @@ describe('statusGroupPills', () => {
     'cover.bedroom': {
       state: 'closed',
       attributes: { friendly_name: 'Bedroom blind' },
+    },
+    'sensor.front_door_battery': {
+      state: '15',
+      attributes: { friendly_name: 'Front door battery', device_class: 'battery' },
+    },
+    'sensor.remote_battery': {
+      state: '35',
+      attributes: { friendly_name: 'Remote battery', device_class: 'battery' },
+    },
+    'sensor.offline_battery': {
+      state: 'unavailable',
+      attributes: { friendly_name: 'Offline battery', device_class: 'battery' },
+    },
+    'binary_sensor.smoke_alarm_battery': {
+      state: 'on',
+      attributes: { friendly_name: 'Smoke alarm battery', device_class: 'battery' },
     },
   };
 
@@ -97,6 +119,30 @@ describe('statusGroupPills', () => {
 
     expect(result.count).toBe(1);
     expect(result.matchedEntities.map(({ id }) => id)).toEqual(['cover.living_room']);
+  });
+
+  it('matches low batteries using the default threshold and binary low-battery sensors', () => {
+    const result = resolveStatusGroupPill({ groupPreset: 'low_battery' }, entities, t);
+
+    expect(getStatusGroupThreshold({ groupPreset: 'low_battery' })).toBe(20);
+    expect(result.count).toBe(2);
+    expect(result.matchedEntities.map(({ id }) => id)).toEqual([
+      'sensor.front_door_battery',
+      'binary_sensor.smoke_alarm_battery',
+    ]);
+    expect(result.syntheticEntity.attributes.friendly_name).toBe('Low battery');
+  });
+
+  it('uses a custom low-battery threshold and ignores unavailable batteries', () => {
+    const pill = { groupPreset: 'low_battery', groupThreshold: 40 };
+    const result = resolveStatusGroupPill(pill, entities, t);
+
+    expect(getStatusGroupThreshold(pill)).toBe(40);
+    expect(result.matchedEntities.map(({ id }) => id)).toEqual([
+      'sensor.front_door_battery',
+      'sensor.remote_battery',
+      'binary_sensor.smoke_alarm_battery',
+    ]);
   });
 
   it('hides empty groups by default and can be configured to stay visible', () => {

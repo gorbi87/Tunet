@@ -5,7 +5,7 @@ const normalizeUnit = (unit) =>
 
 /** @typedef {'temperature' | 'wind' | 'pressure' | 'precipitation' | 'length'} UnitKind */
 /** @typedef {'follow_ha' | 'metric' | 'imperial'} UnitsMode */
-/** @typedef {{ kind?: UnitKind | null, fromUnit?: string, unitMode?: UnitsMode, fallback?: string }} FormatUnitValueOptions */
+/** @typedef {{ kind?: UnitKind | null, fromUnit?: string, unitMode?: UnitsMode, fallback?: string, decimals?: number | null }} FormatUnitValueOptions */
 /** @typedef {FormatUnitValueOptions & { includeUnit?: boolean }} FormatKindValueForDisplayOptions */
 
 const isImperialHaConfig = (haConfig) => {
@@ -111,6 +111,15 @@ const toNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+export const normalizeDecimalPlaces = (value, fallback = null) => {
+  if (value === undefined || value === null || value === '') return fallback;
+
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isInteger(parsed)) return fallback;
+
+  return Math.max(0, Math.min(parsed, 6));
+};
+
 const toCelsius = (value, fromUnit) => {
   const n = toNumber(value);
   if (n === null) return null;
@@ -204,18 +213,27 @@ export const convertValueByKind = (value, { kind, fromUnit, unitMode }) => {
 
 export const formatUnitValue = (
   value,
-  /** @type {FormatUnitValueOptions} */ { kind, fromUnit, unitMode, fallback = '--' } = {}
+  /** @type {FormatUnitValueOptions} */ {
+    kind,
+    fromUnit,
+    unitMode,
+    fallback = '--',
+    decimals: decimalPlaces,
+  } = {}
 ) => {
   const converted = kind
     ? convertValueByKind(value, { kind, fromUnit, unitMode })
     : toNumber(value);
   if (!Number.isFinite(converted)) return fallback;
 
-  let decimals = 1;
-  const displayUnit = kind ? getDisplayUnitForKind(kind, unitMode) : '';
-  if (kind === 'pressure') decimals = displayUnit === 'inHg' ? 2 : 0;
-  if (kind === 'precipitation') decimals = displayUnit === 'in' ? 2 : 1;
-  if (kind === 'length') decimals = 1;
+  let decimals = normalizeDecimalPlaces(decimalPlaces);
+  if (decimals === null) {
+    decimals = 1;
+    const displayUnit = kind ? getDisplayUnitForKind(kind, unitMode) : '';
+    if (kind === 'pressure') decimals = displayUnit === 'inHg' ? 2 : 0;
+    if (kind === 'precipitation') decimals = displayUnit === 'in' ? 2 : 1;
+    if (kind === 'length') decimals = 1;
+  }
 
   const rendered = converted
     .toFixed(decimals)
@@ -232,9 +250,16 @@ export const formatKindValueForDisplay = (
     unitMode,
     fallback = '--',
     includeUnit = true,
+    decimals: decimalPlaces,
   } = {}
 ) => {
-  const renderedValue = formatUnitValue(value, { kind, fromUnit, unitMode, fallback });
+  const renderedValue = formatUnitValue(value, {
+    kind,
+    fromUnit,
+    unitMode,
+    fallback,
+    decimals: decimalPlaces,
+  });
   const unit = kind ? getDisplayUnitForKind(kind, unitMode) : '';
 
   if (!includeUnit || !unit || renderedValue === fallback) {

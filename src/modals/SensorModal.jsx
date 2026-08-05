@@ -578,6 +578,8 @@ export default function SensorModal({
                           events={historyEvents}
                           startTime={timeWindow.start}
                           endTime={timeWindow.end}
+                          activeLabel={t('state.active')}
+                          eventLabel={t('history.log')}
                         />
                       </div>
 

@@ -16,7 +16,12 @@ import {
 import { saveTokens, loadTokens, clearOAuthTokens, hasOAuthTokens } from '../services/oauthStorage';
 import { HOME_ASSISTANT_API_UNAUTHORIZED_EVENT, setOAuthAuthProvider } from '../services/apiAuth';
 import { getDeviceRegistry, getEntityRegistry } from '../services/haClient';
-import { buildRegistryLookupMap, enrichEntitiesWithRegistryMetadata, isEntityDataStale } from '../utils';
+import { validateUrl } from '../config/onboarding';
+import {
+  buildRegistryLookupMap,
+  enrichEntitiesWithRegistryMetadata,
+  isEntityDataStale,
+} from '../utils';
 
 /** @typedef {import('../types/dashboard').EntityMap} EntityMap */
 /** @typedef {import('../types/dashboard').HomeAssistantContextValue} HomeAssistantContextValue */
@@ -210,7 +215,7 @@ export const HomeAssistantProvider = ({ children, config }) => {
       typeof globalThis.window !== 'undefined' &&
       new URLSearchParams(globalThis.window.location.search).has('auth_callback');
 
-    if (!config.url) {
+    if (!validateUrl(config.url)) {
       cleanupConnection();
       setConnected(false);
       setEntityDataStale(false);
@@ -452,9 +457,13 @@ export const HomeAssistantProvider = ({ children, config }) => {
         }
       } catch (err) {
         console.error('[HA] Connection failed:', err);
-        
+
         // Clean up OAuth callback params on failure so we don't get stuck in a loop
-        if (isOAuth && typeof globalThis.window !== 'undefined' && globalThis.window.location.search.includes('auth_callback')) {
+        if (
+          isOAuth &&
+          typeof globalThis.window !== 'undefined' &&
+          globalThis.window.location.search.includes('auth_callback')
+        ) {
           globalThis.window.history.replaceState(null, '', globalThis.window.location.pathname);
         }
 

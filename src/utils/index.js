@@ -18,6 +18,7 @@ export {
   convertValueByKind,
   formatUnitValue,
   formatKindValueForDisplay,
+  normalizeDecimalPlaces,
 } from './units';
 export { isValidPin, hashPin, verifyPin } from './pinLock';
 export {

@@ -2,6 +2,7 @@ export const STATUS_GROUP_PILL_TYPE = 'group_status';
 export const STATUS_GROUP_SELECTION_ALL = 'all';
 export const STATUS_GROUP_SELECTION_INCLUDE = 'include';
 export const STATUS_GROUP_SELECTION_EXCLUDE = 'exclude';
+export const DEFAULT_LOW_BATTERY_THRESHOLD = 20;
 
 const VALID_GROUP_SELECTION_MODES = new Set([
   STATUS_GROUP_SELECTION_ALL,
@@ -29,6 +30,14 @@ const isOpeningSensor = (id, entity) => {
   if (!id.startsWith('binary_sensor.')) return false;
   const deviceClass = String(entity?.attributes?.device_class || '').toLowerCase();
   return OPENING_DEVICE_CLASSES.has(deviceClass);
+};
+
+const isBatteryEntity = (_id, entity) =>
+  String(entity?.attributes?.device_class || '').toLowerCase() === 'battery';
+
+const getBatteryLevel = (entity) => {
+  const level = Number.parseFloat(entity?.state);
+  return Number.isFinite(level) ? level : null;
 };
 
 const normalizeGroupSelectionMode = (mode) =>
@@ -103,12 +112,41 @@ export const STATUS_GROUP_PRESETS = [
     matches: (id, entity) =>
       id.startsWith('cover.') && !isUnavailable(entity) && entity?.state !== 'closed',
   },
+  {
+    id: 'low_battery',
+    labelKey: 'statusPills.groupPresetLowBattery',
+    fallbackLabel: 'Low battery',
+    emptyLabelKey: 'statusPills.groupPresetLowBatteryEmpty',
+    fallbackEmptyLabel: 'No low batteries',
+    icon: 'Battery',
+    iconBgColor: 'rgba(239, 68, 68, 0.14)',
+    iconColor: 'text-red-400',
+    defaultThreshold: DEFAULT_LOW_BATTERY_THRESHOLD,
+    minThreshold: 0,
+    maxThreshold: 100,
+    candidates: isBatteryEntity,
+    matches: (id, entity, pill) => {
+      if (!isBatteryEntity(id, entity) || isUnavailable(entity)) return false;
+      if (id.startsWith('binary_sensor.')) return entity?.state === 'on';
+      const level = getBatteryLevel(entity);
+      return level !== null && level <= getStatusGroupThreshold(pill);
+    },
+  },
 ];
 
 export const DEFAULT_STATUS_GROUP_PRESET = STATUS_GROUP_PRESETS[0].id;
 
 export function getStatusGroupPreset(presetId) {
   return STATUS_GROUP_PRESETS.find((preset) => preset.id === presetId) || STATUS_GROUP_PRESETS[0];
+}
+
+export function getStatusGroupThreshold(pill) {
+  const preset = getStatusGroupPreset(pill?.groupPreset);
+  if (!Number.isFinite(preset.defaultThreshold)) return undefined;
+
+  const parsed = Number.parseFloat(pill?.groupThreshold);
+  const threshold = Number.isFinite(parsed) ? parsed : preset.defaultThreshold;
+  return Math.min(preset.maxThreshold, Math.max(preset.minThreshold, threshold));
 }
 
 export function getStatusGroupPresetText(presetId, t, mode = 'label') {
@@ -146,7 +184,7 @@ export function resolveStatusGroupCandidates(presetId, entities) {
 export function resolveStatusGroupPill(pill, entities, t) {
   const preset = getStatusGroupPreset(pill?.groupPreset);
   const matchedEntities = toEntityRows(entities).filter(
-    ({ id, entity }) => preset.matches(id, entity) && isAllowedBySelection(pill, id)
+    ({ id, entity }) => preset.matches(id, entity, pill) && isAllowedBySelection(pill, id)
   );
   matchedEntities.sort(sortByFriendlyName);
 

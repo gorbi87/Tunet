@@ -6,6 +6,7 @@ import {
   STATUS_GROUP_PILL_TYPE,
   STATUS_GROUP_SELECTION_ALL,
 } from '../utils/statusGroupPills';
+import { normalizeDecimalPlaces } from '../utils/units';
 
 /** @typedef {import('../types/dashboard').PageContextValue} PageContextValue */
 /** @typedef {import('../types/dashboard').PageProviderProps} PageProviderProps */
@@ -91,6 +92,7 @@ function normalizeStatusPillConfig(pill) {
     showSublabel: coercePillBoolean(pill.showSublabel, true),
     showCover: coercePillBoolean(pill.showCover, true),
     showCount: coercePillBoolean(pill.showCount, false),
+    decimals: normalizeDecimalPlaces(pill.decimals),
     hideWhenEmpty:
       pill.type === STATUS_GROUP_PILL_TYPE
         ? coercePillBoolean(pill.hideWhenEmpty, true)

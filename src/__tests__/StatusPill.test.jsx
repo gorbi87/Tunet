@@ -109,6 +109,44 @@ describe('StatusPill', () => {
     expect(icon?.style.animationDuration).toBe('12s');
   });
 
+  it('formats numeric sensor values using the configured decimal places', () => {
+    render(
+      <StatusPill
+        pill={{ ...basePill, decimals: 2 }}
+        entity={{
+          ...baseEntity,
+          state: '21.6789',
+          attributes: {
+            ...baseEntity.attributes,
+            unit_of_measurement: '%',
+          },
+        }}
+        t={(key) => key}
+      />
+    );
+
+    expect(screen.getByText('21.68 %')).toBeInTheDocument();
+  });
+
+  it('supports zero decimal places for numeric sensor values', () => {
+    render(
+      <StatusPill
+        pill={{ ...basePill, decimals: 0 }}
+        entity={{
+          ...baseEntity,
+          state: '21.6789',
+          attributes: {
+            ...baseEntity.attributes,
+            unit_of_measurement: '%',
+          },
+        }}
+        t={(key) => key}
+      />
+    );
+
+    expect(screen.getByText('22 %')).toBeInTheDocument();
+  });
+
   it('renders smart group pills with their synthetic count entity', () => {
     render(
       <StatusPill
