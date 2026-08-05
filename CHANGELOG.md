@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.20.6] — 2026-08-05
+
+### Added
+- Added low-battery status pills with configurable thresholds and entity scoping.
+- Added configurable decimal places for numeric Sensor pills.
+
+### Changed
+- Improved sensor charts with clearer summaries, labels, sizing, and accessibility.
+- Improved Home Assistant connection setup and numeric unit formatting.
+
+### Fixed
+- Fixed numeric Sensor pills sometimes showing excessive decimal places.
+
+
 ## [1.20.5] — 2026-07-25
 
 ### Changed

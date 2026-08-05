@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.6
+
+### Changed
+- Includes dashboard release `1.20.6` with low-battery status pills, configurable Sensor-pill precision, and improved sensor charts.
+
 ## 1.20.5
 
 ### Changed
