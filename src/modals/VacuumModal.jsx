@@ -85,6 +85,56 @@ const toFiniteNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+// Nominal consumable lifetimes in hours, as used by Roborock and compatible vacuums.
+const CONSUMABLE_LIFE_HOURS = {
+  mainBrush: 300,
+  sideBrush: 200,
+  filter: 150,
+  sensors: 30,
+};
+
+const DURATION_UNIT_HOURS = {
+  s: 1 / 3600,
+  sec: 1 / 3600,
+  secs: 1 / 3600,
+  second: 1 / 3600,
+  seconds: 1 / 3600,
+  min: 1 / 60,
+  mins: 1 / 60,
+  minute: 1 / 60,
+  minutes: 1 / 60,
+  h: 1,
+  hr: 1,
+  hrs: 1,
+  hour: 1,
+  hours: 1,
+};
+
+const clampPercent = (value) => Math.min(100, Math.max(0, Math.round(value)));
+
+// Consumable sensors report either a remaining percentage or a remaining duration
+// (Roborock exposes time left). Only the former can be shown as-is.
+const toConsumablePercent = (entity, lifeHours) => {
+  if (!isValidStateValue(entity?.state)) return null;
+  const value = toFiniteNumber(entity.state);
+  if (value === null) return null;
+
+  const unit = String(entity?.attributes?.unit_of_measurement || '')
+    .trim()
+    .toLowerCase();
+
+  if (unit === '%') return clampPercent(value);
+
+  const hoursPerUnit = DURATION_UNIT_HOURS[unit];
+  if (hoursPerUnit && lifeHours) {
+    return clampPercent(((value * hoursPerUnit) / lifeHours) * 100);
+  }
+
+  // No unit at all: only a plausible percentage can be trusted.
+  if (!unit && value >= 0 && value <= 100) return clampPercent(value);
+  return null;
+};
+
 const normalizeEntitySearchText = (value) =>
   String(value || '')
     .toLowerCase()
@@ -806,6 +856,7 @@ export default function VacuumModal({
         key: 'sensors',
         label: t('vacuum.sensors') || 'Sensors',
         sensorId:
+          findConsumableSensor(['sensor_time_left']) ||
           findConsumableSensor(['sensor', 'dirty']) ||
           findConsumableSensor(['sensor', 'cleaning']) ||
           findConsumableSensor(['sensor', 'wear']) ||
@@ -820,13 +871,11 @@ export default function VacuumModal({
     ];
 
     return items
-      .map((item) => {
-        const stateVal = entities[item.sensorId]?.state;
-        const pctVal = toFiniteNumber(stateVal);
-        const pct = pctVal !== null ? Math.round(pctVal) : null;
-        return { ...item, pct };
-      })
-      .filter((item) => item.pct !== null);
+      .map((item) => ({
+        ...item,
+        pct: toConsumablePercent(entities[item.sensorId], CONSUMABLE_LIFE_HOURS[item.key]),
+      }))
+      .filter((item) => item.pct !== null || Boolean(item.buttonId));
   }, [show, vacuumId, entities, findConsumableSensor, findConsumableButton, t]);
 
   const findEntityByKeywords = useCallback(
@@ -990,7 +1039,10 @@ export default function VacuumModal({
           (vacuumFriendlyName &&
             vacuumFriendlyName
               .split(/[_\-\s]+/)
-              .some((token) => token.length > 2 && (lowerEid.includes(token) || friendly.includes(token)))));
+              .some(
+                (token) =>
+                  token.length > 2 && (lowerEid.includes(token) || friendly.includes(token))
+              )));
 
       // If it is related to the vacuum, we consider it a map entity since cameras/images on a vacuum are always maps
       return isRelated;
@@ -1021,7 +1073,7 @@ export default function VacuumModal({
       if (!eid.startsWith('image.') && !eid.startsWith('camera.')) return false;
       const lowerEid = eid.toLowerCase();
       const friendly = (entities[eid]?.attributes?.friendly_name || '').toLowerCase();
-      
+
       const isRelated =
         vacuumNameTokens.length === 0 ||
         vacuumNameTokens.some((token) => lowerEid.includes(token) || friendly.includes(token)) ||
@@ -1030,7 +1082,9 @@ export default function VacuumModal({
         (vacuumFriendlyName &&
           vacuumFriendlyName
             .split(/[_\-\s]+/)
-            .some((token) => token.length > 2 && (lowerEid.includes(token) || friendly.includes(token))));
+            .some(
+              (token) => token.length > 2 && (lowerEid.includes(token) || friendly.includes(token))
+            ));
 
       return isRelated;
     });
@@ -1087,7 +1141,7 @@ export default function VacuumModal({
 
       if (nameRegex) cleanName = cleanName.replace(nameRegex, '');
       if (friendlyNameRegex) cleanName = cleanName.replace(friendlyNameRegex, '');
-      
+
       if (Array.isArray(vacuumNameTokens)) {
         for (const token of vacuumNameTokens) {
           if (token && token.length > 2) {
@@ -1424,7 +1478,7 @@ export default function VacuumModal({
         </button>
 
         {isAdvancedOpen && (
-          <div className="animate-in slide-in-from-top-2 scrollbar-thin max-h-[250px] divide-y divide-white/5 overflow-y-auto border-t border-white/5 p-4 pt-0 duration-300">
+          <div className="animate-in slide-in-from-top-2 max-h-[250px] scrollbar-thin divide-y divide-white/5 overflow-y-auto border-t border-white/5 p-4 pt-0 duration-300">
             {advancedSensors.map((sensor) => {
               const value = sensor.state;
               const unit = sensor.unit;
@@ -1653,9 +1707,9 @@ export default function VacuumModal({
       >
         {/* Left Column - Main Controls & Status (Span 3) */}
         <div
-          className={`flex flex-col space-y-6 ${showRightColumn ? 'lg:col-span-3 h-full' : 'mx-auto w-full max-w-3xl'}`}
+          className={`flex flex-col space-y-6 ${showRightColumn ? 'h-full lg:col-span-3' : 'mx-auto w-full max-w-3xl'}`}
         >
-          <div className="popup-surface flex flex-1 flex-col items-center justify-stretch gap-6 rounded-3xl p-6 sm:p-8 h-full">
+          <div className="popup-surface flex h-full flex-1 flex-col items-center justify-stretch gap-6 rounded-3xl p-6 sm:p-8">
             {/* Primary Actions */}
             <div className="flex w-full gap-4">
               <button
@@ -1849,7 +1903,7 @@ export default function VacuumModal({
 
         {/* Right Column - Map & History if simple layout (Span 2) */}
         {showRightColumn && (
-          <div className="flex flex-col justify-start space-y-4 py-2 font-sans lg:col-span-2 h-full">
+          <div className="flex h-full flex-col justify-start space-y-4 py-2 font-sans lg:col-span-2">
             {/* Live Map Display in controls column */}
             {showRightImage && finalMapUrl && (
               <>
@@ -1874,7 +1928,7 @@ export default function VacuumModal({
                 )}
 
                 <div
-                  className="popup-surface relative flex-1 min-h-[280px] w-full overflow-hidden rounded-3xl p-2 shadow-2xl select-none"
+                  className="popup-surface relative min-h-[280px] w-full flex-1 overflow-hidden rounded-3xl p-2 shadow-2xl select-none"
                   onMouseDown={handleMapMouseDown}
                   onMouseMove={handleMapMouseMove}
                   onMouseUp={handleMapMouseUpOrLeave}
@@ -1882,7 +1936,9 @@ export default function VacuumModal({
                   onTouchStart={handleMapTouchStart}
                   onTouchMove={handleMapTouchMove}
                   onTouchEnd={handleMapTouchEnd}
-                  style={{ cursor: mapScale > 1.05 ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
+                  style={{
+                    cursor: mapScale > 1.05 ? (isPanning ? 'grabbing' : 'grab') : 'default',
+                  }}
                 >
                   {/* Pulsing Live Badge */}
                   <div className="absolute top-4 left-4 z-10 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-[10px] font-bold tracking-widest text-[var(--status-success-fg)] uppercase italic shadow-md backdrop-blur-md">
@@ -2022,7 +2078,9 @@ export default function VacuumModal({
     if (showTabbedLayout) {
       const hasConsumables = consumables.length > 0;
       return (
-        <div className={`animate-in fade-in font-sans not-italic duration-300 ${hasConsumables ? 'grid grid-cols-1 lg:grid-cols-5 gap-8' : ''}`}>
+        <div
+          className={`animate-in fade-in font-sans not-italic duration-300 ${hasConsumables ? 'grid grid-cols-1 gap-8 lg:grid-cols-5' : ''}`}
+        >
           {/* Left Column: Stats & Diagnostics */}
           <div className={`space-y-6 ${hasConsumables ? 'lg:col-span-3' : 'w-full'}`}>
             {/* Statistics Grid */}
@@ -2167,7 +2225,7 @@ export default function VacuumModal({
                           <div
                             className="h-full rounded-full transition-all duration-500"
                             style={{
-                              width: `${pct}%`,
+                              width: `${pct ?? 0}%`,
                               backgroundColor: color,
                               boxShadow: `0 0 4px ${color}30`,
                             }}
@@ -2177,7 +2235,7 @@ export default function VacuumModal({
                           className="min-w-[28px] text-right text-[11px] font-bold"
                           style={{ color }}
                         >
-                          {pct}%
+                          {pct === null ? '--' : `${pct}%`}
                         </span>
                       </div>
 
@@ -2282,7 +2340,7 @@ export default function VacuumModal({
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
-                            width: `${pct}%`,
+                            width: `${pct ?? 0}%`,
                             backgroundColor: color,
                             boxShadow: `0 0 4px ${color}30`,
                           }}
@@ -2292,7 +2350,7 @@ export default function VacuumModal({
                         className="min-w-[28px] text-right text-[11px] font-bold"
                         style={{ color }}
                       >
-                        {pct}%
+                        {pct === null ? '--' : `${pct}%`}
                       </span>
                     </div>
 
@@ -2515,7 +2573,7 @@ export default function VacuumModal({
           )}
 
           {/* Render Tab Contents */}
-          <div className="scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent h-[60vh] overflow-y-auto pr-1 md:h-[480px] md:pr-2">
+          <div className="h-[60vh] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent overflow-y-auto pr-1 md:h-[480px] md:pr-2">
             {(!showTabbedLayout || activeTab === 'controls') && renderControlsPane(hasMap)}
 
             {showTabbedLayout && activeTab === 'areas' && (
