@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.20.7] — 2026-08-13
+
+### Added
+- Added the Home Assistant add-on store icon and logo.
+
+### Changed
+- Updated better-sqlite3, express-rate-limit, lucide-react, and ws.
+
+### Fixed
+- Fixed Roborock vacuum consumables reporting remaining time as a percentage, and restored the sensor consumable reset action (#157).
+
+### Security
+- Patched advisories in ip-address, js-yaml, and react-router.
+
+
 ## [1.20.6] — 2026-08-05
 
 ### Added

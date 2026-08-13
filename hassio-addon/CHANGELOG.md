@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.20.7
+
+### Added
+- Adds the add-on store icon and logo, so Tunet is no longer shown without branding.
+
+### Fixed
+- Includes dashboard release `1.20.7`, fixing Roborock vacuum consumable percentages and the sensor reset action (#157).
+
+### Security
+- Patches advisories in ip-address, js-yaml, and react-router.
+
 ## 1.20.6
 
 ### Changed
