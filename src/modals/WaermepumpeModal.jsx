@@ -32,33 +32,14 @@ function SelectDropdown({ entityId, entity, onSelect }) {
   );
 }
 
-function TagesmodusBadges({ tagesmodus }) {
-  return (
-    <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-      {Object.entries(MODUS_META).map(([key, meta]) => {
-        const isActive = tagesmodus === key;
-        return (
-          <div
-            key={key}
-            className="rounded-xl border p-2 text-center transition-all"
-            style={
-              isActive
-                ? { backgroundColor: `${meta.color}22`, borderColor: meta.color }
-                : { backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }
-            }
-          >
-            <p
-              className="text-[10px] font-bold leading-tight"
-              style={{ color: isActive ? meta.color : 'var(--text-muted)' }}
-            >
-              {meta.label}
-            </p>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+const MODUS_SUB = {
+  Standby:   'Kein aktiver Betrieb',
+  WW_Heizen: 'Kompressor heizt WW bis 55°C',
+  WW_Pause:  'BOH-Pause · Kompressor gestoppt (10 min)',
+  WW_Boost:  'Daikin intern heizt WW bis 63°C',
+  WW_Fertig: 'WW abgeschlossen · Tagesziel erreicht',
+  Kühlen:    'Kompressor kühlt Gebäude',
+};
 
 export default function WaermepumpeModal({
   show,
@@ -837,50 +818,34 @@ export default function WaermepumpeModal({
                   </div>
                 )}
 
-                {/* State Machine Status */}
-                <div className="popup-surface rounded-2xl p-4 space-y-3">
-                  <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
-                    Tagesplan · Aktueller Modus
-                  </p>
-                  <TagesmodusBadges tagesmodus={tagesmodus} />
-
-                  {entscheidungslog && (
-                    <div
-                      className="rounded-xl border p-2.5"
-                      style={{ borderColor: `${modusColor}44`, backgroundColor: `${modusColor}0d` }}
-                    >
-                      <p className="text-[9px] font-bold tracking-widest uppercase mb-1" style={{ color: 'var(--text-muted)' }}>
-                        Letzte Entscheidung
+                {/* ── Aktueller Modus – großes State Badge ── */}
+                <div
+                  className="rounded-2xl overflow-hidden"
+                  style={{ borderLeft: `4px solid ${modusColor}`, backgroundColor: `${modusColor}0d`, padding: '16px 16px 16px 20px' }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-lg font-bold tracking-tight" style={{ color: modusColor }}>
+                        {MODUS_META[tagesmodus]?.label || tagesmodus}
                       </p>
-                      <p className="text-[11px] font-light leading-relaxed" style={{ color: modusColor }}>
-                        {entscheidungslog}
+                      <p className="mt-0.5 text-[11px]" style={{ color: modusColor, opacity: 0.65 }}>
+                        {MODUS_SUB[tagesmodus] || ''}
                       </p>
                     </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
-                      <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Ist</p>
-                      <p className="text-lg font-light" style={{ color: ACCENT }}>
+                    <div className="shrink-0 text-right">
+                      <p className="text-xl font-light" style={{ color: ACCENT }}>
                         {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'}
                       </p>
-                    </div>
-                    <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
-                      <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Soll</p>
-                      <p className="text-lg font-light" style={{ color: 'var(--text-primary)' }}>
-                        {wwSollState || '—'}
+                      <p className="mt-0.5 text-[9px]" style={{ color: 'var(--text-muted)' }}>
+                        Soll {wwSollState || '—'}
                       </p>
                     </div>
                   </div>
 
-                  {/* WW progress bar for WW_Heizen / WW_Boost */}
+                  {/* WW Fortschrittsbalken */}
                   {(tagesmodus === 'WW_Heizen' || tagesmodus === 'WW_Boost') && wwTemp != null && (
-                    <div>
-                      <div className="mb-1 flex justify-between" style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                        <span>{wwTemp.toFixed(1)}°C</span>
-                        <span style={{ color: modusColor }}>→ 63°C</span>
-                      </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ backgroundColor: 'var(--glass-border)' }}>
+                    <div className="mt-3">
+                      <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}>
                         <div
                           className="h-full rounded-full transition-all duration-700"
                           style={{
@@ -889,18 +854,26 @@ export default function WaermepumpeModal({
                           }}
                         />
                       </div>
+                      <div className="mt-1 flex justify-between" style={{ fontSize: '9px', color: modusColor, opacity: 0.5 }}>
+                        <span>40°C</span><span>63°C</span>
+                      </div>
                     </div>
                   )}
 
-                  {betriebsartState && (
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="h-2 w-2 flex-shrink-0 rounded-full"
-                        style={{ backgroundColor: kompressorAktiv ? '#4ade80' : 'var(--text-muted)' }}
-                      />
-                      <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                        {betriebsartState}
-                      </span>
+                  {/* Betriebsart + Heizstab inline */}
+                  {(betriebsartState || (heizstabSelectState && heizstabLaeuft)) && (
+                    <div className="mt-2.5 flex items-center gap-2">
+                      {betriebsartState && (
+                        <>
+                          <div
+                            className="h-1.5 w-1.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: kompressorAktiv ? '#4ade80' : 'var(--text-muted)' }}
+                          />
+                          <span className="text-[11px]" style={{ color: modusColor, opacity: 0.7 }}>
+                            {betriebsartState}
+                          </span>
+                        </>
+                      )}
                       {heizstabSelectState && heizstabLaeuft && (
                         <span className="ml-auto flex items-center gap-1 text-[11px]" style={{ color: '#ef9a9a' }}>
                           <Zap className="h-3 w-3" />
@@ -910,6 +883,96 @@ export default function WaermepumpeModal({
                     </div>
                   )}
                 </div>
+
+                {/* ── Letzte Entscheidung (Why-Block) ── */}
+                {entscheidungslog && (() => {
+                  const [header, reason] = entscheidungslog.split(' | ');
+                  const timeMatch = header?.match(/^(\d{2}:\d{2})/);
+                  const transitionMatch = header?.match(/(\S+)→(\S+)/);
+                  const conditions = (reason || '').split(/\s+(?=\S+\s*[:=]|\S+\d)/).filter(Boolean);
+                  return (
+                    <div
+                      className="rounded-2xl p-4 space-y-2"
+                      style={{ backgroundColor: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
+                    >
+                      <p className="text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                        Warum dieser Zustand?
+                      </p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {timeMatch && (
+                          <span className="font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                            {timeMatch[1]}
+                          </span>
+                        )}
+                        {transitionMatch && (
+                          <>
+                            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{transitionMatch[1]}</span>
+                            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>→</span>
+                            <span
+                              className="rounded px-1.5 py-0.5 text-[10px] font-bold"
+                              style={{ backgroundColor: `${modusColor}22`, color: modusColor }}
+                            >
+                              {transitionMatch[2]}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {reason && (
+                        <p className="text-[11px] leading-relaxed" style={{ color: modusColor }}>
+                          {reason}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* ── Tagesverlauf Timeline ── */}
+                {wwHistory.length > 0 && (() => {
+                  const todayStart = new Date();
+                  todayStart.setHours(0, 0, 0, 0);
+                  const now = Date.now();
+                  const windowMs = now - todayStart.getTime();
+                  const histAsc = [...wwHistory].reverse();
+                  const segs = [];
+                  for (let i = 0; i < histAsc.length; i++) {
+                    const startMs = Math.max(histAsc[i].time.getTime(), todayStart.getTime());
+                    const endMs = Math.min(
+                      i < histAsc.length - 1 ? histAsc[i + 1].time.getTime() : now,
+                      now
+                    );
+                    if (startMs < endMs && endMs > todayStart.getTime()) {
+                      segs.push({ state: histAsc[i].state, startMs, endMs });
+                    }
+                  }
+                  return segs.length > 0 ? (
+                    <div className="popup-surface rounded-2xl p-4 space-y-2">
+                      <p className="text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                        Tagesverlauf · heute
+                      </p>
+                      <div
+                        style={{ display: 'flex', height: '18px', borderRadius: '3px', overflow: 'hidden', gap: '1px', backgroundColor: 'var(--glass-border)' }}
+                      >
+                        {segs.map((seg, i) => {
+                          const pct = (seg.endMs - seg.startMs) / windowMs * 100;
+                          const col = MODUS_META[seg.state]?.color || '#94a3b8';
+                          const label = MODUS_META[seg.state]?.label || seg.state;
+                          const startTime = new Date(seg.startMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                          return (
+                            <div
+                              key={i}
+                              style={{ width: `${pct}%`, background: col, height: '100%', minWidth: '3px' }}
+                              title={`${label} · ${startTime}`}
+                            />
+                          );
+                        })}
+                      </div>
+                      <div className="flex justify-between" style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                        <span>00:00</span>
+                        <span>jetzt</span>
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
 
                 {/* BOH-Schutz (Kompressor-Laufzeit) */}
                 {autoOn && !minusPreisAktiv && (

@@ -311,8 +311,8 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
 
         {/* State Machine Status */}
         {!isUltraCompact && (
-          <div className={isDenseMobile ? 'mt-3' : 'mt-4'}>
-            <div className="mb-1.5 flex items-center justify-between gap-2">
+          <div className={isDenseMobile ? 'mt-2' : 'mt-2'}>
+            <div className="mb-1 flex items-center justify-between gap-2">
               <span
                 className="shrink-0 text-[9px] font-bold tracking-widest uppercase"
                 style={{ color: modusMeta.color }}

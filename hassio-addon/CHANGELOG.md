@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.18.45
+
+### Changed
+- WP-Modal: State Badge mit Border-Left-Akzent, "Warum?"-Block und Tagesverlauf-Timeline statt Badge-Grid
+- WP-Karte: COP/Strom-Zeile nicht mehr abgeschnitten (Abstände kompakter)
+
 ## 1.18.44
 
 ### Changed

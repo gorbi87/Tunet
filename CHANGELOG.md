@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.45] — 2026-08-14
+
+### Changed
+- WP-Karte: Abstand der State-Machine-Sektion reduziert — COP/Strom-Zeile nicht mehr abgeschnitten
+- WP-Modal Automatik-Tab: großes State Badge mit Border-Left-Akzent statt 3×2-Badge-Grid
+- WP-Modal Automatik-Tab: "Warum dieser Zustand?"-Block zeigt geparsten Entscheidungslog (Zeit, Übergang, Sensordaten)
+- WP-Modal Automatik-Tab: Tagesverlauf als farbiger Timeline-Balken (00:00 bis jetzt) aus Tagesmodus-Verlauf
+- WP-Modal Automatik-Tab: WW-Temperatur und WW-Soll direkt im State Badge inline angezeigt
+
+
 ## [1.18.44] — 2026-08-14
 
 ### Changed
