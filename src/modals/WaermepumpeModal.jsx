@@ -114,6 +114,7 @@ export default function WaermepumpeModal({
   const [mainTab, setMainTab] = useState('overview');
   const [energyTab, setEnergyTab] = useState('today');
   const [wwHistory, setWwHistory] = useState([]);
+  const [logHistory, setLogHistory] = useState([]);
   const [wwHistoryOpen, setWwHistoryOpen] = useState(false);
   const [wwHistoryLoading, setWwHistoryLoading] = useState(false);
   const modalTitleId = 'waermepumpe-modal-title';
@@ -126,43 +127,63 @@ export default function WaermepumpeModal({
       setWwHistoryLoading(true);
       const end = new Date();
       const start = new Date(end.getTime() - 48 * 60 * 60 * 1000);
-      try {
-        let raw = [];
+      const toMs = (v) => (v != null && v < 1e12 ? v * 1000 : v);
+
+      const fetchEntity = async (entityId) => {
         try {
           const data = await getHistoryRest(haUrl, haToken, {
-            entityId: WAERMEPUMPE_ENTITY_IDS.tagesmodus,
+            entityId,
             start,
             end,
             minimal_response: false,
             no_attributes: false,
             significant_changes_only: false,
           });
-          raw = Array.isArray(data?.[0]) ? data[0] : (Array.isArray(data) ? data : []);
+          return Array.isArray(data?.[0]) ? data[0] : (Array.isArray(data) ? data : []);
         } catch (_e) {
-          const wsData = await getHistory(conn, {
-            entityId: WAERMEPUMPE_ENTITY_IDS.tagesmodus,
-            start,
-            end,
-          });
-          raw = Array.isArray(wsData?.[0]) ? wsData[0] : (Array.isArray(wsData) ? wsData : []);
+          try {
+            const wsData = await getHistory(conn, { entityId, start, end });
+            return Array.isArray(wsData?.[0]) ? wsData[0] : (Array.isArray(wsData) ? wsData : []);
+          } catch (_e2) {
+            return [];
+          }
         }
-        const toMs = (v) => (v != null && v < 1e12 ? v * 1000 : v);
-        const parsed = raw
+      };
+
+      try {
+        const [rawModus, rawLog] = await Promise.all([
+          fetchEntity(WAERMEPUMPE_ENTITY_IDS.tagesmodus),
+          fetchEntity(WAERMEPUMPE_ENTITY_IDS.entscheidungslog),
+        ]);
+
+        const parsedModus = rawModus
           .map((d) => ({
             state: d.state ?? d.s,
             time: new Date(d.last_changed ?? d.last_updated ?? toMs(d.lc) ?? toMs(d.lu)),
           }))
-          .filter(
-            (d) =>
-              d.state &&
-              d.state !== 'unknown' &&
-              d.state !== 'unavailable' &&
-              !isNaN(d.time.getTime())
-          )
+          .filter((d) => d.state && d.state !== 'unknown' && d.state !== 'unavailable' && !isNaN(d.time.getTime()))
           .reverse();
-        setWwHistory(parsed);
+        setWwHistory(parsedModus);
+
+        // Parse entscheidungslog history: "HH:MM PrevState→CurState | Key1 Val1 Key2 Val2"
+        const parsedLog = rawLog
+          .map((d) => {
+            const raw = d.state ?? d.s;
+            if (!raw || raw === 'unknown' || raw === 'unavailable') return null;
+            const time = new Date(d.last_changed ?? d.last_updated ?? toMs(d.lc) ?? toMs(d.lu));
+            if (isNaN(time.getTime())) return null;
+            const [header, reason] = raw.split(' | ');
+            const curStateMatch = header?.match(/→(\S+)/);
+            const curState = curStateMatch ? curStateMatch[1] : null;
+            if (!curState) return null;
+            return { time, curState, reason: reason || '' };
+          })
+          .filter(Boolean)
+          .reverse();
+        setLogHistory(parsedLog);
       } catch (_e) {
         setWwHistory([]);
+        setLogHistory([]);
       }
       setWwHistoryLoading(false);
     };
@@ -1060,30 +1081,45 @@ export default function WaermepumpeModal({
                         </>
                       )}
 
-                      {/* Decision log rows */}
-                      {todayRows.length > 0 && (
-                        <div className="space-y-0 border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
-                          <p className="mb-2 text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
-                            Entscheidungsprotokoll
-                          </p>
-                          {todayRows.map((entry, i) => {
-                            const col = MODUS_META[entry.state]?.color || '#94a3b8';
-                            const label = MODUS_META[entry.state]?.label || entry.state;
-                            const timeStr = entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                            return (
-                              <div key={i} className="flex items-baseline gap-2 py-1.5 border-b" style={{ borderColor: 'var(--glass-border)' }}>
-                                <span className="shrink-0 font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{timeStr}</span>
-                                <span
-                                  className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold"
-                                  style={{ backgroundColor: `${col}22`, color: col }}
-                                >
-                                  {label}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                      {/* Decision log rows from entscheidungslog history */}
+                      {(() => {
+                        const todayStart2 = new Date(); todayStart2.setHours(0,0,0,0);
+                        const todayLog = logHistory.filter(e => e.time.getTime() >= todayStart2.getTime());
+                        if (!todayLog.length) return null;
+                        return (
+                          <div className="space-y-0 border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
+                            <p className="mb-2 text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                              Entscheidungsprotokoll
+                            </p>
+                            {todayLog.map((entry, i) => {
+                              const col = MODUS_META[entry.curState]?.color || '#94a3b8';
+                              const label = MODUS_META[entry.curState]?.label || entry.curState;
+                              const timeStr = entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                              const tokens = entry.reason.trim().split(/\s+/);
+                              const parts = [];
+                              for (let j = 0; j + 1 < tokens.length; j += 2) {
+                                const k = tokens[j], v = tokens[j + 1];
+                                const lbl = k === 'PV' ? 'PV-Überschuss' : k === 'WW' ? 'WW-Ist' : k;
+                                parts.push(`${lbl} ${v}`);
+                              }
+                              const reasonText = parts.join(' · ');
+                              return (
+                                <div key={i} className="flex items-baseline gap-2 py-1.5 border-b flex-wrap" style={{ borderColor: 'var(--glass-border)' }}>
+                                  <span className="shrink-0 font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{timeStr}</span>
+                                  <span className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ backgroundColor: `${col}22`, color: col }}>
+                                    {label}
+                                  </span>
+                                  {reasonText && (
+                                    <span className="text-[10px] leading-snug" style={{ color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+                                      {reasonText}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })()}

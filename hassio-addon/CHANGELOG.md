@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.48
+
+### Changed
+- WP-Modal: Entscheidungsprotokoll zeigt Grund-Text pro Eintrag aus Entscheidungslog-History (PV, WW-Ist, Raum, SOC)
+
 ## 1.18.47
 
 ### Added

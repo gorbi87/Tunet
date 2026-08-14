@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.48] — 2026-08-14
+
+### Changed
+- WP-Modal: Entscheidungsprotokoll zeigt jetzt Grund-Text pro Eintrag (z.B. "PV-Überschuss 3.3kW · Raum 25.5°C") aus der Entscheidungslog-History statt nur Modus-Chip
+
+
 ## [1.18.47] — 2026-08-14
 
 ### Added
