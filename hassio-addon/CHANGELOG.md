@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.18.47
+
+### Added
+- WP-Modal: "Nächster Zustand" Box neben State Badge mit zustandsabhängiger Übergangs-Info
+
+### Changed
+- WP-Modal: "Warum?"-Block zeigt Ist-vs-Ziel-Sätze mit konfigurierten Schwellenwerten (PV, SOC, Temp)
+
 ## 1.18.46
 
 ### Added

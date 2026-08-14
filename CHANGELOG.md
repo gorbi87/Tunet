@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.47] — 2026-08-14
+
+### Added
+- WP-Modal: "Nächster Zustand" Box neben dem State Badge (z.B. "WW BOOST — wenn WW ≥ 55°C")
+
+### Changed
+- WP-Modal: "Warum?"-Bullets zeigen jetzt Ist-vs-Ziel-Sätze mit konfigurierten Schwellen (z.B. "PV-Überschuss 3.3kW ≥ Startschwelle 2kW", "SOC 71% > Minimum 20%")
+
+
 ## [1.18.46] — 2026-08-14
 
 ### Added

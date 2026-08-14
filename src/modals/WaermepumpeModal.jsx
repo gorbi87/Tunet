@@ -41,6 +41,62 @@ const MODUS_SUB = {
   Kühlen:    'Kompressor kühlt Gebäude',
 };
 
+// Configured thresholds from automation instance
+const WP_CFG = {
+  pvStart: 2,       // phase_a_start_min_ueberschuss_kw
+  pvBoost: 3,       // ueberschuss_heizstab_min_kw
+  socNotaus: 20,    // soc_notabschaltung
+  socOhne: 60,      // soc_start_ohne_ueberschuss
+  kuehlTemp: 24,    // kuehl_temp_schwelle
+  kuehlPv: 1.2,     // kuehl_pv_min / 1000
+  wwStart: 54,      // ww_heiz_start_temp
+  wwFertig: 63,     // phase_c_fertig_temp
+  bohSchutz: 75,    // boh_schutz_min
+  bohPause: 10,     // boh_pause_min
+  mindestlaufzeit: 45, // mindestlaufzeit_min
+};
+
+const NAECHSTER_ZUSTAND = {
+  Standby:   `WW HEIZEN — wenn WW < ${WP_CFG.wwStart}°C + PV ≥ ${WP_CFG.pvStart}kW`,
+  WW_Heizen: `WW BOOST — wenn WW ≥ 55°C`,
+  WW_Pause:  `WW HEIZEN — nach BOH-Pause (${WP_CFG.bohPause} min)`,
+  WW_Boost:  `WW FERTIG — wenn WW ≥ ${WP_CFG.wwFertig}°C`,
+  WW_Fertig: `KÜHLEN — wenn Raum ≥ ${WP_CFG.kuehlTemp}°C + PV ok`,
+  Kühlen:    `STANDBY — wenn PV < ${WP_CFG.kuehlPv}kW`,
+};
+
+function buildLogBullets(reason, curState) {
+  const tokens = (reason || '').trim().split(/\s+/);
+  const pairs = [];
+  for (let i = 0; i + 1 < tokens.length; i += 2) pairs.push([tokens[i], tokens[i + 1]]);
+  if (tokens.length % 2 !== 0 && tokens.length > 0) pairs.push([tokens[tokens.length - 1], '']);
+
+  return pairs.map(([key, val]) => {
+    switch (key) {
+      case 'WW':
+        if (curState === 'WW_Heizen') return { label: 'WW-Ist', val, op: '<', ziel: 'Ziel 55°C', aktion: '→ Kompressor startet' };
+        if (curState === 'WW_Boost')  return { label: 'WW-Ist', val, op: '≥', ziel: 'Ziel 55°C' };
+        if (curState === 'WW_Fertig') return { label: 'WW-Ist', val, op: '≥', ziel: `Ziel ${WP_CFG.wwFertig}°C` };
+        return { label: 'WW-Ist', val };
+      case 'PV':
+        if (curState === 'Kühlen')    return { label: 'PV-Überschuss', val, op: '≥', ziel: `Startschwelle ${WP_CFG.kuehlPv}kW` };
+        if (curState === 'WW_Heizen') return { label: 'PV-Überschuss', val, op: '≥', ziel: `Startschwelle ${WP_CFG.pvStart}kW` };
+        if (curState === 'WW_Boost')  return { label: 'PV-Überschuss', val, op: '≥', ziel: `Heizstab-Min ${WP_CFG.pvBoost}kW` };
+        return { label: 'PV-Überschuss', val };
+      case 'SOC':
+        return { label: 'SOC', val, op: '>', ziel: `Minimum ${WP_CFG.socNotaus}%` };
+      case 'Raum':
+        return { label: 'Raumtemp', val, op: '≥', ziel: `Kühlschwelle ${WP_CFG.kuehlTemp}°C` };
+      case 'Laufzeit':
+        return { label: 'Kompressor-Laufzeit', val, op: '≥', ziel: `BOH-Schutz ${WP_CFG.bohSchutz}min` };
+      case 'Fenster':
+        return { label: `Im Daikin WW-Zeitfenster`, val };
+      default:
+        return { label: key, val };
+    }
+  });
+}
+
 export default function WaermepumpeModal({
   show,
   onClose,
@@ -825,57 +881,75 @@ export default function WaermepumpeModal({
                   </div>
                 )}
 
-                {/* ── Aktueller Modus – großes State Badge ── */}
-                <div
-                  className="rounded-2xl overflow-hidden"
-                  style={{ borderLeft: `4px solid ${modusColor}`, backgroundColor: `${modusColor}0d`, padding: '16px 16px 16px 20px' }}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <p className={`font-bold tracking-tight ${isCompact ? 'text-base' : 'text-lg'}`} style={{ color: modusColor }}>
-                        {MODUS_META[tagesmodus]?.label || tagesmodus}
-                      </p>
-                      <p className="mt-0.5 text-[11px] leading-snug" style={{ color: modusColor, opacity: 0.65 }}>
-                        {MODUS_SUB[tagesmodus] || ''}
-                      </p>
+                {/* ── Aktueller Modus + Nächster Zustand ── */}
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+                  {/* State Badge */}
+                  <div
+                    className="flex-1 rounded-2xl overflow-hidden"
+                    style={{ borderLeft: `4px solid ${modusColor}`, backgroundColor: `${modusColor}0d`, padding: '16px 16px 16px 20px' }}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className={`font-bold tracking-tight ${isCompact ? 'text-base' : 'text-lg'}`} style={{ color: modusColor }}>
+                          {MODUS_META[tagesmodus]?.label || tagesmodus}
+                        </p>
+                        <p className="mt-0.5 text-[11px] leading-snug" style={{ color: modusColor, opacity: 0.65 }}>
+                          {MODUS_SUB[tagesmodus] || ''}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className={`font-light tabular-nums ${isCompact ? 'text-lg' : 'text-xl'}`} style={{ color: ACCENT }}>
+                          {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'}
+                        </p>
+                        <p className="mt-0.5 text-[9px]" style={{ color: 'var(--text-muted)' }}>
+                          Soll {wwSollState || '—'}
+                        </p>
+                      </div>
                     </div>
-                    <div className="shrink-0 text-right">
-                      <p className={`font-light tabular-nums ${isCompact ? 'text-lg' : 'text-xl'}`} style={{ color: ACCENT }}>
-                        {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'}
-                      </p>
-                      <p className="mt-0.5 text-[9px]" style={{ color: 'var(--text-muted)' }}>
-                        Soll {wwSollState || '—'}
-                      </p>
-                    </div>
+
+                    {(tagesmodus === 'WW_Heizen' || tagesmodus === 'WW_Boost') && wwTemp != null && (
+                      <div className="mt-3">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}>
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{ width: `${Math.min(100, Math.max(0, (wwTemp - 40) / 23 * 100))}%`, backgroundColor: modusColor }}
+                          />
+                        </div>
+                        <div className="mt-1 flex justify-between" style={{ fontSize: '9px', color: modusColor, opacity: 0.5 }}>
+                          <span>40°C</span><span>63°C</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {(betriebsartState || (heizstabSelectState && heizstabLaeuft)) && (
+                      <div className="mt-2.5 flex items-center gap-2">
+                        {betriebsartState && (
+                          <>
+                            <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: kompressorAktiv ? '#4ade80' : 'var(--text-muted)' }} />
+                            <span className="text-[11px]" style={{ color: modusColor, opacity: 0.7 }}>{betriebsartState}</span>
+                          </>
+                        )}
+                        {heizstabSelectState && heizstabLaeuft && (
+                          <span className="ml-auto flex items-center gap-1 text-[11px]" style={{ color: '#ef9a9a' }}>
+                            <Zap className="h-3 w-3" />{heizstabSelectState}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {(tagesmodus === 'WW_Heizen' || tagesmodus === 'WW_Boost') && wwTemp != null && (
-                    <div className="mt-3">
-                      <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}>
-                        <div
-                          className="h-full rounded-full transition-all duration-700"
-                          style={{ width: `${Math.min(100, Math.max(0, (wwTemp - 40) / 23 * 100))}%`, backgroundColor: modusColor }}
-                        />
-                      </div>
-                      <div className="mt-1 flex justify-between" style={{ fontSize: '9px', color: modusColor, opacity: 0.5 }}>
-                        <span>40°C</span><span>63°C</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {(betriebsartState || (heizstabSelectState && heizstabLaeuft)) && (
-                    <div className="mt-2.5 flex items-center gap-2">
-                      {betriebsartState && (
-                        <>
-                          <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: kompressorAktiv ? '#4ade80' : 'var(--text-muted)' }} />
-                          <span className="text-[11px]" style={{ color: modusColor, opacity: 0.7 }}>{betriebsartState}</span>
-                        </>
-                      )}
-                      {heizstabSelectState && heizstabLaeuft && (
-                        <span className="ml-auto flex items-center gap-1 text-[11px]" style={{ color: '#ef9a9a' }}>
-                          <Zap className="h-3 w-3" />{heizstabSelectState}
-                        </span>
-                      )}
+                  {/* Nächster Zustand */}
+                  {NAECHSTER_ZUSTAND[tagesmodus] && (
+                    <div
+                      className="popup-surface rounded-2xl sm:w-48 shrink-0"
+                      style={{ padding: '12px 14px' }}
+                    >
+                      <p className="text-[8.5px] font-bold tracking-[0.12em] uppercase mb-2" style={{ color: 'var(--text-muted)' }}>
+                        Nächster Zustand
+                      </p>
+                      <p className="text-[11px] leading-snug" style={{ color: '#2B9FE0' }}>
+                        {NAECHSTER_ZUSTAND[tagesmodus]}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -884,17 +958,13 @@ export default function WaermepumpeModal({
                 {entscheidungslog && (() => {
                   const [header, reason] = entscheidungslog.split(' | ');
                   const timeMatch = header?.match(/^(\d{2}:\d{2})/);
-                  const transitionMatch = header?.match(/(\S+)→(\S+)/);
-                  // Parse reason into key-value bullet pairs: "Raum 25.5°C PV 3.3kW" → ["Raum 25.5°C", "PV 3.3kW"]
-                  const tokens = (reason || '').trim().split(/\s+/);
-                  const bullets = [];
-                  for (let i = 0; i < tokens.length - 1; i += 2) {
-                    bullets.push(`${tokens[i]} ${tokens[i + 1]}`);
-                  }
-                  if (tokens.length % 2 !== 0) bullets.push(tokens[tokens.length - 1]);
+                  const transitionMatch = header?.match(/→(\S+)/);
+                  const logCurState = transitionMatch ? transitionMatch[1] : tagesmodus;
+                  const bullets = buildLogBullets(reason, logCurState);
+                  if (!bullets.length) return null;
                   return (
                     <div className="popup-surface rounded-2xl p-4 space-y-3">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
                         <p className="text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
                           Warum dieser Zustand?
                         </p>
@@ -903,17 +973,16 @@ export default function WaermepumpeModal({
                             {timeMatch[1]}
                           </span>
                         )}
-                        {transitionMatch && (
-                          <span className="rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ backgroundColor: `${modusColor}22`, color: modusColor }}>
-                            {transitionMatch[1]} → {transitionMatch[2]}
-                          </span>
-                        )}
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2.5">
                         {bullets.map((b, i) => (
-                          <div key={i} className="flex items-center gap-3">
-                            <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: '#4ade80' }} />
-                            <span className="text-[12px]" style={{ color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>{b}</span>
+                          <div key={i} className="flex items-start gap-3">
+                            <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: '#4ade80', marginTop: '4px' }} />
+                            <span className="text-[11.5px] leading-snug" style={{ color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--mono, monospace)' }}>
+                              {b.label}{b.val ? <> <span style={{ color: '#80C0E0' }}>{b.val}</span></> : null}
+                              {b.op ? <> <span style={{ color: modusColor, fontFamily: 'inherit' }}>{b.op}</span> {b.ziel}</> : null}
+                              {b.aktion ? <> <span style={{ color: '#4ade80' }}>{b.aktion}</span></> : null}
+                            </span>
                           </div>
                         ))}
                       </div>
