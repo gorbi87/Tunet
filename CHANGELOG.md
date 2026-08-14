@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.46] — 2026-08-14
+
+### Added
+- WP-Modal Automatik-Tab: 4 Live-Sensorkacheln (WW-Temp, SOC, PV-Überschuss, Raumtemp) mit Minibars
+- WP-Modal Automatik-Tab: Entscheidungsprotokoll als formatierte Log-Zeilen (Uhrzeit + farbiger Modus-Chip) im Tagesverlauf-Block
+- WP-Modal Automatik-Tab: "Warum dieser Zustand?" parsed Entscheidungslog in Bullet-Points mit grünen Dots
+
+### Changed
+- WP-Modal: State Badge und Sensor-Tiles auf kompakter Größe auf mobilen Geräten (isCompact)
+- WP-Modal: Tagesverlauf-Timeline und Entscheidungsprotokoll in einem Block zusammengefasst; separates Akkordeon entfernt
+
+
 ## [1.18.45] — 2026-08-14
 
 ### Changed

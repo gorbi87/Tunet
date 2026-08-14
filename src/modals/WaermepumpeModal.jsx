@@ -160,6 +160,13 @@ export default function WaermepumpeModal({
   const tagesmodus = str(WAERMEPUMPE_ENTITY_IDS.tagesmodus) || 'Standby';
   const entscheidungslog = str(WAERMEPUMPE_ENTITY_IDS.entscheidungslog) || '';
   const modusColor = MODUS_META[tagesmodus]?.color || '#94a3b8';
+
+  // Live sensor values for sensor tiles
+  const socVal = val(WAERMEPUMPE_ENTITY_IDS.socSensor);
+  const pvWatt = val(WAERMEPUMPE_ENTITY_IDS.pvProduktion);
+  const hausWatt = val(WAERMEPUMPE_ENTITY_IDS.hausverbrauch);
+  const pvUeberschussKw = pvWatt != null && hausWatt != null ? (pvWatt - hausWatt) / 1000 : null;
+  const raumTempVal = val(WAERMEPUMPE_ENTITY_IDS.raumTemp);
   const minusPreisAktiv = e(WAERMEPUMPE_ENTITY_IDS.minusPreisBoolean)?.state === 'on';
   const kuehlungAktiv = e(WAERMEPUMPE_ENTITY_IDS.kuehlung)?.state === 'on';
   const octopusPreisVal = parseFloat(e(WAERMEPUMPE_ENTITY_IDS.octopusPreis)?.state);
@@ -823,17 +830,17 @@ export default function WaermepumpeModal({
                   className="rounded-2xl overflow-hidden"
                   style={{ borderLeft: `4px solid ${modusColor}`, backgroundColor: `${modusColor}0d`, padding: '16px 16px 16px 20px' }}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-lg font-bold tracking-tight" style={{ color: modusColor }}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className={`font-bold tracking-tight ${isCompact ? 'text-base' : 'text-lg'}`} style={{ color: modusColor }}>
                         {MODUS_META[tagesmodus]?.label || tagesmodus}
                       </p>
-                      <p className="mt-0.5 text-[11px]" style={{ color: modusColor, opacity: 0.65 }}>
+                      <p className="mt-0.5 text-[11px] leading-snug" style={{ color: modusColor, opacity: 0.65 }}>
                         {MODUS_SUB[tagesmodus] || ''}
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="text-xl font-light" style={{ color: ACCENT }}>
+                      <p className={`font-light tabular-nums ${isCompact ? 'text-lg' : 'text-xl'}`} style={{ color: ACCENT }}>
                         {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'}
                       </p>
                       <p className="mt-0.5 text-[9px]" style={{ color: 'var(--text-muted)' }}>
@@ -842,16 +849,12 @@ export default function WaermepumpeModal({
                     </div>
                   </div>
 
-                  {/* WW Fortschrittsbalken */}
                   {(tagesmodus === 'WW_Heizen' || tagesmodus === 'WW_Boost') && wwTemp != null && (
                     <div className="mt-3">
                       <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}>
                         <div
                           className="h-full rounded-full transition-all duration-700"
-                          style={{
-                            width: `${Math.min(100, Math.max(0, (wwTemp - 40) / 23 * 100))}%`,
-                            backgroundColor: modusColor,
-                          }}
+                          style={{ width: `${Math.min(100, Math.max(0, (wwTemp - 40) / 23 * 100))}%`, backgroundColor: modusColor }}
                         />
                       </div>
                       <div className="mt-1 flex justify-between" style={{ fontSize: '9px', color: modusColor, opacity: 0.5 }}>
@@ -860,118 +863,160 @@ export default function WaermepumpeModal({
                     </div>
                   )}
 
-                  {/* Betriebsart + Heizstab inline */}
                   {(betriebsartState || (heizstabSelectState && heizstabLaeuft)) && (
                     <div className="mt-2.5 flex items-center gap-2">
                       {betriebsartState && (
                         <>
-                          <div
-                            className="h-1.5 w-1.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: kompressorAktiv ? '#4ade80' : 'var(--text-muted)' }}
-                          />
-                          <span className="text-[11px]" style={{ color: modusColor, opacity: 0.7 }}>
-                            {betriebsartState}
-                          </span>
+                          <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: kompressorAktiv ? '#4ade80' : 'var(--text-muted)' }} />
+                          <span className="text-[11px]" style={{ color: modusColor, opacity: 0.7 }}>{betriebsartState}</span>
                         </>
                       )}
                       {heizstabSelectState && heizstabLaeuft && (
                         <span className="ml-auto flex items-center gap-1 text-[11px]" style={{ color: '#ef9a9a' }}>
-                          <Zap className="h-3 w-3" />
-                          {heizstabSelectState}
+                          <Zap className="h-3 w-3" />{heizstabSelectState}
                         </span>
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* ── Letzte Entscheidung (Why-Block) ── */}
+                {/* ── Warum dieser Zustand? ── */}
                 {entscheidungslog && (() => {
                   const [header, reason] = entscheidungslog.split(' | ');
                   const timeMatch = header?.match(/^(\d{2}:\d{2})/);
                   const transitionMatch = header?.match(/(\S+)→(\S+)/);
-                  const conditions = (reason || '').split(/\s+(?=\S+\s*[:=]|\S+\d)/).filter(Boolean);
+                  // Parse reason into key-value bullet pairs: "Raum 25.5°C PV 3.3kW" → ["Raum 25.5°C", "PV 3.3kW"]
+                  const tokens = (reason || '').trim().split(/\s+/);
+                  const bullets = [];
+                  for (let i = 0; i < tokens.length - 1; i += 2) {
+                    bullets.push(`${tokens[i]} ${tokens[i + 1]}`);
+                  }
+                  if (tokens.length % 2 !== 0) bullets.push(tokens[tokens.length - 1]);
                   return (
-                    <div
-                      className="rounded-2xl p-4 space-y-2"
-                      style={{ backgroundColor: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
-                    >
-                      <p className="text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
-                        Warum dieser Zustand?
-                      </p>
+                    <div className="popup-surface rounded-2xl p-4 space-y-3">
                       <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                          Warum dieser Zustand?
+                        </p>
                         {timeMatch && (
-                          <span className="font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                          <span className="ml-auto font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
                             {timeMatch[1]}
                           </span>
                         )}
                         {transitionMatch && (
-                          <>
-                            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{transitionMatch[1]}</span>
-                            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>→</span>
-                            <span
-                              className="rounded px-1.5 py-0.5 text-[10px] font-bold"
-                              style={{ backgroundColor: `${modusColor}22`, color: modusColor }}
-                            >
-                              {transitionMatch[2]}
-                            </span>
-                          </>
+                          <span className="rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ backgroundColor: `${modusColor}22`, color: modusColor }}>
+                            {transitionMatch[1]} → {transitionMatch[2]}
+                          </span>
                         )}
                       </div>
-                      {reason && (
-                        <p className="text-[11px] leading-relaxed" style={{ color: modusColor }}>
-                          {reason}
-                        </p>
-                      )}
+                      <div className="space-y-2">
+                        {bullets.map((b, i) => (
+                          <div key={i} className="flex items-center gap-3">
+                            <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: '#4ade80' }} />
+                            <span className="text-[12px]" style={{ color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>{b}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   );
                 })()}
 
-                {/* ── Tagesverlauf Timeline ── */}
+                {/* ── Sensor Tiles: WW / SOC / PV / Raum ── */}
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {[
+                    { label: 'WW-Temp', value: wwTemp, unit: '°C', color: ACCENT, min: 20, max: 65 },
+                    { label: 'SOC Akku', value: socVal, unit: '%', color: '#4ade80', min: 0, max: 100 },
+                    { label: 'PV-Überschuss', value: pvUeberschussKw, unit: 'kW', color: '#facc15', min: -2, max: 8, decimals: 1 },
+                    { label: 'Raumtemp', value: raumTempVal, unit: '°C', color: '#38bdf8', min: 18, max: 32 },
+                  ].map(({ label, value, unit, color, min, max, decimals = 1 }) => {
+                    const pct = value != null ? Math.min(100, Math.max(0, (value - min) / (max - min) * 100)) : 0;
+                    return (
+                      <div key={label} className="popup-surface rounded-2xl p-3 space-y-1">
+                        <p className="text-[8.5px] font-bold tracking-[0.12em] uppercase" style={{ color: 'var(--text-muted)' }}>{label}</p>
+                        <p className={`font-bold leading-none tabular-nums ${isCompact ? 'text-lg' : 'text-xl'}`} style={{ color: value != null ? color : 'var(--text-muted)', letterSpacing: '-0.02em' }}>
+                          {value != null ? value.toFixed(decimals) : '—'}<span className="text-[10px] font-normal opacity-50 ml-0.5">{unit}</span>
+                        </p>
+                        <div className="h-0.5 rounded-full" style={{ backgroundColor: 'var(--glass-border)' }}>
+                          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: color }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* ── Tagesverlauf + Entscheidungsprotokoll ── */}
                 {wwHistory.length > 0 && (() => {
                   const todayStart = new Date();
                   todayStart.setHours(0, 0, 0, 0);
                   const now = Date.now();
                   const windowMs = now - todayStart.getTime();
                   const histAsc = [...wwHistory].reverse();
+
+                  // Build timeline segments (today only)
                   const segs = [];
                   for (let i = 0; i < histAsc.length; i++) {
                     const startMs = Math.max(histAsc[i].time.getTime(), todayStart.getTime());
-                    const endMs = Math.min(
-                      i < histAsc.length - 1 ? histAsc[i + 1].time.getTime() : now,
-                      now
-                    );
+                    const endMs = Math.min(i < histAsc.length - 1 ? histAsc[i + 1].time.getTime() : now, now);
                     if (startMs < endMs && endMs > todayStart.getTime()) {
                       segs.push({ state: histAsc[i].state, startMs, endMs });
                     }
                   }
-                  return segs.length > 0 ? (
-                    <div className="popup-surface rounded-2xl p-4 space-y-2">
+
+                  // Build log rows (today, newest first = histAsc reversed)
+                  const todayRows = histAsc.filter(e => e.time.getTime() >= todayStart.getTime()).reverse();
+
+                  return (
+                    <div className="popup-surface rounded-2xl p-4 space-y-3">
                       <p className="text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
                         Tagesverlauf · heute
                       </p>
-                      <div
-                        style={{ display: 'flex', height: '18px', borderRadius: '3px', overflow: 'hidden', gap: '1px', backgroundColor: 'var(--glass-border)' }}
-                      >
-                        {segs.map((seg, i) => {
-                          const pct = (seg.endMs - seg.startMs) / windowMs * 100;
-                          const col = MODUS_META[seg.state]?.color || '#94a3b8';
-                          const label = MODUS_META[seg.state]?.label || seg.state;
-                          const startTime = new Date(seg.startMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                          return (
-                            <div
-                              key={i}
-                              style={{ width: `${pct}%`, background: col, height: '100%', minWidth: '3px' }}
-                              title={`${label} · ${startTime}`}
-                            />
-                          );
-                        })}
-                      </div>
-                      <div className="flex justify-between" style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                        <span>00:00</span>
-                        <span>jetzt</span>
-                      </div>
+
+                      {/* Timeline bar */}
+                      {segs.length > 0 && (
+                        <>
+                          <div style={{ display: 'flex', height: '20px', borderRadius: '3px', overflow: 'hidden', gap: '1px', backgroundColor: 'var(--glass-border)' }}>
+                            {segs.map((seg, i) => {
+                              const pct = (seg.endMs - seg.startMs) / windowMs * 100;
+                              const col = MODUS_META[seg.state]?.color || '#94a3b8';
+                              const label = MODUS_META[seg.state]?.label || seg.state;
+                              const startTime = new Date(seg.startMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                              return (
+                                <div key={i} style={{ width: `${pct}%`, background: col, height: '100%', minWidth: '3px' }} title={`${label} · ${startTime}`} />
+                              );
+                            })}
+                          </div>
+                          <div className="flex justify-between" style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                            <span>00:00</span><span>jetzt</span>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Decision log rows */}
+                      {todayRows.length > 0 && (
+                        <div className="space-y-0 border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
+                          <p className="mb-2 text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                            Entscheidungsprotokoll
+                          </p>
+                          {todayRows.map((entry, i) => {
+                            const col = MODUS_META[entry.state]?.color || '#94a3b8';
+                            const label = MODUS_META[entry.state]?.label || entry.state;
+                            const timeStr = entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            return (
+                              <div key={i} className="flex items-baseline gap-2 py-1.5 border-b" style={{ borderColor: 'var(--glass-border)' }}>
+                                <span className="shrink-0 font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{timeStr}</span>
+                                <span
+                                  className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold"
+                                  style={{ backgroundColor: `${col}22`, color: col }}
+                                >
+                                  {label}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  ) : null;
+                  );
                 })()}
 
                 {/* BOH-Schutz (Kompressor-Laufzeit) */}
@@ -1012,83 +1057,12 @@ export default function WaermepumpeModal({
                   </div>
                 )}
 
-                {/* Tagesmodus Verlauf */}
-                <div className="popup-surface rounded-2xl overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setWwHistoryOpen((o) => !o)}
-                    className="flex w-full items-center justify-between p-4 text-left"
-                  >
-                    <p
-                      className="text-[10px] font-bold tracking-[0.2em] uppercase"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      Tagesmodus Verlauf (48h)
-                    </p>
-                    <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                      {wwHistoryOpen ? '▲' : '▼'}
-                    </span>
-                  </button>
-                  {wwHistoryOpen && (
-                    <div
-                      className="border-t px-4 pb-4 pt-3 space-y-1"
-                      style={{ borderColor: 'var(--glass-border)' }}
-                    >
-                      {wwHistoryLoading ? (
-                        <div className="flex h-12 items-center justify-center">
-                          <div
-                            className="h-5 w-5 animate-spin rounded-full border-b-2 opacity-30"
-                            style={{ borderColor: ACCENT }}
-                          />
-                        </div>
-                      ) : wwHistory.length === 0 ? (
-                        <p
-                          className="py-2 text-center text-xs"
-                          style={{ color: 'var(--text-muted)' }}
-                        >
-                          Keine Daten
-                        </p>
-                      ) : (
-                        wwHistory.map((entry, i) => {
-                          const now = new Date();
-                          const isToday = entry.time.toDateString() === now.toDateString();
-                          const yesterday = new Date(now);
-                          yesterday.setDate(yesterday.getDate() - 1);
-                          const isYesterday = entry.time.toDateString() === yesterday.toDateString();
-                          const timeStr = isToday
-                            ? entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                            : isYesterday
-                            ? `gestern ${entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                            : `${entry.time.toLocaleDateString([], { day: '2-digit', month: '2-digit' })} ${entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-
-                          const dotColor = MODUS_META[entry.state]?.color || 'var(--text-muted)';
-                          const modusLabel = MODUS_META[entry.state]?.label || entry.state;
-
-                          return (
-                            <div key={i} className="flex items-center gap-3 py-1.5">
-                              <div
-                                className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
-                                style={{ backgroundColor: dotColor }}
-                              />
-                              <span
-                                className="flex-1 text-[11px] font-semibold"
-                                style={{ color: dotColor }}
-                              >
-                                {modusLabel}
-                              </span>
-                              <span
-                                className="flex-shrink-0 text-[10px] tabular-nums"
-                                style={{ color: 'var(--text-muted)' }}
-                              >
-                                {timeStr}
-                              </span>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  )}
-                </div>
+                {/* Loading state for history */}
+                {wwHistoryLoading && (
+                  <div className="flex h-12 items-center justify-center">
+                    <div className="h-5 w-5 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: ACCENT }} />
+                  </div>
+                )}
               </div>
             )}
 

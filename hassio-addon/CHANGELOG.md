@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.18.46
+
+### Added
+- WP-Modal: 4 Live-Sensorkacheln (WW-Temp, SOC, PV-Überschuss, Raumtemp) mit Minibars
+- WP-Modal: Entscheidungsprotokoll als formatierte Log-Zeilen mit Uhrzeit und Modus-Chip
+- WP-Modal: "Warum?" parsed Entscheidungslog in Bullet-Points
+
+### Changed
+- WP-Modal: Sensor-Tiles und State Badge kompakter auf mobilen Geräten
+- WP-Modal: Tagesverlauf-Timeline und Protokoll in einem Block zusammengefasst
+
 ## 1.18.45
 
 ### Changed

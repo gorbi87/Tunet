@@ -30,6 +30,10 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   leistungWw: 'number.daikin_heizung_leistung_ww',
   bohWartezeit: 'number.daikin_heizung_wartezeit_boh',
   kuehlung: 'input_boolean.wp_kuhlung_aktiv',
+  socSensor: 'sensor.solaredge_b1_state_of_energy',
+  pvProduktion: 'sensor.solar_panel_production_w',
+  hausverbrauch: 'sensor.solar_house_consumption_w',
+  raumTemp: 'sensor.durchschnittstemperatur_haus',
 };
 
 export const MODUS_META = {
@@ -349,7 +353,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
         )}
 
         {/* Bottom row: COP + Strom */}
-        <div className={`flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'mt-2 pt-2' : 'mt-4 pt-3'}`}>
+        <div className={`flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'mt-2 pt-1.5' : 'mt-2 pt-2'}`}>
             {cop != null && (
               <div className="flex flex-col">
                 <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">
