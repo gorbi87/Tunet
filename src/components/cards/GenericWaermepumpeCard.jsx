@@ -21,16 +21,24 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   raumsoll: 'select.daikin_heizung_raumsoll_1',
   saison: 'input_select.warmepumpe_saison',
   automationWp: 'automation.pv_wp_steuerung_v2_3_3_phasen_logik_daikin',
-  phaseBBoolean: 'input_boolean.wp_phase_b_aktiv',
-  heizstabZyklen: 'counter.wp_heizstab_zyklen_phase_b',
+  tagesmodus: 'input_select.wp_tagesmodus',
+  entscheidungslog: 'input_text.wp_entscheidungslog',
   kompressorStart: 'input_datetime.wp_kompressor_startzeit',
   letzterWechsel: 'input_datetime.wp_letzter_wechsel',
   minusPreisBoolean: 'input_boolean.wp_minus_preis_modus_aktiv',
   octopusPreis: 'sensor.octopus_a_c856c4a4_electricity_price',
   leistungWw: 'number.daikin_heizung_leistung_ww',
   bohWartezeit: 'number.daikin_heizung_wartezeit_boh',
-  phaseCTempSnapshot: 'input_number.wp_phase_c_ww_temp_letzte',
   kuehlung: 'input_boolean.wp_kuhlung_aktiv',
+};
+
+export const MODUS_META = {
+  Standby:   { color: '#94a3b8', label: 'Standby' },
+  WW_Heizen: { color: '#60a5fa', label: 'WW Heizen' },
+  WW_Pause:  { color: '#fbbf24', label: 'WW Pause' },
+  WW_Boost:  { color: '#c084fc', label: 'WW Boost' },
+  WW_Fertig: { color: '#4ade80', label: 'WW Fertig' },
+  Kühlen:    { color: '#38bdf8', label: 'Kühlen' },
 };
 
 const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
@@ -104,24 +112,15 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
 
   const minusPreisAktiv = entities?.[WAERMEPUMPE_ENTITY_IDS.minusPreisBoolean]?.state === 'on';
 
-  // Phase-Erkennung für Fortschrittsbalken
-  const wwSollStr = entities?.[WAERMEPUMPE_ENTITY_IDS.wwSoll]?.state ?? '';
-  const wwSollNum = parseFloat(wwSollStr) || null;
-  const phaseBActive = entities?.[WAERMEPUMPE_ENTITY_IDS.phaseBBoolean]?.state === 'on';
-  const letzteWwTemp = parseFloat(entities?.[WAERMEPUMPE_ENTITY_IDS.phaseCTempSnapshot]?.state) || 0;
-
-  const isPhaseB = phaseBActive && !minusPreisAktiv;
-  const isPhaseC = !phaseBActive && !minusPreisAktiv && wwSollNum === 65 && wwTemp != null && wwTemp >= 55;
-  const isPhaseA = !phaseBActive && !isPhaseC && !minusPreisAktiv && wwSollNum != null && wwSollNum >= 52 && isWW;
-  const wwZyklusAktiv = isPhaseA || isPhaseB || isPhaseC;
-
-  const phaseColor = isPhaseC ? '#c084fc' : isPhaseB ? '#fb923c' : '#60a5fa';
-  const phaseName = isPhaseC ? 'C' : isPhaseB ? 'B' : 'A';
-  const phaseTarget = isPhaseC ? 65 : isPhaseB ? 55 : (wwSollNum || 54);
-  const phasePct = wwTemp != null && wwZyklusAktiv
-    ? Math.min(100, Math.max(0, (wwTemp - 40) / (phaseTarget - 40) * 100))
+  // State Machine
+  const tagesmodus = entities?.[WAERMEPUMPE_ENTITY_IDS.tagesmodus]?.state || 'Standby';
+  const modusMeta = MODUS_META[tagesmodus] || { color: '#94a3b8', label: tagesmodus };
+  const entscheidungslog = entities?.[WAERMEPUMPE_ENTITY_IDS.entscheidungslog]?.state || '';
+  const logReason = entscheidungslog.includes('|') ? entscheidungslog.split('|')[1]?.trim() : '';
+  const wwTarget = (tagesmodus === 'WW_Heizen' || tagesmodus === 'WW_Boost') ? 63 : null;
+  const wwPct = wwTemp != null && wwTarget != null
+    ? Math.min(100, Math.max(0, (wwTemp - 40) / (wwTarget - 40) * 100))
     : null;
-  const tempDelta = isPhaseC && letzteWwTemp > 0 && wwTemp != null ? wwTemp - letzteWwTemp : null;
 
   const octopusPreisVal = parseFloat(entities?.[WAERMEPUMPE_ENTITY_IDS.octopusPreis]?.state);
   const octopusPreisAktuell = Number.isFinite(octopusPreisVal) ? octopusPreisVal : null;
@@ -310,43 +309,42 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
           )}
         </div>
 
-        {/* Phase-Fortschrittsbalken (nur wenn WW-Zyklus aktiv, nicht ultraCompact) */}
-        {wwZyklusAktiv && phasePct != null && !isUltraCompact && (
+        {/* State Machine Status */}
+        {!isUltraCompact && (
           <div className={isDenseMobile ? 'mt-3' : 'mt-4'}>
-            <div className="mb-1.5 flex items-center justify-between">
+            <div className="mb-1.5 flex items-center justify-between gap-2">
               <span
-                className="text-[9px] font-bold tracking-widest uppercase"
-                style={{ color: phaseColor }}
+                className="shrink-0 text-[9px] font-bold tracking-widest uppercase"
+                style={{ color: modusMeta.color }}
               >
-                Phase {phaseName}
-                {isPhaseC && !kompressorAktiv && ' · Daikin intern'}
-                {isPhaseC && kompressorAktiv && ' · Kompressor'}
+                {modusMeta.label}
               </span>
-              {tempDelta != null && (
-                <span
-                  className="text-[9px] font-mono tabular-nums"
-                  style={{ color: tempDelta > 0.2 ? phaseColor : 'var(--text-muted)' }}
-                >
-                  {tempDelta > 0 ? '+' : ''}{tempDelta.toFixed(1)}°C
+              {logReason && (
+                <span className="truncate text-[8px] text-[var(--text-muted)]">
+                  {logReason}
                 </span>
               )}
             </div>
-            <div
-              className="h-1 w-full overflow-hidden rounded-full"
-              style={{ backgroundColor: 'var(--glass-bg)' }}
-            >
-              <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${phasePct}%`, backgroundColor: phaseColor }}
-              />
-            </div>
-            <div
-              className="mt-1 flex justify-between"
-              style={{ fontSize: '9px', color: 'var(--text-muted)' }}
-            >
-              <span>{wwTemp?.toFixed(1)}°C</span>
-              <span style={{ color: phaseColor }}>→ {phaseTarget}°C</span>
-            </div>
+            {wwPct != null && (
+              <>
+                <div
+                  className="h-1 w-full overflow-hidden rounded-full"
+                  style={{ backgroundColor: 'var(--glass-bg)' }}
+                >
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${wwPct}%`, backgroundColor: modusMeta.color }}
+                  />
+                </div>
+                <div
+                  className="mt-1 flex justify-between"
+                  style={{ fontSize: '9px', color: 'var(--text-muted)' }}
+                >
+                  <span>{wwTemp?.toFixed(1)}°C</span>
+                  <span style={{ color: modusMeta.color }}>→ {wwTarget}°C</span>
+                </div>
+              </>
+            )}
           </div>
         )}
 

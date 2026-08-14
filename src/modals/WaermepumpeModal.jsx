@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Flame, X, Thermometer, Zap } from '../icons';
-import { WAERMEPUMPE_ENTITY_IDS } from '../components/cards/GenericWaermepumpeCard';
+import { WAERMEPUMPE_ENTITY_IDS, MODUS_META } from '../components/cards/GenericWaermepumpeCard';
 import { HpsuHydraulicView } from '../components/HpsuHydraulicView';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 import { getHistoryRest, getHistory } from '../services/haClient';
@@ -32,63 +32,30 @@ function SelectDropdown({ entityId, entity, onSelect }) {
   );
 }
 
-// Phase A/B/C derived from entity states
-function derivePhase(wwIst, phaseBActive, wwSoll) {
-  if (phaseBActive) return 'B';
-  const soll = parseFloat(String(wwSoll).replace(' °C', ''));
-  if (!isNaN(soll) && soll >= 60) return 'C';
-  if (!isNaN(soll) && soll <= 48) return 'idle';
-  if (wwIst != null && wwIst >= 53.5) return 'A→B';
-  return 'A';
-}
-
-function PhaseIndicator({ phase }) {
-  const phases = ['A', 'B', 'C'];
-  const colors = { A: '#64b5f6', B: '#ffb74d', C: '#ef9a9a' };
-  const labels = {
-    A: 'Kompressor bis 54°C',
-    B: 'Heizstab manuell',
-    C: 'Daikin intern',
-  };
-  const activePhase = phase === 'A→B' ? 'B' : phase;
-
+function TagesmodusBadges({ tagesmodus }) {
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        {phases.map((p) => {
-          const isActive = activePhase === p;
-          const color = colors[p];
-          return (
-            <div
-              key={p}
-              className="flex-1 rounded-xl border p-2 text-center transition-all"
-              style={
-                isActive
-                  ? { backgroundColor: `${color}22`, borderColor: color }
-                  : { backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }
-              }
+    <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+      {Object.entries(MODUS_META).map(([key, meta]) => {
+        const isActive = tagesmodus === key;
+        return (
+          <div
+            key={key}
+            className="rounded-xl border p-2 text-center transition-all"
+            style={
+              isActive
+                ? { backgroundColor: `${meta.color}22`, borderColor: meta.color }
+                : { backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }
+            }
+          >
+            <p
+              className="text-[10px] font-bold leading-tight"
+              style={{ color: isActive ? meta.color : 'var(--text-muted)' }}
             >
-              <p
-                className="text-base font-bold"
-                style={{ color: isActive ? color : 'var(--text-muted)' }}
-              >
-                {p}
-              </p>
-              <p
-                className="text-[9px] leading-tight mt-0.5"
-                style={{ color: isActive ? color : 'var(--text-muted)' }}
-              >
-                {labels[p]}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-      {phase === 'A→B' && (
-        <p className="text-[11px] font-medium text-center" style={{ color: '#ffb74d' }}>
-          Übergang A→B (WW ≥ 53.5°C)
-        </p>
-      )}
+              {meta.label}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -126,7 +93,7 @@ export default function WaermepumpeModal({
         let raw = [];
         try {
           const data = await getHistoryRest(haUrl, haToken, {
-            entityId: WAERMEPUMPE_ENTITY_IDS.wwSoll,
+            entityId: WAERMEPUMPE_ENTITY_IDS.tagesmodus,
             start,
             end,
             minimal_response: false,
@@ -136,7 +103,7 @@ export default function WaermepumpeModal({
           raw = Array.isArray(data?.[0]) ? data[0] : (Array.isArray(data) ? data : []);
         } catch (_e) {
           const wsData = await getHistory(conn, {
-            entityId: WAERMEPUMPE_ENTITY_IDS.wwSoll,
+            entityId: WAERMEPUMPE_ENTITY_IDS.tagesmodus,
             start,
             end,
           });
@@ -209,12 +176,13 @@ export default function WaermepumpeModal({
   // Automatik tab values
   const saisonState = str(WAERMEPUMPE_ENTITY_IDS.saison);
   const automationState = str(WAERMEPUMPE_ENTITY_IDS.automationWp);
-  const phaseBActive = e(WAERMEPUMPE_ENTITY_IDS.phaseBBoolean)?.state === 'on';
+  const tagesmodus = str(WAERMEPUMPE_ENTITY_IDS.tagesmodus) || 'Standby';
+  const entscheidungslog = str(WAERMEPUMPE_ENTITY_IDS.entscheidungslog) || '';
+  const modusColor = MODUS_META[tagesmodus]?.color || '#94a3b8';
   const minusPreisAktiv = e(WAERMEPUMPE_ENTITY_IDS.minusPreisBoolean)?.state === 'on';
   const kuehlungAktiv = e(WAERMEPUMPE_ENTITY_IDS.kuehlung)?.state === 'on';
   const octopusPreisVal = parseFloat(e(WAERMEPUMPE_ENTITY_IDS.octopusPreis)?.state);
   const octopusPreisAktuell = Number.isFinite(octopusPreisVal) ? octopusPreisVal : null;
-  const heizstabZyklenVal = val(WAERMEPUMPE_ENTITY_IDS.heizstabZyklen) ?? 0;
   const kompressorStartStr = str(WAERMEPUMPE_ENTITY_IDS.kompressorStart);
   const wwSollState = str(WAERMEPUMPE_ENTITY_IDS.wwSoll);
   const betriebsartState = str(WAERMEPUMPE_ENTITY_IDS.betriebsart);
@@ -222,7 +190,6 @@ export default function WaermepumpeModal({
   const heizstabLaeuft = heizstabSelectState != null && heizstabSelectState !== 'Aus';
   const leistungWwVal = val(WAERMEPUMPE_ENTITY_IDS.leistungWw);
   const bohWartezeitVal = val(WAERMEPUMPE_ENTITY_IDS.bohWartezeit) ?? 95;
-  const letzteWwTempVal = val(WAERMEPUMPE_ENTITY_IDS.phaseCTempSnapshot);
   const autoOn = automationState === 'on';
 
   // Upcoming negative price within 12h
@@ -268,7 +235,6 @@ export default function WaermepumpeModal({
     return 'boh';
   })();
 
-  const phase = derivePhase(wwTemp, phaseBActive, wwSollState);
   const saisonColor = saisonState?.startsWith('Win') ? '#64b5f6' : '#ffb74d';
 
   const toggleAutomation = () => {
@@ -871,226 +837,82 @@ export default function WaermepumpeModal({
                   </div>
                 )}
 
-                {/* Phasen-Anzeige (nur Sommer, nicht während Minus-Preis) */}
-                {saisonState === 'Sommer' && !minusPreisAktiv && (
-                  <div className="popup-surface rounded-2xl p-4 space-y-3">
-                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
-                      PV-Überschuss · 3-Phasen WW
-                    </p>
-                    <PhaseIndicator phase={phase} />
+                {/* State Machine Status */}
+                <div className="popup-surface rounded-2xl p-4 space-y-3">
+                  <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                    Tagesplan · Aktueller Modus
+                  </p>
+                  <TagesmodusBadges tagesmodus={tagesmodus} />
 
-                    {/* WW-Ist / WW-Soll */}
-                    <div className="grid grid-cols-2 gap-3 mt-1">
-                      <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
-                        <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Ist</p>
-                        <p className="text-lg font-light" style={{ color: ACCENT }}>
-                          {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'}
-                        </p>
-                      </div>
-                      <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
-                        <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Soll</p>
-                        <p className="text-lg font-light" style={{ color: 'var(--text-primary)' }}>
-                          {wwSollState || '—'}
-                        </p>
-                      </div>
+                  {entscheidungslog && (
+                    <div
+                      className="rounded-xl border p-2.5"
+                      style={{ borderColor: `${modusColor}44`, backgroundColor: `${modusColor}0d` }}
+                    >
+                      <p className="text-[9px] font-bold tracking-widest uppercase mb-1" style={{ color: 'var(--text-muted)' }}>
+                        Letzte Entscheidung
+                      </p>
+                      <p className="text-[11px] font-light leading-relaxed" style={{ color: modusColor }}>
+                        {entscheidungslog}
+                      </p>
                     </div>
+                  )}
 
-                    {/* Betriebsart */}
-                    {betriebsartState && (
-                      <div className="flex items-center gap-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
+                      <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Ist</p>
+                      <p className="text-lg font-light" style={{ color: ACCENT }}>
+                        {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
+                      <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Soll</p>
+                      <p className="text-lg font-light" style={{ color: 'var(--text-primary)' }}>
+                        {wwSollState || '—'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* WW progress bar for WW_Heizen / WW_Boost */}
+                  {(tagesmodus === 'WW_Heizen' || tagesmodus === 'WW_Boost') && wwTemp != null && (
+                    <div>
+                      <div className="mb-1 flex justify-between" style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                        <span>{wwTemp.toFixed(1)}°C</span>
+                        <span style={{ color: modusColor }}>→ 63°C</span>
+                      </div>
+                      <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ backgroundColor: 'var(--glass-border)' }}>
                         <div
-                          className="h-2 w-2 flex-shrink-0 rounded-full"
+                          className="h-full rounded-full transition-all duration-700"
                           style={{
-                            backgroundColor: istWWZyklus ? '#4ade80' : 'var(--text-muted)',
+                            width: `${Math.min(100, Math.max(0, (wwTemp - 40) / 23 * 100))}%`,
+                            backgroundColor: modusColor,
                           }}
                         />
-                        <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                          {betriebsartState}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Winter Status */}
-                {saisonState === 'Winter' && (
-                  <div className="popup-surface rounded-2xl p-4 space-y-2">
-                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
-                      Status Winter
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
-                        <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Ist</p>
-                        <p className="text-lg font-light" style={{ color: ACCENT }}>
-                          {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'}
-                        </p>
-                      </div>
-                      <div className="rounded-xl border p-2 text-center" style={{ borderColor: 'var(--glass-border)' }}>
-                        <p className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>WW-Soll</p>
-                        <p className="text-lg font-light" style={{ color: 'var(--text-primary)' }}>
-                          {wwSollState || '—'}
-                        </p>
                       </div>
                     </div>
-                    {betriebsartState && (
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-2 w-2 flex-shrink-0 rounded-full"
-                          style={{ backgroundColor: kompressorAktiv ? '#4ade80' : 'var(--text-muted)' }}
-                        />
-                        <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                          {betriebsartState}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
 
-                {/* Phase B Details */}
-                {saisonState === 'Sommer' && !minusPreisAktiv && (
-                  <div className="popup-surface rounded-2xl p-4 space-y-3">
-                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
-                      Phase B · Heizstab-Zyklen
-                    </p>
-
-                    {/* Zyklen Zähler */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex gap-1.5">
-                        {[1, 2, 3].map((n) => (
-                          <div
-                            key={n}
-                            className="h-3 w-8 rounded-full"
-                            style={{
-                              backgroundColor:
-                                n <= heizstabZyklenVal
-                                  ? '#ffb74d'
-                                  : 'var(--glass-border)',
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-sm font-medium" style={{ color: heizstabZyklenVal > 0 ? '#ffb74d' : 'var(--text-muted)' }}>
-                        {heizstabZyklenVal}/3 Zyklen
+                  {betriebsartState && (
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="h-2 w-2 flex-shrink-0 rounded-full"
+                        style={{ backgroundColor: kompressorAktiv ? '#4ade80' : 'var(--text-muted)' }}
+                      />
+                      <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                        {betriebsartState}
                       </span>
-                      {phaseBActive && (
-                        <span
-                          className="ml-auto rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
-                          style={{
-                            backgroundColor: 'rgba(255,183,77,0.15)',
-                            borderColor: '#ffb74d',
-                            color: '#ffb74d',
-                          }}
-                        >
-                          Aktiv
+                      {heizstabSelectState && heizstabLaeuft && (
+                        <span className="ml-auto flex items-center gap-1 text-[11px]" style={{ color: '#ef9a9a' }}>
+                          <Zap className="h-3 w-3" />
+                          {heizstabSelectState}
                         </span>
                       )}
                     </div>
-
-                    {/* Heizstab-Select aktuell */}
-                    {heizstabSelectState && (
-                      <div className="flex items-center gap-2">
-                        <Zap
-                          className="h-3.5 w-3.5 flex-shrink-0"
-                          style={{ color: heizstabSelectState !== 'Aus' ? '#ef9a9a' : 'var(--text-muted)' }}
-                        />
-                        <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                          Heizstab: {heizstabSelectState}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Phase C Details */}
-                {saisonState === 'Sommer' && !minusPreisAktiv && phase === 'C' && (
-                  <div className="popup-surface rounded-2xl p-4 space-y-3">
-                    <p
-                      className="text-[10px] font-bold tracking-[0.2em] uppercase"
-                      style={{ color: '#c084fc' }}
-                    >
-                      Phase C · Daikin intern
-                    </p>
-
-                    {/* Fortschrittsbalken 55→65°C */}
-                    <div>
-                      <div className="mb-1.5 flex justify-between">
-                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                          Heizfortschritt
-                        </span>
-                        <span className="text-[10px] font-medium" style={{ color: '#c084fc' }}>
-                          {wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—'} → 65°C
-                        </span>
-                      </div>
-                      <div
-                        className="relative h-2 w-full overflow-hidden rounded-full"
-                        style={{ backgroundColor: 'var(--glass-border)' }}
-                      >
-                        <div
-                          className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-                          style={{
-                            width: `${Math.min(100, Math.max(0, ((wwTemp ?? 55) - 55) / 10 * 100))}%`,
-                            backgroundColor: '#c084fc',
-                          }}
-                        />
-                      </div>
-                      <div className="mt-1 flex justify-between" style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                        <span>55°C</span>
-                        <span>65°C</span>
-                      </div>
-                    </div>
-
-                    {/* Δ-Temperatur seit letztem 5-min-Check */}
-                    {letzteWwTempVal != null && letzteWwTempVal > 0 && wwTemp != null && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                            Letzte Messung
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-mono tabular-nums" style={{ color: 'var(--text-muted)' }}>
-                              {letzteWwTempVal.toFixed(1)}°C
-                            </span>
-                            <span
-                              className="text-[11px] font-mono font-bold tabular-nums"
-                              style={{
-                                color: (wwTemp - letzteWwTempVal) > 0.3
-                                  ? '#4ade80'
-                                  : (wwTemp - letzteWwTempVal) > 0
-                                  ? '#fbbf24'
-                                  : 'var(--text-muted)',
-                              }}
-                            >
-                              {(wwTemp - letzteWwTempVal) >= 0 ? '+' : ''}
-                              {(wwTemp - letzteWwTempVal).toFixed(2)}°C
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-2 w-2 flex-shrink-0 rounded-full"
-                            style={{
-                              backgroundColor: (wwTemp - letzteWwTempVal) > 0.3
-                                ? '#4ade80'
-                                : (wwTemp - letzteWwTempVal) > 0
-                                ? '#fbbf24'
-                                : 'var(--text-muted)',
-                            }}
-                          />
-                          <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                            {(wwTemp - letzteWwTempVal) > 0.3
-                              ? 'Heizstab aktiv – Temperatur steigt'
-                              : (wwTemp - letzteWwTempVal) > 0
-                              ? 'Minimaler Anstieg – Plateau nähert sich'
-                              : 'Plateau erreicht – Abschalten bald'}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* BOH-Schutz (Kompressor-Laufzeit) */}
-                {saisonState === 'Sommer' && !minusPreisAktiv && (
+                {autoOn && !minusPreisAktiv && (
                   <div className="popup-surface rounded-2xl p-4 space-y-2">
                     <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
                       BOH-Schutz · Kompressor-Laufzeit
@@ -1127,7 +949,7 @@ export default function WaermepumpeModal({
                   </div>
                 )}
 
-                {/* Schalt-Verlauf (WW-Soll) */}
+                {/* Tagesmodus Verlauf */}
                 <div className="popup-surface rounded-2xl overflow-hidden">
                   <button
                     type="button"
@@ -1138,7 +960,7 @@ export default function WaermepumpeModal({
                       className="text-[10px] font-bold tracking-[0.2em] uppercase"
                       style={{ color: 'var(--text-muted)' }}
                     >
-                      WW-Soll Verlauf (48h)
+                      Tagesmodus Verlauf (48h)
                     </p>
                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                       {wwHistoryOpen ? '▲' : '▼'}
@@ -1166,82 +988,31 @@ export default function WaermepumpeModal({
                       ) : (
                         wwHistory.map((entry, i) => {
                           const now = new Date();
-                          const isToday =
-                            entry.time.toDateString() === now.toDateString();
+                          const isToday = entry.time.toDateString() === now.toDateString();
                           const yesterday = new Date(now);
                           yesterday.setDate(yesterday.getDate() - 1);
-                          const isYesterday =
-                            entry.time.toDateString() === yesterday.toDateString();
+                          const isYesterday = entry.time.toDateString() === yesterday.toDateString();
                           const timeStr = isToday
-                            ? entry.time.toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })
+                            ? entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             : isYesterday
-                            ? `gestern ${entry.time.toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}`
-                            : entry.time.toLocaleDateString([], {
-                                day: '2-digit',
-                                month: '2-digit',
-                              }) +
-                              ' ' +
-                              entry.time.toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              });
+                            ? `gestern ${entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                            : `${entry.time.toLocaleDateString([], { day: '2-digit', month: '2-digit' })} ${entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
-                          const soll = parseFloat(
-                            String(entry.state).replace(' °C', '')
-                          );
-                          const dotColor =
-                            soll >= 65
-                              ? '#ef9a9a'
-                              : soll >= 54
-                              ? ACCENT
-                              : soll <= 50
-                              ? '#64b5f6'
-                              : 'var(--text-muted)';
-
-                          // Human-readable label for WW-Soll value
-                          const phaseLabel =
-                            soll >= 65
-                              ? 'Minus-Preis / Phase C'
-                              : soll >= 54
-                              ? 'Phase A'
-                              : soll === 50
-                              ? 'Phase B'
-                              : soll === 48
-                              ? 'Minus-Preis kommt'
-                              : soll === 40
-                              ? 'Idle'
-                              : soll <= 48
-                              ? 'Standby / Abend'
-                              : entry.state;
+                          const dotColor = MODUS_META[entry.state]?.color || 'var(--text-muted)';
+                          const modusLabel = MODUS_META[entry.state]?.label || entry.state;
 
                           return (
-                            <div key={i} className="flex items-start gap-3 py-1.5">
+                            <div key={i} className="flex items-center gap-3 py-1.5">
                               <div
-                                className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                                className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
                                 style={{ backgroundColor: dotColor }}
                               />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-baseline gap-2">
-                                  <span
-                                    className="text-[11px] font-semibold"
-                                    style={{ color: 'var(--text-primary)' }}
-                                  >
-                                    {entry.state}
-                                  </span>
-                                  <span
-                                    className="text-[10px]"
-                                    style={{ color: dotColor }}
-                                  >
-                                    {phaseLabel}
-                                  </span>
-                                </div>
-                              </div>
+                              <span
+                                className="flex-1 text-[11px] font-semibold"
+                                style={{ color: dotColor }}
+                              >
+                                {modusLabel}
+                              </span>
                               <span
                                 className="flex-shrink-0 text-[10px] tabular-nums"
                                 style={{ color: 'var(--text-muted)' }}
