@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.49
+
+### Changed
+- WP-Modal: Entscheidungsprotokoll zeigt Ist-vs-Soll-Vergleich pro Zeile (Ist ≥ Schwelle)
+
 ## 1.18.48
 
 ### Changed

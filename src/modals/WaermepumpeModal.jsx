@@ -1095,14 +1095,10 @@ export default function WaermepumpeModal({
                               const col = MODUS_META[entry.curState]?.color || '#94a3b8';
                               const label = MODUS_META[entry.curState]?.label || entry.curState;
                               const timeStr = entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                              const tokens = entry.reason.trim().split(/\s+/);
-                              const parts = [];
-                              for (let j = 0; j + 1 < tokens.length; j += 2) {
-                                const k = tokens[j], v = tokens[j + 1];
-                                const lbl = k === 'PV' ? 'PV-Überschuss' : k === 'WW' ? 'WW-Ist' : k;
-                                parts.push(`${lbl} ${v}`);
-                              }
-                              const reasonText = parts.join(' · ');
+                              const bullets2 = buildLogBullets(entry.reason, entry.curState);
+                              const reasonText = bullets2
+                                .map(b => [b.label, b.val, b.op, b.ziel].filter(Boolean).join(' '))
+                                .join(' · ');
                               return (
                                 <div key={i} className="flex items-baseline gap-2 py-1.5 border-b flex-wrap" style={{ borderColor: 'var(--glass-border)' }}>
                                   <span className="shrink-0 font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{timeStr}</span>

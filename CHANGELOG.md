@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.49] — 2026-08-14
+
+### Changed
+- WP-Modal: Entscheidungsprotokoll zeigt Ist-vs-Soll-Vergleich pro Zeile (z.B. "PV-Überschuss 3.3kW ≥ Startschwelle 2kW · Raum 25.5°C ≥ Kühlschwelle 24°C")
+
+
 ## [1.18.48] — 2026-08-14
 
 ### Changed
