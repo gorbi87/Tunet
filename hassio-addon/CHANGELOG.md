@@ -3,7 +3,8 @@
 ## 1.18.44
 
 ### Changed
-- Add release notes.
+- WP State-Machine-Visualisierung: Tagesmodus (Standby/WW Heizen/WW Pause/WW Boost/WW Fertig/Kühlen) auf Karte und im Modal
+- WP-Modal: Entscheidungslog der Automation sichtbar; Tagesmodus-Verlauf (48h) statt WW-Soll-Verlauf
 
 ## 1.18.43
 

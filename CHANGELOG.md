@@ -7,14 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [1.18.44] — 2026-08-14
 
-### Added
-- Add release notes.
-
 ### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
+- WP-Karte: Phase-A/B/C-Logik durch State-Machine-Anzeige ersetzt — zeigt aktuellen Tagesmodus (Standby, WW Heizen, WW Pause, WW Boost, WW Fertig, Kühlen) farbig an
+- WP-Karte: WW-Fortschrittsbalken läuft jetzt von 40→63°C während WW_Heizen / WW_Boost
+- WP-Modal Automatik-Tab: neues Tagesplan-Badge-Grid mit allen 6 Modi; aktiver Modus farbig hervorgehoben
+- WP-Modal Automatik-Tab: Entscheidungslog (letzte Automations-Entscheidung mit Sensordaten) prominent angezeigt
+- WP-Modal Automatik-Tab: Tagesmodus-Verlauf (48h) ersetzt WW-Soll-Verlauf; Einträge mit Modus-Farben
+- WP-Modal Automatik-Tab: BOH-Schutz-Balken sichtbar sobald Automatik aktiv (nicht mehr nur im Sommer)
 
 
 ## [1.18.43] — 2026-07-02
