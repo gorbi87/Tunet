@@ -24,16 +24,16 @@ const baseProps = {
 };
 
 describe('PersonStatus', () => {
-  it('shows the configured person name on phones while preserving the desktop layout', () => {
+  it('shows the configured person name and state on phones while preserving the desktop layout', () => {
     render(<PersonStatus {...baseProps} />);
 
     const name = screen.getByText('Ola Nordmann');
-    expect(name.parentElement?.parentElement).toHaveClass('max-[479px]:flex', 'sm:flex');
+    expect(name.parentElement?.parentElement).toHaveClass('flex');
     expect(name).toHaveClass('truncate', 'sm:text-sm');
-    expect(screen.getByText('Heime')).toHaveClass('max-[479px]:hidden');
+    expect(screen.getByText('Heime')).not.toHaveClass('max-[479px]:hidden');
   });
 
-  it('keeps the mobile name hidden when showName is disabled', () => {
+  it('shows state by itself on mobile when the name is disabled', () => {
     render(
       <PersonStatus
         {...baseProps}
@@ -43,6 +43,19 @@ describe('PersonStatus', () => {
     );
 
     expect(screen.queryByText('Ola Nordmann')).not.toBeInTheDocument();
-    expect(screen.getByText('Heime').parentElement).not.toHaveClass('max-[479px]:flex');
+    expect(screen.getByText('Heime').parentElement).toHaveClass('flex');
+  });
+
+  it('keeps state hidden when showState is disabled', () => {
+    render(
+      <PersonStatus
+        {...baseProps}
+        cardSettings={{ person_ola_header: { showName: true, showState: false } }}
+        getCardSettingsKey={() => 'person_ola_header'}
+      />
+    );
+
+    expect(screen.getByText('Ola Nordmann')).toBeInTheDocument();
+    expect(screen.queryByText('Heime')).not.toBeInTheDocument();
   });
 });
