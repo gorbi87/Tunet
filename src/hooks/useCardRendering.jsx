@@ -144,7 +144,7 @@ export function useCardRendering({
   const getCardGridSpan = useCallback(
     (cardId) => {
       const rowPx = isMobile ? 82 : 100;
-      const gapPx = isMobile ? 12 : gridGapV;
+      const gapPx = gridGapV;
       return _getCardGridSpan(cardId, getCardSettingsKey, cardSettings, activePage, {
         rowPx,
         gapPx,

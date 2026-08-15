@@ -25,6 +25,9 @@ export {
   isEntityDataStale,
   ENTITY_STALE_DISCONNECT_GRACE_MS,
   ENTITY_STALE_NO_UPDATE_MS,
+  CONNECTION_WARNING_DELAY_MS,
+  MOBILE_CONNECTION_WARNING_DELAY_MS,
+  getConnectionWarningDelayMs,
 } from './connectionHealth';
 export { getEffectiveRoomEntityIds, filterEntitiesByDomain } from './roomEntities';
 export { matchCarEntities } from './carEntityMatcher';

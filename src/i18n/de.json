@@ -411,6 +411,7 @@
   "form.smallVersion": "Kleine Version",
   "ha.disconnectedFor": "Getrennt seit {time}",
   "ha.retry": "Verbindung erneut versuchen",
+  "ha.reconnecting": "Verbindung wird hergestellt …",
   "ha.unavailable": "Home Assistant ist derzeit nicht verfügbar, Daten könnten veraltet sein, aber Karten werden noch angezeigt.",
   "header.addHeader": "Kopfzeile hinzufügen",
   "header.batteryVariant": "Variante",

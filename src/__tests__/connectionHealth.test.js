@@ -3,7 +3,22 @@ import {
   isEntityDataStale,
   ENTITY_STALE_DISCONNECT_GRACE_MS,
   ENTITY_STALE_NO_UPDATE_MS,
+  CONNECTION_WARNING_DELAY_MS,
+  MOBILE_CONNECTION_WARNING_DELAY_MS,
+  getConnectionWarningDelayMs,
 } from '../utils/connectionHealth';
+
+describe('connectionHealth › warning delay', () => {
+  it('gives mobile app launches more time to reconnect silently', () => {
+    expect(getConnectionWarningDelayMs(390)).toBe(MOBILE_CONNECTION_WARNING_DELAY_MS);
+    expect(MOBILE_CONNECTION_WARNING_DELAY_MS).toBeGreaterThan(CONNECTION_WARNING_DELAY_MS);
+  });
+
+  it('keeps the existing warning delay outside the mobile breakpoint', () => {
+    expect(getConnectionWarningDelayMs(480)).toBe(CONNECTION_WARNING_DELAY_MS);
+    expect(getConnectionWarningDelayMs(1440)).toBe(CONNECTION_WARNING_DELAY_MS);
+  });
+});
 
 describe('connectionHealth › isEntityDataStale', () => {
   it('returns false when entities are not loaded', () => {

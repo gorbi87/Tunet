@@ -411,6 +411,7 @@
   "form.smallVersion": "Liten version",
   "ha.disconnectedFor": "Frånkopplad i {time}",
   "ha.retry": "Försök ansluta igen",
+  "ha.reconnecting": "Ansluter …",
   "ha.unavailable": "Home Assistant är för tillfället ej tillgänglig. Data kan vara inaktuell, men kort visas fortfarande.",
   "header.addHeader": "Lägg till rubrik",
   "header.batteryVariant": "Variant",

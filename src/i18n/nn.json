@@ -411,6 +411,7 @@
   "form.smallVersion": "Liten versjon",
   "ha.disconnectedFor": "Fråkopla i {time}",
   "ha.retry": "Prøv tilkopling på nytt",
+  "ha.reconnecting": "Koplar til …",
   "ha.unavailable": "Home Assistant er for tida utilgjengeleg. Data kan vera utdatert, men kort blir framleis vist.",
   "header.addHeader": "Legg til topptekst",
   "header.batteryVariant": "Variant",

@@ -94,14 +94,14 @@ export default function M3Slider({
     onInput: handleInputChange,
     onChange: handleInputChange,
     className: 'absolute w-full h-full opacity-0 cursor-pointer z-20 select-none',
-    style: { touchAction: 'pan-x', WebkitTapHighlightColor: 'transparent' },
+    style: { touchAction: 'pan-y', WebkitTapHighlightColor: 'transparent' },
   };
 
   if (variant === 'thin') {
     return (
       <div
         className={`group relative flex h-4 w-full cursor-pointer items-center ${disabled ? 'pointer-events-none opacity-30' : ''}`}
-        style={{ touchAction: 'pan-x' }}
+        style={{ touchAction: 'pan-y' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="absolute h-1 w-full overflow-hidden rounded-full bg-white/10 transition-all duration-300 group-hover:h-1.5">
@@ -123,7 +123,7 @@ export default function M3Slider({
     return (
       <div
         className={`group relative flex h-6 w-full cursor-pointer items-center ${disabled ? 'pointer-events-none opacity-30' : ''}`}
-        style={{ touchAction: 'pan-x' }}
+        style={{ touchAction: 'pan-y' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="absolute h-2 w-full overflow-hidden rounded-full bg-white/10 transition-all duration-300 group-hover:h-2.5">
@@ -145,7 +145,7 @@ export default function M3Slider({
     return (
       <div
         className={`group relative flex h-10 w-full items-center ${disabled ? 'pointer-events-none opacity-30' : ''}`}
-        style={{ touchAction: 'pan-x' }}
+        style={{ touchAction: 'pan-y' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="absolute h-full w-full overflow-hidden rounded-2xl border border-white/5 bg-white/5">
@@ -168,7 +168,7 @@ export default function M3Slider({
   return (
     <div
       className={`relative w-full ${containerH} group flex items-center ${disabled ? 'pointer-events-none opacity-30' : ''}`}
-      style={{ touchAction: 'pan-x' }}
+      style={{ touchAction: 'pan-y' }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Track */}

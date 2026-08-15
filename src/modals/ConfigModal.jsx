@@ -6,10 +6,12 @@ import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 import { GRADIENT_PRESETS } from '../contexts/ConfigContext';
 import { hasOAuthTokens } from '../services/oauthStorage';
 import {
+  getEffectiveGridColumnsForWidth,
   getMaxGridColumnsForWidth,
   MAX_GRID_COLUMNS,
   MIN_GRID_COLUMNS,
 } from '../hooks/useResponsiveGrid';
+import { MOBILE_BREAKPOINT } from '../config/constants';
 import {
   X,
   Check,
@@ -116,10 +118,11 @@ export default function ConfigModal({
   const [failedImageMap, setFailedImageMap] = useState({});
   const [layoutPreview, setLayoutPreview] = useState(false);
   const [oauthUrlDraft, setOAuthUrlDraft] = useState(() => config.url || '');
-  const [maxGridColumns, setMaxGridColumns] = useState(() => {
-    if (globalThis.window === undefined) return MAX_GRID_COLUMNS;
-    return getMaxGridColumnsForWidth(globalThis.window.innerWidth);
+  const [gridViewportWidth, setGridViewportWidth] = useState(() => {
+    if (globalThis.window === undefined) return Number.POSITIVE_INFINITY;
+    return globalThis.window.innerWidth;
   });
+  const maxGridColumns = getMaxGridColumnsForWidth(gridViewportWidth);
 
   const markImageFailed = (src) => {
     if (!src) return;
@@ -134,10 +137,19 @@ export default function ConfigModal({
     ? Math.min(maxGridColumns, 4)
     : maxGridColumns;
 
-  const effectiveGridColumns = Math.max(
-    MIN_GRID_COLUMNS,
-    Math.min(gridColumns, selectableMaxGridColumns)
+  const effectiveGridColumns = getEffectiveGridColumnsForWidth(
+    gridViewportWidth,
+    gridColumns,
+    dynamicGridColumns
   );
+
+  const selectGridColumns = (columns) => {
+    if (columns > selectableMaxGridColumns) return;
+    if (gridViewportWidth < MOBILE_BREAKPOINT && dynamicGridColumns) {
+      setDynamicGridColumns(false);
+    }
+    setGridColumns(columns);
+  };
 
   const isLayoutPreview = configTab === 'layout' && layoutPreview;
 
@@ -154,7 +166,7 @@ export default function ConfigModal({
   }, [layoutPreview, configTab, setConfigTab]);
 
   useEffect(() => {
-    const update = () => setMaxGridColumns(getMaxGridColumnsForWidth(globalThis.window.innerWidth));
+    const update = () => setGridViewportWidth(globalThis.window.innerWidth);
     update();
     globalThis.window.addEventListener('resize', update);
     return () => globalThis.window.removeEventListener('resize', update);
@@ -1436,7 +1448,7 @@ export default function ConfigModal({
                   return (
                     <button
                       key={cols}
-                      onClick={() => cols <= selectableMaxGridColumns && setGridColumns(cols)}
+                      onClick={() => selectGridColumns(cols)}
                       disabled={isDisabled}
                       className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${className}`}
                     >
