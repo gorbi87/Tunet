@@ -1703,18 +1703,18 @@ export default function VacuumModal({
     const showRightColumn = showRightImage || !showTabbedLayout;
     return (
       <div
-        className={`grid grid-cols-1 items-stretch gap-12 font-sans ${showRightColumn ? 'lg:grid-cols-5' : 'lg:grid-cols-1'}`}
+        className={`grid grid-cols-1 items-stretch gap-4 font-sans sm:gap-12 ${showRightColumn ? 'lg:grid-cols-5' : 'lg:grid-cols-1'}`}
       >
         {/* Left Column - Main Controls & Status (Span 3) */}
         <div
-          className={`flex flex-col space-y-6 ${showRightColumn ? 'h-full lg:col-span-3' : 'mx-auto w-full max-w-3xl'}`}
+          className={`flex flex-col space-y-4 sm:space-y-6 ${showRightColumn ? 'h-full lg:col-span-3' : 'mx-auto w-full max-w-3xl'}`}
         >
-          <div className="popup-surface flex h-full flex-1 flex-col items-center justify-stretch gap-6 rounded-3xl p-6 sm:p-8">
+          <div className="popup-surface flex h-full flex-1 flex-col items-center justify-stretch gap-4 rounded-3xl p-4 sm:gap-6 sm:p-8">
             {/* Primary Actions */}
-            <div className="flex w-full gap-4">
+            <div className="flex w-full gap-2 sm:gap-4">
               <button
                 onClick={handlePrimaryAction}
-                className={`flex flex-1 items-center justify-center gap-3 rounded-2xl py-5 text-sm font-bold tracking-widest uppercase transition-all active:scale-[0.98] ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-2xl py-3 text-xs font-bold tracking-widest uppercase transition-all active:scale-[0.98] sm:gap-3 sm:py-5 sm:text-sm ${
                   isCleaning ? 'hover:bg-[var(--glass-bg-hover)]' : 'hover:opacity-90'
                 }`}
                 style={
@@ -1729,7 +1729,7 @@ export default function VacuumModal({
               {canReturnToBase && (
                 <button
                   onClick={() => callService('vacuum', 'return_to_base', { entity_id: vacuumId })}
-                  className="flex flex-1 items-center justify-center gap-3 rounded-2xl py-5 text-sm font-bold tracking-widest uppercase transition-all hover:bg-[var(--glass-bg-hover)] active:scale-[0.98]"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3 text-xs font-bold tracking-widest uppercase transition-all hover:bg-[var(--glass-bg-hover)] active:scale-[0.98] sm:gap-3 sm:py-5 sm:text-sm"
                   style={{ backgroundColor: 'var(--glass-bg)', color: 'var(--text-primary)' }}
                 >
                   <Home className="h-5 w-5" />
@@ -1739,7 +1739,7 @@ export default function VacuumModal({
             </div>
 
             {/* Low-profile inline status bar (replaces bulky cards) */}
-            <div className="flex w-full items-center justify-between gap-4 rounded-2xl bg-white/[0.02] p-3 text-xs">
+            <div className="flex w-full items-center justify-between gap-2 rounded-2xl bg-white/[0.02] p-2.5 text-[11px] sm:gap-4 sm:p-3 sm:text-xs">
               {/* Battery */}
               <div className="flex items-center gap-2">
                 <Battery
@@ -1775,7 +1775,7 @@ export default function VacuumModal({
             </div>
 
             {/* Suction & Mop controls rendered on Left Side */}
-            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               {canSetFanSpeed && (
                 <ModernDropdown
                   label={t('vacuum.suction')}
@@ -1816,7 +1816,7 @@ export default function VacuumModal({
               </p>
               <div className="grid w-full grid-cols-2 gap-3">
                 <div
-                  className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-all"
+                  className="flex items-center gap-2 rounded-2xl px-3 py-2.5 transition-all sm:gap-3 sm:px-4 sm:py-3"
                   style={{ backgroundColor: 'var(--glass-bg)' }}
                 >
                   <div
@@ -1841,7 +1841,7 @@ export default function VacuumModal({
                   </div>
                 </div>
                 <div
-                  className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-all"
+                  className="flex items-center gap-2 rounded-2xl px-3 py-2.5 transition-all sm:gap-3 sm:px-4 sm:py-3"
                   style={{ backgroundColor: 'var(--glass-bg)' }}
                 >
                   <div
@@ -1882,7 +1882,7 @@ export default function VacuumModal({
                     <button
                       key={index}
                       onClick={() => startRoomCleaning(script.entityId)}
-                      className="group flex items-center justify-center gap-2 rounded-2xl px-4 py-4 text-sm font-medium transition-all hover:bg-[var(--glass-bg-hover)] active:scale-[0.98]"
+                      className="group flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-xs font-medium transition-all hover:bg-[var(--glass-bg-hover)] active:scale-[0.98] sm:px-4 sm:py-4 sm:text-sm"
                       style={{
                         backgroundColor: 'var(--glass-bg)',
                         color: 'var(--text-primary)',
@@ -1928,7 +1928,7 @@ export default function VacuumModal({
                 )}
 
                 <div
-                  className="popup-surface relative min-h-[280px] w-full flex-1 overflow-hidden rounded-3xl p-2 shadow-2xl select-none"
+                  className="popup-surface relative min-h-[220px] w-full flex-1 overflow-hidden rounded-3xl p-2 shadow-2xl select-none sm:min-h-[280px]"
                   onMouseDown={handleMapMouseDown}
                   onMouseMove={handleMapMouseMove}
                   onMouseUp={handleMapMouseUpOrLeave}
@@ -2465,9 +2465,9 @@ export default function VacuumModal({
       open={show && !!vacuumId && !!entities?.[vacuumId]}
       onClose={onClose}
       titleId={modalTitleId}
-      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
+      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6"
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName="popup-anim relative max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-3xl border p-6 font-sans backdrop-blur-xl md:rounded-[3rem] md:p-12"
+      panelClassName="popup-anim relative max-h-[calc(100dvh-1rem)] w-full max-w-5xl overflow-y-auto rounded-3xl border p-4 font-sans backdrop-blur-xl sm:max-h-[90vh] sm:p-6 md:rounded-[3rem] md:p-12"
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -2478,25 +2478,25 @@ export default function VacuumModal({
         <>
           <button
             onClick={onClose}
-            className="modal-close absolute top-6 right-6 md:top-10 md:right-10"
+            className="modal-close absolute top-4 right-4 sm:top-6 sm:right-6 md:top-10 md:right-10"
             aria-label={t('common.close')}
           >
             <X className="h-4 w-4" />
           </button>
 
           {/* Header Section */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 pr-12 font-sans">
-            <div className="flex items-center gap-4">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 pr-12 font-sans sm:mb-6 sm:gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <div
-                className="rounded-2xl p-4 transition-all duration-500"
+                className="rounded-2xl p-3 transition-all duration-500 sm:p-4"
                 style={{ backgroundColor: statusBg, color: statusColor }}
               >
-                <Bot className={`h-8 w-8${isCleaning ? ' animate-pulse' : ''}`} />
+                <Bot className={`h-6 w-6 sm:h-8 sm:w-8${isCleaning ? ' animate-pulse' : ''}`} />
               </div>
               <div>
                 <h3
                   id={modalTitleId}
-                  className="text-2xl leading-none font-light tracking-tight uppercase italic"
+                  className="text-xl leading-none font-light tracking-tight uppercase italic sm:text-2xl"
                   style={{ color: 'var(--text-primary)' }}
                 >
                   {getDisplayName(entity, vacuumId)}
@@ -2531,10 +2531,10 @@ export default function VacuumModal({
 
           {/* Premium Tab Bar for Map / Area Cleaning / Maintenance */}
           {showTabbedLayout && (
-            <div className="mb-8 flex w-fit flex-wrap gap-2 rounded-2xl bg-[var(--glass-bg)] p-1.5">
+            <div className="scrollbar-hide mb-4 flex w-full flex-nowrap gap-1.5 overflow-x-auto rounded-2xl bg-[var(--glass-bg)] p-1 sm:mb-8 sm:w-fit sm:flex-wrap sm:gap-2 sm:p-1.5">
               <button
                 onClick={() => setActiveTab('controls')}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 active:scale-[0.98] ${
+                className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] font-bold tracking-widest uppercase transition-all duration-300 active:scale-[0.98] sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs ${
                   activeTab === 'controls'
                     ? 'bg-[var(--accent-color)] text-white shadow-lg shadow-[rgba(var(--accent-color-rgb),0.25)]'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'
@@ -2547,7 +2547,7 @@ export default function VacuumModal({
               {(hasAreas || isAreasLoading) && (
                 <button
                   onClick={() => setActiveTab('areas')}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 active:scale-[0.98] ${
+                  className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] font-bold tracking-widest uppercase transition-all duration-300 active:scale-[0.98] sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs ${
                     activeTab === 'areas'
                       ? 'bg-[var(--accent-color)] text-white shadow-lg shadow-[rgba(var(--accent-color-rgb),0.25)]'
                       : 'text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'
@@ -2560,7 +2560,7 @@ export default function VacuumModal({
 
               <button
                 onClick={() => setActiveTab('history')}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 active:scale-[0.98] ${
+                className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] font-bold tracking-widest uppercase transition-all duration-300 active:scale-[0.98] sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs ${
                   activeTab === 'history'
                     ? 'bg-[var(--accent-color)] text-white shadow-lg shadow-[rgba(var(--accent-color-rgb),0.25)]'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'
@@ -2573,7 +2573,10 @@ export default function VacuumModal({
           )}
 
           {/* Render Tab Contents */}
-          <div className="h-[60vh] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent overflow-y-auto pr-1 md:h-[480px] md:pr-2">
+          <div
+            data-testid="vacuum-tab-content"
+            className="h-[calc(100dvh-11rem)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent overflow-y-auto pr-1 sm:h-[60vh] md:h-[480px] md:pr-2"
+          >
             {(!showTabbedLayout || activeTab === 'controls') && renderControlsPane(hasMap)}
 
             {showTabbedLayout && activeTab === 'areas' && (

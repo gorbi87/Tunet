@@ -3,7 +3,16 @@ import { describe, expect, it, vi } from 'vitest';
 import VacuumModal from '../modals/VacuumModal';
 
 vi.mock('../components/ui/AccessibleModalShell', () => ({
-  default: ({ open, children }) => (open ? <div>{children()}</div> : null),
+  default: ({ open, children, overlayClassName, panelClassName }) =>
+    open ? (
+      <div
+        data-testid="vacuum-modal-shell"
+        data-overlay-class={overlayClassName}
+        data-panel-class={panelClassName}
+      >
+        {children()}
+      </div>
+    ) : null,
 }));
 
 const t = (key) =>
@@ -71,6 +80,22 @@ const baseProps = (entities, overrides = {}) => ({
 const openMaintenance = () => fireEvent.click(screen.getByRole('button', { name: 'History' }));
 
 describe('VacuumModal consumables', () => {
+  it('uses compact mobile sizing while restoring the existing layout from sm upwards', () => {
+    render(<VacuumModal {...baseProps(vacuum)} />);
+
+    const shell = screen.getByTestId('vacuum-modal-shell');
+    expect(shell.dataset.overlayClass).toContain('p-2 sm:p-4 md:p-6');
+    expect(shell.dataset.panelClass).toContain('max-h-[calc(100dvh-1rem)]');
+    expect(shell.dataset.panelClass).toContain('p-4');
+    expect(shell.dataset.panelClass).toContain('sm:max-h-[90vh] sm:p-6');
+
+    expect(screen.getByTestId('vacuum-tab-content')).toHaveClass(
+      'h-[calc(100dvh-11rem)]',
+      'sm:h-[60vh]',
+      'md:h-[480px]'
+    );
+  });
+
   it('presses the matched Home Assistant reset button for the sensors consumable', async () => {
     const callService = vi.fn();
     const entities = { ...vacuum, ...sensorConsumable };
