@@ -1,0 +1,48 @@
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import PersonStatus from '../components/cards/PersonStatus';
+
+const baseProps = {
+  id: 'person.ola',
+  entities: {
+    'person.ola': {
+      state: 'home',
+      attributes: { friendly_name: 'Ola Nordmann' },
+    },
+  },
+  editMode: false,
+  customNames: {},
+  customIcons: {},
+  cardSettings: {},
+  getCardSettingsKey: () => 'person.ola_header',
+  getEntityImageUrl: () => '',
+  getS: () => 'Heime',
+  onOpenPerson: vi.fn(),
+  onEditCard: vi.fn(),
+  onRemoveCard: vi.fn(),
+  t: (key) => key,
+};
+
+describe('PersonStatus', () => {
+  it('shows the configured person name on phones while preserving the desktop layout', () => {
+    render(<PersonStatus {...baseProps} />);
+
+    const name = screen.getByText('Ola Nordmann');
+    expect(name.parentElement?.parentElement).toHaveClass('max-[479px]:flex', 'sm:flex');
+    expect(name).toHaveClass('truncate', 'sm:text-sm');
+    expect(screen.getByText('Heime')).toHaveClass('max-[479px]:hidden');
+  });
+
+  it('keeps the mobile name hidden when showName is disabled', () => {
+    render(
+      <PersonStatus
+        {...baseProps}
+        cardSettings={{ person_ola_header: { showName: false, showState: true } }}
+        getCardSettingsKey={() => 'person_ola_header'}
+      />
+    );
+
+    expect(screen.queryByText('Ola Nordmann')).not.toBeInTheDocument();
+    expect(screen.getByText('Heime').parentElement).not.toHaveClass('max-[479px]:flex');
+  });
+});

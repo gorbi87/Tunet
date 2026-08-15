@@ -17,6 +17,7 @@ import { saveTokens, loadTokens, clearOAuthTokens, hasOAuthTokens } from '../ser
 import { HOME_ASSISTANT_API_UNAUTHORIZED_EVENT, setOAuthAuthProvider } from '../services/apiAuth';
 import { getDeviceRegistry, getEntityRegistry } from '../services/haClient';
 import { validateUrl } from '../config/onboarding';
+import { useMobileConnectionRecovery } from '../hooks/useMobileConnectionRecovery';
 import {
   buildRegistryLookupMap,
   enrichEntitiesWithRegistryMetadata,
@@ -153,6 +154,24 @@ export const HomeAssistantProvider = ({ children, config }) => {
   const rawEntitiesRef = useRef(entities);
   const entityRegistryByIdRef = useRef(new Map());
   const deviceRegistryByIdRef = useRef(new Map());
+
+  const markConnectionHealthy = useCallback(() => {
+    setConnected(true);
+    setHaUnavailable(false);
+    setDisconnectedSince(null);
+  }, []);
+
+  const markConnectionRecovering = useCallback(() => {
+    setConnected(false);
+    setHaUnavailable(true);
+    setDisconnectedSince((current) => current ?? Date.now());
+  }, []);
+
+  useMobileConnectionRecovery({
+    conn,
+    onHealthy: markConnectionHealthy,
+    onRecovering: markConnectionRecovering,
+  });
 
   const applyRegistryMetadata = useCallback(
     (nextEntities) =>
@@ -527,18 +546,10 @@ export const HomeAssistantProvider = ({ children, config }) => {
     let cancelled = false;
 
     const handleReady = () => {
-      if (!cancelled) {
-        setConnected(true);
-        setHaUnavailable(false);
-        setDisconnectedSince(null);
-      }
+      if (!cancelled) markConnectionHealthy();
     };
     const handleDisconnected = () => {
-      if (!cancelled) {
-        setConnected(false);
-        setHaUnavailable(true);
-        setDisconnectedSince(Date.now());
-      }
+      if (!cancelled) markConnectionRecovering();
     };
 
     conn.addEventListener?.('ready', handleReady);
@@ -549,7 +560,7 @@ export const HomeAssistantProvider = ({ children, config }) => {
       conn.removeEventListener?.('ready', handleReady);
       conn.removeEventListener?.('disconnected', handleDisconnected);
     };
-  }, [conn]);
+  }, [conn, markConnectionHealthy, markConnectionRecovering]);
 
   useEffect(() => {
     const updateStaleState = () => {
