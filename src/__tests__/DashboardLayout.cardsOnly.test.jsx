@@ -23,7 +23,15 @@ vi.mock('../layouts/DragOverlaySVG', () => ({
 }));
 
 vi.mock('../layouts/EditToolbar', () => ({
-  default: () => <div data-testid="edit-toolbar" />,
+  default: ({ showSettingsMenu }) => (
+    <div data-settings-visible={String(showSettingsMenu)} data-testid="edit-toolbar" />
+  ),
+}));
+
+vi.mock('../layouts/SettingsMenuControl', () => ({
+  default: ({ isMobile }) => (
+    <div data-mobile={String(isMobile)} data-testid="settings-menu-control" />
+  ),
 }));
 
 vi.mock('../components', () => ({
@@ -61,6 +69,7 @@ const baseProps = {
   cardsOnlyMode: false,
   updateCardsOnlyMode: vi.fn(),
   pagesConfig: { header: [] },
+  pageSettings: {},
   personStatus: vi.fn(),
   requestSettingsAccess: vi.fn((callback) => callback()),
   setAddCardTargetPage: vi.fn(),
@@ -110,6 +119,15 @@ describe('DashboardLayout cards-only mode', () => {
     expect(screen.getByTestId('page-navigation')).toBeInTheDocument();
     expect(screen.getByTestId('edit-toolbar')).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-grid')).toBeInTheDocument();
+    expect(screen.queryByTestId('settings-menu-control')).not.toBeInTheDocument();
+    expect(screen.getByTestId('edit-toolbar')).toHaveAttribute('data-settings-visible', 'true');
+  });
+
+  it('moves the settings control to the person row on mobile', () => {
+    renderLayout({ isMobile: true });
+
+    expect(screen.getByTestId('settings-menu-control')).toHaveAttribute('data-mobile', 'true');
+    expect(screen.getByTestId('edit-toolbar')).toHaveAttribute('data-settings-visible', 'false');
   });
 
   it('hides normal chrome but keeps cards and recovery surfaces available', () => {

@@ -798,6 +798,7 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
         cardsOnlyMode={cardsOnlyMode}
         updateCardsOnlyMode={updateCardsOnlyMode}
         pagesConfig={pagesConfig}
+        pageSettings={pageSettings}
         personStatus={personStatus}
         requestSettingsAccess={requestSettingsAccess}
         setAddCardTargetPage={setAddCardTargetPage}

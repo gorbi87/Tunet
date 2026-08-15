@@ -35,7 +35,7 @@ export default function SettingsDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`group relative z-50 rounded-full p-2 transition-all duration-300 ${isOpen ? 'bg-[var(--accent-color)] text-white shadow-lg ' : 'text-slate-400 hover:bg-white/10 hover:text-white'}`}
+        className={`group relative z-50 flex items-center justify-center rounded-full transition-all duration-300 ${isMobile ? 'h-11 w-11 flex-shrink-0' : 'p-2'} ${isOpen ? 'bg-[var(--accent-color)] text-white shadow-lg ' : 'text-slate-400 hover:bg-white/10 hover:text-white'}`}
         aria-label={t('menu.settings')}
         data-testid="settings-dropdown-trigger"
       >
@@ -62,11 +62,13 @@ export default function SettingsDropdown({
                 className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-white/10"
                 aria-label={editMode ? t('nav.done') : t('menu.edit')}
               >
-                <div className={`rounded-lg p-2 transition-colors ${
-                  editMode
-                    ? 'bg-[var(--accent-bg)] text-[var(--accent-color)] group-hover:bg-[var(--accent-color)] group-hover:text-white'
-                    : 'bg-orange-500/10 text-orange-400 group-hover:bg-orange-500 group-hover:text-white'
-                }`}>
+                <div
+                  className={`rounded-lg p-2 transition-colors ${
+                    editMode
+                      ? 'bg-[var(--accent-bg)] text-[var(--accent-color)] group-hover:bg-[var(--accent-color)] group-hover:text-white'
+                      : 'bg-orange-500/10 text-orange-400 group-hover:bg-orange-500 group-hover:text-white'
+                  }`}
+                >
                   {editMode ? <Check className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
                 </div>
                 <div>

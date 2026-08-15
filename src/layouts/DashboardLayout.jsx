@@ -6,6 +6,7 @@ import BackgroundLayer from './BackgroundLayer';
 import ConnectionBanner from './ConnectionBanner';
 import DragOverlaySVG from './DragOverlaySVG';
 import EditToolbar from './EditToolbar';
+import SettingsMenuControl from './SettingsMenuControl';
 import { PageNavigation } from '../components';
 import DashboardGrid from '../rendering/DashboardGrid';
 import PinLockModal from '../components/ui/PinLockModal';
@@ -48,6 +49,7 @@ export default function DashboardLayout(props) {
     cardsOnlyMode,
     updateCardsOnlyMode,
     pagesConfig,
+    pageSettings = {},
     personStatus,
     requestSettingsAccess,
     setAddCardTargetPage,
@@ -82,6 +84,15 @@ export default function DashboardLayout(props) {
 
   const cardsOnlyExitTimerRef = useRef(null);
   const showDashboardChrome = !cardsOnlyMode;
+
+  const handleToggleEdit = useCallback(() => {
+    const currentSettings = pageSettings[activePage];
+    if (currentSettings?.hidden) setActivePage('home');
+    if (editMode && typeof window !== 'undefined') {
+      window.dispatchEvent(new window.CustomEvent('tunet:edit-done'));
+    }
+    guardedSetEditMode(!editMode);
+  }, [activePage, editMode, guardedSetEditMode, pageSettings, setActivePage]);
 
   const clearCardsOnlyLongPress = useCallback(() => {
     if (cardsOnlyExitTimerRef.current !== null && typeof window !== 'undefined') {
@@ -153,6 +164,35 @@ export default function DashboardLayout(props) {
     [profilingEnabled, onProfileRender]
   );
 
+  const personHeader = (
+    <div
+      className={`flex min-w-0 flex-wrap items-center gap-2.5 ${isMobile ? 'flex-1 origin-left scale-90 empty:hidden' : ''}`}
+    >
+      {(pagesConfig.header || []).map((id) => personStatus(id))}
+      {editMode && (
+        <button
+          onClick={() => {
+            requestSettingsAccess(() => {
+              setAddCardTargetPage('header');
+              setShowAddCardModal(true);
+            });
+          }}
+          className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase transition-all"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--accent-color) 14%, transparent)',
+            borderColor: 'color-mix(in srgb, var(--accent-color) 28%, transparent)',
+            color: 'var(--accent-color)',
+          }}
+        >
+          <Plus className="h-3 w-3" /> {t('addCard.type.entity')}
+        </button>
+      )}
+      {(pagesConfig.header || []).length > 0 && !isMobile && (
+        <div className="mx-2 h-8 w-px bg-[var(--glass-border)]"></div>
+      )}
+    </div>
+  );
+
   return (
     <div
       className="min-h-screen overflow-x-hidden font-sans transition-colors duration-500 selection:bg-[var(--accent-bg)]"
@@ -215,32 +255,25 @@ export default function DashboardLayout(props) {
                 }px`,
               }}
             >
-              <div
-                className={`flex min-w-0 flex-wrap items-center gap-2.5 ${isMobile ? 'w-full origin-left scale-90 empty:hidden' : ''}`}
-              >
-                {(pagesConfig.header || []).map((id) => personStatus(id))}
-                {editMode && (
-                  <button
-                    onClick={() => {
-                      requestSettingsAccess(() => {
-                        setAddCardTargetPage('header');
-                        setShowAddCardModal(true);
-                      });
-                    }}
-                    className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase transition-all"
-                    style={{
-                      backgroundColor: 'color-mix(in srgb, var(--accent-color) 14%, transparent)',
-                      borderColor: 'color-mix(in srgb, var(--accent-color) 28%, transparent)',
-                      color: 'var(--accent-color)',
-                    }}
-                  >
-                    <Plus className="h-3 w-3" /> {t('addCard.type.entity')}
-                  </button>
-                )}
-                {(pagesConfig.header || []).length > 0 && !isMobile && (
-                  <div className="mx-2 h-8 w-px bg-[var(--glass-border)]"></div>
-                )}
-              </div>
+              {isMobile ? (
+                <div className="flex w-full min-w-0 items-center gap-2">
+                  {personHeader}
+                  <SettingsMenuControl
+                    setShowConfigModal={guardedSetShowConfigModal}
+                    setConfigTab={setConfigTab}
+                    setShowThemeSidebar={guardedSetShowThemeSidebar}
+                    setShowLayoutSidebar={guardedSetShowLayoutSidebar}
+                    setShowHeaderEditModal={guardedSetShowHeaderEditModal}
+                    onToggleEdit={handleToggleEdit}
+                    editMode={editMode}
+                    updateCount={updateCount}
+                    isMobile
+                    t={t}
+                  />
+                </div>
+              ) : (
+                personHeader
+              )}
               <div className={`min-w-0 ${isMobile ? 'w-full' : 'flex-1'}`}>
                 {withProfiler(
                   'StatusBar',
@@ -278,15 +311,14 @@ export default function DashboardLayout(props) {
             />
             <EditToolbar
               editMode={editMode}
-              setEditMode={guardedSetEditMode}
-              activePage={activePage}
-              setActivePage={setActivePage}
               setShowAddCardModal={guardedSetShowAddCardModal}
               setShowConfigModal={guardedSetShowConfigModal}
               setConfigTab={setConfigTab}
               setShowThemeSidebar={guardedSetShowThemeSidebar}
               setShowLayoutSidebar={guardedSetShowLayoutSidebar}
               setShowHeaderEditModal={guardedSetShowHeaderEditModal}
+              onToggleEdit={handleToggleEdit}
+              showSettingsMenu={!isMobile}
               connected={connected}
               updateCount={updateCount}
               isMobile={isMobile}
