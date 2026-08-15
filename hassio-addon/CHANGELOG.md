@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.20.8
+
+### Changed
+- Includes dashboard release `1.20.8` with a more compact mobile header and phone-optimized card popups, including TV and vacuum controls.
+
+### Fixed
+- Improves Home Assistant reconnection after returning to the app and delays premature offline or stale-data notices.
+- Fixes PWA installation metadata when Tunet is served through Cloudflare Access.
+
 ## 1.20.7
 
 ### Added

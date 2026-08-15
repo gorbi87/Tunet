@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.20.8] — 2026-08-16
+
+### Added
+- Added optional person status text to the mobile header.
+
+### Changed
+- Moved mobile settings beside the person row and increased mobile header and navigation text sizes.
+- Optimized power, climate, fan, light, car, weather, TV, and vacuum popups for phone-sized screens.
+
+### Fixed
+- Fixed PWA installation metadata when Tunet is served through Cloudflare Access.
+- Improved Home Assistant reconnection after returning to the app and delayed offline or stale-data notices briefly while synchronization catches up.
+- Fixed the mobile person status visibility setting and aligned the weather card icon with the other dashboard cards.
+
+
 ## [1.20.7] — 2026-08-13
 
 ### Added
