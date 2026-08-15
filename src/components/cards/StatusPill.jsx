@@ -207,7 +207,7 @@ const StatusPill = memo(
           ? 'shrink-0 p-1.5'
           : 'p-2';
       const iconPadding = isMobile ? 'p-1' : 'p-1.5';
-      const textSize = isMobile ? 'text-[10px]' : 'text-xs';
+      const textSize = isMobile ? 'text-[11px]' : 'text-xs';
 
       const Wrapper = onClick ? 'button' : 'div';
       const wrapperProps = onClick
@@ -295,7 +295,7 @@ const StatusPill = memo(
           ? 'shrink-0 p-1.5'
           : 'p-2';
       const iconPadding = isMobile ? 'p-1' : 'p-1.5';
-      const textSize = isMobile ? 'text-[10px]' : 'text-xs';
+      const textSize = isMobile ? 'text-[11px]' : 'text-xs';
       const Wrapper = onClick ? 'button' : 'div';
       const wrapperProps = onClick
         ? {
@@ -488,7 +488,7 @@ const StatusPill = memo(
           ? 'shrink-0 p-1.5'
           : 'p-2';
       const iconPadding = isMobile ? 'p-1' : 'p-1.5';
-      const textSize = isMobile ? 'text-[10px]' : 'text-xs';
+      const textSize = isMobile ? 'text-[11px]' : 'text-xs';
 
       const Wrapper = pill.clickable && onClick ? 'button' : 'div';
       const wrapperProps =
@@ -606,7 +606,7 @@ const StatusPill = memo(
         ? 'shrink-0 p-1.5'
         : 'p-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
-    const textSize = isMobile ? 'text-[10px]' : 'text-xs';
+    const textSize = isMobile ? 'text-[11px]' : 'text-xs';
 
     const Wrapper = onClick ? 'button' : 'div';
     const wrapperProps = onClick

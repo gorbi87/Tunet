@@ -204,7 +204,7 @@ const WeatherTempCard = memo(/** @param {any} props */ function WeatherTempCard(
       {showEffects && <WeatherEffects condition={state} />}
       <div className="relative z-10 flex flex-col gap-3">
         <div className="flex items-start justify-between">
-          <div className="-mt-2 -ml-2 h-20 w-20 drop-shadow-lg filter transition-transform duration-500 group-hover:scale-110">
+          <div className="-mt-5 -ml-5 h-20 w-20 drop-shadow-lg filter transition-transform duration-500 group-hover:scale-110 sm:-mt-2 sm:-ml-2">
             <img src={iconUrl} alt={info.label} className="h-full w-full object-contain" />
             {subtitle && (
               <p className="mt-0.5 truncate text-center text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">

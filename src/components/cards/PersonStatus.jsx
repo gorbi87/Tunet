@@ -42,7 +42,9 @@ const PersonStatus = ({
       .replace(/[\s-]+/g, '_');
 
   const stateValue = normalizeZoneValue(entity?.state);
-  const zoneEntries = Object.entries(entities || {}).filter(([entityId]) => entityId.startsWith('zone.'));
+  const zoneEntries = Object.entries(entities || {}).filter(([entityId]) =>
+    entityId.startsWith('zone.')
+  );
   const matchedZoneEntity = (() => {
     if (!stateValue) return null;
     if (stateValue === 'home' && entities?.['zone.home']) return entities['zone.home'];
@@ -133,14 +135,14 @@ const PersonStatus = ({
         <div className="flex min-w-0 flex-col justify-center">
           {showName && (
             <div className="flex items-center gap-2">
-              <span className="max-w-20 truncate text-[11px] leading-tight font-bold tracking-normal text-[var(--text-primary)] sm:max-w-none sm:text-sm sm:tracking-wide">
+              <span className="max-w-20 truncate text-xs leading-tight font-bold tracking-normal text-[var(--text-primary)] sm:max-w-none sm:text-sm sm:tracking-wide">
                 {name}
               </span>
             </div>
           )}
           {showState && (
             <span
-              className={`max-w-20 truncate text-[9px] leading-tight font-bold tracking-[0.14em] uppercase transition-colors duration-300 sm:max-w-none sm:text-xs sm:tracking-[0.18em] ${showName ? 'mt-1' : ''}`}
+              className={`max-w-20 truncate text-[10px] leading-tight font-bold tracking-[0.12em] uppercase transition-colors duration-300 sm:max-w-none sm:text-xs sm:tracking-[0.18em] ${showName ? 'mt-1' : ''}`}
               style={{ color: isHome ? '#4ade80' : 'rgba(156, 163, 175, 0.5)' }}
             >
               {String(statusText)}

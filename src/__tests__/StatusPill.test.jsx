@@ -46,6 +46,19 @@ describe('StatusPill', () => {
     expect(container.querySelector('svg')).not.toBeNull();
   });
 
+  it('uses the larger mobile text size without changing the desktop size', () => {
+    render(
+      <StatusPill
+        pill={{ ...basePill, showLabel: true }}
+        entity={baseEntity}
+        isMobile
+        t={(key) => key}
+      />
+    );
+
+    expect(screen.getByText('Living Room Temperature')).toHaveClass('text-[11px]');
+  });
+
   it('prefers an explicit heading over the generic name field for visible heading text', () => {
     render(
       <StatusPill

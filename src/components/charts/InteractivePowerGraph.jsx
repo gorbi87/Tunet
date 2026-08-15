@@ -115,7 +115,7 @@ export default function InteractivePowerGraph({ data, currentIndex, t, locale, l
           </p>
         </div>
       </div>
-      <div className="relative h-60 w-full" onMouseLeave={() => setHoverIndex(null)}>
+      <div className="relative h-40 w-full sm:h-60" onMouseLeave={() => setHoverIndex(null)}>
         <div className="pointer-events-none absolute top-0 left-0 flex h-full flex-col justify-between py-1 text-xs font-bold text-[var(--text-muted)]">
           <span>{max.toFixed(0)}</span>
           <span>{min.toFixed(0)}</span>

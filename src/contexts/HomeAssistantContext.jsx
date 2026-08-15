@@ -31,6 +31,7 @@ import {
 
 const ENTITY_CACHE_KEY = 'tunet_entity_snapshot';
 const ENTITY_CACHE_MAX_AGE_MS = 5 * 60_000; // 5 minutes — stale snapshots are discarded
+const CONNECTION_WARNING_DELAY_MS = 5_000;
 
 /** Read cached entity snapshot from sessionStorage (returns {} if absent/expired). */
 function loadCachedEntities() {
@@ -585,7 +586,7 @@ export const HomeAssistantProvider = ({ children, config }) => {
       setHaUnavailableVisible(false);
       return;
     }
-    const timer = setTimeout(() => setHaUnavailableVisible(true), 2500);
+    const timer = setTimeout(() => setHaUnavailableVisible(true), CONNECTION_WARNING_DELAY_MS);
     return () => clearTimeout(timer);
   }, [haUnavailable]);
 

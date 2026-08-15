@@ -18,7 +18,6 @@ function getBatteryTone(level) {
   if (level < 50) return 'text-[var(--status-warning-fg)]';
   return 'text-[var(--status-success-fg)]';
 }
-
 function BatteryMeter({ info, icon: Icon, compact = false }) {
   const level = Math.round(info.level);
   const tone = getBatteryTone(level);
@@ -349,9 +348,9 @@ export default function PersonModal({
       open={show}
       onClose={onClose}
       titleId={modalTitleId}
-      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
+      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6"
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName="popup-anim custom-scrollbar relative max-h-[85vh] w-full max-w-5xl overflow-y-auto rounded-3xl border p-6 font-sans shadow-2xl backdrop-blur-xl md:rounded-[3rem] md:p-12"
+      panelClassName="popup-anim custom-scrollbar relative max-h-[calc(100dvh-1rem)] w-full max-w-5xl overflow-y-auto rounded-3xl border p-4 font-sans shadow-2xl backdrop-blur-xl sm:max-h-[85vh] sm:p-6 md:rounded-[3rem] md:p-12"
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -366,14 +365,14 @@ export default function PersonModal({
             .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
             .leaflet-container { font-family: inherit; }
           `}</style>
-        <div className="absolute top-6 right-6 z-20 flex gap-3 md:top-10 md:right-10">
+        <div className="absolute top-4 right-4 z-20 flex gap-3 sm:top-6 sm:right-6 md:top-10 md:right-10">
           <button onClick={onClose} className="modal-close" aria-label={t('common.close')}>
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="mb-6 flex items-center gap-4 pr-12">
-          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-lg">
+        <div className="mb-4 flex items-center gap-3 pr-12 sm:mb-6 sm:gap-4">
+          <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-lg sm:h-16 sm:w-16">
             {picture && !pictureFailed ? (
               <img
                 src={picture}
@@ -394,7 +393,7 @@ export default function PersonModal({
           <div className="min-w-0">
             <h3
               id={modalTitleId}
-              className="truncate text-3xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic"
+              className="truncate text-xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic sm:text-3xl"
             >
               {name}
             </h3>
@@ -423,10 +422,10 @@ export default function PersonModal({
           </div>
         </div>
 
-        <div className="grid h-full grid-cols-1 items-start gap-6 lg:grid-cols-5">
+        <div className="grid h-full grid-cols-1 items-start gap-3 sm:gap-6 lg:grid-cols-5">
           <section className="min-w-0 lg:col-span-3">
             {currentLat && currentLon ? (
-              <div className="group relative z-0 h-[clamp(20rem,35vw,30rem)] w-full overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-inner">
+              <div className="group relative z-0 h-52 w-full overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-inner sm:h-[clamp(20rem,35vw,30rem)]">
                 <div
                   ref={mapRef}
                   className="z-0 h-full w-full opacity-80 transition-opacity duration-500 group-hover:opacity-100"
@@ -446,7 +445,7 @@ export default function PersonModal({
                 </div>
               </div>
             ) : (
-              <div className="flex h-[clamp(20rem,35vw,30rem)] flex-col items-center justify-center rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)]/50 p-6 text-center">
+              <div className="flex h-52 flex-col items-center justify-center rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)]/50 p-4 text-center sm:h-[clamp(20rem,35vw,30rem)] sm:p-6">
                 <MapPin className="mb-4 h-16 w-16 opacity-20" />
                 <span className="text-xs font-bold tracking-widest uppercase opacity-50">
                   {t('map.locationUnknown')}
@@ -456,7 +455,7 @@ export default function PersonModal({
             </section>
 
             <aside className="space-y-4 lg:col-span-2">
-              <div className="popup-surface rounded-2xl border border-[var(--glass-border)]/50 p-5">
+              <div className="popup-surface rounded-2xl border border-[var(--glass-border)]/50 p-4 sm:p-5">
                 <div className="mb-4 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--glass-bg)] text-[var(--text-primary)]">
                     <Activity className="h-5 w-5" />

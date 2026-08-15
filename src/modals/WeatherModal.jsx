@@ -412,9 +412,9 @@ export default function WeatherModal({
       open={show && !!weatherEntity}
       onClose={onClose}
       titleId={modalTitleId}
-      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
+      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6"
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName="popup-anim relative max-h-[80vh] w-full max-w-4xl overflow-y-auto rounded-3xl border p-5 font-sans backdrop-blur-xl md:rounded-[3rem] md:p-8"
+      panelClassName="popup-anim relative max-h-[calc(100dvh-1rem)] w-full max-w-4xl overflow-y-auto rounded-3xl border p-4 font-sans backdrop-blur-xl sm:max-h-[80vh] sm:p-5 md:rounded-[3rem] md:p-8"
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -425,24 +425,24 @@ export default function WeatherModal({
         <>
         <button
           onClick={onClose}
-          className="modal-close absolute top-6 right-6 md:top-10 md:right-10"
+          className="modal-close absolute top-4 right-4 sm:top-6 sm:right-6 md:top-10 md:right-10"
           aria-label={translate('common.close')}
         >
           <X className="h-4 w-4" />
         </button>
 
-        <div className="mb-6 flex items-center gap-4 font-sans">
+        <div className="mb-4 flex items-center gap-3 pr-12 font-sans sm:mb-6 sm:gap-4 sm:pr-0">
           <div
-            className="rounded-2xl p-4 transition-all duration-500"
+            className="rounded-2xl p-3 transition-all duration-500 sm:p-4"
             style={{ backgroundColor: 'rgba(59, 130, 246, 0.12)', color: '#60a5fa' }}
           >
-            <MainIcon className={`h-8 w-8 ${info.color}`} strokeWidth={1.5} />
+            <MainIcon className={`h-6 w-6 sm:h-8 sm:w-8 ${info.color}`} strokeWidth={1.5} />
             {/* <img src={iconUrl} alt={info.label} className="w-8 h-8 object-contain" /> */}
           </div>
           <div>
             <h3
               id={modalTitleId}
-              className="theme-text-primary text-2xl leading-none font-light tracking-tight uppercase italic"
+              className="theme-text-primary text-xl leading-none font-light tracking-tight uppercase italic sm:text-2xl"
             >
               {attrs.friendly_name || translate('weather.name')}
             </h3>
@@ -461,9 +461,9 @@ export default function WeatherModal({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-3">
-          <div className="space-y-6 md:col-span-2">
-            <div className="popup-surface rounded-2xl p-5">
+        <div className="grid grid-cols-1 items-start gap-4 sm:gap-8 md:grid-cols-3">
+          <div className="space-y-4 sm:space-y-6 md:col-span-2">
+            <div className="popup-surface rounded-2xl p-4 sm:p-5">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="theme-text-secondary text-[11px] tracking-widest uppercase">
@@ -593,8 +593,8 @@ export default function WeatherModal({
             </div>
           </div>
 
-          <div className="flex flex-col gap-6 border-white/5 pt-6 md:col-span-1 md:border-l md:pt-0 md:pl-8">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-1">
+          <div className="flex flex-col gap-4 border-white/5 pt-2 sm:gap-6 sm:pt-6 md:col-span-1 md:border-l md:pt-0 md:pl-8">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:gap-y-6 md:grid-cols-1">
               {details.map((detail) => {
                 const DetailIcon = getIconComponent(detail.iconName);
                 return (
