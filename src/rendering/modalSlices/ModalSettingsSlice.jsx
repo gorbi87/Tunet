@@ -62,6 +62,8 @@ export function ModalSettingsSlice({
     setGridGapH,
     gridGapV,
     setGridGapV,
+    mobileSidePadding,
+    setMobileSidePadding,
     gridColumns,
     setGridColumns,
     dynamicGridColumns,
@@ -197,11 +199,12 @@ export function ModalSettingsSlice({
             setGridGapH={setGridGapH}
             gridGapV={gridGapV}
             setGridGapV={setGridGapV}
+            mobileSidePadding={mobileSidePadding}
+            setMobileSidePadding={setMobileSidePadding}
             gridColumns={gridColumns}
             setGridColumns={setGridColumns}
             dynamicGridColumns={dynamicGridColumns}
             setDynamicGridColumns={setDynamicGridColumns}
-            effectiveGridColumns={effectiveGridColumns}
             cardBorderRadius={cardBorderRadius}
             setCardBorderRadius={setCardBorderRadius}
             cardTransparency={cardTransparency}

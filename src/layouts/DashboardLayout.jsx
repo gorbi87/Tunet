@@ -36,6 +36,7 @@ export default function DashboardLayout(props) {
     draggingId,
     touchPath,
     isMobile,
+    mobileSidePadding = 8,
     gridColCount,
     dynamicGridColumns,
     isCompactCards,
@@ -223,7 +224,7 @@ export default function DashboardLayout(props) {
         onPointerLeave={clearCardsOnlyLongPress}
         className={`relative z-10 mx-auto w-full max-w-[1600px] py-6 md:py-10 ${
           isMobile
-            ? 'mobile-grid px-2'
+            ? 'mobile-grid'
             : gridColCount === 1
               ? 'px-10 sm:px-16 md:px-24'
               : gridColCount === 3
@@ -232,6 +233,7 @@ export default function DashboardLayout(props) {
                   : 'px-4 md:px-20'
                 : 'px-6 md:px-20'
         } ${isCompactCards ? 'compact-cards' : ''}`}
+        style={isMobile ? { paddingInline: `${mobileSidePadding}px` } : undefined}
       >
         {showDashboardChrome && (
           <Header

@@ -188,6 +188,7 @@
   "settings.gridGap": "Rutenett-mellomrom",
   "settings.gridGapH": "Vannrett mellomrom",
   "settings.gridGapV": "Loddrett mellomrom",
+  "settings.mobileSidePadding": "Kantavstand på mobil",
   "settings.sectionSpacing": "Avstander",
   "settings.sectionSpacingHeader": "Tittel → Personer/Piller",
   "settings.sectionSpacingNav": "Personer/Piller → Sideknapper",

@@ -957,6 +957,7 @@
   "settings.gridGap": "Rutenettavstand",
   "settings.gridGapH": "Horisontal avstand",
   "settings.gridGapV": "Vertikal avstand",
+  "settings.mobileSidePadding": "Kantavstand på mobil",
   "settings.inactivity": "Attende til Heim (sek)",
   "settings.language": "Språk",
   "settings.layout": "Oppsett",

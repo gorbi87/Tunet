@@ -77,6 +77,32 @@ describe('PageContext persistence', () => {
     });
   });
 
+  it('persists and bounds mobile side padding across a provider reload', async () => {
+    const first = renderHook(() => usePages(), { wrapper });
+
+    expect(first.result.current.mobileSidePadding).toBe(8);
+
+    act(() => {
+      first.result.current.setMobileSidePadding(24);
+    });
+
+    await waitFor(() => {
+      expect(localStorage.getItem('tunet_mobile_side_padding')).toBe('24');
+    });
+
+    first.unmount();
+
+    const second = renderHook(() => usePages(), { wrapper });
+    expect(second.result.current.mobileSidePadding).toBe(24);
+
+    act(() => {
+      second.result.current.setMobileSidePadding(99);
+    });
+
+    expect(second.result.current.mobileSidePadding).toBe(32);
+    expect(localStorage.getItem('tunet_mobile_side_padding')).toBe('32');
+  });
+
   it('persists status pill text visibility flags across a provider reload', async () => {
     const first = renderHook(() => usePages(), { wrapper });
 

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import M3Slider from '../ui/M3Slider';
 import {
+  getEffectiveGridColumnsForWidth,
   getMaxGridColumnsForWidth,
-  MAX_GRID_COLUMNS,
   MIN_GRID_COLUMNS,
 } from '../../hooks/useResponsiveGrid';
+import { MOBILE_BREAKPOINT } from '../../config/constants';
 import { LayoutGrid, RefreshCw, Columns, Eye, Maximize2, Palette, Type } from '../../icons';
 import SidebarContainer from './SidebarContainer';
 
@@ -36,11 +37,12 @@ export default function LayoutSidebar({
   setGridGapH,
   gridGapV,
   setGridGapV,
+  mobileSidePadding,
+  setMobileSidePadding,
   gridColumns,
   setGridColumns,
   dynamicGridColumns,
   setDynamicGridColumns,
-  effectiveGridColumns,
   cardBorderRadius,
   setCardBorderRadius,
   cardTransparency,
@@ -66,10 +68,11 @@ export default function LayoutSidebar({
     spacing: false,
     cards: false,
   });
-  const [maxGridColumns, setMaxGridColumns] = useState(() => {
-    if (typeof window === 'undefined') return MAX_GRID_COLUMNS;
-    return getMaxGridColumnsForWidth(window.innerWidth);
+  const [gridViewportWidth, setGridViewportWidth] = useState(() => {
+    if (typeof window === 'undefined') return Number.POSITIVE_INFINITY;
+    return window.innerWidth;
   });
+  const maxGridColumns = getMaxGridColumnsForWidth(gridViewportWidth);
   const selectableMaxGridColumns = dynamicGridColumns
     ? Math.min(maxGridColumns, 4)
     : maxGridColumns;
@@ -79,13 +82,21 @@ export default function LayoutSidebar({
   const pageGridColumns = pageSettings[activePage]?.gridColumns;
   const hasPageOverride = Number.isFinite(pageGridColumns);
   const displayedGridColumns = hasPageOverride ? pageGridColumns : gridColumns;
-  const computedEffectiveGridColumns = Math.max(
-    MIN_GRID_COLUMNS,
-    Math.min(displayedGridColumns, selectableMaxGridColumns)
+  const computedEffectiveGridColumns = getEffectiveGridColumnsForWidth(
+    gridViewportWidth,
+    displayedGridColumns,
+    dynamicGridColumns
   );
 
+  const updateGridColumns = (columns) => {
+    if (gridViewportWidth < MOBILE_BREAKPOINT && dynamicGridColumns) {
+      setDynamicGridColumns(false);
+    }
+    setGridColumns(columns);
+  };
+
   useEffect(() => {
-    const update = () => setMaxGridColumns(getMaxGridColumnsForWidth(window.innerWidth));
+    const update = () => setGridViewportWidth(window.innerWidth);
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
@@ -335,8 +346,8 @@ export default function LayoutSidebar({
               min={MIN_GRID_COLUMNS}
               max={selectableMaxGridColumns}
               step={1}
-              value={effectiveGridColumns}
-              onChange={(e) => setGridColumns(parseInt(e.target.value, 10))}
+              value={computedEffectiveGridColumns}
+              onChange={(e) => updateGridColumns(parseInt(e.target.value, 10))}
             />
           </div>
           {/* Gap H */}
@@ -391,6 +402,36 @@ export default function LayoutSidebar({
               step={4}
               value={gridGapV}
               onChange={(e) => setGridGapV(parseInt(e.target.value, 10))}
+            />
+          </div>
+          {/* Mobile side padding */}
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <span
+                className="text-[11px] font-bold tracking-wider uppercase"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {t('settings.mobileSidePadding')}
+              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className="font-mono text-[11px] tabular-nums"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {mobileSidePadding}px
+                </span>
+                {mobileSidePadding !== 8 && (
+                  <ResetButton onClick={() => setMobileSidePadding(8)} />
+                )}
+              </div>
+            </div>
+            <M3Slider
+              min={0}
+              max={32}
+              step={2}
+              value={mobileSidePadding}
+              onChange={(e) => setMobileSidePadding(parseInt(e.target.value, 10))}
+              ariaLabel={t('settings.mobileSidePadding')}
             />
           </div>
         </Section>

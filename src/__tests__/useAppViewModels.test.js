@@ -74,6 +74,8 @@ const makeParams = (overrides = {}) => ({
   setInactivityTimeout: vi.fn(),
   setGridGapH: vi.fn(),
   setGridGapV: vi.fn(),
+  mobileSidePadding: 8,
+  setMobileSidePadding: vi.fn(),
   gridColumns: 4,
   setGridColumns: vi.fn(),
   dynamicGridColumns: false,
@@ -183,6 +185,7 @@ describe('useAppViewModels', () => {
     expect(result.current.dashboardGridGrid.gridColCount).toBe(4);
     expect(result.current.modalManagerCore.language).toBe('en');
     expect(result.current.modalManagerLayout.cardsOnlyMode).toBe(false);
+    expect(result.current.modalManagerLayout.mobileSidePadding).toBe(8);
     expect(result.current).not.toHaveProperty('modalManagerState');
     expect(result.current.modalManagerCardConfig.statusPillsConfig).toEqual({});
   });

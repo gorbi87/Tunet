@@ -222,6 +222,8 @@
  * @property {(val: number) => void} setGridGapH
  * @property {number} gridGapV
  * @property {(val: number) => void} setGridGapV
+ * @property {number} mobileSidePadding
+ * @property {(val: number) => void} setMobileSidePadding
  * @property {StatusPillConfig[]} statusPillsConfig
  * @property {(newConfig: StatusPillConfig[]) => void} saveStatusPillsConfig
  * @property {number} cardBorderRadius

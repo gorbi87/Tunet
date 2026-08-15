@@ -54,6 +54,30 @@ describe('snapshot service', () => {
     expect(updateCardsOnlyMode).toHaveBeenCalledWith(true);
   });
 
+  it('collectSnapshot includes mobile side padding from storage', () => {
+    localStorage.setItem('tunet_mobile_side_padding', '22');
+
+    const snapshot = collectSnapshot();
+
+    expect(snapshot.layout.mobileSidePadding).toBe(22);
+  });
+
+  it('applySnapshot persists and applies mobile side padding', () => {
+    const setMobileSidePadding = vi.fn();
+
+    applySnapshot(
+      {
+        version: 1,
+        layout: { mobileSidePadding: 14 },
+        appearance: {},
+      },
+      { setMobileSidePadding }
+    );
+
+    expect(localStorage.getItem('tunet_mobile_side_padding')).toBe('14');
+    expect(setMobileSidePadding).toHaveBeenCalledWith(14);
+  });
+
   it('collectSnapshot includes card background color from storage', () => {
     localStorage.setItem('tunet_card_bg_color', '#223344');
 
