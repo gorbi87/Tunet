@@ -137,7 +137,7 @@ export function useDashboardEffects({
       meta.name = 'viewport';
       document.head.appendChild(meta);
     }
-    meta.content = 'width=device-width, initial-scale=1.0';
+    meta.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
   }, [resolvedHeaderTitle]);
 
   // ── Inactivity / idle timer ────────────────────────────────────────────
