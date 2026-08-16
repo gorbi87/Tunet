@@ -81,9 +81,7 @@ const FachCell = memo(function FachCell({ fach, isToday, isActive }) {
 const PauseRow = memo(function PauseRow({ stunde }) {
   return (
     <tr className="sp-pause-row">
-      <td className="sp-time-cell">
-        <span className="sp-time-range">{stunde.von}–{stunde.bis}</span>
-      </td>
+      <td className="sp-time-cell" />
       <td colSpan={5} className="sp-pause-bar-cell">
         <div className="sp-pause-bar">
           <span className="sp-pause-badge">Pause</span>

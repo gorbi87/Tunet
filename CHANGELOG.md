@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.62] — 2026-08-16
+
+### Changed
+- Stundenplan: Zeiten aus Pausen-Zeilen entfernt
+
+
 ## [1.18.61] — 2026-08-16
 
 ### Changed

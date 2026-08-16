@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.62
+
+### Changed
+- Stundenplan: Zeiten aus Pausen-Zeilen entfernt
+
 ## 1.18.61
 
 ### Changed
