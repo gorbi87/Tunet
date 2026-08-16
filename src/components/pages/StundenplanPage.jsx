@@ -78,19 +78,17 @@ const FachCell = memo(function FachCell({ fach, isToday, isActive }) {
   );
 });
 
-const PauseRow = memo(function PauseRow({ stunde, todayColIdx }) {
+const PauseRow = memo(function PauseRow({ stunde }) {
   return (
     <tr className="sp-pause-row">
       <td className="sp-time-cell">
-        <span className="sp-pause-badge">Pause</span>
         <span className="sp-time-range">{stunde.von}–{stunde.bis}</span>
       </td>
-      {TAGE.map((_, di) => (
-        <td
-          key={di}
-          className={`sp-pause-cell${di === todayColIdx ? ' sp-today' : ''}`}
-        />
-      ))}
+      <td colSpan={5} className="sp-pause-bar-cell">
+        <div className="sp-pause-bar">
+          <span className="sp-pause-badge">Pause</span>
+        </div>
+      </td>
     </tr>
   );
 });
@@ -333,17 +331,6 @@ function StundenplanPage({ isMobile = false }) {
         /* Pause row */
         .sp-pause-row { height: 1.5rem; }
         .sp-pause-row .sp-time-cell { padding: 0.15rem 0.4rem; }
-        .sp-pause-badge {
-          display: inline-block;
-          font-size: 0.55rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--text-muted);
-          background: var(--glass-bg);
-          border-radius: 999px;
-          padding: 0.1rem 0.4rem;
-        }
         .sp-time-range {
           display: block;
           font-size: 0.55rem;
@@ -352,11 +339,21 @@ function StundenplanPage({ isMobile = false }) {
           font-variant-numeric: tabular-nums;
           line-height: 1.3;
         }
-        .sp-pause-cell {
-          background: transparent;
+        .sp-pause-bar-cell { padding: 0.15rem 0.3rem; }
+        .sp-pause-bar {
+          display: flex;
+          align-items: center;
+          height: 100%;
+          background: var(--glass-bg);
+          border-radius: 999px;
+          padding: 0 0.75rem;
         }
-        .sp-pause-cell.sp-today {
-          background: color-mix(in srgb, var(--glass-bg) 40%, transparent);
+        .sp-pause-badge {
+          font-size: 0.55rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--text-muted);
         }
 
         /* Legend — nur auf Mobile (Desktop: Fachname steht in der Zelle) */

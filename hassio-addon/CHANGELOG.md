@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.59
+
+### Changed
+- Stundenplan: Pausen-Zeile über gesamte Plan-Breite, Zeit links, Pause-Badge im Balken
+
 ## 1.18.58
 
 ### Fixed
