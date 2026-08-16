@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.50] — 2026-08-16
+
+### Fixed
+- WP-Modal: Key-Mapping für tatsächliche Automation-Keys korrigiert — 'ÜS' wird als PV-Überschuss erkannt, 'WW-Ist' als WW-Temperatur; Standby-Einträge zeigen jetzt korrekte Vergleichsrichtung (z.B. "PV-Überschuss 0.0kW < Startschwelle 2kW")
+
+
 ## [1.18.49] — 2026-08-14
 
 ### Changed

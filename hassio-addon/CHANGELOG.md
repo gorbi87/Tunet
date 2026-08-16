@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.50
+
+### Fixed
+- WP-Modal: 'ÜS' und 'WW-Ist' als Log-Keys erkannt; Standby-Einträge zeigen korrekte Vergleichsrichtung
+
 ## 1.18.49
 
 ### Changed

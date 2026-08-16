@@ -72,25 +72,32 @@ function buildLogBullets(reason, curState) {
   if (tokens.length % 2 !== 0 && tokens.length > 0) pairs.push([tokens[tokens.length - 1], '']);
 
   return pairs.map(([key, val]) => {
-    switch (key) {
+    // Automation uses 'ÜS' for Überschuss and 'WW-Ist' for WW temperature
+    const k = key === 'ÜS' ? 'PV' : key === 'WW-Ist' ? 'WW' : key;
+    switch (k) {
       case 'WW':
-        if (curState === 'WW_Heizen') return { label: 'WW-Ist', val, op: '<', ziel: 'Ziel 55°C', aktion: '→ Kompressor startet' };
-        if (curState === 'WW_Boost')  return { label: 'WW-Ist', val, op: '≥', ziel: 'Ziel 55°C' };
-        if (curState === 'WW_Fertig') return { label: 'WW-Ist', val, op: '≥', ziel: `Ziel ${WP_CFG.wwFertig}°C` };
+        if (curState === 'WW_Heizen') return { label: 'WW-Ist', val, op: '<',  ziel: 'Ziel 55°C', aktion: '→ Kompressor startet' };
+        if (curState === 'WW_Boost')  return { label: 'WW-Ist', val, op: '≥',  ziel: 'Ziel 55°C' };
+        if (curState === 'WW_Fertig') return { label: 'WW-Ist', val, op: '≥',  ziel: `Ziel ${WP_CFG.wwFertig}°C` };
+        if (curState === 'Standby')   return { label: 'WW-Ist', val, op: '≥',  ziel: `Start-Temp ${WP_CFG.wwStart}°C — kein Heizen nötig` };
         return { label: 'WW-Ist', val };
       case 'PV':
         if (curState === 'Kühlen')    return { label: 'PV-Überschuss', val, op: '≥', ziel: `Startschwelle ${WP_CFG.kuehlPv}kW` };
         if (curState === 'WW_Heizen') return { label: 'PV-Überschuss', val, op: '≥', ziel: `Startschwelle ${WP_CFG.pvStart}kW` };
         if (curState === 'WW_Boost')  return { label: 'PV-Überschuss', val, op: '≥', ziel: `Heizstab-Min ${WP_CFG.pvBoost}kW` };
+        if (curState === 'Standby')   return { label: 'PV-Überschuss', val, op: '<',  ziel: `Startschwelle ${WP_CFG.pvStart}kW — zu wenig` };
         return { label: 'PV-Überschuss', val };
       case 'SOC':
+        if (curState === 'Standby')   return { label: 'SOC', val, op: '<', ziel: `Minimum ${WP_CFG.socNotaus}%` };
         return { label: 'SOC', val, op: '>', ziel: `Minimum ${WP_CFG.socNotaus}%` };
       case 'Raum':
+        if (curState === 'Standby' || curState === 'WW_Heizen' || curState === 'WW_Boost' || curState === 'WW_Fertig')
+          return { label: 'Raumtemp', val };
         return { label: 'Raumtemp', val, op: '≥', ziel: `Kühlschwelle ${WP_CFG.kuehlTemp}°C` };
       case 'Laufzeit':
         return { label: 'Kompressor-Laufzeit', val, op: '≥', ziel: `BOH-Schutz ${WP_CFG.bohSchutz}min` };
       case 'Fenster':
-        return { label: `Im Daikin WW-Zeitfenster`, val };
+        return { label: 'Im Daikin WW-Zeitfenster', val };
       default:
         return { label: key, val };
     }
