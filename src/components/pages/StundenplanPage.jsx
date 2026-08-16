@@ -329,8 +329,8 @@ function StundenplanPage({ isMobile = false }) {
         }
 
         /* Pause row */
-        .sp-pause-row { height: 1.5rem; }
-        .sp-pause-row .sp-time-cell { padding: 0.15rem 0.4rem; }
+        .sp-pause-row { height: 2rem; }
+        .sp-pause-row .sp-time-cell { padding: 0.3rem 0.6rem; }
         .sp-time-range {
           display: block;
           font-size: 0.55rem;
@@ -339,19 +339,20 @@ function StundenplanPage({ isMobile = false }) {
           font-variant-numeric: tabular-nums;
           line-height: 1.3;
         }
-        .sp-pause-bar-cell { padding: 0.15rem 0.3rem; }
+        .sp-pause-bar-cell { padding: 0.3rem 0.3rem; }
         .sp-pause-bar {
           display: flex;
           align-items: center;
+          justify-content: center;
           height: 100%;
           background: var(--glass-bg);
           border-radius: 999px;
           padding: 0 0.75rem;
         }
         .sp-pause-badge {
-          font-size: 0.55rem;
+          font-size: 0.6rem;
           font-weight: 700;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.1em;
           text-transform: uppercase;
           color: var(--text-muted);
         }

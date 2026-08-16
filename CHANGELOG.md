@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.60] — 2026-08-16
+
+### Changed
+- Stundenplan: Pausen-Zeile höher, Zeit eingerückt auf Höhe anderer Zeiten, "Pause" zentriert und fett
+
+
 ## [1.18.59] — 2026-08-16
 
 ### Changed

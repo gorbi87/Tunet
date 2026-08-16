@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.60
+
+### Changed
+- Stundenplan: Pausen-Zeile höher, Zeit eingerückt, "Pause" zentriert und fett
+
 ## 1.18.59
 
 ### Changed
