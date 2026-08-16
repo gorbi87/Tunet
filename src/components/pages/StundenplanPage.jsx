@@ -329,17 +329,18 @@ function StundenplanPage({ isMobile = false }) {
         }
 
         /* Pause row */
-        .sp-pause-row { height: 2rem; }
-        .sp-pause-row .sp-time-cell { padding: 0.3rem 0.6rem; }
+        .sp-pause-row { height: 2.6rem; }
+        .sp-pause-row .sp-time-cell { padding: 0.5rem 0.6rem; vertical-align: middle; }
         .sp-time-range {
           display: block;
-          font-size: 0.55rem;
+          font-size: 0.62rem;
           font-weight: 400;
           color: var(--text-muted);
           font-variant-numeric: tabular-nums;
-          line-height: 1.3;
+          white-space: nowrap;
+          padding-left: 1.5ch;
         }
-        .sp-pause-bar-cell { padding: 0.3rem 0.3rem; }
+        .sp-pause-bar-cell { padding: 0.4rem 0.3rem; vertical-align: middle; }
         .sp-pause-bar {
           display: flex;
           align-items: center;

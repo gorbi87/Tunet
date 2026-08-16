@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.61
+
+### Changed
+- Stundenplan: Pausen-Zeit eingerückt auf Höhe der Uhrzeiten in den Stunden-Zeilen
+
 ## 1.18.60
 
 ### Changed
