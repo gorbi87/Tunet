@@ -161,7 +161,7 @@ export function usePageManagement({
     createTypedPage({
       labelKey: 'addCard.type.stundenplan',
       fallbackLabel: 'Stundenplan',
-      defaultIcon: 'GraduationCap',
+      defaultIcon: 'BookOpen',
       defaultType: 'stundenplan',
       defaultSlug: 'stundenplan',
     });

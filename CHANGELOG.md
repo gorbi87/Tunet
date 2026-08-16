@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.53] — 2026-08-16
+
+### Changed
+- Stundenplan-View: Zeiten inline (07:51–08:40), volle Tabellenbreite, Legende nur auf Mobile
+- Stundenplan-Tab im Seiten-Dialog: Label "Stundenplan" statt i18n-Key, Icon BookOpen
+
+
 ## [1.18.52] — 2026-08-16
 
 ### Fixed

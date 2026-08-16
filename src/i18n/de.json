@@ -84,6 +84,7 @@
   "addCard.type.lock": "Schloss",
   "addCard.type.battery": "Batterie",
   "addCard.type.roomExplorer": "Räume",
+  "addCard.type.stundenplan": "Stundenplan",
   "addCard.type.media": "Medien",
   "addCard.type.nordpool": "Nordpool",
   "nordpool.graphLine": "Linie",

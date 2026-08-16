@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.53
+
+### Changed
+- Stundenplan: Zeiten inline, volle Breite, Legende nur Mobile, Icon-Fix
+
 ## 1.18.52
 
 ### Fixed

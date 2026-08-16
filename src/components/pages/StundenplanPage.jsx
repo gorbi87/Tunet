@@ -138,7 +138,7 @@ function StundenplanPage() {
                 <tr key={stunde.nr} className={`sp-row${isRowActive ? ' sp-row-active' : ''}`}>
                   <td className="sp-time-cell">
                     <span className="sp-stunde-nr">{stunde.nr}.</span>
-                    <span className="sp-time-range">{stunde.von}<br />{stunde.bis}</span>
+                    <span className="sp-time-range">{stunde.von}–{stunde.bis}</span>
                   </td>
                   {TAGE.map((_, di) => {
                     const key = `${stunde.nr}-${di}`;
@@ -178,8 +178,6 @@ function StundenplanPage() {
       <style>{`
         .sp-root {
           padding: 1.5rem;
-          max-width: 900px;
-          margin: 0 auto;
           display: flex;
           flex-direction: column;
           gap: 1.5rem;
@@ -213,7 +211,7 @@ function StundenplanPage() {
           color: var(--text-muted);
           text-align: center;
         }
-        .sp-th-time { width: 80px; text-align: left; }
+        .sp-th-time { width: 130px; text-align: left; }
         .sp-th-today {
           color: var(--accent-color, #6366f1);
           background: var(--accent-bg, rgba(99,102,241,0.08));
@@ -225,27 +223,28 @@ function StundenplanPage() {
         @media (max-width: 540px) {
           .sp-day-full { display: none; }
           .sp-day-short { display: inline; }
-          .sp-th-time { width: 60px; }
+          .sp-th-time { width: auto; }
         }
 
         /* Time cell */
         .sp-time-cell {
-          padding: 0.5rem 0.4rem;
-          text-align: center;
+          padding: 0.5rem 0.6rem;
+          text-align: left;
           vertical-align: middle;
+          white-space: nowrap;
         }
         .sp-stunde-nr {
-          display: block;
+          display: inline;
           font-size: 0.7rem;
           font-weight: 700;
           color: var(--text-muted);
           letter-spacing: 0.05em;
+          margin-right: 0.3rem;
         }
         .sp-time-range {
-          display: block;
-          font-size: 0.6rem;
+          display: inline;
+          font-size: 0.62rem;
           color: var(--text-muted);
-          line-height: 1.4;
           font-variant-numeric: tabular-nums;
           white-space: nowrap;
         }
@@ -334,11 +333,14 @@ function StundenplanPage() {
           background: color-mix(in srgb, var(--glass-bg) 40%, transparent);
         }
 
-        /* Legend */
+        /* Legend — nur auf Mobile (Desktop: Fachname steht in der Zelle) */
         .sp-legend {
-          display: flex;
+          display: none;
           flex-wrap: wrap;
           gap: 0.5rem;
+        }
+        @media (max-width: 540px) {
+          .sp-legend { display: flex; }
         }
         .sp-legend-item {
           display: flex;

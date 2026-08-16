@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, LayoutGrid, Music, Speaker, Lightbulb, Battery, Home, GraduationCap } from 'lucide-react';
+import { X, Plus, LayoutGrid, Music, Speaker, Lightbulb, Battery, Home, BookOpen } from 'lucide-react';
 import IconPicker from '../components/ui/IconPicker';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 
@@ -119,7 +119,7 @@ export default function AddPageModal({
             />
             <PageTypeButton
               type="stundenplan"
-              icon={GraduationCap}
+              icon={BookOpen}
               label="Stundenplan"
               isActive={activeTab === 'stundenplan'}
               onSelect={setActiveTab}
