@@ -138,7 +138,9 @@ function StundenplanPage() {
                 <tr key={stunde.nr} className={`sp-row${isRowActive ? ' sp-row-active' : ''}`}>
                   <td className="sp-time-cell">
                     <span className="sp-stunde-nr">{stunde.nr}.</span>
-                    <span className="sp-time-range">{stunde.von}–{stunde.bis}</span>
+                    <span className="sp-time-von">{stunde.von}</span>
+                    <span className="sp-time-sep">–</span>
+                    <span className="sp-time-bis">{stunde.bis}</span>
                   </td>
                   {TAGE.map((_, di) => {
                     const key = `${stunde.nr}-${di}`;
@@ -226,7 +228,8 @@ function StundenplanPage() {
           .sp-th-time { width: 52px; }
           .sp-time-cell { white-space: normal; padding: 0.4rem 0.3rem; }
           .sp-stunde-nr { display: block; margin-right: 0; }
-          .sp-time-range { display: block; font-size: 0.55rem; line-height: 1.3; }
+          .sp-time-sep { display: none; }
+          .sp-time-von, .sp-time-bis { display: block; font-size: 0.55rem; line-height: 1.3; }
         }
 
         /* Time cell */
@@ -244,12 +247,11 @@ function StundenplanPage() {
           letter-spacing: 0.05em;
           margin-right: 0.3rem;
         }
-        .sp-time-range {
+        .sp-time-von, .sp-time-sep, .sp-time-bis {
           display: inline;
           font-size: 0.62rem;
           color: var(--text-muted);
           font-variant-numeric: tabular-nums;
-          white-space: nowrap;
         }
 
         /* Subject cells */

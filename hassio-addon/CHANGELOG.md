@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.55
+
+### Fixed
+- Stundenplan Mobile: Zeiten wirklich gestapelt (separate Spans)
+
 ## 1.18.54
 
 ### Changed
