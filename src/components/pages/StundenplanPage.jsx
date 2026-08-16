@@ -222,7 +222,7 @@ function StundenplanPage() {
 
         /* Responsive day names */
         .sp-day-short { display: none; }
-        @media (max-width: 540px) {
+        @media (max-width: 768px) {
           .sp-day-full { display: none; }
           .sp-day-short { display: inline; }
           .sp-th-time { width: 52px; }
@@ -248,11 +248,11 @@ function StundenplanPage() {
           margin-right: 0.3rem;
         }
         .sp-time-von, .sp-time-sep, .sp-time-bis {
-          display: inline;
           font-size: 0.62rem;
           color: var(--text-muted);
           font-variant-numeric: tabular-nums;
         }
+        .sp-time-von, .sp-time-sep, .sp-time-bis { display: inline; }
 
         /* Subject cells */
         .sp-cell {
@@ -292,7 +292,7 @@ function StundenplanPage() {
           line-height: 1.2;
           flex: 1;
         }
-        @media (max-width: 540px) {
+        @media (max-width: 768px) {
           .sp-fach-label { display: none; }
           .sp-fach { justify-content: center; padding: 0.4rem; min-height: 2rem; }
           .sp-fach-emoji { font-size: 1.1rem; }
@@ -344,7 +344,7 @@ function StundenplanPage() {
           flex-wrap: wrap;
           gap: 0.5rem;
         }
-        @media (max-width: 540px) {
+        @media (max-width: 768px) {
           .sp-legend { display: flex; }
         }
         .sp-legend-item {

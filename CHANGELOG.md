@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.56] — 2026-08-16
+
+### Fixed
+- Stundenplan Mobile: Breakpoint auf 768px erhöht, Von/Bis gestapelt; Desktop weiter inline mit Strich
+
+
 ## [1.18.55] — 2026-08-16
 
 ### Fixed

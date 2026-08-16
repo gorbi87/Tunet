@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.56
+
+### Fixed
+- Stundenplan Mobile: Breakpoint 768px, Zeiten gestapelt; Desktop inline
+
 ## 1.18.55
 
 ### Fixed
