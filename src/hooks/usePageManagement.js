@@ -157,6 +157,15 @@ export function usePageManagement({
       defaultSlug: 'room_explorer',
     });
 
+  const createStundenplanPage = () =>
+    createTypedPage({
+      labelKey: 'addCard.type.stundenplan',
+      fallbackLabel: 'Stundenplan',
+      defaultIcon: 'GraduationCap',
+      defaultType: 'stundenplan',
+      defaultSlug: 'stundenplan',
+    });
+
   // ── Delete a page ──────────────────────────────────────────────────────
   const deletePage = (pageId) => {
     if (!pageId || pageId === 'home') return;
@@ -202,6 +211,7 @@ export function usePageManagement({
     createLightsPage,
     createBatteryPage,
     createRoomExplorerPage,
+    createStundenplanPage,
     deletePage,
     removeCard,
   };

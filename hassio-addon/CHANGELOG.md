@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.18.51
+
+### Added
+- Stundenplan-View: neuer Page-Typ mit Fach-Farben, aktiver Stunden-Hervorhebung und Pausen
+- WP-Blueprint: Kühlen → WW_Heizen Transition (WW wird auch aus Kühlen heraus geheizt)
+- WP-Log: WW-Ist-Temperatur bei WW_Heizen-Transitions
+
 ## 1.18.50
 
 ### Fixed

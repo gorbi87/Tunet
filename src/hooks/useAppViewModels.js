@@ -183,6 +183,7 @@ export function useAppViewModels(params) {
       isLightsPage,
       isBatteryPage,
       isRoomExplorerPage,
+      isStundenplanPage,
     }),
     [
       activePage,
@@ -194,6 +195,7 @@ export function useAppViewModels(params) {
       isLightsPage,
       isBatteryPage,
       isRoomExplorerPage,
+      isStundenplanPage,
     ]
   );
 
@@ -429,6 +431,7 @@ export function useAppViewModels(params) {
       createLightsPage,
       createBatteryPage,
       createRoomExplorerPage,
+      createStundenplanPage,
       deletePage,
       removeCard,
       pageSettings,
@@ -452,6 +455,7 @@ export function useAppViewModels(params) {
       createLightsPage,
       createBatteryPage,
       createRoomExplorerPage,
+      createStundenplanPage,
       deletePage,
       removeCard,
       pageSettings,

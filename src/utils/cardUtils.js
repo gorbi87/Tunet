@@ -208,3 +208,12 @@ export function isRoomExplorerPage(pageId, pageSettings) {
   const settings = pageSettings[pageId];
   return settings?.type === 'room_explorer' || pageId.startsWith('room_explorer');
 }
+
+/**
+ * Check if a page is a Stundenplan page.
+ */
+export function isStundenplanPage(pageId, pageSettings) {
+  if (!pageId) return false;
+  const settings = pageSettings[pageId];
+  return settings?.type === 'stundenplan' || pageId.startsWith('stundenplan');
+}
