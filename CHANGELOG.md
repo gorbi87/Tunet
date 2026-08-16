@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.54] — 2026-08-16
+
+### Fixed
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
+
+
 ## [1.18.53] — 2026-08-16
 
 ### Changed
@@ -26,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - WP-Entscheidungslog: WW-Ist-Temperatur bei WW_Heizen-Transitions mit geloggt
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.50] — 2026-08-16
@@ -92,205 +98,205 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.18.43] — 2026-07-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.42] — 2026-06-26
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.41] — 2026-06-25
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.40] — 2026-06-24
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.39] — 2026-05-29
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [patch] — 2026-05-29
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.38] — 2026-05-28
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.37] — 2026-05-27
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.36] — 2026-05-26
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.35] — 2026-05-26
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.34] — 2026-05-26
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.33] — 2026-05-26
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.32] — 2026-05-26
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.31] — 2026-05-26
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.30] — 2026-05-26
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.29] — 2026-05-26
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.28] — 2026-05-23
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.27] — 2026-05-23
@@ -330,325 +336,325 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.18.22] — 2026-05-23
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.21] — 2026-05-22
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.20] — 2026-05-20
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.19] — 2026-05-03
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.18] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.17] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.16] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.15] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.14] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.13] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.12] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.11] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.10] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.9] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.8] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.7] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.6] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.5] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.4] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.3] — 2026-05-02
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.2] — 2026-05-01
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.1] — 2026-05-01
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.50] — 2026-05-01
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.49] — 2026-04-30
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.48] — 2026-04-30
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.47] — 2026-04-30
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.46] — 2026-04-30
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.45] — 2026-04-26
@@ -657,13 +663,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - WP-Karte: Kompressor-Status nutzt jetzt `binary_sensor.daikin_heizung_status_kompressor` statt Betriebsart (Betriebsart kann WW anzeigen obwohl Kompressor nicht läuft)
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.44] — 2026-04-26
@@ -679,7 +685,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - WP-Modal: WW-Soll-Verlauf zeigt 65°C als "Minus-Preis / Phase C" und 48°C als "Minus-Preis kommt"
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.43] — 2026-04-26
@@ -703,109 +709,109 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.15.41] — 2026-04-25
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.40] — 2026-04-25
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.39] — 2026-04-23
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.38] — 2026-04-23
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.37] — 2026-04-22
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.36] — 2026-04-22
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.35] — 2026-04-21
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.34] — 2026-04-21
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.33] — 2026-04-21
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.32] — 2026-04-20
@@ -870,133 +876,133 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.15.23] — 2026-04-14
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.22] — 2026-04-14
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.21] — 2026-04-14
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.20] — 2026-04-14
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.19] — 2026-04-14
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.18] — 2026-04-14
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.17] — 2026-04-14
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.16] — 2026-04-14
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.15] — 2026-04-13
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.14] — 2026-04-12
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.13] — 2026-04-12
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.12] — 2026-04-11
@@ -1041,61 +1047,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.15.7] — 2026-04-10
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.6] — 2026-04-10
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.5] — 2026-04-10
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.4] — 2026-04-10
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.15.3] — 2026-04-10
 
 ### Added
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 ### Fixed
-- Add release notes.
+- Stundenplan Mobile: Zeiten wieder gestapelt (52px Spalte), überlappen nicht mehr mit Fach-Spalte
 
 
 ## [1.18.0] — 2026-04-30

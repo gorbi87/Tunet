@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.54
+
+### Changed
+- Stundenplan Mobile: Zeitformat-Fix
+
 ## 1.18.53
 
 ### Changed
@@ -66,87 +71,87 @@
 ## 1.18.43
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.42
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.41
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.40
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.39
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## patch
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.38
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.37
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.36
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.35
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.34
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.33
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.32
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.31
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.30
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.29
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.28
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.27
 
@@ -179,137 +184,137 @@
 ## 1.18.22
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.21
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.20
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.19
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.18
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.17
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.16
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.15
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.14
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.13
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.12
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.11
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.10
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.9
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.8
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.7
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.6
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.5
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.4
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.3
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.2
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.1
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.50
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.49
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.48
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.47
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.46
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.45
 
@@ -319,7 +324,7 @@
 ## 1.15.44
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.43
 
@@ -341,47 +346,47 @@
 ## 1.15.41
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.40
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.39
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.38
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.37
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.36
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.35
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.34
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.33
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.32
 
@@ -438,62 +443,62 @@
 ## 1.15.23
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.22
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.21
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.20
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.19
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.18
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.17
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.16
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.15
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.14
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.13
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.12
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.11
 
@@ -518,17 +523,17 @@
 ## 1.15.7
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.6
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.15.5
 
 ### Changed
-- Add release notes.
+- Stundenplan Mobile: Zeitformat-Fix
 
 ## 1.18.0
 

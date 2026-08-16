@@ -223,7 +223,10 @@ function StundenplanPage() {
         @media (max-width: 540px) {
           .sp-day-full { display: none; }
           .sp-day-short { display: inline; }
-          .sp-th-time { width: auto; }
+          .sp-th-time { width: 52px; }
+          .sp-time-cell { white-space: normal; padding: 0.4rem 0.3rem; }
+          .sp-stunde-nr { display: block; margin-right: 0; }
+          .sp-time-range { display: block; font-size: 0.55rem; line-height: 1.3; }
         }
 
         /* Time cell */
