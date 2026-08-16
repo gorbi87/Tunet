@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.57] — 2026-08-16
+
+### Fixed
+- Stundenplan: isMobile-Prop statt CSS-Breakpoint — Zeiten auf Mobile (07:51 / 08:40 gestapelt), Desktop inline
+
+
 ## [1.18.56] — 2026-08-16
 
 ### Fixed

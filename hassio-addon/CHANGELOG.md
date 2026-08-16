@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.57
+
+### Fixed
+- Stundenplan: isMobile-Prop statt CSS-Breakpoint — Zeiten auf Mobile gestapelt, Desktop inline
+
 ## 1.18.56
 
 ### Fixed

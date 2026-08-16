@@ -139,7 +139,7 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
     return (
       <div key={activePage} className="page-transition">
         <Suspense fallback={pageFallback}>
-          <StundenplanPage />
+          <StundenplanPage isMobile={isMobile} />
         </Suspense>
       </div>
     );

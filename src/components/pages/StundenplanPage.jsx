@@ -97,7 +97,7 @@ const PauseRow = memo(function PauseRow({ stunde, todayColIdx }) {
 
 // ── Haupt-Komponente ─────────────────────────────────────────────────────
 
-function StundenplanPage() {
+function StundenplanPage({ isMobile = false }) {
   const { day, minutes } = useNow();
   // day: 1=Mo,2=Di,3=Mi,4=Do,5=Fr → colIdx 0–4
   const todayColIdx = useMemo(() => (day >= 1 && day <= 5 ? day - 1 : -1), [day]);
@@ -137,10 +137,15 @@ function StundenplanPage() {
               return (
                 <tr key={stunde.nr} className={`sp-row${isRowActive ? ' sp-row-active' : ''}`}>
                   <td className="sp-time-cell">
-                    <span className="sp-stunde-nr">{stunde.nr}.</span>
-                    <span className="sp-time-von">{stunde.von}</span>
-                    <span className="sp-time-sep">–</span>
-                    <span className="sp-time-bis">{stunde.bis}</span>
+                    {isMobile ? (
+                      <>
+                        <span className="sp-stunde-nr sp-stunde-nr-block">{stunde.nr}.</span>
+                        <span className="sp-time-stacked">{stunde.von}</span>
+                        <span className="sp-time-stacked">{stunde.bis}</span>
+                      </>
+                    ) : (
+                      <span className="sp-time-inline">{stunde.nr}. {stunde.von}–{stunde.bis}</span>
+                    )}
                   </td>
                   {TAGE.map((_, di) => {
                     const key = `${stunde.nr}-${di}`;
@@ -247,12 +252,20 @@ function StundenplanPage() {
           letter-spacing: 0.05em;
           margin-right: 0.3rem;
         }
-        .sp-time-von, .sp-time-sep, .sp-time-bis {
+        .sp-time-inline {
           font-size: 0.62rem;
           color: var(--text-muted);
           font-variant-numeric: tabular-nums;
+          white-space: nowrap;
         }
-        .sp-time-von, .sp-time-sep, .sp-time-bis { display: inline; }
+        .sp-stunde-nr-block { display: block; margin-right: 0; }
+        .sp-time-stacked {
+          display: block;
+          font-size: 0.55rem;
+          color: var(--text-muted);
+          font-variant-numeric: tabular-nums;
+          line-height: 1.3;
+        }
 
         /* Subject cells */
         .sp-cell {

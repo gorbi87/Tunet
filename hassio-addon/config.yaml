@@ -1,6 +1,6 @@
 name: 'Casa'
 description: 'A modern, responsive dashboard for Home Assistant (custom fork)'
-version: "1.18.56"
+version: "1.18.57"
 slug: 'tunet-gorbi87'
 url: 'https://github.com/gorbi87/Casa'
 init: false
