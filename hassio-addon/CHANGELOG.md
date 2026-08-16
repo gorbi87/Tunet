@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.58
+
+### Fixed
+- Stundenplan: Pausen-Zeiten nicht mehr fett/weiß/groß — sp-time-range CSS ergänzt
+
 ## 1.18.57
 
 ### Fixed

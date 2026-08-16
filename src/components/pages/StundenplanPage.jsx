@@ -344,6 +344,14 @@ function StundenplanPage({ isMobile = false }) {
           border-radius: 999px;
           padding: 0.1rem 0.4rem;
         }
+        .sp-time-range {
+          display: block;
+          font-size: 0.55rem;
+          font-weight: 400;
+          color: var(--text-muted);
+          font-variant-numeric: tabular-nums;
+          line-height: 1.3;
+        }
         .sp-pause-cell {
           background: transparent;
         }
