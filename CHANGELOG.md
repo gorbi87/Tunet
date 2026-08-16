@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.52] — 2026-08-16
+
+### Fixed
+- Stundenplan-View: isStundenplanPage und createStundenplanPage korrekt in useAppViewModels destrukturiert — App-Crash beim Laden behoben
+
+
 ## [1.18.51] — 2026-08-16
 
 ### Added

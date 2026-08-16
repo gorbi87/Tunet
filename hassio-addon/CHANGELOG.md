@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.52
+
+### Fixed
+- App-Crash beim Laden behoben (fehlende Destrukturierung in useAppViewModels)
+
 ## 1.18.51
 
 ### Added
