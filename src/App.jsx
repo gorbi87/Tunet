@@ -113,8 +113,6 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     setGridGapH,
     gridGapV,
     setGridGapV,
-    mobileSidePadding,
-    setMobileSidePadding,
     cardBorderRadius,
     setCardBorderRadius,
     headerScale,
@@ -648,8 +646,6 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     setInactivityTimeout,
     setGridGapH,
     setGridGapV,
-    mobileSidePadding,
-    setMobileSidePadding,
     gridColumns,
     setGridColumns,
     dynamicGridColumns,
@@ -789,7 +785,6 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
         draggingId={draggingId}
         touchPath={touchPath}
         isMobile={isMobile}
-        mobileSidePadding={mobileSidePadding}
         gridColCount={gridColCount}
         dynamicGridColumns={dynamicGridColumns}
         isCompactCards={isCompactCards}

@@ -66,12 +66,6 @@ const normalizeGridColumns = (value) => {
   return Math.max(MIN_GRID_COLUMNS, Math.min(Math.round(parsed), MAX_GRID_COLUMNS));
 };
 
-const normalizeMobileSidePadding = (value) => {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return 8;
-  return Math.max(0, Math.min(Math.round(parsed), 32));
-};
-
 const coercePillBoolean = (value, fallback) => {
   if (value === true || value === false) return value;
   if (value === 'true' || value === '1' || value === 1) return true;
@@ -278,7 +272,6 @@ export const PageProvider = ({ children }) => {
   const [dynamicGridColumns, setDynamicGridColumns] = useState(true);
   const [gridGapH, setGridGapH] = useState(20);
   const [gridGapV, setGridGapV] = useState(20);
-  const [mobileSidePadding, setMobileSidePadding] = useState(8);
   const [cardBorderRadius, setCardBorderRadius] = useState(16);
   const [headerScale, setHeaderScale] = useState(1);
   const [sectionSpacing, setSectionSpacing] = useState(DEFAULT_SECTION_SPACING);
@@ -315,11 +308,6 @@ export const PageProvider = ({ children }) => {
 
     if (savedGapV !== null) setGridGapV(savedGapV);
     else if (savedGap !== null) setGridGapV(savedGap);
-
-    const savedMobileSidePadding = readNumber('tunet_mobile_side_padding', null);
-    if (savedMobileSidePadding !== null) {
-      setMobileSidePadding(normalizeMobileSidePadding(savedMobileSidePadding));
-    }
 
     const savedRadius = readNumber('tunet_card_border_radius', null);
     if (savedRadius !== null) setCardBorderRadius(savedRadius);
@@ -555,16 +543,6 @@ export const PageProvider = ({ children }) => {
     }
   }, []);
 
-  const setMobileSidePaddingPersisted = useCallback((val) => {
-    const next = normalizeMobileSidePadding(val);
-    setMobileSidePadding(next);
-    try {
-      localStorage.setItem('tunet_mobile_side_padding', String(next));
-    } catch (error) {
-      console.error('Failed to save mobile side padding:', error);
-    }
-  }, []);
-
   const setCardBorderRadiusPersisted = useCallback((val) => {
     setCardBorderRadius(val);
     try {
@@ -615,8 +593,6 @@ export const PageProvider = ({ children }) => {
       setGridGapH: setGridGapHPersisted,
       gridGapV,
       setGridGapV: setGridGapVPersisted,
-      mobileSidePadding,
-      setMobileSidePadding: setMobileSidePaddingPersisted,
       statusPillsConfig,
       saveStatusPillsConfig,
       cardBorderRadius,
@@ -658,8 +634,6 @@ export const PageProvider = ({ children }) => {
       setGridGapHPersisted,
       gridGapV,
       setGridGapVPersisted,
-      mobileSidePadding,
-      setMobileSidePaddingPersisted,
       statusPillsConfig,
       saveStatusPillsConfig,
       cardBorderRadius,

@@ -14,7 +14,6 @@ describe('buildProfilesContextSetters', () => {
       setGridColumns: vi.fn(),
       setGridGapH: vi.fn(),
       setGridGapV: vi.fn(),
-      setMobileSidePadding: vi.fn(),
       setCardBorderRadius: vi.fn(),
       updateHeaderScale: vi.fn(),
       updateHeaderTitle: vi.fn(),
@@ -47,7 +46,6 @@ describe('buildProfilesContextSetters', () => {
         setGridColumns: refs.setGridColumns,
         setGridGapH: refs.setGridGapH,
         setGridGapV: refs.setGridGapV,
-        setMobileSidePadding: refs.setMobileSidePadding,
         setCardBorderRadius: refs.setCardBorderRadius,
         updateHeaderScale: refs.updateHeaderScale,
         updateHeaderTitle: refs.updateHeaderTitle,
@@ -75,6 +73,5 @@ describe('buildProfilesContextSetters', () => {
     expect(result.setLanguage).toBe(refs.setLanguage);
     expect(result.setInactivityTimeout).toBe(refs.setInactivityTimeout);
     expect(result.updateCardsOnlyMode).toBe(refs.updateCardsOnlyMode);
-    expect(result.setMobileSidePadding).toBe(refs.setMobileSidePadding);
   });
 });

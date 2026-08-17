@@ -9,7 +9,6 @@ export function buildProfilesContextSetters({ page, layout, appearance, setLangu
     setGridColumns: layout.setGridColumns,
     setGridGapH: layout.setGridGapH,
     setGridGapV: layout.setGridGapV,
-    setMobileSidePadding: layout.setMobileSidePadding,
     setCardBorderRadius: layout.setCardBorderRadius,
     updateHeaderScale: layout.updateHeaderScale,
     updateHeaderTitle: layout.updateHeaderTitle,

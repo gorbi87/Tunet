@@ -56,7 +56,6 @@ const baseProps = {
   draggingId: null,
   touchPath: null,
   isMobile: false,
-  mobileSidePadding: 8,
   gridColCount: 3,
   dynamicGridColumns: true,
   isCompactCards: false,
@@ -129,18 +128,6 @@ describe('DashboardLayout cards-only mode', () => {
 
     expect(screen.getByTestId('settings-menu-control')).toHaveAttribute('data-mobile', 'true');
     expect(screen.getByTestId('edit-toolbar')).toHaveAttribute('data-settings-visible', 'false');
-  });
-
-  it('applies configurable side padding only on mobile', () => {
-    const { rerender } = renderLayout({ isMobile: true, mobileSidePadding: 18 });
-
-    expect(screen.getByRole('main', { name: 'Dashboard' })).toHaveStyle({
-      paddingInline: '18px',
-    });
-
-    rerender(<DashboardLayout {...baseProps} isMobile={false} mobileSidePadding={18} />);
-
-    expect(screen.getByRole('main', { name: 'Dashboard' }).style.paddingInline).toBe('');
   });
 
   it('hides normal chrome but keeps cards and recovery surfaces available', () => {

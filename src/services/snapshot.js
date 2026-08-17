@@ -56,7 +56,6 @@ export function collectSnapshot() {
       dynamicGridColumns: readBoolean('tunet_grid_columns_dynamic', true),
       gridGapH: readNumber('tunet_grid_gap_h', 20),
       gridGapV: readNumber('tunet_grid_gap_v', 20),
-      mobileSidePadding: readNumber('tunet_mobile_side_padding', 8),
       cardBorderRadius: readNumber('tunet_card_border_radius', 16),
       cardsOnlyMode: readBoolean('tunet_cards_only_mode', false),
       headerSettings: readJSON('tunet_header_settings', {
@@ -134,8 +133,6 @@ export function applySnapshot(snapshot, contextSetters = {}) {
     localStorage.setItem('tunet_grid_gap_h', String(layout.gridGapH));
   if (layout.gridGapV !== undefined)
     localStorage.setItem('tunet_grid_gap_v', String(layout.gridGapV));
-  if (layout.mobileSidePadding !== undefined)
-    localStorage.setItem('tunet_mobile_side_padding', String(layout.mobileSidePadding));
   if (layout.cardBorderRadius !== undefined)
     localStorage.setItem('tunet_card_border_radius', String(layout.cardBorderRadius));
   if (layout.cardsOnlyMode !== undefined)
@@ -184,8 +181,6 @@ export function applySnapshot(snapshot, contextSetters = {}) {
     s.setDynamicGridColumns(layout.dynamicGridColumns);
   if (s.setGridGapH && layout.gridGapH !== undefined) s.setGridGapH(layout.gridGapH);
   if (s.setGridGapV && layout.gridGapV !== undefined) s.setGridGapV(layout.gridGapV);
-  if (s.setMobileSidePadding && layout.mobileSidePadding !== undefined)
-    s.setMobileSidePadding(layout.mobileSidePadding);
   if (s.setCardBorderRadius && layout.cardBorderRadius !== undefined)
     s.setCardBorderRadius(layout.cardBorderRadius);
   if (s.updateCardsOnlyMode && layout.cardsOnlyMode !== undefined)
