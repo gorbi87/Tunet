@@ -207,7 +207,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
         e.stopPropagation();
         if (!editMode && onOpen) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isUltraCompact ? 'p-3' : isDenseMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isUltraCompact ? 'p-3' : isDenseMobile ? 'p-5' : 'p-6'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
       style={cardStyle}
     >
       {controls}
@@ -297,7 +297,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
         <div className={`flex items-end justify-between ${isUltraCompact ? 'mt-1' : isDenseMobile ? 'mt-2' : 'mt-3'}`}>
           <div className="flex items-baseline gap-1 leading-none">
             <span
-              className={`leading-none font-thin text-[var(--text-primary)] ${isUltraCompact ? 'text-2xl' : isDenseMobile ? 'text-3xl' : 'text-4xl'}`}
+              className={`leading-none font-thin text-[var(--text-primary)] ${isUltraCompact ? 'text-2xl' : isDenseMobile ? 'text-3xl' : 'text-3xl'}`}
             >
               {wwTemp != null ? wwTemp.toFixed(1) : '—'}
             </span>
@@ -314,20 +314,15 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
         </div>
 
         {/* State Machine Status */}
-        {!isUltraCompact && (
+        {!isUltraCompact && tagesmodus !== 'Standby' && (
           <div className={isDenseMobile ? 'mt-2' : 'mt-2'}>
-            <div className="mb-1 flex items-center justify-between gap-2">
+            <div className="mb-1">
               <span
                 className="shrink-0 text-[9px] font-bold tracking-widest uppercase"
                 style={{ color: modusMeta.color }}
               >
                 {modusMeta.label}
               </span>
-              {logReason && (
-                <span className="truncate text-[8px] text-[var(--text-muted)]">
-                  {logReason}
-                </span>
-              )}
             </div>
             {wwPct != null && (
               <>

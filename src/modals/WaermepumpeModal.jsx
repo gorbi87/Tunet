@@ -54,15 +54,17 @@ const WP_CFG = {
   bohSchutz: 75,    // boh_schutz_min
   bohPause: 10,     // boh_pause_min
   mindestlaufzeit: 45, // mindestlaufzeit_min
+  wwFensterStart: '11:00',
+  wwFensterEnde:   '19:30',
 };
 
 const NAECHSTER_ZUSTAND = {
-  Standby:   `WW HEIZEN — wenn WW < ${WP_CFG.wwStart}°C + PV ≥ ${WP_CFG.pvStart}kW`,
+  Standby:   `WW HEIZEN — wenn WW < ${WP_CFG.wwStart}°C + PV ≥ ${WP_CFG.pvStart}kW + im Fenster ${WP_CFG.wwFensterStart}–${WP_CFG.wwFensterEnde}`,
   WW_Heizen: `WW BOOST — wenn WW ≥ 55°C`,
   WW_Pause:  `WW HEIZEN — nach BOH-Pause (${WP_CFG.bohPause} min)`,
   WW_Boost:  `WW FERTIG — wenn WW ≥ ${WP_CFG.wwFertig}°C`,
   WW_Fertig: `KÜHLEN — wenn Raum ≥ ${WP_CFG.kuehlTemp}°C + PV ok`,
-  Kühlen:    `STANDBY — wenn PV < ${WP_CFG.kuehlPv}kW`,
+  Kühlen:    `STANDBY — wenn PV < ${WP_CFG.kuehlPv}kW\noder WW HEIZEN — wenn WW < ${WP_CFG.wwStart}°C + im Fenster ${WP_CFG.wwFensterStart}–${WP_CFG.wwFensterEnde}`,
 };
 
 function buildLogBullets(reason, curState) {
@@ -96,8 +98,10 @@ function buildLogBullets(reason, curState) {
         return { label: 'Raumtemp', val, op: '≥', ziel: `Kühlschwelle ${WP_CFG.kuehlTemp}°C` };
       case 'Laufzeit':
         return { label: 'Kompressor-Laufzeit', val, op: '≥', ziel: `BOH-Schutz ${WP_CFG.bohSchutz}min` };
-      case 'Fenster':
-        return { label: 'Im Daikin WW-Zeitfenster', val };
+      case 'Fenster': {
+        const inWindow = val === 'True' || val === 'true' || val === '1' || val === 'ja';
+        return { label: `WW-Fenster (${WP_CFG.wwFensterStart}–${WP_CFG.wwFensterEnde})`, val: '', aktion: inWindow ? '→ freigegeben' : '→ gesperrt' };
+      }
       default:
         return { label: key, val };
     }
@@ -282,6 +286,18 @@ export default function WaermepumpeModal({
     if (earliest === null) return null;
     return Math.ceil((earliest - nowTs) / 3600000 * 10) / 10;
   })();
+
+  // WW-Zeitfenster (Sperrzeit)
+  const imFenster = (() => {
+    const now = new Date();
+    const min = now.getHours() * 60 + now.getMinutes();
+    return min >= 11 * 60 && min < 19 * 60 + 30;
+  })();
+  const fensterStatusText = imFenster
+    ? `Fenster offen (${WP_CFG.wwFensterStart}–${WP_CFG.wwFensterEnde})`
+    : new Date().getHours() < 11
+      ? `Gesperrt bis ${WP_CFG.wwFensterStart}`
+      : `Gesperrt bis morgen ${WP_CFG.wwFensterStart}`;
 
   // BOH Kompressor-Laufzeit
   let kompressorLaufzeitMin = 0;
@@ -975,9 +991,16 @@ export default function WaermepumpeModal({
                       <p className="text-[8.5px] font-bold tracking-[0.12em] uppercase mb-2" style={{ color: 'var(--text-muted)' }}>
                         Nächster Zustand
                       </p>
-                      <p className="text-[11px] leading-snug" style={{ color: '#2B9FE0' }}>
-                        {NAECHSTER_ZUSTAND[tagesmodus]}
-                      </p>
+                      {NAECHSTER_ZUSTAND[tagesmodus].split('\n').map((line, i) => (
+                        <p key={i} className="text-[11px] leading-snug" style={{ color: '#2B9FE0', marginTop: i > 0 ? '6px' : 0 }}>
+                          {line}
+                        </p>
+                      ))}
+                      {(tagesmodus === 'Standby' || tagesmodus === 'Kühlen') && (
+                        <p className="text-[10px] font-semibold leading-snug mt-2" style={{ color: imFenster ? '#4ade80' : '#ef9a9a' }}>
+                          {imFenster ? '✓' : '✗'} {fensterStatusText}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -989,7 +1012,8 @@ export default function WaermepumpeModal({
                   const transitionMatch = header?.match(/→(\S+)/);
                   const logCurState = transitionMatch ? transitionMatch[1] : tagesmodus;
                   const bullets = buildLogBullets(reason, logCurState);
-                  if (!bullets.length) return null;
+                  const showFensterSperr = (tagesmodus === 'Standby' || tagesmodus === 'Kühlen') && !imFenster;
+                  if (!bullets.length && !showFensterSperr) return null;
                   return (
                     <div className="popup-surface rounded-2xl p-4 space-y-3">
                       <div className="flex items-center gap-2">
@@ -1013,6 +1037,14 @@ export default function WaermepumpeModal({
                             </span>
                           </div>
                         ))}
+                        {showFensterSperr && (
+                          <div className="flex items-start gap-3">
+                            <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: '#ef9a9a', marginTop: '4px' }} />
+                            <span className="text-[11.5px] leading-snug" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--mono, monospace)' }}>
+                              WW-Fenster <span style={{ color: '#ef9a9a' }}>gesperrt</span> — {fensterStatusText}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

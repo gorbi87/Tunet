@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.63] — 2026-08-18
+
+### Changed
+- WP-Karte: Padding p-7→p-6, WW-Temp text-4xl→text-3xl, ÜS/WW-Log nicht mehr auf Karte, Standby-Tagesmodus ausgeblendet (doppelt mit Badge)
+- WP-Modal Automatik: Sperrzeiten (WW-Fenster 11:00–19:30) in Nächster-Zustand-Box und Warum-Bullets berücksichtigt
+- Stundenplan: Glasfläche als Tabellenhintergrund, Zeitspalte leicht abgesetzt, Pausebalken volle Breite und Höhe
+- Stundenplan Mobile-Legende: Emojis statt Farbpunkte
+
+
 ## [1.18.62] — 2026-08-16
 
 ### Changed

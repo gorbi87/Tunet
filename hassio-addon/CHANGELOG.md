@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.18.63
+
+### Changed
+- WP-Karte: kompakter, kein Log-Reason, Standby-Tagesmodus ausgeblendet
+- WP-Modal: Sperrzeiten (WW-Fenster) in Nächster-Zustand und Warum-Bullets
+- Stundenplan: Glasfläche, Pausebalken volle Breite/Höhe, Legende mit Emojis
+
 ## 1.18.62
 
 ### Changed

@@ -81,11 +81,8 @@ const FachCell = memo(function FachCell({ fach, isToday, isActive }) {
 const PauseRow = memo(function PauseRow({ stunde }) {
   return (
     <tr className="sp-pause-row">
-      <td className="sp-time-cell" />
-      <td colSpan={5} className="sp-pause-bar-cell">
-        <div className="sp-pause-bar">
-          <span className="sp-pause-badge">Pause</span>
-        </div>
+      <td colSpan={6} className="sp-pause-bar-cell">
+        <span className="sp-pause-badge">Pause</span>
       </td>
     </tr>
   );
@@ -172,7 +169,7 @@ function StundenplanPage({ isMobile = false }) {
             className="sp-legend-item"
             style={{ '--fach-color': meta.color, '--fach-bg': meta.bg }}
           >
-            <span className="sp-legend-dot" />
+            <span className="sp-legend-emoji">{meta.emoji}</span>
             <span className="sp-legend-label">{meta.label}</span>
           </div>
         ))}
@@ -196,12 +193,24 @@ function StundenplanPage({ isMobile = false }) {
         .sp-subtitle { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.05em; }
 
         /* Table wrapper */
-        .sp-table-wrap { overflow-x: auto; border-radius: 1.25rem; }
+        .sp-table-wrap {
+          overflow-x: auto;
+          border-radius: 1.25rem;
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          padding: 0.5rem;
+        }
         .sp-table {
           width: 100%;
           border-collapse: separate;
           border-spacing: 3px;
           table-layout: fixed;
+        }
+        /* Time column subtle tint */
+        .sp-time-cell,
+        .sp-th-time {
+          background: color-mix(in srgb, var(--glass-bg) 60%, transparent);
+          border-radius: 0.5rem;
         }
 
         /* Header */
@@ -338,15 +347,12 @@ function StundenplanPage({ isMobile = false }) {
           white-space: nowrap;
           padding-left: 1.5ch;
         }
-        .sp-pause-bar-cell { padding: 0.4rem 0.3rem; vertical-align: middle; }
-        .sp-pause-bar {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 100%;
+        .sp-pause-bar-cell {
+          padding: 0;
           background: var(--glass-bg);
-          border-radius: 999px;
-          padding: 0 0.75rem;
+          border-radius: 0.5rem;
+          text-align: center;
+          vertical-align: middle;
         }
         .sp-pause-badge {
           font-size: 0.6rem;
@@ -373,11 +379,10 @@ function StundenplanPage({ isMobile = false }) {
           border-radius: 999px;
           padding: 0.25rem 0.6rem;
         }
-        .sp-legend-dot {
-          width: 8px; height: 8px;
-          border-radius: 50%;
-          background: var(--fach-color);
+        .sp-legend-emoji {
+          font-size: 0.75rem;
           flex-shrink: 0;
+          line-height: 1;
         }
         .sp-legend-label {
           font-size: 0.6rem;

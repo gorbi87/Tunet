@@ -1,7 +1,7 @@
 {
   "name": "casa-dashboard",
   "private": true,
-  "version": "1.18.62",
+  "version": "1.18.63",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oyvhov/tunet.git"
