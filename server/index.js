@@ -1,5 +1,6 @@
-import http from 'http';
+import http, { createServer } from 'http';
 import https from 'https';
+import { WebSocket, WebSocketServer } from 'ws';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { existsSync, readFileSync, readdirSync } from 'fs';
@@ -256,8 +257,61 @@ export const createApp = ({
 const isMainModule = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 const app = createApp();
 
+// WebSocket proxy for go2rtc — lets browser connect via WSS through Tunet's HTTPS server
+const httpServer = createServer(app);
+const wss = new WebSocketServer({ noServer: true });
+
+wss.on('connection', (clientWs, _req, { base, src }) => {
+  const wsBase = base.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://').replace(/\/$/, '');
+  const targetUrl = `${wsBase}/api/ws?src=${encodeURIComponent(src)}`;
+  const targetWs = new WebSocket(targetUrl);
+  targetWs.binaryType = 'arraybuffer';
+
+  const connectTimer = setTimeout(() => {
+    if (targetWs.readyState === WebSocket.CONNECTING) targetWs.terminate();
+  }, 5000);
+  const pendingToTarget = [];
+  targetWs.on('open', () => {
+    clearTimeout(connectTimer);
+    for (const { data, isBinary } of pendingToTarget) {
+      try { targetWs.send(data, { binary: isBinary }); } catch {}
+    }
+    pendingToTarget.length = 0;
+  });
+  targetWs.on('message', (data, isBinary) => {
+    if (clientWs.readyState === WebSocket.OPEN) clientWs.send(data, { binary: isBinary });
+  });
+  targetWs.on('close', () => { clearTimeout(connectTimer); try { clientWs.close(); } catch {} });
+  targetWs.on('error', () => { clearTimeout(connectTimer); try { clientWs.close(1011, 'upstream error'); } catch {} });
+
+  clientWs.on('message', (data, isBinary) => {
+    if (targetWs.readyState === WebSocket.OPEN) targetWs.send(data, { binary: isBinary });
+    else if (targetWs.readyState === WebSocket.CONNECTING) pendingToTarget.push({ data, isBinary });
+  });
+  clientWs.on('close', () => { try { targetWs.close(); } catch {} });
+  clientWs.on('error', () => { try { targetWs.close(); } catch {} });
+});
+
+httpServer.on('upgrade', (req, socket, head) => {
+  const ingressPath = req.headers['x-ingress-path'];
+  let url = req.url;
+  if (ingressPath && url.startsWith(ingressPath)) url = url.slice(ingressPath.length) || '/';
+
+  if (!url.startsWith('/api/go2rtc-ws')) { socket.destroy(); return; }
+
+  let params;
+  try { params = new URL(url, 'http://localhost').searchParams; } catch { socket.destroy(); return; }
+  const base = params.get('base');
+  const src = params.get('src');
+  if (!base || !src) { socket.destroy(); return; }
+
+  wss.handleUpgrade(req, socket, head, (ws) => {
+    wss.emit('connection', ws, req, { base, src });
+  });
+});
+
 if (isMainModule) {
-  app.listen(PORT, '0.0.0.0', () => {
+  httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(
       `[server] Tunet backend running on port ${PORT} (${process.env.NODE_ENV === 'production' ? 'production' : 'development'})`
     );
