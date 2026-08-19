@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.20.13
+
+### Fixed
+- Alle vorgelagerten Test-Fehler aus dem v1.20.9-Upstream-Merge behoben (i18n-Parität nb/nn/sv/fr, Test-Mocks, haAuth-Reihenfolge, StatusPill-Dezimalstellen/Badge/Mobile-Text)
+- useSettingsSync: 503-Fehler beim Einlesen der Einstellungen sperrt nun korrekt die Hintergrund-Synchronisation; Gerät-Registrierung beim Erstverbinden blockiert nicht mehr das Anwenden einer veröffentlichten Konfiguration
+- useResponsiveGrid: Auto-Spalten-Modus begrenzt auf 1 Spalte unter 480 px (entspricht Einstellungsmenü)
+
 ## 1.20.12
 
 ### Removed

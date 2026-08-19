@@ -28,7 +28,7 @@ describe('PersonStatus', () => {
     render(<PersonStatus {...baseProps} />);
 
     const name = screen.getByText('Ola Nordmann');
-    expect(name.parentElement?.parentElement).toHaveClass('flex');
+    expect(name.parentElement?.parentElement).toHaveClass('sm:flex');
     expect(name).toHaveClass('truncate', 'text-xs', 'sm:text-sm');
     expect(screen.getByText('Heime')).toHaveClass('text-[10px]', 'sm:text-xs');
   });
@@ -43,7 +43,7 @@ describe('PersonStatus', () => {
     );
 
     expect(screen.queryByText('Ola Nordmann')).not.toBeInTheDocument();
-    expect(screen.getByText('Heime').parentElement).toHaveClass('flex');
+    expect(screen.getByText('Heime').parentElement).toHaveClass('sm:flex');
   });
 
   it('keeps state hidden when showState is disabled', () => {

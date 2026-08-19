@@ -14,6 +14,7 @@ const dashboardProps = {
     isLightsPage: () => false,
     isBatteryPage: () => false,
     isRoomExplorerPage: () => false,
+    isStundenplanPage: () => false,
   },
   media: {
     entities: {},
@@ -59,7 +60,7 @@ describe('mobile grid controls', () => {
       'calc(24px * var(--density-gap-scale, 1)) calc(12px * var(--density-gap-scale, 1))'
     );
     expect(screen.getByText('Mobile test card').closest('[data-dashboard-card]')).toHaveStyle({
-      height: '188px',
+      height: '152px',
     });
   });
 

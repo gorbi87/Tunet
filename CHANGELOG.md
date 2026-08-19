@@ -1346,3 +1346,10 @@
 - Restored addon slug (`tunet-gorbi87`) and name (`Casa`) in `hassio-addon/config.yaml` so Home Assistant update detection works correctly after upstream merge.
 - Fixed COP display in Wärmepumpe card: now reads `sensor.daikin_heizung_cop` directly instead of computing from cumulative thermal energy counters (which produced unrealistic values like 361).
 - Restored `/api/go2rtc-proxy` HTTP proxy endpoint for Frigate and camera stream proxying (removed by upstream merge).
+
+## [1.20.13] — 2026-08-19
+
+### Fixed
+- CI: All pre-existing test failures from the v1.20.9 upstream merge resolved (i18n parity for nb/nn/sv/fr, renderingRegistry mock, haAuth error order, MobileGridControls prop, StatusPill decimals/badge/mobile-text, PersonStatus responsive classes, useResponsiveGrid auto-columns, useSettingsSync device registration and 503 suspension)
+- useSettingsSync: 503 current-settings error now correctly suspends background polling; device registration on first connect no longer blocks published-config apply
+- useResponsiveGrid: auto-column mode now caps at 1 column below 480 px to match the settings-menu display

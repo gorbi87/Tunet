@@ -141,25 +141,21 @@ export function useSettingsSync({ haUserId, contextSettersRef, autoBootstrap = t
     if (!haUserId) return;
     try {
       const rows = await apiFetchCurrentDevices(haUserId);
-      updateBackgroundSyncAvailability(true);
       setKnownDevices(Array.isArray(rows) ? rows : []);
-    } catch (error) {
-      updateBackgroundSyncAvailability(false, error);
+    } catch {
       // ignore device list errors
     }
-  }, [haUserId, updateBackgroundSyncAvailability]);
+  }, [haUserId]);
 
   const refreshHistory = useCallback(async () => {
     if (!haUserId) return;
     try {
       const rows = await apiFetchSettingsHistory(haUserId, deviceIdRef.current, 30);
-      updateBackgroundSyncAvailability(true);
       setHistory(Array.isArray(rows) ? rows : []);
-    } catch (error) {
-      updateBackgroundSyncAvailability(false, error);
+    } catch {
       setHistory([]);
     }
-  }, [haUserId, updateBackgroundSyncAvailability]);
+  }, [haUserId]);
 
   const readCurrentFromServer = useCallback(async () => {
     if (!haUserId) return null;
@@ -424,8 +420,10 @@ export function useSettingsSync({ haUserId, contextSettersRef, autoBootstrap = t
       if (disposed) return;
 
       if (row === READ_CURRENT_FAILED) {
-        await refreshKnownDevices();
-        await refreshHistory();
+        if (!backgroundSyncSuspendedRef.current) {
+          await refreshKnownDevices();
+          await refreshHistory();
+        }
         return;
       }
 
@@ -434,16 +432,24 @@ export function useSettingsSync({ haUserId, contextSettersRef, autoBootstrap = t
       if (serverHasContent) {
         // Server has a real dashboard — apply it so all devices stay in sync.
         applySnapshot(row.data, contextSettersRef.current);
-      } else {
-        // Server is empty or has no data yet. Push local state only if it
-        // has actual cards — prevents a fresh device from overwriting the
-        // server with an empty default and wiping other devices' dashboards.
+      } else if (row === null) {
+        // Server has no row yet — register this device by saving current state.
+        // We call the API directly (not pushCurrentToServer) so currentRevision
+        // stays null, allowing the background interval to apply any published
+        // shared config that arrives on the next poll.
         const localSnapshot = collectSnapshot();
-        if (isValidSnapshot(localSnapshot) && hasMeaningfulContent(localSnapshot.layout)) {
+        if (isValidSnapshot(localSnapshot)) {
           try {
-            await pushCurrentToServerRef.current?.({ force: true });
+            await apiSaveCurrentSettings({
+              ha_user_id: haUserId,
+              device_id: deviceIdRef.current,
+              data: localSnapshot,
+              base_revision: null,
+              history_keep_limit: clampHistoryKeepLimit(historyKeepLimit),
+              device_label: deviceLabelRef.current || undefined,
+            });
           } catch {
-            // ignore bootstrap errors
+            // ignore registration errors
           }
         }
       }
@@ -468,7 +474,9 @@ export function useSettingsSync({ haUserId, contextSettersRef, autoBootstrap = t
   useEffect(() => {
     if (!autoBootstrap || !haUserId) return;
     const id = setInterval(() => {
-      reconcileFromServer();
+      if (!backgroundSyncSuspendedRef.current) {
+        reconcileFromServer();
+      }
     }, 4000);
     return () => clearInterval(id);
   }, [autoBootstrap, haUserId, reconcileFromServer]);

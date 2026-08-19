@@ -89,6 +89,11 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     const inferredUnitKind = inferUnitKind(entity?.attributes?.device_class, haUnit);
     const parsedNumericState = parseFloat(normalizedState.replace(',', '.'));
 
+    const configuredDecimals =
+      typeof pill?.decimals === 'number' && Number.isFinite(pill.decimals) && pill.decimals >= 0
+        ? pill.decimals
+        : null;
+
     if (unitSource === 'ha' && inferredUnitKind && Number.isFinite(parsedNumericState)) {
       const converted = convertValueByKind(parsedNumericState, {
         kind: inferredUnitKind,
@@ -97,11 +102,19 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
       });
       const convertedUnit = getDisplayUnitForKind(inferredUnitKind, effectiveUnitMode);
       if (Number.isFinite(converted) && convertedUnit) {
-        return `${formatUnitValue(converted, { fallback: normalizedState })} ${convertedUnit}`;
+        return `${formatUnitValue(converted, { fallback: normalizedState, decimals: configuredDecimals })} ${convertedUnit}`;
       }
     }
 
     if (!selectedUnit) return normalizedState;
+
+    if (configuredDecimals !== null && Number.isFinite(parsedNumericState)) {
+      const formatted = parsedNumericState.toFixed(configuredDecimals);
+      const lowerFormatted = formatted.toLowerCase();
+      const lowerUnit = selectedUnit.toLowerCase();
+      const alreadyContains = lowerFormatted.endsWith(` ${lowerUnit}`) || lowerFormatted === lowerUnit;
+      return alreadyContains ? formatted : `${formatted} ${selectedUnit}`;
+    }
 
     const lowerState = normalizedState.toLowerCase();
     const lowerUnit = selectedUnit.toLowerCase();
@@ -480,16 +493,17 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
           : 'p-2';
     const iconPadding = isMobile ? 'p-1' : 'p-1.5';
 
+    const mediaBadgeSpacingClass = isMobile && badge > 0 ? 'pr-6' : '';
     const Wrapper = pill.clickable && onClick ? 'button' : 'div';
     const wrapperProps =
       pill.clickable && onClick
         ? {
             onClick,
-            className: `relative flex items-center ${heightClass} ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animation.wrapperClass}`,
+            className: `relative flex items-center ${heightClass} ${paddingClass} ${mediaBadgeSpacingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animation.wrapperClass}`,
             style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
           }
         : {
-            className: `relative flex items-center ${heightClass} ${paddingClass} rounded-2xl ${animation.wrapperClass}`,
+            className: `relative flex items-center ${heightClass} ${paddingClass} ${mediaBadgeSpacingClass} rounded-2xl ${animation.wrapperClass}`,
             style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
           };
 
@@ -541,7 +555,8 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
         )}
         {countBadge > 0 && (
           <div
-            className={`absolute -top-2 -right-2 ${isMobile ? 'h-[18px] min-w-[18px] text-[10px]' : 'h-[22px] min-w-[22px] text-xs'} z-10 flex items-center justify-center rounded-full border border-transparent bg-gray-600 px-1.5 font-bold text-white shadow-sm`}
+            data-status-pill-badge
+            className={`absolute ${isMobile ? 'top-1 right-1 h-[18px] min-w-[18px] text-[10px]' : '-top-2 -right-2 h-[22px] min-w-[22px] text-xs'} z-10 flex items-center justify-center rounded-full border border-transparent bg-gray-600 px-1.5 font-bold text-white shadow-sm`}
           >
             {countBadge}
           </div>
@@ -685,6 +700,7 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
         ? 'shrink-0 p-1.5'
         : 'p-2';
   const iconPadding = isMobile ? 'p-1' : 'p-1.5';
+  const textSize = isMobile ? 'text-[11px]' : 'text-xs';
 
   const Wrapper = onClick ? 'button' : 'div';
   const wrapperProps = onClick
@@ -713,7 +729,7 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
         <div className="flex min-w-0 flex-col items-start">
           {label && (
             <span
-              className={`text-xs text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}
+              className={`${textSize} text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}
               title={label}
             >
               {label}
@@ -721,7 +737,7 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
           )}
           {sublabel && (
             <span
-              className={`text-xs text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
+              className={`${textSize} text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
               title={sublabel}
             >
               {sublabel}

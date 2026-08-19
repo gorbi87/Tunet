@@ -135,7 +135,7 @@ describe('createHomeAssistantAuthMiddleware', () => {
     expect(validateHomeAssistantUser).not.toHaveBeenCalled();
     expect(req.authenticatedHaUser).toBeUndefined();
     expect(res.statusCode).toBe(401);
-    expect(res.body).toEqual({ error: 'Missing or invalid x-ha-url header' });
+    expect(res.body).toEqual({ error: 'Missing Authorization bearer token' });
     expect(next).not.toHaveBeenCalled();
   });
 
