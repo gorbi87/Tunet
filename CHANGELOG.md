@@ -1348,3 +1348,14 @@
 
 ### Fixed
 - Add release notes.
+
+## [1.20.12] — 2026-08-19
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.

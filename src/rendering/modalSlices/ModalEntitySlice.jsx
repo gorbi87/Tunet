@@ -12,7 +12,6 @@ const CoverModal = lazy(() => import('../../modals/CoverModal'));
 const AlarmModal = lazy(() => import('../../modals/AlarmModal'));
 const AlarmActionPinModal = lazy(() => import('../../modals/AlarmActionPinModal'));
 const CameraModal = lazy(() => import('../../modals/CameraModal'));
-const Go2rtcCameraModal = lazy(() => import('../../modals/Go2rtcCameraModal'));
 const WeatherModal = lazy(() => import('../../modals/WeatherModal'));
 const LeafModal = lazy(() => import('../../modals/LeafModal'));
 const LightModal = lazy(() => import('../../modals/LightModal'));
@@ -72,8 +71,6 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
     setShowAlarmActionModal,
     showCameraModal,
     setShowCameraModal,
-    showGo2rtcCameraModal,
-    setShowGo2rtcCameraModal,
     showWeatherModal,
     setShowWeatherModal,
     activeVacuumId,
@@ -483,27 +480,6 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
                 customIcon={customIcons?.[showCameraModal]}
                 getEntityImageUrl={getEntityImageUrl}
                 settings={cameraSettings}
-                t={t}
-              />
-            </ModalSuspense>
-          );
-        })()}
-
-      {showGo2rtcCameraModal &&
-        (() => {
-          const cameraSettingsKey = getCardSettingsKey(showGo2rtcCameraModal);
-          const cameraSettings =
-            cardSettings[cameraSettingsKey] || cardSettings[showGo2rtcCameraModal] || {};
-          return (
-            <ModalSuspense>
-              <Go2rtcCameraModal
-                show={true}
-                onClose={() => setShowGo2rtcCameraModal(null)}
-                cardId={showGo2rtcCameraModal}
-                customName={customNames?.[showGo2rtcCameraModal]}
-                customIcon={customIcons?.[showGo2rtcCameraModal]}
-                go2rtcUrl={cameraSettings.go2rtcUrl || ''}
-                go2rtcStream={cameraSettings.go2rtcStream || (cameraSettings.cameraId ? cameraSettings.cameraId.replace(/^camera\./, '') : '')}
                 t={t}
               />
             </ModalSuspense>

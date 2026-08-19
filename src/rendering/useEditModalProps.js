@@ -43,7 +43,6 @@ export function useEditModalProps({
     const isEditAlarm = !!editId && editId.startsWith('alarm_card_');
     const isEditSpacer = !!editId && editId.startsWith('spacer_card_');
     const isEditCamera = !!editId && editId.startsWith('camera_card_');
-    const isEditGo2rtcCamera = !!editId && editId.startsWith('go2rtc_camera_card_');
     const isEditFrigateEvents = !!editId && editId.startsWith('frigate_events_card_');
     const isEditFan = !!editId && (editId.startsWith('fan.') || editId.startsWith('fan_card_'));
 
@@ -93,7 +92,6 @@ export function useEditModalProps({
         editId.startsWith('climate_card_') ||
         editId.startsWith('cost_card_') ||
         editId.startsWith('camera_card_') ||
-        editId.startsWith('go2rtc_camera_card_') ||
         (!!editEntity && !isEditMedia) ||
         editId === 'car' ||
         editId.startsWith('car_card_') ||
@@ -120,7 +118,6 @@ export function useEditModalProps({
       isEditLock,
       isEditSpacer,
       isEditCamera,
-      isEditGo2rtcCamera,
       isEditFrigateEvents,
       isEditSensor,
       isEditWeatherTemp,

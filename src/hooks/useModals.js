@@ -22,7 +22,6 @@ const MODAL_DEFAULTS = {
   showRoomModal: null,
   showCoverModal: null,
   showCameraModal: null,
-  showGo2rtcCameraModal: null,
   showWeatherModal: null,
   showAlarmModal: null,
   showAlarmActionModal: null,
@@ -73,7 +72,6 @@ const OPEN_CHECK_KEYS = [
   'showWeatherModal',
   'showCoverModal',
   'showCameraModal',
-  'showGo2rtcCameraModal',
   'showAlarmModal',
   'showAlarmActionModal',
   'showWaermepumpeModal',
@@ -123,7 +121,6 @@ function buildModalActions(setModalValue, closeAllModals, hasOpenModal) {
     setShowNavimowModal: setters.setShowNavimowModal,
     setShowSecurityLockModal: setters.setShowSecurityLockModal,
     setShowSecurityContactsModal: setters.setShowSecurityContactsModal,
-    setShowGo2rtcCameraModal: setters.setShowGo2rtcCameraModal,
     setShowPoolModal: setters.setShowPoolModal,
     setShowStatusGroupModal: setters.setShowStatusGroupModal,
   };

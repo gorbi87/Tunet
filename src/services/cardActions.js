@@ -207,12 +207,6 @@ export const handleAddSelected = (ctx) => {
       return;
     }
 
-    case 'go2rtc_camera': {
-      const cardId = `go2rtc_camera_card_${Date.now()}`;
-      commitSingleCard(cardId, {}, { openEdit: true });
-      return;
-    }
-
     case 'cover': {
       const coverEntities = selectedEntitiesForType();
       if (coverEntities.length === 0) return;

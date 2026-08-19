@@ -1047,13 +1047,6 @@ function AddCardContent({
                   onSelect={setAddCardType}
                 />
                 <TypeButton
-                  type="go2rtc_camera"
-                  icon={Camera}
-                  label="go2rtc Kamera"
-                  isActive={addCardType === 'go2rtc_camera'}
-                  onSelect={setAddCardType}
-                />
-                <TypeButton
                   type="beregnung"
                   icon={Droplets}
                   label="Beregnung"
@@ -1275,8 +1268,6 @@ function AddCardContent({
               )
             ) : addCardType === 'pv' ? (
               renderSimpleAddSection(CloudSun, 'Solar / PV Karte hinzufügen', 'Solar / PV hinzufügen')
-            ) : addCardType === 'go2rtc_camera' ? (
-              renderSimpleAddSection(Camera, 'go2rtc Kamera hinzufügen', 'go2rtc Kamera hinzufügen')
             ) : addCardType === 'beregnung' ? (
               renderSimpleAddSection(Droplets, 'Beregnung Karte hinzufügen', 'Beregnung hinzufügen')
             ) : addCardType === 'pool' ? (

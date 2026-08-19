@@ -53,7 +53,6 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
     setShowCoverModal,
     setShowAlarmModal,
     setShowCameraModal,
-    setShowGo2rtcCameraModal,
     setActiveMediaModal,
     setActiveMediaId,
     setActiveMediaGroupKey,
@@ -189,11 +188,6 @@ function openPopupForCard(cardId, settings, modalActions, entities) {
 
   if (cardId.startsWith('camera_card_')) {
     closeAndOpen(() => setShowCameraModal(cardId));
-    return true;
-  }
-
-  if (cardId.startsWith('go2rtc_camera_card_')) {
-    closeAndOpen(() => setShowGo2rtcCameraModal && setShowGo2rtcCameraModal(cardId));
     return true;
   }
 
