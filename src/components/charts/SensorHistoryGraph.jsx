@@ -1,7 +1,6 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 
-// Helper function to create smooth Bezier curves
-const createBezierPath = (points, smoothing = 0.3) => {
+const createBezierPath = (points, smoothing = 0.3, bounds) => {
   const line = (p1, p2) => {
     const dx = p2[0] - p1[0];
     const dy = p2[1] - p1[1];
@@ -13,159 +12,221 @@ const createBezierPath = (points, smoothing = 0.3) => {
     const l = line(p, n);
     const angle = l.angle + (reverse ? Math.PI : 0);
     const length = l.length * smoothing;
-    return [current[0] + Math.cos(angle) * length, current[1] + Math.sin(angle) * length];
+    const y = current[1] + Math.sin(angle) * length;
+    return [
+      current[0] + Math.cos(angle) * length,
+      bounds ? Math.max(bounds.minY, Math.min(bounds.maxY, y)) : y,
+    ];
   };
-  return points.reduce((acc, point, i, a) => {
-    if (i === 0) return `M ${point[0]},${point[1]}`;
-    const [cpsX, cpsY] = controlPoint(a[i - 1], a[i - 2], point, false);
-    const [cpeX, cpeY] = controlPoint(point, a[i - 1], a[i + 1], true);
-    return `${acc} C ${cpsX.toFixed(2)},${cpsY.toFixed(2)} ${cpeX.toFixed(2)},${cpeY.toFixed(2)} ${point[0].toFixed(2)},${point[1].toFixed(2)}`;
+  return points.reduce((path, point, index, allPoints) => {
+    if (index === 0) return `M ${point[0]},${point[1]}`;
+    const [cpsX, cpsY] = controlPoint(allPoints[index - 1], allPoints[index - 2], point, false);
+    const [cpeX, cpeY] = controlPoint(point, allPoints[index - 1], allPoints[index + 1], true);
+    return `${path} C ${cpsX.toFixed(2)},${cpsY.toFixed(2)} ${cpeX.toFixed(2)},${cpeY.toFixed(2)} ${point[0].toFixed(2)},${point[1].toFixed(2)}`;
   }, '');
 };
 
-/**
- * @param {Object} props
- * @param {Array} props.data
- * @param {number} [props.height]
- * @param {string} [props.color]
- * @param {string} [props.noDataLabel]
- * @param {Function} [props.formatXLabel]
- * @param {string} [props.strokeColor]
- * @param {string} [props.areaColor]
- */
+const formatSummaryValue = (value, range) =>
+  value.toLocaleString(undefined, {
+    maximumFractionDigits: range < 10 ? 1 : 0,
+  });
+
 export default function SensorHistoryGraph({
   data,
   height = 200,
   color = '#3b82f6',
   noDataLabel = 'No history data available',
-  formatXLabel,
+  formatXLabel = undefined,
+  strokeColor = undefined,
+  areaColor = undefined,
+  ariaLabel = undefined,
   unit = '',
 }) {
-  const [hoverIdx, setHoverIdx] = useState(null);
+  const containerRef = useRef(null);
   const svgRef = useRef(null);
-  const hasData = Array.isArray(data) && data.length > 0;
-  const safeData = hasData ? data : [];
+  const reactId = useId().replace(/:/g, '');
+  const [containerWidth, setContainerWidth] = useState(600);
+  const [hoverIdx, setHoverIdx] = useState(null);
 
-  // Determine graph dimensions
-  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
-  const width = 600; // viewBox width
-  const graphWidth = width - padding.left - padding.right;
-  const graphHeight = height - padding.top - padding.bottom;
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return undefined;
 
-  // Calculate min/max values
-  // Smooth values with a moving average to reduce jitter
-  const rawValues = safeData.map((d) => d.value);
-  const windowSize = Math.max(1, Math.round(rawValues.length / 30));
-  const values = rawValues.map((_, i) => {
-    const start = Math.max(0, i - Math.floor(windowSize / 2));
-    const end = Math.min(rawValues.length, i + Math.ceil(windowSize / 2));
-    let sum = 0;
-    for (let j = start; j < end; j++) sum += rawValues[j];
-    return sum / (end - start);
-  });
-  let min = Math.min(...values);
-  let max = Math.max(...values);
+    const updateWidth = (width) => {
+      if (Number.isFinite(width) && width > 0) setContainerWidth(width);
+    };
+    updateWidth(element.getBoundingClientRect().width);
 
-  if (min === max) {
-    min -= 1;
-    max += 1;
-  }
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(([entry]) => updateWidth(entry.contentRect.width));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
-  // Ensure a minimum visual range so small fluctuations don't look extreme
-  const rawRange = max - min;
-  const minRange = Math.max(2, Math.abs(max + min) / 2 * 0.1);
-  if (rawRange < minRange) {
-    const mid = (max + min) / 2;
-    min = mid - minRange / 2;
-    max = mid + minRange / 2;
-  }
-
-  // Snap min/max to nice round numbers for clean axis labels
-  const snapStep = (() => {
-    const r = max - min;
-    if (r <= 2) return 0.5;
-    if (r <= 5) return 1;
-    if (r <= 20) return 2;
-    if (r <= 50) return 5;
-    if (r <= 200) return 10;
-    return 50;
-  })();
-  min = Math.floor(min / snapStep) * snapStep;
-  max = Math.ceil(max / snapStep) * snapStep;
-
-  // Add some padding to top of Y-axis range only
-  const renderMin = min;
-  const renderMax = max;
-  const renderRange = renderMax - renderMin || 1;
-
-  // Create points for Bezier curve
-  const pointsArray = safeData.map((d, i) => [
-    padding.left + (i / Math.max(safeData.length - 1, 1)) * graphWidth,
-    padding.top + graphHeight - ((d.value - renderMin) / renderRange) * graphHeight,
-  ]);
-
-  const pathData = useMemo(() => createBezierPath(pointsArray, 0.3), [pointsArray]);
-  const areaData = useMemo(
-    () => `${pathData} L ${padding.left + graphWidth},${height} L ${padding.left},${height} Z`,
-    [pathData, padding.left, graphWidth, height]
+  const safeData = useMemo(
+    () =>
+      (Array.isArray(data) ? data : [])
+        .map((point) => ({ ...point, value: Number(point.value) }))
+        .filter((point) => Number.isFinite(point.value)),
+    [data]
   );
+  const hasData = safeData.length > 0;
+  const width = 600;
+  const padding = { top: 24, right: 18, bottom: 30, left: 44 };
+  const graphWidth = width - padding.left - padding.right;
+  const graphHeight = Math.max(1, height - padding.top - padding.bottom);
 
-  // Generate Y-axis labels (Max, Mid, Min) — match renderMin/renderMax so labels align with curve
-  const yLabels = [
-    { value: renderMax, y: padding.top },
-    { value: (renderMax + renderMin) / 2, y: padding.top + graphHeight / 2 },
-    { value: renderMin, y: height - padding.bottom },
-  ];
-
-  // Generate X-axis labels (Start, End + Intermediates)
-  // Logic: try to fit ~5 labels.
-  const xLabels = [];
-  const numLabels = 5;
-  for (let i = 0; i < numLabels; i++) {
-    const fraction = i / (numLabels - 1);
-    const index = Math.round(fraction * (safeData.length - 1));
-    const point = safeData[index];
-    if (point) {
-      const x = padding.left + fraction * graphWidth;
-      const label = formatXLabel
-        ? formatXLabel(new Date(point.time))
-        : new Date(point.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      /** @type {'start' | 'end' | 'middle'} */
-      const anchor = i === 0 ? 'start' : i === numLabels - 1 ? 'end' : 'middle';
-      xLabels.push({ x, label, anchor });
+  const chart = useMemo(() => {
+    if (!hasData) {
+      return {
+        values: [],
+        points: [],
+        pathData: '',
+        areaData: '',
+        min: 0,
+        max: 1,
+        dataMin: 0,
+        dataMax: 0,
+        range: 1,
+        average: 0,
+      };
     }
-  }
 
-  // Stable unique IDs for gradients — must not change on re-render
-  const idSuffix = useMemo(() => Math.random().toString(36).substr(2, 9), []);
-  const areaGradientId = `area-gradient-${idSuffix}`;
-  const fadeGradientId = `fade-gradient-${idSuffix}`;
-  const maskId = `mask-${idSuffix}`;
+    const rawValues = safeData.map((point) => point.value);
+    const windowSize = Math.max(1, Math.round(rawValues.length / 30));
+    const values = rawValues.map((_, index) => {
+      const start = Math.max(0, index - Math.floor(windowSize / 2));
+      const end = Math.min(rawValues.length, index + Math.ceil(windowSize / 2));
+      let sum = 0;
+      for (let cursor = start; cursor < end; cursor += 1) sum += rawValues[cursor];
+      return sum / Math.max(1, end - start);
+    });
 
+    const dataMin = Math.min(...values);
+    const dataMax = Math.max(...values);
+    let min = dataMin;
+    let max = dataMax;
+    if (min === max) {
+      min -= 1;
+      max += 1;
+    }
+
+    const rawRange = max - min;
+    const minimumRange = Math.max(2, (Math.abs(max + min) / 2) * 0.1);
+    if (rawRange < minimumRange) {
+      const midpoint = (max + min) / 2;
+      min = midpoint - minimumRange / 2;
+      max = midpoint + minimumRange / 2;
+    }
+
+    const rangeBeforeSnap = max - min;
+    const snapStep =
+      rangeBeforeSnap <= 2
+        ? 0.5
+        : rangeBeforeSnap <= 5
+          ? 1
+          : rangeBeforeSnap <= 20
+            ? 2
+            : rangeBeforeSnap <= 50
+              ? 5
+              : rangeBeforeSnap <= 200
+                ? 10
+                : 50;
+    min = Math.floor(min / snapStep) * snapStep;
+    max = Math.ceil(max / snapStep) * snapStep;
+    const range = max - min || 1;
+    const points = values.map((value, index) => [
+      padding.left + (index / Math.max(values.length - 1, 1)) * graphWidth,
+      padding.top + graphHeight - ((value - min) / range) * graphHeight,
+    ]);
+    const pathData = createBezierPath(points, 0.3, {
+      minY: padding.top,
+      maxY: padding.top + graphHeight,
+    });
+    const graphBottom = padding.top + graphHeight;
+
+    return {
+      values,
+      points,
+      pathData,
+      areaData: `${pathData} L ${padding.left + graphWidth},${graphBottom} L ${padding.left},${graphBottom} Z`,
+      min,
+      max,
+      dataMin,
+      dataMax,
+      range,
+      average: values.reduce((sum, value) => sum + value, 0) / values.length,
+    };
+  }, [graphHeight, graphWidth, hasData, padding.left, padding.top, safeData]);
+
+  const labelCount = containerWidth < 420 ? 3 : 5;
+  const xLabels = useMemo(() => {
+    if (!hasData) return [];
+    return Array.from({ length: labelCount }, (_, index) => {
+      const fraction = index / Math.max(labelCount - 1, 1);
+      const dataIndex = Math.round(fraction * (safeData.length - 1));
+      const point = safeData[dataIndex];
+      const date = new Date(point.time);
+      const label = formatXLabel
+        ? formatXLabel(date)
+        : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      /** @type {'start' | 'middle' | 'end'} */
+      const anchor = index === 0 ? 'start' : index === labelCount - 1 ? 'end' : 'middle';
+      return {
+        x: padding.left + fraction * graphWidth,
+        label,
+        anchor,
+      };
+    });
+  }, [formatXLabel, graphWidth, hasData, labelCount, padding.left, safeData]);
+
+  const yLabels = [
+    { value: chart.max, y: padding.top },
+    { value: (chart.max + chart.min) / 2, y: padding.top + graphHeight / 2 },
+    { value: chart.min, y: padding.top + graphHeight },
+  ];
   const handlePointerMove = (e) => {
     if (!svgRef.current || safeData.length === 0) return;
     const rect = svgRef.current.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const relX = ((clientX - rect.left) / rect.width) * width;
+    const relX = ((clientX - rect.left) / rect.width) * 600;
     const idx = Math.max(0, Math.min(safeData.length - 1,
       Math.round((relX - padding.left) / graphWidth * (safeData.length - 1))
     ));
     setHoverIdx(idx);
   };
 
-  const hoverPoint = hoverIdx !== null ? pointsArray[hoverIdx] : null;
+  const hoverPoint = hoverIdx !== null ? chart.points[hoverIdx] : null;
   const hoverData = hoverIdx !== null ? safeData[hoverIdx] : null;
+
+  const lineColor = strokeColor || color;
+  const fillColor = areaColor || color;
+  const areaGradientId = `area-gradient-${reactId}`;
+  const fadeGradientId = `fade-gradient-${reactId}`;
+  const maskId = `mask-${reactId}`;
+  const summaryLabel =
+    ariaLabel ||
+    `Sensor history. Minimum ${formatSummaryValue(chart.dataMin, chart.range)}, average ${formatSummaryValue(chart.average, chart.range)}, maximum ${formatSummaryValue(chart.dataMax, chart.range)}.`;
 
   if (!hasData) {
     return (
-      <div className="flex h-[200px] items-center justify-center text-sm text-[var(--text-muted)]">
+      <div
+        ref={containerRef}
+        className="flex items-center justify-center text-sm text-[var(--text-muted)]"
+        style={{ height }}
+      >
         {noDataLabel}
       </div>
     );
   }
 
   return (
-    <div className="relative w-full select-none">
+    <div
+      ref={containerRef}
+      className="relative w-full select-none"
+      data-chart-label-count={labelCount}
+      data-chart-safe-inset={padding.right}
+    >
       {/* Hover info bar */}
       <div className="mb-3 flex items-end justify-between px-1" style={{ minHeight: 36 }}>
         {hoverData ? (
@@ -188,7 +249,7 @@ export default function SensorHistoryGraph({
             </div>
           </>
         ) : (
-          <p className="text-xs text-[var(--text-muted)] opacity-50">← Zeige über den Graph fahren</p>
+          <p className="text-xs text-[var(--text-muted)] opacity-50">← Über den Graph fahren</p>
         )}
       </div>
       <svg
@@ -196,99 +257,87 @@ export default function SensorHistoryGraph({
         viewBox={`0 0 ${width} ${height}`}
         className="h-full w-full cursor-crosshair overflow-visible"
         preserveAspectRatio="none"
+        role="img"
+        aria-label={summaryLabel}
         onMouseMove={handlePointerMove}
         onTouchMove={handlePointerMove}
         onMouseLeave={() => setHoverIdx(null)}
       >
         <defs>
-          {/* Area gradient - more opaque at top, fades to bottom */}
           <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-            <stop offset="50%" stopColor={color} stopOpacity="0.12" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+            <stop offset="0%" stopColor={fillColor} stopOpacity="0.25" />
+            <stop offset="50%" stopColor={fillColor} stopOpacity="0.12" />
+            <stop offset="100%" stopColor={fillColor} stopOpacity="0.02" />
           </linearGradient>
-
-          {/* Fade mask for smooth bottom edge */}
           <linearGradient id={fadeGradientId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="white" stopOpacity="1" />
             <stop offset="80%" stopColor="white" stopOpacity="0.6" />
             <stop offset="100%" stopColor="white" stopOpacity="0" />
           </linearGradient>
-
           <mask id={maskId}>
             <rect x="0" y="0" width={width} height={height} fill={`url(#${fadeGradientId})`} />
           </mask>
         </defs>
 
-        {/* Grid lines - Very subtle */}
-        {yLabels.map((label, i) => (
+        {yLabels.map((label) => (
           <line
-            key={i}
+            key={label.value}
             x1={padding.left}
             y1={label.y}
             x2={width - padding.right}
             y2={label.y}
             stroke="currentColor"
-            strokeOpacity="0.05"
+            strokeOpacity="0.07"
             strokeDasharray="4 4"
           />
         ))}
 
-        {/* Area fill with gradient */}
-        <path d={areaData} fill={`url(#${areaGradientId})`} mask={`url(#${maskId})`} />
-
-        {/* Bezier line - smooth and crisp */}
+        <path d={chart.areaData} fill={`url(#${areaGradientId})`} mask={`url(#${maskId})`} />
         <path
-          d={pathData}
+          d={chart.pathData}
           fill="none"
-          stroke={color}
+          stroke={lineColor}
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          opacity="0.9"
+          opacity="0.95"
         />
 
-        {/* Y-axis Labels */}
-        {yLabels.map((label, i) => (
+        {yLabels.map((label) => (
           <text
-            key={i}
+            key={label.value}
             x={padding.left - 8}
             y={label.y}
             textAnchor="end"
             dominantBaseline="middle"
-            className="fill-current font-mono text-[10px] tracking-tighter opacity-60"
-            style={{ fill: 'var(--text-secondary)' }}
+            className="font-mono text-[10px] tracking-tighter"
+            style={{ fill: 'var(--text-secondary)', opacity: 0.65 }}
           >
-            {label.value.toFixed(1)}
+            {formatSummaryValue(label.value, chart.range)}
           </text>
         ))}
 
-        {/* X-axis Labels */}
-        {xLabels.map((l, i) => (
+        {xLabels.map((label) => (
           <text
-            key={i}
-            x={l.x}
+            key={`${label.x}-${label.label}`}
+            x={label.x}
             y={height - 5}
-            textAnchor={l.anchor}
-            className="fill-current font-mono text-[10px] tracking-tighter opacity-60"
-            style={{ fill: 'var(--text-secondary)' }}
+            textAnchor={label.anchor}
+            className="font-mono text-[10px] tracking-tighter"
+            style={{ fill: 'var(--text-secondary)', opacity: 0.65 }}
           >
-            {l.label}
+            {label.label}
           </text>
         ))}
 
-        {/* Crosshair */}
         {hoverPoint && (
           <>
             <line
               x1={hoverPoint[0]} y1={padding.top}
-              x2={hoverPoint[0]} y2={height - padding.bottom}
-              stroke={color} strokeWidth="1" strokeOpacity="0.5" strokeDasharray="3 2"
+              x2={hoverPoint[0]} y2={padding.top + graphHeight}
+              stroke={lineColor} strokeWidth="1" strokeOpacity="0.5" strokeDasharray="3 2"
             />
-            <circle
-              cx={hoverPoint[0]} cy={hoverPoint[1]}
-              r="5" fill={color} stroke="var(--card-bg)" strokeWidth="2"
-            />
+            <circle cx={hoverPoint[0]} cy={hoverPoint[1]} r="5" fill={lineColor} stroke="var(--card-bg)" strokeWidth="2" />
           </>
         )}
       </svg>

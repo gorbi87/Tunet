@@ -48,12 +48,23 @@ export default function ConnectionBanner({ t, setConfigTab }) {
   };
 
   return (
-    <div className="popup-anim mb-6 flex items-center gap-3 rounded-2xl border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] px-4 py-4 text-[var(--status-warning-fg)] sm:px-6">
-      <WifiOff className="h-5 w-5 shrink-0 text-[var(--status-warning-fg)]" />
-      <div className="min-w-0 flex-1 text-sm font-semibold">
-        <span>{oauthExpired ? t('system.oauth.expired') : t('ha.unavailable')}</span>
+    <div
+      className={`popup-anim flex items-center gap-2 border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] text-[var(--status-warning-fg)] ${oauthExpired ? 'mb-6 w-full rounded-2xl px-4 py-4 sm:px-6' : 'mb-3 w-fit rounded-full px-3 py-2 sm:mb-6 sm:w-full sm:gap-3 sm:rounded-2xl sm:px-6 sm:py-4'}`}
+      role="status"
+      aria-live="polite"
+    >
+      <WifiOff className="h-4 w-4 shrink-0 text-[var(--status-warning-fg)] sm:h-5 sm:w-5" />
+      <div className="min-w-0 flex-1 text-xs font-semibold sm:text-sm">
+        {oauthExpired ? (
+          <span>{t('system.oauth.expired')}</span>
+        ) : (
+          <>
+            <span className="sm:hidden">{t('ha.reconnecting')}</span>
+            <span className="hidden sm:inline">{t('ha.unavailable')}</span>
+          </>
+        )}
         {!oauthExpired && disconnectedSince && elapsed > 0 && (
-          <span className="ml-2 font-normal opacity-70">
+          <span className="ml-2 hidden font-normal opacity-70 sm:inline">
             {t('ha.disconnectedFor').replace('{time}', formatElapsed(elapsed))}
           </span>
         )}
@@ -63,7 +74,7 @@ export default function ConnectionBanner({ t, setConfigTab }) {
           <button
             onClick={handleRetry}
             title={t('ha.retry')}
-            className="rounded-lg border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] p-1.5 text-[var(--status-warning-fg)] transition-colors hover:opacity-90"
+            className="rounded-lg border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] p-1 text-[var(--status-warning-fg)] transition-colors hover:opacity-90 sm:p-1.5"
           >
             <RefreshCw className="h-4 w-4" />
           </button>

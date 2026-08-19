@@ -157,6 +157,11 @@ export const test = baseTest.extend({
                           target_temperature: 22,
                           supported_features: 391,
                         }),
+                        'sensor.front_door_battery': entityUpdate('25', {
+                          friendly_name: 'Front Door Battery',
+                          device_class: 'battery',
+                          unit_of_measurement: '%',
+                        }),
                       },
                     },
                   });
@@ -201,7 +206,7 @@ export const test = baseTest.extend({
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(300);
-    
+
     await use(page);
   },
 });

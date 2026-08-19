@@ -96,6 +96,11 @@ E2E_TESTS_SETUP.md        # Comprehensive E2E setup guide
 - `npm run test:e2e:headed` (Playwright with visible browser)
 - `docker-compose up`
 
+After every code change, run `npm run build` and verify that the Docker postbuild completes and
+produces `hassen-app:latest`. Then run `docker compose up -d --force-recreate app` and verify that
+`tunet-dashboard` is healthy and uses the new image. Do not hand off a local code change before
+the rebuilt container is running.
+
 ## Testing infrastructure
 
 **Vitest (Unit & Integration):**

@@ -1,9 +1,8 @@
-ARG BUILD_FROM
 ARG BUILD_VERSION
 # ── Stage 1: Build from source ────────────────────────────────────────
-FROM node:25-alpine AS builder
+FROM node:26-alpine AS builder
 ARG BUILD_VERSION
-RUN apk add --no-cache curl tar \
+RUN apk add --no-cache curl tar python3 make g++ \
  && set -eux \
  && echo "Building Tunet version ${BUILD_VERSION}" \
  && curl -fsSL "https://codeload.github.com/gorbi87/Tunet/tar.gz/refs/heads/main" -o /tmp/tunet.tar.gz \
@@ -14,10 +13,15 @@ RUN apk add --no-cache curl tar \
  && npm run build
 
 # ── Stage 2: Production image ────────────────────────────────────────
-ARG BUILD_FROM
-FROM ${BUILD_FROM:-ghcr.io/hassio-addons/base:16.3.2}
+FROM ghcr.io/hassio-addons/base:21.0.0
+ARG BUILD_VERSION
+ARG BUILD_ARCH
+LABEL \
+	io.hass.version="${BUILD_VERSION}" \
+	io.hass.type="app" \
+	io.hass.arch="${BUILD_ARCH}"
 
-RUN apk add --no-cache nodejs npm
+RUN apk add --no-cache nodejs npm python3 make g++
 
 WORKDIR /app
 
@@ -28,7 +32,8 @@ COPY --from=builder /src/package.json .
 COPY --from=builder /src/package-lock.json .
 
 # Install production dependencies only
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev \
+ && apk del python3 make g++
 
 # Copy run script from build context (hassio-addon/)
 COPY run.sh /run.sh

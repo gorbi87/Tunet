@@ -27,6 +27,8 @@ playwright-report/
 CODE_REVIEW_*.md
 # Local SQLite database
 data/
+# Local scratch output (previews, emulator images, audit screenshots)
+.tmp/
 
 # --- Local AI tooling (Copilot extras, Claude, Cursor, Aider, Windsurf, Gemini, etc.) ---
 # Personal/local AI assistant configs — keep out of git.

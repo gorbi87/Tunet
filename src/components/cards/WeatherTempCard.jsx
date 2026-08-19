@@ -50,7 +50,8 @@ const WeatherTempCard = memo(/** @param {any} props */ function WeatherTempCard(
   outsideTempId,
   weatherEntityId,
   editMode,
-  isTwoColMobile = false,
+  isMobile,
+  isTwoColMobile,
   onOpen,
   t,
 }) {
@@ -198,38 +199,39 @@ const WeatherTempCard = memo(/** @param {any} props */ function WeatherTempCard(
         e.stopPropagation();
         if (!editMode && onOpen) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isTwoColMobile ? 'p-4' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-all duration-500 ${isMobile ? 'p-5' : 'p-7'} ${!editMode ? 'cursor-pointer active:scale-98' : 'cursor-move'}`}
       style={cardStyle}
     >
       {getControls(cardId)}
       {showEffects && <WeatherEffects condition={state} />}
-      <div className="relative z-10 flex flex-col gap-2">
-        <div className="flex items-start justify-between">
-          <div className={`drop-shadow-lg filter transition-transform duration-500 group-hover:scale-110 ${isTwoColMobile ? '-mt-1 -ml-1 h-12 w-12' : '-mt-2 -ml-2 h-20 w-20'}`}>
-            <img src={iconUrl} alt={info.label} className="h-full w-full object-contain" />
-            {subtitle && !isTwoColMobile && (
-              <p className="mt-0.5 truncate text-center text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase opacity-60">
+      <div className="relative z-10 flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <div
+              className={`${isMobile ? '-mt-1 -ml-1 h-12 w-12' : '-mt-2 -ml-2 h-20 w-20'} drop-shadow-lg filter transition-transform duration-500 group-hover:scale-110`}
+            >
+              <img src={iconUrl} alt={info.label} className="h-full w-full object-contain" />
+            </div>
+            {subtitle && (
+              <p className="mt-0.5 line-clamp-2 text-left text-xs leading-snug font-bold tracking-widest break-words text-[var(--text-secondary)] uppercase opacity-60">
                 {subtitle}
               </p>
             )}
           </div>
-          <div className="flex flex-col items-end gap-1.5">
-            <div className={`flex items-center gap-1 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] ${isTwoColMobile ? 'max-w-[90px] overflow-hidden px-1.5 py-0.5' : 'px-3 py-1 gap-1.5'}`}>
-              <span className={`block truncate font-bold uppercase ${isTwoColMobile ? 'text-[9px] tracking-wide' : 'text-xs tracking-widest'}`}>{info.label}</span>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <div className="flex items-center gap-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1 text-[var(--text-secondary)]">
+              <span className="text-xs font-bold tracking-widest uppercase">{info.label}</span>
             </div>
             <span className={`leading-none font-thin text-[var(--text-primary)] ${isTwoColMobile ? 'text-2xl' : 'text-4xl'}`}>
               {formatUnitValue(displayTempValue, { fallback: '--' })}
               {displayTempUnit}
             </span>
-            {subtitle && isTwoColMobile && (
-              <p className="truncate text-[9px] font-bold tracking-wide text-[var(--text-secondary)] uppercase opacity-60">
-                {subtitle}
-              </p>
-            )}
           </div>
         </div>
       </div>
-      <div className={`relative z-0 mt-auto overflow-hidden rounded-b-3xl opacity-80 ${isTwoColMobile ? '-mx-4 -mb-4 h-20' : '-mx-7 -mb-7 h-32'}`}>
+      <div
+        className={`relative z-0 mt-auto overflow-hidden rounded-b-3xl opacity-80 ${isTwoColMobile ? 'h-16' : 'h-32'} ${isMobile ? '-mx-5 -mb-5' : '-mx-7 -mb-7'}`}
+      >
         <WeatherGraph
           history={historyForDisplay}
           currentTemp={displayTempValue}

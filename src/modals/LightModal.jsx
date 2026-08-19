@@ -133,9 +133,9 @@ export default function LightModal({
       open={show && !!activeLightId}
       onClose={onClose}
       titleId={modalTitleId}
-      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
+      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6"
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName={`w-full border ${showRightPanel ? 'max-w-5xl' : 'max-w-xl'} flex flex-col overflow-hidden rounded-3xl md:rounded-[3rem] ${showRightPanel ? 'lg:grid lg:grid-cols-5' : ''} popup-anim relative max-h-[90vh] shadow-2xl backdrop-blur-xl md:min-h-[550px]`}
+      panelClassName={`w-full border ${showRightPanel ? 'max-w-5xl' : 'max-w-xl'} flex flex-col overflow-hidden rounded-3xl md:rounded-[3rem] ${showRightPanel ? 'lg:grid lg:grid-cols-5' : ''} popup-anim relative max-h-[calc(100dvh-1rem)] shadow-2xl sm:max-h-[90vh] backdrop-blur-xl md:min-h-[550px]`}
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -145,7 +145,7 @@ export default function LightModal({
       {() => (
         <>
         {/* Close Button Row (Mobile & Desktop) */}
-        <div className="absolute top-6 right-6 z-50 md:top-10 md:right-10">
+        <div className="absolute top-4 right-4 z-50 sm:top-6 sm:right-6 md:top-10 md:right-10">
           <button onClick={onClose} className="modal-close" aria-label={t('common.close')}>
             <X className="h-4 w-4" />
           </button>
@@ -163,16 +163,16 @@ export default function LightModal({
           />
 
           {/* Header */}
-          <div className="relative z-10 mb-6 flex shrink-0 items-center gap-4">
+          <div className="relative z-10 mb-4 flex shrink-0 items-center gap-3 pr-12 sm:mb-6 sm:gap-4 sm:pr-0">
             <div
-              className={`rounded-2xl p-4 transition-all duration-500 ${isUnavailable ? 'bg-[var(--status-error-bg)] text-[var(--status-error-fg)]' : isOn ? 'bg-amber-500/15 text-amber-400' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'}`}
+              className={`rounded-2xl p-3 transition-all duration-500 sm:p-4 ${isUnavailable ? 'bg-[var(--status-error-bg)] text-[var(--status-error-fg)]' : isOn ? 'bg-amber-500/15 text-amber-400' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)]'}`}
             >
-              <LightIcon className="h-8 w-8" />
+              <LightIcon className="h-6 w-6 sm:h-8 sm:w-8" />
             </div>
             <div className="min-w-0">
               <h2
                 id={modalTitleId}
-                className="truncate pr-1 text-2xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic"
+                className="truncate pr-1 text-xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic sm:text-2xl"
               >
                 {getA(activeLightId, 'friendly_name', t('common.light'))}
               </h2>

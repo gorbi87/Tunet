@@ -98,7 +98,13 @@ const SensorCard = memo(
         ? translate(state === 'on' ? 'status.on' : 'status.off')
         : null;
     const sceneDisplayState = domain === 'scene' ? translate('sensor.scene.label') : null;
-    const scriptDisplayState = domain === 'script' ? translate('sensor.script.label') : null;
+    const customScriptStatus =
+      typeof settings?.scriptStatusText === 'string' ? settings.scriptStatusText.trim() : '';
+    const scriptDisplayState =
+      domain === 'script'
+        ? customScriptStatus ||
+          translate(state === 'on' ? 'sensor.script.running' : 'sensor.script.ready')
+        : null;
     const isSelectDomain = domain === 'select' || domain === 'input_select';
     const selectOptions = isSelectDomain ? entity?.attributes?.options || [] : [];
     const displayState = isNumeric
@@ -242,6 +248,9 @@ const SensorCard = memo(
         matchedThreshold?.color || colorThresholds[colorThresholds.length - 1]?.color;
       return SENSOR_THRESHOLD_COLOR_MAP[selectedColor] || 'var(--accent-color)';
     }, [useColorThresholds, isRangeVariant, thresholdInputValue, colorThresholds]);
+    const chartAriaLabel = `${String(name)}: ${chartDisplayValue ?? displayState}${
+      displayNumericUnit && valueMode !== 'percent' ? ` ${displayNumericUnit}` : ''
+    }.${isRangeVariant ? ` ${chartMin}–${safeChartMax}.` : ''}`;
     const showVariantPanel =
       !isSmall &&
       variant !== 'default' &&
@@ -249,17 +258,17 @@ const SensorCard = memo(
       showStatus &&
       (variant === 'number' || (isNumeric && normalizedNumericState !== null));
     const showSmallVariantVisual =
-      isSmall &&
-      isRangeVariant &&
-      ['gauge', 'donut'].includes(variant) &&
-      isNumeric &&
-      normalizedNumericState !== null;
+      isSmall && isRangeVariant && isNumeric && normalizedNumericState !== null;
     const useDenseMobileSmallLayout = isMobile && isSmall;
     const useDenseMobileLargeLayout = isMobile && !isSmall;
-    const smallVariantGaugeSize = useDenseMobileSmallLayout ? 48 : 56;
-    const smallVariantGaugeStroke = useDenseMobileSmallLayout ? 7 : 8;
+    const smallVariantGaugeSize = 80;
+    const smallVariantGaugeStroke = 8;
+    const smallVariantWideVisualClass = useDenseMobileSmallLayout
+      ? 'h-auto w-[clamp(3.5rem,24cqw,4.5rem)]'
+      : 'h-auto w-[clamp(3.5rem,25cqw,6rem)]';
     const smallVariantDonutSize = useDenseMobileSmallLayout ? 36 : 42;
     const smallVariantDonutStroke = useDenseMobileSmallLayout ? 5 : 6;
+    const smallVariantBarHeight = useDenseMobileSmallLayout ? 7 : 8;
     const largeVariantGaugeSize = useDenseMobileLargeLayout ? 88 : 124;
     const largeVariantGaugeStroke = useDenseMobileLargeLayout ? 10 : 14;
     const largeVariantDonutSize = useDenseMobileLargeLayout ? 64 : 96;
@@ -620,6 +629,8 @@ const SensorCard = memo(
             size={smallVariantGaugeSize}
             strokeWidth={smallVariantGaugeStroke}
             color={variantColor}
+            className={smallVariantWideVisualClass}
+            ariaLabel={chartAriaLabel}
           />
         );
       }
@@ -633,7 +644,23 @@ const SensorCard = memo(
             size={smallVariantDonutSize}
             strokeWidth={smallVariantDonutStroke}
             color={variantColor}
+            ariaLabel={chartAriaLabel}
           />
+        );
+      }
+
+      if (variant === 'bar') {
+        return (
+          <div className={smallVariantWideVisualClass}>
+            <Bar
+              value={normalizedNumericState}
+              min={chartMin}
+              max={safeChartMax}
+              height={smallVariantBarHeight}
+              color={variantColor}
+              ariaLabel={chartAriaLabel}
+            />
+          </div>
         );
       }
 
@@ -686,9 +713,7 @@ const SensorCard = memo(
                 )}
               </div>
             )}
-            <div
-              className={`flex min-w-0 flex-1 flex-col ${showSmallVariantVisual ? (useDenseMobileSmallLayout ? 'pr-8' : 'pr-14') : ''}`}
-            >
+            <div className="flex min-w-0 flex-1 flex-col">
               {showName && (
                 <p
                   className={`${useDenseMobileSmallLayout ? 'mb-1 text-[10px]' : 'mb-1.5 text-xs'} block max-w-full truncate leading-none font-bold tracking-wide text-[var(--text-secondary)] uppercase opacity-60`}
@@ -732,7 +757,8 @@ const SensorCard = memo(
 
             {showSmallVariantVisual && (
               <div
-                className={`pointer-events-none absolute top-1/2 shrink-0 -translate-y-1/2 ${useDenseMobileSmallLayout ? '-right-5' : '-right-6'}`}
+                className="pointer-events-none ml-auto shrink-0 pr-1"
+                data-sensor-graph={variant}
               >
                 {renderSmallVariantVisual()}
               </div>
@@ -762,8 +788,17 @@ const SensorCard = memo(
         </div>
 
         {showGraph && history.length > 0 && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24">
-            <SparkLine data={history} height={96} currentIndex={history.length - 1} fade />
+          <div
+            className="pointer-events-none absolute right-0 bottom-0 left-0 z-0 h-24"
+            data-sensor-graph="history"
+          >
+            <SparkLine
+              data={history}
+              height={96}
+              currentIndex={history.length - 1}
+              fade
+              ariaLabel={chartAriaLabel}
+            />
           </div>
         )}
 
@@ -918,6 +953,7 @@ const SensorCard = memo(
                     size={largeVariantGaugeSize}
                     strokeWidth={largeVariantGaugeStroke}
                     color={variantColor}
+                    ariaLabel={chartAriaLabel}
                   />
                 </div>
               )}
@@ -933,6 +969,7 @@ const SensorCard = memo(
                     size={largeVariantDonutSize}
                     strokeWidth={largeVariantDonutStroke}
                     color={variantColor}
+                    ariaLabel={chartAriaLabel}
                   />
                 </div>
               )}
@@ -944,6 +981,7 @@ const SensorCard = memo(
                   max={safeChartMax}
                   height={largeVariantBarHeight}
                   color={variantColor}
+                  ariaLabel={chartAriaLabel}
                 />
               )}
             </div>

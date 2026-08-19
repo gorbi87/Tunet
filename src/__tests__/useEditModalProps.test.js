@@ -59,5 +59,41 @@ describe('useEditModalProps', () => {
     expect(result.current.editSettingsKey).toBe('settings::lock_card_1');
     expect(result.current.canEditIcon).toBe(true);
     expect(result.current.isEditLock).toBe(true);
+    expect(result.current.nameFallbackEntityId).toBe('lock.front_door');
+  });
+
+  it('uses the mapped cover entity as the fallback name source', () => {
+    const { result } = renderHook(() =>
+      useEditModalProps(
+        makeBase({
+          showEditCardModal: 'cover_card_1',
+          cardSettings: {
+            'settings::cover_card_1': { coverId: 'cover.front_door' },
+          },
+          entities: {
+            'cover.front_door': {
+              entity_id: 'cover.front_door',
+              state: 'closed',
+              attributes: { friendly_name: 'Door' },
+            },
+          },
+        })
+      )
+    );
+
+    expect(result.current.nameFallbackEntityId).toBe('cover.front_door');
+  });
+
+  it.each([
+    'weather_temp_home',
+    'cost_card_home',
+    'nordpool_card_home',
+    'climate_card_living_room',
+    'media_player.living_room',
+    'media_group_downstairs',
+  ])('allows mobile width control for %s', (cardId) => {
+    const { result } = renderHook(() => useEditModalProps(makeBase({ showEditCardModal: cardId })));
+
+    expect(result.current.canEditMobileWidth).toBe(true);
   });
 });

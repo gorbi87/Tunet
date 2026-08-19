@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './animations.css';
+@import './sidebar.css';
 
 @theme {
   --color-primary: var(--bg-primary);

@@ -36,6 +36,7 @@ const MODAL_DEFAULTS = {
   activeMediaGroupIds: null,
   activeMediaSessionSensorIds: null,
   activeMediaId: null,
+  showStatusGroupModal: null,
   showAddCardModal: false,
   showConfigModal: false,
   showAddPageModal: false,
@@ -84,6 +85,7 @@ const OPEN_CHECK_KEYS = [
   'showSecurityLockModal',
   'showSecurityContactsModal',
   'showPoolModal',
+  'showStatusGroupModal',
 ];
 
 function buildModalActions(setModalValue, closeAllModals, hasOpenModal) {
@@ -123,6 +125,7 @@ function buildModalActions(setModalValue, closeAllModals, hasOpenModal) {
     setShowSecurityContactsModal: setters.setShowSecurityContactsModal,
     setShowGo2rtcCameraModal: setters.setShowGo2rtcCameraModal,
     setShowPoolModal: setters.setShowPoolModal,
+    setShowStatusGroupModal: setters.setShowStatusGroupModal,
   };
 
   const mediaModalActions = {

@@ -247,6 +247,97 @@ const StatusPill = memo(/** @param {any} props */ function StatusPill({
     );
   }
 
+  // Upstream STATUS_GROUP_PILL_TYPE ('group_status') — rendered by StatusBar for smart pills
+  if (pill.type === 'group_status') {
+    if (!entity) return null;
+
+    const customLabel = getCustomLabel();
+    const label = showLabel
+      ? customLabel || entity.attributes?.friendly_name || entity.entity_id
+      : null;
+    const hasCustomSublabel =
+      typeof pill.sublabel === 'string' && pill.sublabel.trim().length > 0;
+    const sublabel = showSublabel
+      ? hasCustomSublabel
+        ? pill.sublabel
+        : entity.attributes?.statusPillSublabel || entity.state
+      : null;
+    const IconComponent = pill.icon ? getIconComponent(pill.icon) || Activity : Activity;
+    const bgColor = pill.bgColor || 'rgba(255, 255, 255, 0.03)';
+    const iconBgColor = pill.iconBgColor || 'rgba(59, 130, 246, 0.1)';
+    const iconColor = pill.iconColor || 'text-[var(--accent-color)]';
+    const labelColor = resolveHeadingColorClass(pill.labelColor);
+    const sublabelColor = pill.sublabelColor || 'text-[var(--text-muted)]';
+    const count = Number(entity.attributes?.statusPillCount || entity.state || 0);
+    const animation = getPillAnimationConfig(pill, { active: count > 0 });
+    const hasVisibleText = !iconOnly && Boolean(label || sublabel);
+    const paddingClass = iconOnly
+      ? 'p-1.5 justify-center'
+      : hasVisibleText
+        ? isMobile
+          ? 'shrink-0 px-1.5 py-0.5 gap-1.5'
+          : 'px-2.5 py-1 gap-2'
+        : isMobile
+          ? 'shrink-0 p-1.5'
+          : 'p-2';
+    const iconPadding = isMobile ? 'p-1' : 'p-1.5';
+    const textSize = isMobile ? 'text-[11px]' : 'text-xs';
+    const badgeSpacingClass = isMobile && badge > 0 ? 'pr-6' : '';
+    const Wrapper = onClick ? 'button' : 'div';
+    const wrapperProps = onClick
+      ? {
+          onClick,
+          className: `relative flex items-center ${paddingClass} ${badgeSpacingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animation.wrapperClass}`,
+          style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
+        }
+      : {
+          className: `relative flex items-center ${paddingClass} ${badgeSpacingClass} rounded-2xl ${animation.wrapperClass}`,
+          style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
+        };
+
+    return (
+      <Wrapper {...wrapperProps}>
+        <div
+          className={`${iconPadding} rounded-xl ${iconColor}`}
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <IconComponent
+            className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} ${animation.iconClass}`}
+            style={animation.iconStyle}
+          />
+        </div>
+        {hasVisibleText && (
+          <div className="flex min-w-0 flex-col items-start">
+            {label && (
+              <span
+                className={`${textSize} text-left leading-tight font-bold ${labelColor} ${textMaxWidthClass} block w-full truncate`}
+                title={label}
+              >
+                {label}
+              </span>
+            )}
+            {sublabel && (
+              <span
+                className={`${textSize} text-left font-medium italic ${sublabelColor} ${textMaxWidthClass} block w-full truncate`}
+                title={sublabel}
+              >
+                {sublabel}
+              </span>
+            )}
+          </div>
+        )}
+        {badge > 0 && (
+          <div
+            data-status-pill-badge
+            className={`absolute ${isMobile ? 'top-1 right-1 h-[18px] min-w-[18px] text-[10px]' : '-top-2 -right-2 h-[22px] min-w-[22px] text-xs'} z-10 flex items-center justify-center rounded-full border border-transparent bg-gray-600 px-1.5 font-bold text-white shadow-sm`}
+          >
+            {badge}
+          </div>
+        )}
+      </Wrapper>
+    );
+  }
+
   // Handle media_player / emby / sonos type differently
   if (pill.type === 'media_player' || pill.type === 'emby' || pill.type === 'sonos') {
     // entity should be an array of media player entities

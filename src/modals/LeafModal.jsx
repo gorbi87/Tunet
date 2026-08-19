@@ -210,9 +210,9 @@ export default function LeafModal({ show, onClose, entities, callService, getS, 
       open={show}
       onClose={onClose}
       titleId={modalTitleId}
-      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
+      overlayClassName="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6"
       overlayStyle={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(0,0,0,0.3)' }}
-      panelClassName="popup-anim relative max-h-[80vh] w-full max-w-5xl overflow-y-auto rounded-3xl border p-6 font-sans backdrop-blur-xl md:rounded-[3rem] md:p-12"
+      panelClassName="popup-anim relative max-h-[calc(100dvh-1rem)] w-full max-w-5xl overflow-y-auto rounded-3xl border p-4 font-sans backdrop-blur-xl sm:max-h-[80vh] sm:p-6 md:rounded-[3rem] md:p-12"
       panelStyle={{
         background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--modal-bg) 100%)',
         borderColor: 'var(--glass-border)',
@@ -221,7 +221,7 @@ export default function LeafModal({ show, onClose, entities, callService, getS, 
     >
       {() => (
         <>
-        <div className="absolute top-6 right-6 z-20 flex gap-3 md:top-10 md:right-10">
+        <div className="absolute top-4 right-4 z-20 flex gap-2 sm:top-6 sm:right-6 sm:gap-3 md:top-10 md:right-10">
           {updateButtonId && (
             <button
               onClick={() => callService('button', 'press', { entity_id: updateButtonId })}
@@ -239,17 +239,17 @@ export default function LeafModal({ show, onClose, entities, callService, getS, 
         </div>
 
         {/* Header Section */}
-        <div className="mb-6 flex items-center gap-4 font-sans">
+        <div className="mb-4 flex items-center gap-3 pr-24 font-sans sm:mb-6 sm:gap-4 sm:pr-0">
           <div
-            className="rounded-2xl p-4 transition-all duration-500"
+            className="rounded-2xl p-3 transition-all duration-500 sm:p-4"
             style={{ backgroundColor: statusBg, color: statusColor }}
           >
-            <Car className="h-8 w-8" />
+            <Car className="h-6 w-6 sm:h-8 sm:w-8" />
           </div>
           <div>
             <h3
               id={modalTitleId}
-              className="text-2xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic"
+              className="text-xl leading-none font-light tracking-tight text-[var(--text-primary)] uppercase italic sm:text-2xl"
             >
               {name || t('car.defaultName')}
             </h3>
@@ -275,10 +275,10 @@ export default function LeafModal({ show, onClose, entities, callService, getS, 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-6 font-sans lg:grid-cols-5">
+        <div className="grid grid-cols-1 items-start gap-3 font-sans sm:gap-6 lg:grid-cols-5">
           {/* Left Column - Map (Span 3) */}
           <div className="lg:col-span-3">
-            <div className="group relative h-[clamp(12rem,24vw,20rem)] w-full overflow-hidden rounded-2xl bg-[var(--glass-bg)]/50 md:h-[clamp(14rem,22vw,24rem)]">
+            <div className="group relative h-36 w-full overflow-hidden rounded-2xl bg-[var(--glass-bg)]/50 sm:h-[clamp(12rem,24vw,20rem)] md:h-[clamp(14rem,22vw,24rem)]">
               {lat && long ? (
                 <>
                   <iframe

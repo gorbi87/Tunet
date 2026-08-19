@@ -22,6 +22,7 @@ function baseProps(overrides = {}) {
   const callService = vi.fn();
   const onOpen = vi.fn();
   const props = {
+    cardId: 'lock.front_door',
     lockId: 'lock.front_door',
     dragProps: {},
     controls: null,
@@ -61,6 +62,18 @@ describe('LockCard', () => {
 
     expect(screen.getByText('Front Door')).toBeInTheDocument();
     expect(screen.getAllByText('Locked').length).toBeGreaterThan(0);
+  });
+
+  it('uses the composite card name when the lock card is renamed', () => {
+    const { props } = baseProps({
+      cardId: 'lock_card_1',
+      customNames: { lock_card_1: 'Door' },
+    });
+
+    render(<LockCard {...props} />);
+
+    expect(screen.getByText('Door')).toBeInTheDocument();
+    expect(screen.queryByText('Front Door')).not.toBeInTheDocument();
   });
 
   it('requires a second tap before unlocking a physical lock', () => {

@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useResponsiveGrid } from '../hooks/useResponsiveGrid';
+import {
+  getEffectiveGridColumnsForWidth,
+  useResponsiveGrid,
+} from '../hooks/useResponsiveGrid';
 import { MOBILE_BREAKPOINT } from '../config/constants';
 
 // ── Window resize helper ─────────────────────────────────────────────────
@@ -58,6 +61,11 @@ describe('useResponsiveGrid › column count', () => {
 });
 
 describe('useResponsiveGrid › dynamic columns mode', () => {
+  it('reports the same effective mobile column count used by the settings menu', () => {
+    expect(getEffectiveGridColumnsForWidth(390, 2, true)).toBe(1);
+    expect(getEffectiveGridColumnsForWidth(390, 2, false)).toBe(2);
+  });
+
   it('reduces 4 selected columns to 3 around tablet portrait widths', () => {
     fireResize(820);
     const { result } = renderHook(() => useResponsiveGrid(4, true));

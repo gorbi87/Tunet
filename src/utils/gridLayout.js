@@ -106,16 +106,68 @@ export const getCardGridSpan = (
  * @param {Object}   cardSettings        Full card-settings map
  * @returns {number} 1–4
  */
-export const getCardColSpan = (cardId, getCardSettingsKey, cardSettings) => {
-  if (cardId.startsWith('light_panel_card_')) return Number.MAX_SAFE_INTEGER;
-  if (cardId.startsWith('cover_panel_card_')) return Number.MAX_SAFE_INTEGER;
-  if (cardId.startsWith('security_panel_card_')) return Number.MAX_SAFE_INTEGER;
-  if (cardId.startsWith('frigate_events_card_')) return Number.MAX_SAFE_INTEGER;
+const MOBILE_GRID_HORIZONTAL_PADDING = 16;
+
+const getAutomaticMobileMinWidth = (cardId, settings) => {
+  if (settings.size === 'small') return 150;
+  if (
+    cardId.startsWith('media_player.') ||
+    cardId.startsWith('media_group_') ||
+    cardId.startsWith('sonos_group_') ||
+    cardId.startsWith('climate_card_')
+  ) {
+    return 280;
+  }
+  if (
+    cardId.startsWith('weather_temp_') ||
+    cardId.startsWith('cost_card_') ||
+    cardId.startsWith('nordpool_card_')
+  ) {
+    return 160;
+  }
+  return null;
+};
+
+export const supportsMobileCardWidth = (cardId) =>
+  typeof cardId === 'string' && getAutomaticMobileMinWidth(cardId, {}) !== null;
+
+export const getCardColSpan = (
+  cardId,
+  getCardSettingsKey,
+  cardSettings,
+  { isMobile = false, gridColumns = 1, viewportWidth = 0, gridGapH = 0 } = {}
+) => {
+  // Custom full-width panel cards always span the full grid
+  if (
+    cardId.startsWith('light_panel_card_') ||
+    cardId.startsWith('cover_panel_card_') ||
+    cardId.startsWith('security_panel_card_') ||
+    cardId.startsWith('frigate_events_card_')
+  ) return Number.MAX_SAFE_INTEGER;
+
   const settings = cardSettings[getCardSettingsKey(cardId)] || cardSettings[cardId] || {};
+
   // Divider spacers always span full width so nothing can slip next to them
   if (cardId.startsWith('spacer_card_') && settings.variant === 'divider') return Number.MAX_SAFE_INTEGER;
-  if (settings.colSpan === 'full') return Number.MAX_SAFE_INTEGER;
-  return settings.colSpan || 1;
+
+  const configuredColSpan =
+    settings.colSpan === 'full' ? Number.MAX_SAFE_INTEGER : settings.colSpan || 1;
+
+  if (!isMobile || !supportsMobileCardWidth(cardId)) return configuredColSpan;
+  if (settings.mobileWidth === 'compact') return 1;
+  if (settings.mobileWidth === 'full') return Number.MAX_SAFE_INTEGER;
+  if (configuredColSpan === Number.MAX_SAFE_INTEGER) return configuredColSpan;
+
+  const minWidth = getAutomaticMobileMinWidth(cardId, settings);
+  const columns = Math.max(1, gridColumns);
+  const availableWidth = Math.max(0, viewportWidth - MOBILE_GRID_HORIZONTAL_PADDING);
+  if (!availableWidth) return configuredColSpan;
+
+  const columnWidth = (availableWidth - Math.max(0, columns - 1) * gridGapH) / columns;
+  if (columnWidth <= 0) return configuredColSpan;
+
+  const automaticSpan = Math.ceil((minWidth + gridGapH) / (columnWidth + gridGapH));
+  return Math.max(configuredColSpan, Math.min(columns, automaticSpan));
 };
 
 /**

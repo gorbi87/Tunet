@@ -31,6 +31,7 @@ export const MediaPlayerCard = memo(/** @param {any} props */ ({
   isMediaActive,
   onOpen,
   isMobile,
+  isFullWidthMobile,
   t,
   cardSettings,
   settingsKey,
@@ -81,6 +82,7 @@ export const MediaPlayerCard = memo(/** @param {any} props */ ({
   const canTogglePower = Boolean(powerAction);
   const isPowerOffAction = powerAction === 'turn_off';
   const isDenseMobile = Boolean(isMobile);
+  const useWideMobileControls = Boolean(isMobile && isFullWidthMobile);
 
   const settings =
     cardSettings && settingsKey ? cardSettings[settingsKey] || cardSettings[cardId] || {} : {};
@@ -218,27 +220,27 @@ export const MediaPlayerCard = memo(/** @param {any} props */ ({
           )}
         </div>
       </div>
-      <div className={`relative z-10 flex items-center justify-center ${isDenseMobile ? 'mt-3 gap-3 px-0' : 'mt-1 gap-[clamp(0.125rem,1.5vw,1.5rem)] px-0.5 sm:mt-2 sm:px-0'}`}>
+      <div className={`relative z-10 flex items-center justify-center ${useWideMobileControls ? 'mt-2 gap-5 px-1' : isDenseMobile ? 'mt-3 gap-3 px-0' : 'mt-1 gap-[clamp(0.125rem,1.5vw,1.5rem)] px-0.5 sm:mt-2 sm:px-0'}`}>
         <button
           onClick={(e) => {
             e.stopPropagation();
             callService('media_player', 'media_previous_track', { entity_id: mpId });
           }}
-          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
+          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${useWideMobileControls ? 'flex h-11 w-11 items-center justify-center rounded-full bg-white/10 p-0 backdrop-blur-sm' : isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
         >
-          <SkipBack className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
+          <SkipBack className={useWideMobileControls ? 'h-6 w-6' : isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
             callService('media_player', 'media_play_pause', { entity_id: mpId });
           }}
-          className={`flex shrink-0 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 ${isCoverMode ? 'border border-white/30 bg-white/20 text-white backdrop-blur-md' : 'bg-white text-black'} ${isDenseMobile ? 'h-11 w-11' : 'h-[clamp(1.9rem,5.8vw,3rem)] w-[clamp(1.9rem,5.8vw,3rem)]'}`}
+          className={`flex shrink-0 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 ${isCoverMode ? 'border border-white/30 bg-white/20 text-white backdrop-blur-md' : 'bg-white text-black'} ${useWideMobileControls ? 'h-14 w-14' : isDenseMobile ? 'h-11 w-11' : 'h-[clamp(1.9rem,5.8vw,3rem)] w-[clamp(1.9rem,5.8vw,3rem)]'}`}
         >
           {isPlaying ? (
-            <Pause className={isDenseMobile ? 'h-5 w-5 fill-current' : 'h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
+            <Pause className={useWideMobileControls ? 'h-6 w-6 fill-current' : isDenseMobile ? 'h-5 w-5 fill-current' : 'h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
           ) : (
-            <Play className={isDenseMobile ? 'ml-0.5 h-5 w-5 fill-current' : 'ml-0.5 h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
+            <Play className={useWideMobileControls ? 'ml-0.5 h-6 w-6 fill-current' : isDenseMobile ? 'ml-0.5 h-5 w-5 fill-current' : 'ml-0.5 h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
           )}
         </button>
         <button
@@ -246,9 +248,9 @@ export const MediaPlayerCard = memo(/** @param {any} props */ ({
             e.stopPropagation();
             callService('media_player', 'media_next_track', { entity_id: mpId });
           }}
-          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
+          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${useWideMobileControls ? 'flex h-11 w-11 items-center justify-center rounded-full bg-white/10 p-0 backdrop-blur-sm' : isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
         >
-          <SkipForward className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
+          <SkipForward className={useWideMobileControls ? 'h-6 w-6' : isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
         </button>
         {canTogglePower && (
           <button
@@ -256,10 +258,10 @@ export const MediaPlayerCard = memo(/** @param {any} props */ ({
               e.stopPropagation();
               callService('media_player', powerAction, { entity_id: mpId });
             }}
-            className={`${picture || isCoverMode ? (isPowerOffAction ? 'text-[var(--status-error-fg)] hover:text-white' : 'text-[var(--status-success-fg)] hover:text-white') : isPowerOffAction ? 'text-[var(--status-error-fg)] hover:opacity-80' : 'text-[var(--status-success-fg)] hover:opacity-80'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
+            className={`${picture || isCoverMode ? (isPowerOffAction ? 'text-[var(--status-error-fg)] hover:text-white' : 'text-[var(--status-success-fg)] hover:text-white') : isPowerOffAction ? 'text-[var(--status-error-fg)] hover:opacity-80' : 'text-[var(--status-success-fg)] hover:opacity-80'} shrink-0 ${useWideMobileControls ? 'flex h-11 w-11 items-center justify-center rounded-full bg-white/10 p-0 backdrop-blur-sm' : isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
             title={isPowerOffAction ? t('status.off') : t('status.on')}
           >
-            <Power className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
+            <Power className={useWideMobileControls ? 'h-6 w-6' : isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
           </button>
         )}
       </div>
@@ -287,6 +289,7 @@ export const MediaGroupCard = memo(/** @param {any} props */ ({
   saveCardSetting,
   onOpen,
   isMobile,
+  isFullWidthMobile,
   t,
 }) => {
   const groupSettings = cardSettings[settingsKey] || {};
@@ -338,6 +341,7 @@ export const MediaGroupCard = memo(/** @param {any} props */ ({
   const canTogglePower = Boolean(powerAction);
   const isPowerOffAction = powerAction === 'turn_off';
   const isDenseMobile = Boolean(isMobile);
+  const useWideMobileControls = Boolean(isMobile && isFullWidthMobile);
 
   const cyclePlayers = (e) => {
     e.stopPropagation();
@@ -508,27 +512,27 @@ export const MediaGroupCard = memo(/** @param {any} props */ ({
           )}
         </div>
       </div>
-      <div className={`relative z-10 flex items-center justify-center ${isDenseMobile ? 'mt-3 gap-3 px-0' : 'mt-1 gap-[clamp(0.125rem,1.5vw,1.5rem)] px-0.5 sm:mt-2 sm:px-0'}`}>
+      <div className={`relative z-10 flex items-center justify-center ${useWideMobileControls ? 'mt-2 gap-5 px-1' : isDenseMobile ? 'mt-3 gap-3 px-0' : 'mt-1 gap-[clamp(0.125rem,1.5vw,1.5rem)] px-0.5 sm:mt-2 sm:px-0'}`}>
         <button
           onClick={(e) => {
             e.stopPropagation();
             callService('media_player', 'media_previous_track', { entity_id: mpId });
           }}
-          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
+          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${useWideMobileControls ? 'flex h-11 w-11 items-center justify-center rounded-full bg-white/10 p-0 backdrop-blur-sm' : isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
         >
-          <SkipBack className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
+          <SkipBack className={useWideMobileControls ? 'h-6 w-6' : isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
             callService('media_player', 'media_play_pause', { entity_id: mpId });
           }}
-          className={`flex shrink-0 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 ${isCoverMode ? 'border border-white/30 bg-white/20 text-white backdrop-blur-md' : 'bg-white text-black'} ${isDenseMobile ? 'h-11 w-11' : 'h-[clamp(1.9rem,5.8vw,3rem)] w-[clamp(1.9rem,5.8vw,3rem)]'}`}
+          className={`flex shrink-0 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 ${isCoverMode ? 'border border-white/30 bg-white/20 text-white backdrop-blur-md' : 'bg-white text-black'} ${useWideMobileControls ? 'h-14 w-14' : isDenseMobile ? 'h-11 w-11' : 'h-[clamp(1.9rem,5.8vw,3rem)] w-[clamp(1.9rem,5.8vw,3rem)]'}`}
         >
           {isPlaying ? (
-            <Pause className={isDenseMobile ? 'h-5 w-5 fill-current' : 'h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
+            <Pause className={useWideMobileControls ? 'h-6 w-6 fill-current' : isDenseMobile ? 'h-5 w-5 fill-current' : 'h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
           ) : (
-            <Play className={isDenseMobile ? 'ml-0.5 h-5 w-5 fill-current' : 'ml-0.5 h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
+            <Play className={useWideMobileControls ? 'ml-0.5 h-6 w-6 fill-current' : isDenseMobile ? 'ml-0.5 h-5 w-5 fill-current' : 'ml-0.5 h-[clamp(0.85rem,2vw,1.25rem)] w-[clamp(0.85rem,2vw,1.25rem)] fill-current'} />
           )}
         </button>
         <button
@@ -536,9 +540,9 @@ export const MediaGroupCard = memo(/** @param {any} props */ ({
             e.stopPropagation();
             callService('media_player', 'media_next_track', { entity_id: mpId });
           }}
-          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
+          className={`${picture || isCoverMode ? 'text-white/80 hover:text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} shrink-0 ${useWideMobileControls ? 'flex h-11 w-11 items-center justify-center rounded-full bg-white/10 p-0 backdrop-blur-sm' : isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
         >
-          <SkipForward className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
+          <SkipForward className={useWideMobileControls ? 'h-6 w-6' : isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
         </button>
         {canTogglePower && (
           <button
@@ -546,10 +550,10 @@ export const MediaGroupCard = memo(/** @param {any} props */ ({
               e.stopPropagation();
               callService('media_player', powerAction, { entity_id: mpId });
             }}
-            className={`${picture || isCoverMode ? (isPowerOffAction ? 'text-[var(--status-error-fg)] hover:text-white' : 'text-[var(--status-success-fg)] hover:text-white') : isPowerOffAction ? 'text-[var(--status-error-fg)] hover:opacity-80' : 'text-[var(--status-success-fg)] hover:opacity-80'} shrink-0 ${isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
+            className={`${picture || isCoverMode ? (isPowerOffAction ? 'text-[var(--status-error-fg)] hover:text-white' : 'text-[var(--status-success-fg)] hover:text-white') : isPowerOffAction ? 'text-[var(--status-error-fg)] hover:opacity-80' : 'text-[var(--status-success-fg)] hover:opacity-80'} shrink-0 ${useWideMobileControls ? 'flex h-11 w-11 items-center justify-center rounded-full bg-white/10 p-0 backdrop-blur-sm' : isDenseMobile ? 'p-2.5' : 'p-[clamp(0.15rem,0.9vw,0.5rem)]'} transition-colors active:scale-90`}
             title={isPowerOffAction ? t('status.off') : t('status.on')}
           >
-            <Power className={isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
+            <Power className={useWideMobileControls ? 'h-6 w-6' : isDenseMobile ? 'h-5 w-5' : 'h-[clamp(0.85rem,2.2vw,1.5rem)] w-[clamp(0.85rem,2.2vw,1.5rem)]'} />
           </button>
         )}
       </div>

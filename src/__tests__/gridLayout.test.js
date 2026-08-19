@@ -168,4 +168,52 @@ describe('getCardColSpan', () => {
     const settings = { spacer_card_1: { colSpan: 3 } };
     expect(getCardColSpan('spacer_card_1', identity, settings)).toBe(3);
   });
+
+  it('automatically gives wide mobile cards enough columns to remain readable', () => {
+    expect(
+      getCardColSpan(
+        'media_player.living_room',
+        identity,
+        {},
+        {
+          isMobile: true,
+          gridColumns: 2,
+          viewportWidth: 390,
+          gridGapH: 12,
+        }
+      )
+    ).toBe(2);
+    expect(
+      getCardColSpan(
+        'weather_temp_home',
+        identity,
+        {},
+        {
+          isMobile: true,
+          gridColumns: 2,
+          viewportWidth: 390,
+          gridGapH: 12,
+        }
+      )
+    ).toBe(1);
+  });
+
+  it('allows compact and full-width mobile overrides without changing desktop width', () => {
+    const settings = {
+      'media_player.living_room': { mobileWidth: 'compact' },
+      climate_card_bedroom: { mobileWidth: 'full' },
+    };
+    const mobileOptions = {
+      isMobile: true,
+      gridColumns: 2,
+      viewportWidth: 390,
+      gridGapH: 12,
+    };
+
+    expect(getCardColSpan('media_player.living_room', identity, settings, mobileOptions)).toBe(1);
+    expect(getCardColSpan('climate_card_bedroom', identity, settings, mobileOptions)).toBe(
+      Number.MAX_SAFE_INTEGER
+    );
+    expect(getCardColSpan('climate_card_bedroom', identity, settings)).toBe(1);
+  });
 });

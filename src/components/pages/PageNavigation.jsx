@@ -242,7 +242,7 @@ export default function PageNavigation({
                 movePage(sourceId, page.id);
               }}
               onDragEnd={() => setDragOverId(null)}
-              className={`flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-[10px] font-bold tracking-wide whitespace-nowrap transition-all sm:gap-2 sm:rounded-full sm:px-5 sm:py-2.5 sm:text-xs ${
+              className={`flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-[11px] font-bold tracking-wide whitespace-nowrap transition-all sm:gap-2 sm:rounded-full sm:px-5 sm:py-2.5 sm:text-xs ${
                 activePage === page.id
                   ? 'border-[var(--glass-border)] bg-[var(--glass-bg-hover)] text-[var(--text-primary)]'
                   : 'border-transparent bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'
@@ -261,7 +261,7 @@ export default function PageNavigation({
           <button
             type="button"
             onClick={toggleManager}
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase transition-all sm:px-4 sm:py-2.5 sm:text-xs ${
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-[11px] font-bold tracking-widest whitespace-nowrap uppercase transition-all sm:px-4 sm:py-2.5 sm:text-xs ${
               showManager
                 ? 'border-[var(--accent-color)] bg-[var(--glass-bg-hover)] text-[var(--accent-color)]'
                 : 'border-dashed border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)]'
