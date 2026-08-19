@@ -1359,3 +1359,8 @@
 ### Fixed
 - Frigate Ereignisse: Clips können wieder abgespielt werden — CSP `media-src` fehlte, wodurch blob:-URLs für `<video>` stillschweigend geblockt wurden und stattdessen der Snapshot angezeigt wurde
 - Server: `trust proxy` wiederhergestellt (ging beim Upstream-Merge verloren) — Rate-Limiting nutzt wieder die echte Client-IP statt die Ingress-Proxy-IP
+
+## [1.20.15] — 2026-08-19
+
+### Fixed
+- Mobile: 2-Spalten-Layout wiederhergestellt — fälschlicherweise eingeführter Breakpoint `< 480px → 1 Spalte` in `getAutoGridColumnsForWidth` hat alle Smartphones (375–430px) auf 1 Spalte erzwungen; revertiert, Test-Erwartung korrigiert

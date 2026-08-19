@@ -62,7 +62,7 @@ describe('useResponsiveGrid › column count', () => {
 
 describe('useResponsiveGrid › dynamic columns mode', () => {
   it('reports the same effective mobile column count used by the settings menu', () => {
-    expect(getEffectiveGridColumnsForWidth(390, 2, true)).toBe(1);
+    expect(getEffectiveGridColumnsForWidth(390, 2, true)).toBe(2);
     expect(getEffectiveGridColumnsForWidth(390, 2, false)).toBe(2);
   });
 

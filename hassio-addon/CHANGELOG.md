@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.15
+
+### Fixed
+- Mobile: 2-Spalten-Layout wiederhergestellt — fehlerhafter Breakpoint `< 480px → 1 Spalte` in der Auto-Spalten-Berechnung hat alle Smartphones auf 1 Spalte gezwungen; revertiert
+
 ## 1.20.14
 
 ### Fixed
