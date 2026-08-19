@@ -181,4 +181,38 @@ describe('StatusPill', () => {
     expect(screen.getByText('Lights on')).toBeInTheDocument();
     expect(screen.getAllByText('2')).toHaveLength(2);
   });
+
+  it('keeps the media count badge inside the pill on mobile', () => {
+    const { container } = render(
+      <StatusPill
+        pill={{
+          ...basePill,
+          type: 'sonos',
+          label: 'Flowers',
+          conditionEnabled: false,
+          showCount: true,
+        }}
+        entity={[
+          {
+            entity_id: 'media_player.living_room',
+            state: 'playing',
+            attributes: { media_title: 'Flowers', media_artist: 'Miley Cyrus' },
+          },
+        ]}
+        badge={1}
+        isMobile
+        isMediaActive={(entity) => entity.state === 'playing'}
+        getA={(_id, attribute) =>
+          ({ media_title: 'Flowers', media_artist: 'Miley Cyrus' })[attribute]
+        }
+        getEntityImageUrl={() => null}
+        t={(key) => key}
+      />
+    );
+
+    const badge = container.querySelector('[data-status-pill-badge]');
+    expect(badge).toHaveClass('top-1', 'right-1');
+    expect(badge).not.toHaveClass('-top-2', '-right-2');
+    expect(container.firstElementChild).toHaveClass('pr-6');
+  });
 });

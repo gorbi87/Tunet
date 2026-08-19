@@ -38,10 +38,14 @@ export function useResponsiveGrid(gridColumns, dynamicColumns = false) {
   const [gridColCount, setGridColCount] = useState(1);
   const [isCompactCards, setIsCompactCards] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window === 'undefined' ? 0 : window.innerWidth
+  );
 
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
+      setViewportWidth(w);
       setIsMobile(w < MOBILE_BREAKPOINT);
       setGridColCount(getEffectiveGridColumnsForWidth(w, gridColumns, dynamicColumns));
       setIsCompactCards(w >= 480 && w < 640);
@@ -51,5 +55,5 @@ export function useResponsiveGrid(gridColumns, dynamicColumns = false) {
     return () => window.removeEventListener('resize', update);
   }, [gridColumns, dynamicColumns]);
 
-  return { gridColCount, isCompactCards, isMobile };
+  return { gridColCount, isCompactCards, isMobile, viewportWidth };
 }

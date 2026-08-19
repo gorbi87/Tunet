@@ -1,37 +1,49 @@
-# Design QA — mobile settings placement
+# Design QA — responsive settings sidebars
 
-- Source visual truth: `C:/Hassen/.codex-remote-attachments/01a006ac-8f67-77f2-8b57-d526b3348978/ee89cc7c-5e2b-4d83-9d0d-a378d8433c6f/1-Photo-1.jpg`
-- Implementation: local Vite preview at `http://192.168.10.150:5173/#/page/home`
-- Implementation screenshot: captured and inspected in the Codex in-app browser; not persisted to the workspace
-- Viewport: 390 × 844 CSS px, device scale factor 1
-- Source pixels: 575 × 1280
-- Implementation pixels: 390 × 844
-- State: mobile dashboard without a loaded Home Assistant profile; onboarding modal present
+- Source visual truth: `C:/Users/Øyvind/.codex/generated_images/01a009f9-e3e9-76b1-89c3-98b9765273cb/exec-debce9c1-0f37-4f78-8126-c699f908309f.png`
+- Desktop implementation screenshot: `C:/Users/YVIND~1/AppData/Local/Temp/tunet-sidebar-desktop-appearance-final.png`
+- Mobile implementation screenshot: `C:/Users/YVIND~1/AppData/Local/Temp/tunet-sidebar-mobile-appearance-final.png`
+- Combined comparison evidence: `C:/Users/YVIND~1/AppData/Local/Temp/tunet-sidebar-design-comparison.png`
+- Desktop viewport and pixels: 1440 × 1024 CSS px, 1440 × 1024 image px, device scale factor 1
+- Mobile viewport and pixels: 390 × 844 CSS px, 390 × 844 image px, device scale factor 1
+- Source pixels: 1536 × 1056
+- State: dark theme, Nynorsk, Appearance sidebar open; equivalent desktop and mobile states
 
-## Evidence
+## Full-view comparison evidence
 
-- The mobile settings trigger is the only settings trigger in the rendered DOM.
-- Its measured bounds are 44 × 44 CSS px at x=338, leaving an 8 px right margin.
-- The settings menu still exposes Edit, Appearance, Layout, Header, and System.
-- Unit coverage confirms that the navigation toolbar hides its settings copy on mobile and retains it on desktop/tablet.
+The combined comparison places the selected concept beside the desktop implementation and the focused 390 × 844 mobile implementation. The production UI preserves the concept's right-side desktop inspector, full-width mobile surface, sticky title and Done action, three-destination navigation, quiet divided rows, background previews, blue selection state, and dark glass treatment.
 
-## Fidelity surfaces
+## Focused region comparison evidence
 
-- Fonts and typography: unchanged by this change.
-- Spacing and layout rhythm: the settings trigger is pinned to the right of the mobile person row; exact spacing beside real person cards could not be compared because the local preview had no HA profile.
-- Colors and visual tokens: existing settings control tokens are preserved.
-- Image quality and assets: person images are unchanged.
-- Copy and content: unchanged.
+The dedicated mobile capture is the focused comparison because the concept's most important constraint is one-handed mobile use. Header, navigation, setting rows, labels, chevrons, preview grid, safe edge spacing, scroll behavior, and 44 px minimum interactive targets were inspected at 1:1 CSS size.
+
+## Required fidelity surfaces
+
+- Fonts and typography: hierarchy, weights, line heights, truncation, and label wrapping are consistent with the source. The implementation uses the user's selected app font, so exact letterforms intentionally remain configurable.
+- Spacing and layout rhythm: the 420 px desktop rail, full-width mobile panel, 66–72 px header, 70–78 px navigation, 64 px inspector rows, section separators, and mobile-safe horizontal padding match the selected direction.
+- Colors and visual tokens: existing Tunet dark/glass variables drive the surface, border, accent, hover, and focus colors. The implementation stays slightly closer to the user's current near-black theme than the concept's navy presentation canvas.
+- Image quality and asset fidelity: the concept contains no required brand or photographic assets. Background mode previews are rendered from the real Tunet background modes and remain crisp at both sizes.
+- Copy and content: the chosen Nynorsk labels are present, including `Grunnstil`, `Utsjånad`, `Oppsett`, `Topptekst`, `Bakgrunn`, and `Ferdig`. Existing settings are preserved rather than replaced with mock-only values.
 
 ## Findings
 
-- No code-level or measured responsive issue was found in the new mobile placement.
-- Full visual comparison is blocked because the implementation preview cannot reproduce the authenticated dashboard state shown in the source screenshot.
-- Tablet geometry could not be captured reliably while the onboarding modal was active; unit coverage confirms the desktop/tablet branch remains unchanged.
+- No actionable P0, P1, or P2 mismatch remains.
+- P3: the concept shows four background choices while Tunet has six real modes. The implementation uses a 3 × 2 grid to retain all existing functionality.
+- P3: card scale appears under Oppsett rather than Utsjånad because the existing information architecture treats it as layout. This avoids moving or duplicating a persisted setting.
+
+## Interaction verification
+
+- Opened Appearance from the floating settings menu.
+- Switched Appearance → Layout → Header using the new navigation.
+- Verified selected-tab semantics and the Done action.
+- Verified collapsed sections do not expose hidden controls to keyboard or accessibility navigation.
+- Verified the sidebar measures 390 px wide at the 390 × 844 breakpoint.
+- Chromium mobile E2E passed for sidebar navigation and closing.
 
 ## Comparison history
 
-- Initial implementation: one 44 × 44 settings trigger at the far right of the 390 px mobile viewport.
-- No P0, P1, or P2 issue was found in the measurable mobile placement.
+- First visual pass: Done inherited the old circular modal-button surface, default sliders were too heavy, and collapsed sections left hidden controls focusable.
+- Fixes: isolated the Done text action, scoped slim slider styling to sidebars, and conditionally removed collapsed content from interaction.
+- Post-fix evidence: final desktop and mobile captures listed above show the corrected header, slim sliders, stable navigation, and clean collapsed states.
 
-final result: blocked
+final result: passed

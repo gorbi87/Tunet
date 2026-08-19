@@ -296,15 +296,16 @@ const StatusPill = memo(
           : 'p-2';
       const iconPadding = isMobile ? 'p-1' : 'p-1.5';
       const textSize = isMobile ? 'text-[11px]' : 'text-xs';
+      const badgeSpacingClass = isMobile && badge > 0 ? 'pr-6' : '';
       const Wrapper = onClick ? 'button' : 'div';
       const wrapperProps = onClick
         ? {
             onClick,
-            className: `relative flex items-center ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animation.wrapperClass}`,
+            className: `relative flex items-center ${paddingClass} ${badgeSpacingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animation.wrapperClass}`,
             style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
           }
         : {
-            className: `relative flex items-center ${paddingClass} rounded-2xl ${animation.wrapperClass}`,
+            className: `relative flex items-center ${paddingClass} ${badgeSpacingClass} rounded-2xl ${animation.wrapperClass}`,
             style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
           };
 
@@ -341,7 +342,8 @@ const StatusPill = memo(
           )}
           {badge > 0 && (
             <div
-              className={`absolute -top-2 -right-2 ${isMobile ? 'h-[18px] min-w-[18px] text-[10px]' : 'h-[22px] min-w-[22px] text-xs'} z-10 flex items-center justify-center rounded-full border border-transparent bg-gray-600 px-1.5 font-bold text-white shadow-sm`}
+              data-status-pill-badge
+              className={`absolute ${isMobile ? 'top-1 right-1 h-[18px] min-w-[18px] text-[10px]' : '-top-2 -right-2 h-[22px] min-w-[22px] text-xs'} z-10 flex items-center justify-center rounded-full border border-transparent bg-gray-600 px-1.5 font-bold text-white shadow-sm`}
             >
               {badge}
             </div>
@@ -489,17 +491,18 @@ const StatusPill = memo(
           : 'p-2';
       const iconPadding = isMobile ? 'p-1' : 'p-1.5';
       const textSize = isMobile ? 'text-[11px]' : 'text-xs';
+      const badgeSpacingClass = isMobile && badge > 0 ? 'pr-6' : '';
 
       const Wrapper = pill.clickable && onClick ? 'button' : 'div';
       const wrapperProps =
         pill.clickable && onClick
           ? {
               onClick,
-              className: `relative flex items-center ${paddingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animation.wrapperClass}`,
+              className: `relative flex items-center ${paddingClass} ${badgeSpacingClass} rounded-2xl transition-all hover:bg-[var(--glass-bg-hover)] active:scale-95 ${animation.wrapperClass}`,
               style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
             }
           : {
-              className: `relative flex items-center ${paddingClass} rounded-2xl ${animation.wrapperClass}`,
+              className: `relative flex items-center ${paddingClass} ${badgeSpacingClass} rounded-2xl ${animation.wrapperClass}`,
               style: mergeStyle({ backgroundColor: bgColor }, animation.wrapperStyle),
             };
 
@@ -549,7 +552,8 @@ const StatusPill = memo(
           )}
           {badge > 0 && (
             <div
-              className={`absolute -top-2 -right-2 ${isMobile ? 'h-[18px] min-w-[18px] text-[10px]' : 'h-[22px] min-w-[22px] text-xs'} z-10 flex items-center justify-center rounded-full border border-transparent bg-gray-600 px-1.5 font-bold text-white shadow-sm`}
+              data-status-pill-badge
+              className={`absolute ${isMobile ? 'top-1 right-1 h-[18px] min-w-[18px] text-[10px]' : '-top-2 -right-2 h-[22px] min-w-[22px] text-xs'} z-10 flex items-center justify-center rounded-full border border-transparent bg-gray-600 px-1.5 font-bold text-white shadow-sm`}
             >
               {badge}
             </div>

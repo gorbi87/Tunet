@@ -246,7 +246,7 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
   // Use page-specific gridColumns if set, otherwise fall back to global
   const pageGridColumns = pageSettings[activePage]?.gridColumns;
   const effectiveGridColumns = Number.isFinite(pageGridColumns) ? pageGridColumns : gridColumns;
-  const { gridColCount, isCompactCards, isMobile } = useResponsiveGrid(
+  const { gridColCount, isCompactCards, isMobile, viewportWidth } = useResponsiveGrid(
     effectiveGridColumns,
     dynamicGridColumns
   );
@@ -520,6 +520,8 @@ export function AppContent({ showOnboarding, setShowOnboarding }) {
     hiddenCards,
     isCardHiddenByLogic,
     gridColCount,
+    viewportWidth,
+    gridGapH,
     gridGapV,
     cardSettings,
     getCardSettingsKey,

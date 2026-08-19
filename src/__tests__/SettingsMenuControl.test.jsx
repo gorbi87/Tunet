@@ -25,7 +25,7 @@ describe('SettingsMenuControl', () => {
     expect(trigger).toHaveClass('h-11', 'w-11');
 
     fireEvent.click(trigger);
-    fireEvent.click(screen.getByRole('button', { name: 'menu.edit' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'menu.edit' }));
 
     expect(props.onToggleEdit).toHaveBeenCalledOnce();
   });
@@ -40,5 +40,31 @@ describe('SettingsMenuControl', () => {
 
     expect(props.setShowConfigModal).toHaveBeenCalledWith(true);
     expect(props.setConfigTab).toHaveBeenCalledWith('connection');
+  });
+
+  it('uses the larger fixed trigger for the floating mobile variant', () => {
+    render(<SettingsMenuControl {...makeProps()} floating onAddCard={vi.fn()} />);
+
+    expect(screen.getByTestId('settings-menu-control')).toHaveClass('fixed');
+    expect(screen.getByTestId('settings-dropdown-trigger')).toHaveClass(
+      'h-14',
+      'w-14',
+      'rounded-2xl',
+      'bg-[var(--accent-color)]'
+    );
+    expect(screen.getByTestId('settings-dropdown-trigger')).not.toHaveClass('rounded-full');
+  });
+
+  it('turns the floating trigger into the Done action while editing', () => {
+    const props = makeProps({ editMode: true });
+    render(<SettingsMenuControl {...props} floating onAddCard={vi.fn()} />);
+
+    const doneButton = screen.getByTestId('settings-dropdown-trigger');
+    expect(doneButton).toHaveAccessibleName('nav.done');
+    expect(doneButton).toHaveClass('rounded-2xl', 'bg-[var(--status-success-fg)]');
+    expect(screen.queryByTestId('settings-mobile-done')).not.toBeInTheDocument();
+
+    fireEvent.click(doneButton);
+    expect(props.onToggleEdit).toHaveBeenCalledOnce();
   });
 });

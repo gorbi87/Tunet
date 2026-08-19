@@ -29,8 +29,12 @@ vi.mock('../layouts/EditToolbar', () => ({
 }));
 
 vi.mock('../layouts/SettingsMenuControl', () => ({
-  default: ({ isMobile }) => (
-    <div data-mobile={String(isMobile)} data-testid="settings-menu-control" />
+  default: ({ isMobile, floating }) => (
+    <div
+      data-floating={String(floating)}
+      data-mobile={String(isMobile)}
+      data-testid="settings-menu-control"
+    />
   ),
 }));
 
@@ -123,11 +127,24 @@ describe('DashboardLayout cards-only mode', () => {
     expect(screen.getByTestId('edit-toolbar')).toHaveAttribute('data-settings-visible', 'true');
   });
 
-  it('moves the settings control to the person row on mobile', () => {
+  it('moves the settings control to a floating mobile action menu', () => {
     renderLayout({ isMobile: true });
 
     expect(screen.getByTestId('settings-menu-control')).toHaveAttribute('data-mobile', 'true');
-    expect(screen.getByTestId('edit-toolbar')).toHaveAttribute('data-settings-visible', 'false');
+    expect(screen.getByTestId('settings-menu-control')).toHaveAttribute('data-floating', 'true');
+    expect(screen.queryByTestId('edit-toolbar')).not.toBeInTheDocument();
+  });
+
+  it('adds bottom clearance only on mobile', () => {
+    const { rerender } = renderLayout({ isMobile: true });
+
+    expect(screen.getByRole('main', { name: 'Dashboard' })).toHaveStyle({
+      paddingBottom: 'calc(7rem + env(safe-area-inset-bottom))',
+    });
+
+    rerender(<DashboardLayout {...baseProps} isMobile={false} />);
+
+    expect(screen.getByRole('main', { name: 'Dashboard' }).style.paddingBottom).toBe('');
   });
 
   it('hides normal chrome but keeps cards and recovery surfaces available', () => {

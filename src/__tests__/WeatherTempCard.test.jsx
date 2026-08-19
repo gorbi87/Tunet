@@ -18,7 +18,7 @@ vi.mock('../components/effects/WeatherEffects', () => ({
 }));
 
 describe('WeatherTempCard', () => {
-  it('pins the large weather icon farther into the mobile top-left corner', () => {
+  it('aligns the large weather icon with other dashboard icons on mobile', () => {
     render(
       <WeatherTempCard
         cardId="weather.home"
@@ -26,7 +26,7 @@ describe('WeatherTempCard', () => {
         getControls={() => null}
         cardStyle={{}}
         settingsKey="weather_home"
-        cardSettings={{ weather_home: { weatherId: 'weather.home' } }}
+        cardSettings={{ weather_home: { weatherId: 'weather.home', subtitle: 'Rivenes' } }}
         entities={{
           'weather.home': {
             state: 'sunny',
@@ -39,16 +39,14 @@ describe('WeatherTempCard', () => {
         outsideTempId={null}
         weatherEntityId="weather.home"
         editMode={false}
+        isMobile
         onOpen={vi.fn()}
         t={(key) => (key === 'weather.condition.sunny' ? 'Sol' : key)}
       />
     );
 
-    expect(screen.getByAltText('Sol').parentElement).toHaveClass(
-      '-mt-5',
-      '-ml-5',
-      'sm:-mt-2',
-      'sm:-ml-2'
-    );
+    expect(screen.getByAltText('Sol').parentElement).toHaveClass('-mt-1', '-ml-1', 'h-12', 'w-12');
+    expect(screen.getByText('Rivenes')).toHaveClass('line-clamp-2', 'text-left');
+    expect(screen.getByText('Rivenes')).not.toHaveClass('truncate');
   });
 });

@@ -13,6 +13,7 @@ function getLockStateLabel(state, t) {
 }
 
 const LockCard = memo(/** @param {any} props */ function LockCard({
+  cardId,
   lockId,
   dragProps,
   controls,
@@ -74,7 +75,7 @@ const LockCard = memo(/** @param {any} props */ function LockCard({
   const supportsOpen = (Number(entity?.attributes?.supported_features || 0) & FEATURE_OPEN) !== 0;
   const codeFormat = entity?.attributes?.code_format;
   const requiresCode = typeof codeFormat === 'string' && codeFormat.trim() && codeFormat !== 'none';
-  const name = customNames[lockId] || getA(lockId, 'friendly_name', lockId);
+  const name = customNames[cardId] || customNames[lockId] || getA(lockId, 'friendly_name', lockId);
   const iconName = customIcons[lockId] || entity?.attributes?.icon;
   const Icon = iconName ? getIconComponent(iconName) || Lock : Lock;
   const statusText = getLockStateLabel(entity.state, t);

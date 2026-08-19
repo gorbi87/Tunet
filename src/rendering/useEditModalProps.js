@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { supportsMobileCardWidth } from '../utils/gridLayout';
 
 export function useEditModalProps({
   showEditCardModal,
@@ -44,6 +45,11 @@ export function useEditModalProps({
     const isEditFan = !!editId && (editId.startsWith('fan.') || editId.startsWith('fan_card_'));
 
     const editSettings = isEditCar ? resolveCarSettings(editId, rawEditSettings) : rawEditSettings;
+    const nameFallbackEntityId = isEditCover
+      ? editSettings?.coverId || null
+      : isEditLock
+        ? editSettings?.lockId || editId
+        : editId;
     const isEditGenericType =
       (!!editSettings?.type &&
         (editSettings.type === 'entity' ||
@@ -58,6 +64,7 @@ export function useEditModalProps({
       isEditFan;
     const isEditSensor = !!editSettings?.type && editSettings.type === 'sensor';
     const isEditWeatherTemp = !!editId && editId.startsWith('weather_temp_');
+    const canEditMobileWidth = supportsMobileCardWidth(editId);
 
     const canEditName =
       !!editId &&
@@ -111,8 +118,10 @@ export function useEditModalProps({
       isEditCamera,
       isEditSensor,
       isEditWeatherTemp,
+      canEditMobileWidth,
       isEditFan,
       isEditAlarm,
+      nameFallbackEntityId,
       editSettingsKey,
       editSettings,
     };

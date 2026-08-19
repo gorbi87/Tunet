@@ -78,6 +78,33 @@ test.describe('Modal Interactions', () => {
     await expect(modal).toBeVisible();
   });
 
+  test('should expose mobile add and edit actions from the floating settings menu', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(300);
+
+    const trigger = page.getByTestId('settings-dropdown-trigger');
+    const triggerBounds = await trigger.boundingBox();
+
+    expect(triggerBounds).not.toBeNull();
+    expect(triggerBounds.x).toBeGreaterThan(300);
+    expect(triggerBounds.y).toBeGreaterThan(760);
+
+    await trigger.click();
+    await expect(page.getByTestId('settings-menu-add-card')).toBeVisible();
+    await expect(page.getByTestId('settings-menu-edit')).toHaveAccessibleName('Edit');
+
+    await page.getByTestId('settings-menu-edit').click();
+    const doneButton = page.getByTestId('settings-mobile-done');
+    await expect(doneButton).toBeVisible();
+    await expect(doneButton).toHaveAccessibleName('Done');
+
+    await doneButton.click();
+    await expect(doneButton).not.toBeVisible();
+  });
+
   test('should close modal with close button', async ({ page }) => {
     await openSystemModal(page);
 
@@ -146,6 +173,35 @@ test.describe('Modal Interactions', () => {
 
     // Ensure appearance panel exposes language controls.
     await expect(sidebar.locator('text=Language').first()).toBeVisible();
+  });
+
+  test('should navigate the responsive settings sidebars on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(300);
+
+    const appearanceSidebar = await openThemeSidebar(page);
+    await expect(appearanceSidebar.getByTestId('sidebar-done')).toHaveAccessibleName('Done');
+    await page.waitForTimeout(400);
+
+    const appearanceBounds = await appearanceSidebar.boundingBox();
+    expect(appearanceBounds).not.toBeNull();
+    expect(appearanceBounds.width).toBe(390);
+
+    await appearanceSidebar.getByTestId('sidebar-nav-layout').click();
+    const layoutSidebar = page.getByTestId('layout-sidebar');
+    await expect(layoutSidebar).toBeVisible();
+    await expect(layoutSidebar.getByTestId('sidebar-nav-layout')).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+
+    await layoutSidebar.getByTestId('sidebar-nav-header').click();
+    const headerSidebar = page.getByTestId('header-sidebar');
+    await expect(headerSidebar).toBeVisible();
+
+    await headerSidebar.getByTestId('sidebar-done').click();
+    await expect(headerSidebar).toBeHidden();
   });
 
   test('should show connection status in settings', async ({ page }) => {

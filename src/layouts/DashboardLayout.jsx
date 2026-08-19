@@ -94,6 +94,10 @@ export default function DashboardLayout(props) {
     guardedSetEditMode(!editMode);
   }, [activePage, editMode, guardedSetEditMode, pageSettings, setActivePage]);
 
+  const handleAddCard = useCallback(() => {
+    guardedSetShowAddCardModal(true);
+  }, [guardedSetShowAddCardModal]);
+
   const clearCardsOnlyLongPress = useCallback(() => {
     if (cardsOnlyExitTimerRef.current !== null && typeof window !== 'undefined') {
       window.clearTimeout(cardsOnlyExitTimerRef.current);
@@ -232,6 +236,13 @@ export default function DashboardLayout(props) {
                   : 'px-4 md:px-20'
                 : 'px-6 md:px-20'
         } ${isCompactCards ? 'compact-cards' : ''}`}
+        style={
+          isMobile
+            ? {
+                paddingBottom: 'calc(7rem + env(safe-area-inset-bottom))',
+              }
+            : undefined
+        }
       >
         {showDashboardChrome && (
           <Header
@@ -256,21 +267,7 @@ export default function DashboardLayout(props) {
               }}
             >
               {isMobile ? (
-                <div className="flex w-full min-w-0 items-center gap-2">
-                  {personHeader}
-                  <SettingsMenuControl
-                    setShowConfigModal={guardedSetShowConfigModal}
-                    setConfigTab={setConfigTab}
-                    setShowThemeSidebar={guardedSetShowThemeSidebar}
-                    setShowLayoutSidebar={guardedSetShowLayoutSidebar}
-                    setShowHeaderEditModal={guardedSetShowHeaderEditModal}
-                    onToggleEdit={handleToggleEdit}
-                    editMode={editMode}
-                    updateCount={updateCount}
-                    isMobile
-                    t={t}
-                  />
-                </div>
+                <div className="flex w-full min-w-0 items-center gap-2">{personHeader}</div>
               ) : (
                 personHeader
               )}
@@ -309,21 +306,23 @@ export default function DashboardLayout(props) {
               setEditingPage={setEditingPage}
               t={t}
             />
-            <EditToolbar
-              editMode={editMode}
-              setShowAddCardModal={guardedSetShowAddCardModal}
-              setShowConfigModal={guardedSetShowConfigModal}
-              setConfigTab={setConfigTab}
-              setShowThemeSidebar={guardedSetShowThemeSidebar}
-              setShowLayoutSidebar={guardedSetShowLayoutSidebar}
-              setShowHeaderEditModal={guardedSetShowHeaderEditModal}
-              onToggleEdit={handleToggleEdit}
-              showSettingsMenu={!isMobile}
-              connected={connected}
-              updateCount={updateCount}
-              isMobile={isMobile}
-              t={t}
-            />
+            {!isMobile && (
+              <EditToolbar
+                editMode={editMode}
+                setShowAddCardModal={guardedSetShowAddCardModal}
+                setShowConfigModal={guardedSetShowConfigModal}
+                setConfigTab={setConfigTab}
+                setShowThemeSidebar={guardedSetShowThemeSidebar}
+                setShowLayoutSidebar={guardedSetShowLayoutSidebar}
+                setShowHeaderEditModal={guardedSetShowHeaderEditModal}
+                onToggleEdit={handleToggleEdit}
+                showSettingsMenu
+                connected={connected}
+                updateCount={updateCount}
+                isMobile={isMobile}
+                t={t}
+              />
+            )}
           </div>
         )}
 
@@ -347,6 +346,23 @@ export default function DashboardLayout(props) {
           error={pinLockError}
         />
       </div>
+
+      {showDashboardChrome && isMobile && (
+        <SettingsMenuControl
+          setShowConfigModal={guardedSetShowConfigModal}
+          setConfigTab={setConfigTab}
+          setShowThemeSidebar={guardedSetShowThemeSidebar}
+          setShowLayoutSidebar={guardedSetShowLayoutSidebar}
+          setShowHeaderEditModal={guardedSetShowHeaderEditModal}
+          onAddCard={handleAddCard}
+          onToggleEdit={handleToggleEdit}
+          editMode={editMode}
+          updateCount={updateCount}
+          isMobile
+          floating
+          t={t}
+        />
+      )}
     </div>
   );
 }

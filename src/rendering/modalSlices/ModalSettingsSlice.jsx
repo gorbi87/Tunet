@@ -66,7 +66,6 @@ export function ModalSettingsSlice({
     setGridColumns,
     dynamicGridColumns,
     setDynamicGridColumns,
-    effectiveGridColumns,
     cardBorderRadius,
     setCardBorderRadius,
     sectionSpacing,
@@ -201,7 +200,6 @@ export function ModalSettingsSlice({
             setGridColumns={setGridColumns}
             dynamicGridColumns={dynamicGridColumns}
             setDynamicGridColumns={setDynamicGridColumns}
-            effectiveGridColumns={effectiveGridColumns}
             cardBorderRadius={cardBorderRadius}
             setCardBorderRadius={setCardBorderRadius}
             cardTransparency={cardTransparency}

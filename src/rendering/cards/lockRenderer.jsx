@@ -36,6 +36,7 @@ export function renderLockCard(lockId, dragProps, getControls, cardStyle, settin
   return (
     <LockCard
       key={lockId}
+      cardId={lockId}
       lockId={entityId}
       dragProps={dragProps}
       controls={getControls(lockId)}

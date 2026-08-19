@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 const HIDDEN_PORTAL_STYLE = {
   position: 'fixed',
@@ -21,7 +21,7 @@ const HIDDEN_PORTAL_STYLE = {
  * @param {string} [props.placeholder]
  * @param {Function} [props.t]
  * @param {boolean} [props.labelHidden]
- * @param {'default'|'compact'} [props.variant]
+ * @param {'default'|'compact'|'inspector'} [props.variant]
  * @param {string} [props.wrapperClassName]
  * @param {string} [props.buttonClassName]
  * @param {string} [props.menuClassName]
@@ -145,19 +145,28 @@ export default function ModernDropdown({
   const getLabel = (val) => (map && map[val] ? map[val] : val);
   const selectedLabel = String(getLabel(current) || resolvedPlaceholder);
   const isCompact = variant === 'compact';
-  const baseWrapperClass = isCompact ? 'relative' : 'relative w-full';
-  const baseButtonClass = isCompact
-    ? 'group popup-surface popup-surface-hover flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition-all'
-    : 'group popup-surface popup-surface-hover flex w-full items-center justify-between rounded-2xl px-6 py-4 transition-all';
-  const baseMenuClass = isCompact
+  const isInspector = variant === 'inspector';
+  const baseWrapperClass = isCompact || isInspector ? 'relative' : 'relative w-full';
+  const baseButtonClass = isInspector
+    ? 'group flex min-h-16 w-full items-center justify-between gap-3 px-6 text-left transition-colors hover:bg-[var(--glass-bg-hover)] focus-visible:bg-[var(--glass-bg-hover)] focus-visible:outline-none'
+    : isCompact
+      ? 'group popup-surface popup-surface-hover flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition-all'
+      : 'group popup-surface popup-surface-hover flex w-full items-center justify-between rounded-2xl px-6 py-4 transition-all';
+  const baseMenuClass = isInspector
     ? 'overflow-hidden rounded-xl border shadow-2xl'
-    : 'overflow-hidden rounded-2xl border shadow-2xl';
-  const baseOptionClass = isCompact
-    ? 'w-full px-3 py-2.5 text-left text-[10px] font-bold tracking-widest uppercase transition-all'
-    : 'w-full px-6 py-3 text-left text-xs font-bold tracking-widest uppercase transition-all';
-  const baseValueClass = isCompact
-    ? 'min-w-0 truncate text-[10px] font-bold tracking-widest uppercase'
-    : 'min-w-0 truncate text-xs font-bold tracking-widest uppercase italic';
+    : isCompact
+      ? 'overflow-hidden rounded-xl border shadow-2xl'
+      : 'overflow-hidden rounded-2xl border shadow-2xl';
+  const baseOptionClass = isInspector
+    ? 'w-full px-4 py-3 text-left text-xs font-semibold transition-all'
+    : isCompact
+      ? 'w-full px-3 py-2.5 text-left text-[10px] font-bold tracking-widest uppercase transition-all'
+      : 'w-full px-6 py-3 text-left text-xs font-bold tracking-widest uppercase transition-all';
+  const baseValueClass = isInspector
+    ? 'min-w-0 truncate text-sm font-medium'
+    : isCompact
+      ? 'min-w-0 truncate text-[10px] font-bold tracking-widest uppercase'
+      : 'min-w-0 truncate text-xs font-bold tracking-widest uppercase italic';
   const labelText = label || resolvedPlaceholder;
 
   const handleTriggerClick = (event) => {
@@ -214,7 +223,7 @@ export default function ModernDropdown({
 
   return (
     <div className={`${baseWrapperClass} ${wrapperClassName}`.trim()} ref={dropdownRef}>
-      {!labelHidden && (
+      {!labelHidden && !isInspector && (
         <p
           className="mb-3 ml-1 text-xs font-bold uppercase"
           style={{ color: 'var(--text-muted)', letterSpacing: '0.2em' }}
@@ -239,19 +248,32 @@ export default function ModernDropdown({
         >
           {Icon ? (
             <Icon
-              className={`${isCompact ? 'h-3.5 w-3.5' : 'h-4 w-4'} flex-shrink-0 text-[var(--text-muted)] transition-colors group-hover:text-[var(--accent-color)]`}
+              className={`${isInspector ? 'h-[19px] w-[19px]' : isCompact ? 'h-3.5 w-3.5' : 'h-4 w-4'} flex-shrink-0 text-[var(--text-muted)] transition-colors group-hover:text-[var(--accent-color)]`}
             />
           ) : null}
+          {isInspector ? (
+            <span className="truncate text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+              {label}
+            </span>
+          ) : null}
+        </div>
+        <div className="flex min-w-0 items-center gap-2">
           <span
             className={`${baseValueClass} ${valueClassName}`.trim()}
             style={{ color: 'var(--text-secondary)' }}
           >
             {selectedLabel}
           </span>
+          {isInspector ? (
+            <ChevronRight
+              className={`h-4 w-4 flex-shrink-0 text-[var(--text-muted)] transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
+            />
+          ) : (
+            <ChevronDown
+              className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'} flex-shrink-0 text-[var(--text-muted)] transition-transform duration-500 ${isOpen ? 'rotate-180' : ''}`}
+            />
+          )}
         </div>
-        <ChevronDown
-          className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'} flex-shrink-0 text-[var(--text-muted)] transition-transform duration-500 ${isOpen ? 'rotate-180' : ''}`}
-        />
       </button>
       {isOpen &&
         (menuPortal && typeof document !== 'undefined' ? (

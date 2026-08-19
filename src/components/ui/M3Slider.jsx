@@ -167,8 +167,13 @@ export default function M3Slider({
 
   return (
     <div
-      className={`relative w-full ${containerH} group flex items-center ${disabled ? 'pointer-events-none opacity-30' : ''}`}
-      style={{ touchAction: 'pan-y' }}
+      className={`m3-slider-default relative w-full ${containerH} group flex items-center ${disabled ? 'pointer-events-none opacity-30' : ''}`}
+      style={{
+        touchAction: 'pan-y',
+        .../** @type {Record<string, string>} */ ({
+          '--m3-slider-position': `${percentage}%`,
+        }),
+      }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Track */}
@@ -181,7 +186,7 @@ export default function M3Slider({
         </div>
       ) : (
         <div
-          className={`absolute w-full ${height ? 'h-full rounded bg-white/10' : 'h-5 rounded-full border'} overflow-hidden`}
+          className={`m3-slider__track absolute w-full ${height ? 'h-full rounded bg-white/10' : 'h-5 rounded-full border'} overflow-hidden`}
           style={
             !height
               ? { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.05)' }
@@ -209,9 +214,9 @@ export default function M3Slider({
       ) : (
         !height && (
           <div
-            className="pointer-events-none absolute h-8 w-1 rounded-full bg-white transition-transform duration-200 group-active:scale-y-110"
+            className="m3-slider__thumb pointer-events-none absolute h-8 w-1 rounded-full bg-white transition-transform duration-200 group-active:scale-y-110"
             style={{
-              left: `calc(${percentage}% - 2px)`,
+              left: 'calc(var(--m3-slider-position) - var(--m3-slider-thumb-offset, 2px))',
               boxShadow: '0_0_15px_rgba(255,255,255,0.4)',
             }}
           />

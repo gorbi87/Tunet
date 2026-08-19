@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
-import {
-  Palette,
-  ChevronDown,
-  Maximize2,
-  Eye,
-  RefreshCw,
-  Type,
-  AlignLeft,
-  LayoutGrid,
-  Battery,
-} from '../../icons';
+import { Maximize2, Eye, AlignLeft, Battery } from '../../icons';
 import M3Slider from '../ui/M3Slider';
 import SidebarContainer from './SidebarContainer';
+import {
+  SidebarAccordion,
+  SidebarNavigation,
+  SidebarResetButton as ResetButton,
+  SidebarSegmentedControl as SegmentedControl,
+  SidebarToggle as Toggle,
+} from './SidebarControls';
 
 const FONTS = [
   { value: 'sans', label: 'Sans-serif' },
@@ -43,110 +40,6 @@ const LETTER_SPACINGS = [
   { value: 'wide', em: '0.5em' },
   { value: 'extraWide', em: '0.8em' },
 ];
-
-// Helper components defined OUTSIDE to prevent focus loss
-const SegmentedControl = ({ options, value, onChange }) => (
-  <div
-    className="flex gap-1 rounded-xl border p-0.5"
-    style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
-  >
-    {options.map((opt) => (
-      <button
-        key={opt.value}
-        onClick={() => onChange(opt.value)}
-        className={`flex-1 rounded-lg px-1 py-1.5 text-center text-[10px] font-bold tracking-wider uppercase transition-all ${
-          value === opt.value ? '' : 'hover:text-white'
-        }`}
-        style={
-          value === opt.value
-            ? { backgroundColor: 'var(--accent-bg)', color: 'var(--accent-color)' }
-            : { color: 'var(--text-secondary)', backgroundColor: 'transparent' }
-        }
-      >
-        {opt.label || opt.key}
-      </button>
-    ))}
-  </div>
-);
-
-const Toggle = ({ label, value, onChange }) => (
-  <button
-    onClick={() => onChange(!value)}
-    className="group flex w-full items-center justify-between py-2"
-  >
-    <span
-      className="text-[12px] font-medium transition-colors group-hover:text-white"
-      style={{ color: 'var(--text-secondary)' }}
-    >
-      {label}
-    </span>
-    <div
-      className="relative h-5 w-9 rounded-full transition-all duration-300"
-      style={{ backgroundColor: value ? 'var(--accent-bg)' : 'var(--glass-bg)' }}
-    >
-      <div
-        className={`absolute top-1 h-3 w-3 rounded-full bg-white shadow-sm transition-all duration-300 ${value ? 'left-[calc(100%-16px)]' : 'left-1'}`}
-        style={value ? { backgroundColor: 'var(--accent-color)' } : {}}
-      />
-    </div>
-  </button>
-);
-
-const ResetButton = ({ onClick, t }) => (
-  <button
-    onClick={onClick}
-    className="rounded-full p-1.5 transition-all hover:text-white"
-    style={{ color: 'var(--text-muted)' }}
-    title={t ? t('settings.reset') : 'Reset'}
-  >
-    <RefreshCw className="h-3.5 w-3.5" />
-  </button>
-);
-
-const Section = ({ id, icon: Icon, title, children, isOpen, toggle }) => (
-  <div
-    className="rounded-2xl border transition-all"
-    style={{
-      backgroundColor: isOpen ? 'var(--glass-bg)' : 'transparent',
-      borderColor: isOpen ? 'var(--glass-border)' : 'transparent',
-    }}
-  >
-    <button
-      type="button"
-      onClick={() => toggle(id)}
-      className="group flex w-full items-center gap-3 px-3 py-3 text-left transition-colors"
-    >
-      <div
-        className="rounded-xl p-2 transition-colors"
-        style={
-          isOpen
-            ? { backgroundColor: 'var(--accent-bg)', color: 'var(--accent-color)' }
-            : { color: 'var(--text-secondary)' }
-        }
-      >
-        <Icon className="h-4.5 w-4.5" />
-      </div>
-      <span
-        className="flex-1 text-[13px] font-semibold transition-colors"
-        style={{ color: isOpen ? 'var(--text-primary)' : 'var(--text-secondary)' }}
-      >
-        {title}
-      </span>
-      <ChevronDown
-        className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-        style={{ color: 'var(--text-secondary)' }}
-      />
-    </button>
-    <div
-      className="grid transition-all duration-300 ease-in-out"
-      style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
-    >
-      <div className="overflow-hidden">
-        <div className="space-y-5 px-4 pb-4">{children}</div>
-      </div>
-    </div>
-  </div>
-);
 
 export default function HeaderSidebar({
   open,
@@ -183,49 +76,25 @@ export default function HeaderSidebar({
   const dateScale = setting('dateScale', 1.0);
 
   return (
-    <SidebarContainer open={open} onClose={onClose} title={t('system.tabHeader')} icon={Type}>
-      <div className="space-y-2 font-sans">
-        {/* Switcher Tab */}
-        <div className="mb-6 flex items-center justify-center">
-          <div
-            className="flex rounded-2xl border p-1 shadow-sm"
-            style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
-          >
-            <button
-              className="flex h-9 w-12 items-center justify-center rounded-xl transition-all hover:text-white"
-              style={{ color: 'var(--text-secondary)' }}
-              onClick={onSwitchToTheme}
-              title={t('system.tabAppearance')}
-            >
-              <Palette className="h-5 w-5" />
-            </button>
-
-            <div className="mx-1 my-1 w-px" style={{ backgroundColor: 'var(--glass-border)' }} />
-
-            <button
-              className="flex h-9 w-12 items-center justify-center rounded-xl transition-all hover:text-white"
-              style={{ color: 'var(--text-secondary)' }}
-              onClick={onSwitchToLayout}
-              title={t('system.tabLayout')}
-            >
-              <LayoutGrid className="h-5 w-5" />
-            </button>
-
-            <div className="mx-1 my-1 w-px" style={{ backgroundColor: 'var(--glass-border)' }} />
-
-            <button
-              className="relative z-10 flex h-9 w-12 items-center justify-center rounded-xl font-medium shadow-md transition-all"
-              style={{ backgroundColor: 'var(--accent-bg)', color: 'var(--accent-color)' }}
-              disabled
-              title={t('system.tabHeader')}
-            >
-              <Type className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
+    <SidebarContainer
+      open={open}
+      onClose={onClose}
+      title={t('system.tabHeader')}
+      testId="header-sidebar"
+      closeLabel={t('nav.done')}
+      navigation={
+        <SidebarNavigation
+          active="header"
+          onSwitchToTheme={onSwitchToTheme}
+          onSwitchToLayout={onSwitchToLayout}
+          onSwitchToHeader={() => {}}
+          t={t}
+        />
+      }
+    >
+      <div className="sidebar-stack font-sans">
         {/* ── Layout Section ── */}
-        <Section
+        <SidebarAccordion
           id="layout"
           icon={Battery}
           title={t('header.headerLayout') || 'Layout'}
@@ -278,10 +147,10 @@ export default function HeaderSidebar({
               />
             </>
           )}
-        </Section>
+        </SidebarAccordion>
 
         {/* ── Typography Section ── */}
-        <Section
+        <SidebarAccordion
           id="typography"
           icon={AlignLeft}
           title={t('header.fontFamily')}
@@ -399,10 +268,10 @@ export default function HeaderSidebar({
               ))}
             </div>
           </div>
-        </Section>
+        </SidebarAccordion>
 
         {/* ── Style/Size Section ── */}
-        <Section
+        <SidebarAccordion
           id="style"
           icon={Maximize2}
           title={t('header.scale')}
@@ -510,10 +379,10 @@ export default function HeaderSidebar({
               onChange={(e) => update('dateScale', parseFloat(e.target.value))}
             />
           </div>
-        </Section>
+        </SidebarAccordion>
 
         {/* ── Visibility/Clock Section ── */}
-        <Section
+        <SidebarAccordion
           id="visibility"
           icon={Eye}
           title={t('header.visibility')}
@@ -592,7 +461,7 @@ export default function HeaderSidebar({
               </button>
             </div>
           </div>
-        </Section>
+        </SidebarAccordion>
       </div>
     </SidebarContainer>
   );

@@ -323,6 +323,7 @@
  * @property {number} gridColCount
  * @property {boolean} isCompactCards
  * @property {boolean} isMobile
+ * @property {number} viewportWidth
  */
 
 /**

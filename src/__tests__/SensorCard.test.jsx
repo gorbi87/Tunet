@@ -48,6 +48,67 @@ const baseProps = (overrides = {}) => ({
 });
 
 describe('SensorCard', () => {
+  it('shows an informative script status instead of repeating the entity type', () => {
+    const t = (key) =>
+      ({
+        'sensor.script.ready': 'Ready',
+        'sensor.script.running': 'Running',
+      })[key] || key;
+
+    const { rerender } = render(
+      <SensorCard
+        {...baseProps({
+          entity: {
+            entity_id: 'script.feed_cat',
+            state: 'off',
+            attributes: { friendly_name: 'Feed cat' },
+          },
+          name: 'Feed cat',
+          settings: { size: 'large' },
+          t,
+        })}
+      />
+    );
+
+    expect(screen.getByText('Ready')).toBeInTheDocument();
+    expect(screen.queryByText('Script')).not.toBeInTheDocument();
+
+    rerender(
+      <SensorCard
+        {...baseProps({
+          entity: {
+            entity_id: 'script.feed_cat',
+            state: 'on',
+            attributes: { friendly_name: 'Feed cat' },
+          },
+          name: 'Feed cat',
+          settings: { size: 'large' },
+          t,
+        })}
+      />
+    );
+
+    expect(screen.getByText('Running')).toBeInTheDocument();
+  });
+
+  it('allows the script status text to be customized', () => {
+    render(
+      <SensorCard
+        {...baseProps({
+          entity: {
+            entity_id: 'script.feed_cat',
+            state: 'off',
+            attributes: { friendly_name: 'Feed cat' },
+          },
+          name: 'Feed cat',
+          settings: { size: 'large', scriptStatusText: 'Ready to feed' },
+        })}
+      />
+    );
+
+    expect(screen.getByText('Ready to feed')).toBeInTheDocument();
+  });
+
   it('keeps small mobile titles truncated instead of wrapping vertically', () => {
     render(<SensorCard {...baseProps()} isMobile />);
 

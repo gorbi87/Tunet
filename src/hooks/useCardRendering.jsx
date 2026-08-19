@@ -19,6 +19,8 @@ export function useCardRendering({
   hiddenCards,
   isCardHiddenByLogic,
   gridColCount,
+  viewportWidth,
+  gridGapH,
   gridGapV,
   cardSettings,
   getCardSettingsKey,
@@ -155,9 +157,14 @@ export function useCardRendering({
 
   const getCardColSpan = useCallback(
     (cardId) => {
-      return _getCardColSpan(cardId, getCardSettingsKey, cardSettings);
+      return _getCardColSpan(cardId, getCardSettingsKey, cardSettings, {
+        isMobile,
+        gridColumns: gridColCount,
+        viewportWidth,
+        gridGapH,
+      });
     },
-    [getCardSettingsKey, cardSettings]
+    [getCardSettingsKey, cardSettings, isMobile, gridColCount, viewportWidth, gridGapH]
   );
 
   const moveCardInArray = useCallback(
@@ -333,6 +340,7 @@ export function useCardRendering({
         saveCardSetting,
         language,
         isMobile,
+        isFullWidthMobileCard: isMobile && getCardColSpan(cardId) >= gridColCount,
         activePage,
         t,
         optimisticLightBrightness,
@@ -380,12 +388,14 @@ export function useCardRendering({
             key={`${cardId}-render-error`}
             {...dragProps}
             className="flex h-full w-full items-center justify-center rounded-2xl border p-3 text-center text-xs"
-            style={/** @type {any} */ ({
-              ...cardStyle,
-              backgroundColor: 'var(--glass-bg)',
-              borderColor: 'var(--glass-border)',
-              color: 'var(--text-secondary)',
-            })}
+            style={
+              /** @type {any} */ ({
+                ...cardStyle,
+                backgroundColor: 'var(--glass-bg)',
+                borderColor: 'var(--glass-border)',
+                color: 'var(--text-secondary)',
+              })
+            }
           >
             {t('card.error.render')}
           </div>
@@ -422,6 +432,8 @@ export function useCardRendering({
       isMediaActive,
       language,
       isMobile,
+      getCardColSpan,
+      gridColCount,
       activePage,
       optimisticLightBrightness,
       setOptimisticLightBrightness,

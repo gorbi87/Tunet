@@ -98,7 +98,13 @@ const SensorCard = memo(
         ? translate(state === 'on' ? 'status.on' : 'status.off')
         : null;
     const sceneDisplayState = domain === 'scene' ? translate('sensor.scene.label') : null;
-    const scriptDisplayState = domain === 'script' ? translate('sensor.script.label') : null;
+    const customScriptStatus =
+      typeof settings?.scriptStatusText === 'string' ? settings.scriptStatusText.trim() : '';
+    const scriptDisplayState =
+      domain === 'script'
+        ? customScriptStatus ||
+          translate(state === 'on' ? 'sensor.script.running' : 'sensor.script.ready')
+        : null;
     const isSelectDomain = domain === 'select' || domain === 'input_select';
     const selectOptions = isSelectDomain ? entity?.attributes?.options || [] : [];
     const displayState = isNumeric
