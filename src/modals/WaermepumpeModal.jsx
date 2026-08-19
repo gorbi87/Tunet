@@ -230,10 +230,17 @@ export default function WaermepumpeModal({
   const heizstab = val(WAERMEPUMPE_ENTITY_IDS.heizstab);
   const heizstabTaglich = val(WAERMEPUMPE_ENTITY_IDS.heizstabTaglich);
 
-  const copRaw = val(WAERMEPUMPE_ENTITY_IDS.copSensor);
-  const aktivCop = copRaw != null && copRaw > 0 && copRaw <= 20 ? copRaw.toFixed(2) : null;
+  const copHeute =
+    stromHeute != null && waermeHeute != null && stromHeute > 0
+      ? (waermeHeute / stromHeute).toFixed(2)
+      : null;
+  const copMonat =
+    stromMonat != null && waermeMonat != null && stromMonat > 0
+      ? (waermeMonat / stromMonat).toFixed(2)
+      : null;
   const aktivStrom = energyTab === 'today' ? stromHeute : stromMonat;
   const aktivWaerme = energyTab === 'today' ? waermeHeute : waermeMonat;
+  const aktivCop = energyTab === 'today' ? copHeute : copMonat;
 
   // Automatik tab values
   const saisonState = str(WAERMEPUMPE_ENTITY_IDS.saison);

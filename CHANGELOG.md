@@ -1364,3 +1364,8 @@
 
 ### Fixed
 - Mobile: 2-Spalten-Layout wiederhergestellt — fälschlicherweise eingeführter Breakpoint `< 480px → 1 Spalte` in `getAutoGridColumnsForWidth` hat alle Smartphones (375–430px) auf 1 Spalte erzwungen; revertiert, Test-Erwartung korrigiert
+
+## [1.20.16] — 2026-08-19
+
+### Changed
+- WP-Karte + WP-Modal: COP-Berechnung wieder auf Tagesdaten (Wärme/Strom) zurückgestellt — sensor.daikin_heizung_cop revertiert

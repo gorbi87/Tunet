@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.16
+
+### Changed
+- WP-Karte + WP-Modal: COP-Berechnung wieder auf Tagesdaten (Wärme/Strom) zurückgestellt
+
 ## 1.20.15
 
 ### Fixed
