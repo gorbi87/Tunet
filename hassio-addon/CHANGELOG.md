@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.20.14
+
+### Fixed
+- Frigate Ereignisse: Clip-Wiedergabe funktioniert wieder — fehlende CSP-Direktive `media-src` blockierte blob:-URLs für `<video>` ohne sichtbaren Fehler; stattdessen wurde Snapshot angezeigt
+- Server: `trust proxy` wiederhergestellt (Upstream-Merge-Verlust) — Rate-Limiting verwendet wieder die echte Client-IP
+
 ## 1.20.13
 
 ### Fixed

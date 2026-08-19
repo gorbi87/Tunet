@@ -31,6 +31,8 @@ export const createApp = ({
   isProduction = process.env.NODE_ENV === 'production',
 } = {}) => {
   const app = express();
+  // Trust the HA ingress proxy so rate-limiting uses the real client IP
+  app.set('trust proxy', 1);
   const homeAssistantAuth = createHomeAssistantAuthMiddleware();
   app.disable('x-powered-by');
   app.use((_req, res, next) => {
@@ -49,6 +51,8 @@ export const createApp = ({
       "font-src 'self' https://fonts.gstatic.com",
       // Images: own, HA instance (any origin – URL is user-configured), weather icons, media logos, map tiles, data/blob URIs
       "img-src 'self' data: blob: http: https: https://cdn.jsdelivr.net https://cdn.simpleicons.org https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org",
+      // Video/audio: allow blob: URLs (used by Frigate clip player)
+      "media-src 'self' blob:",
       // WebSocket connections to the user's HA instance (any origin, since URL is user-configured)
       "connect-src 'self' ws: wss: http: https:",
       // Leaflet map iframe
