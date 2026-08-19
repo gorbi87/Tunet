@@ -5,6 +5,14 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    # eslint-plugin-react@7.37.5 (latest) peers on eslint "<=^9.7", so ESLint 10
+    # fails npm ci with ERESOLVE and blocks the whole dev-dependencies group.
+    # Drop this ignore once eslint-plugin-react ships ESLint 10 peer support.
+    ignore:
+      - dependency-name: eslint
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@eslint/js'
+        update-types: ['version-update:semver-major']
     groups:
       dev-dependencies:
         dependency-type: development

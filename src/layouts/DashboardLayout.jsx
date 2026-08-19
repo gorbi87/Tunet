@@ -6,6 +6,7 @@ import BackgroundLayer from './BackgroundLayer';
 import ConnectionBanner from './ConnectionBanner';
 import DragOverlaySVG from './DragOverlaySVG';
 import EditToolbar from './EditToolbar';
+import SettingsMenuControl from './SettingsMenuControl';
 import { PageNavigation } from '../components';
 import DashboardGrid from '../rendering/DashboardGrid';
 import PinLockModal from '../components/ui/PinLockModal';
@@ -48,6 +49,7 @@ export default function DashboardLayout(props) {
     cardsOnlyMode,
     updateCardsOnlyMode,
     pagesConfig,
+    pageSettings = {},
     personStatus,
     requestSettingsAccess,
     setAddCardTargetPage,
@@ -82,6 +84,19 @@ export default function DashboardLayout(props) {
 
   const cardsOnlyExitTimerRef = useRef(null);
   const showDashboardChrome = !cardsOnlyMode;
+
+  const handleToggleEdit = useCallback(() => {
+    const currentSettings = pageSettings[activePage];
+    if (currentSettings?.hidden) setActivePage('home');
+    if (editMode && typeof window !== 'undefined') {
+      window.dispatchEvent(new window.CustomEvent('tunet:edit-done'));
+    }
+    guardedSetEditMode(!editMode);
+  }, [activePage, editMode, guardedSetEditMode, pageSettings, setActivePage]);
+
+  const handleAddCard = useCallback(() => {
+    guardedSetShowAddCardModal(true);
+  }, [guardedSetShowAddCardModal]);
 
   const clearCardsOnlyLongPress = useCallback(() => {
     if (cardsOnlyExitTimerRef.current !== null && typeof window !== 'undefined') {
@@ -153,6 +168,35 @@ export default function DashboardLayout(props) {
     [profilingEnabled, onProfileRender]
   );
 
+  const personHeader = (
+    <div
+      className={`flex min-w-0 flex-wrap items-center gap-2.5 ${isMobile ? 'flex-1 origin-left scale-90 empty:hidden' : ''}`}
+    >
+      {(pagesConfig.header || []).map((id) => personStatus(id))}
+      {editMode && (
+        <button
+          onClick={() => {
+            requestSettingsAccess(() => {
+              setAddCardTargetPage('header');
+              setShowAddCardModal(true);
+            });
+          }}
+          className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase transition-all"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--accent-color) 14%, transparent)',
+            borderColor: 'color-mix(in srgb, var(--accent-color) 28%, transparent)',
+            color: 'var(--accent-color)',
+          }}
+        >
+          <Plus className="h-3 w-3" /> {t('addCard.type.entity')}
+        </button>
+      )}
+      {(pagesConfig.header || []).length > 0 && (
+        <div className="mx-2 h-8 w-px bg-[var(--glass-border)]"></div>
+      )}
+    </div>
+  );
+
   return (
     <div
       className="min-h-screen overflow-x-hidden font-sans transition-colors duration-500 selection:bg-[var(--accent-bg)]"
@@ -192,6 +236,13 @@ export default function DashboardLayout(props) {
                   : 'px-4 md:px-20'
                 : 'px-6 md:px-20'
         } ${isCompactCards ? 'compact-cards' : ''}`}
+        style={
+          isMobile
+            ? {
+                paddingBottom: 'calc(7rem + env(safe-area-inset-bottom))',
+              }
+            : undefined
+        }
       >
         {showDashboardChrome && (
           <Header
@@ -209,32 +260,7 @@ export default function DashboardLayout(props) {
               className="mt-0 w-full font-sans flex items-center justify-between"
               style={{ marginTop: `${sectionSpacing?.headerToStatus ?? 0}px` }}
             >
-              <div
-                className="flex flex-shrink-0 flex-nowrap items-center gap-2.5"
-              >
-                {(pagesConfig.header || []).map((id) => personStatus(id))}
-                {editMode && (
-                  <button
-                    onClick={() => {
-                      requestSettingsAccess(() => {
-                        setAddCardTargetPage('header');
-                        setShowAddCardModal(true);
-                      });
-                    }}
-                    className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase transition-all"
-                    style={{
-                      backgroundColor: 'color-mix(in srgb, var(--accent-color) 14%, transparent)',
-                      borderColor: 'color-mix(in srgb, var(--accent-color) 28%, transparent)',
-                      color: 'var(--accent-color)',
-                    }}
-                  >
-                    <Plus className="h-3 w-3" /> {t('addCard.type.entity')}
-                  </button>
-                )}
-                {(pagesConfig.header || []).length > 0 && (
-                  <div className="mx-2 h-8 w-px bg-[var(--glass-border)]"></div>
-                )}
-              </div>
+              {personHeader}
               <div className="min-w-0 flex-1">
                 {withProfiler(
                   'StatusBar',
@@ -270,22 +296,23 @@ export default function DashboardLayout(props) {
               setEditingPage={setEditingPage}
               t={t}
             />
-            <EditToolbar
-              editMode={editMode}
-              setEditMode={guardedSetEditMode}
-              activePage={activePage}
-              setActivePage={setActivePage}
-              setShowAddCardModal={guardedSetShowAddCardModal}
-              setShowConfigModal={guardedSetShowConfigModal}
-              setConfigTab={setConfigTab}
-              setShowThemeSidebar={guardedSetShowThemeSidebar}
-              setShowLayoutSidebar={guardedSetShowLayoutSidebar}
-              setShowHeaderEditModal={guardedSetShowHeaderEditModal}
-              connected={connected}
-              updateCount={updateCount}
-              isMobile={isMobile}
-              t={t}
-            />
+            {!isMobile && (
+              <EditToolbar
+                editMode={editMode}
+                setShowAddCardModal={guardedSetShowAddCardModal}
+                setShowConfigModal={guardedSetShowConfigModal}
+                setConfigTab={setConfigTab}
+                setShowThemeSidebar={guardedSetShowThemeSidebar}
+                setShowLayoutSidebar={guardedSetShowLayoutSidebar}
+                setShowHeaderEditModal={guardedSetShowHeaderEditModal}
+                onToggleEdit={handleToggleEdit}
+                showSettingsMenu
+                connected={connected}
+                updateCount={updateCount}
+                isMobile={isMobile}
+                t={t}
+              />
+            )}
           </div>
         )}
 
@@ -309,6 +336,23 @@ export default function DashboardLayout(props) {
           error={pinLockError}
         />
       </div>
+
+      {showDashboardChrome && isMobile && (
+        <SettingsMenuControl
+          setShowConfigModal={guardedSetShowConfigModal}
+          setConfigTab={setConfigTab}
+          setShowThemeSidebar={guardedSetShowThemeSidebar}
+          setShowLayoutSidebar={guardedSetShowLayoutSidebar}
+          setShowHeaderEditModal={guardedSetShowHeaderEditModal}
+          onAddCard={handleAddCard}
+          onToggleEdit={handleToggleEdit}
+          editMode={editMode}
+          updateCount={updateCount}
+          isMobile
+          floating
+          t={t}
+        />
+      )}
     </div>
   );
 }

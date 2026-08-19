@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useId } from 'react';
 import { CHART_STATUS_COLORS, getThresholdColor } from '../../utils/chartColors';
 
 // Helper function to create smooth Bezier curves
-const createBezierPath = (points, smoothing = 0.3) => {
+const createBezierPath = (points, smoothing = 0.3, bounds) => {
   const line = (p1, p2) => {
     const dx = p2[0] - p1[0];
     const dy = p2[1] - p1[1];
@@ -14,7 +14,11 @@ const createBezierPath = (points, smoothing = 0.3) => {
     const l = line(p, n);
     const angle = l.angle + (reverse ? Math.PI : 0);
     const length = l.length * smoothing;
-    return [current[0] + Math.cos(angle) * length, current[1] + Math.sin(angle) * length];
+    const y = current[1] + Math.sin(angle) * length;
+    return [
+      current[0] + Math.cos(angle) * length,
+      bounds ? Math.max(bounds.minY, Math.min(bounds.maxY, y)) : y,
+    ];
   };
   return points.reduce((acc, point, i, a) => {
     if (i === 0) return `M ${point[0]},${point[1]}`;
@@ -30,13 +34,15 @@ export default function SparkLine({
   height = 40,
   fade = false,
   variant = 'line',
+  ariaLabel = 'Sensor history',
 }) {
   const pointsData = Array.isArray(data) ? data : [];
   const lineStrokeWidth = 3;
   const pointRadius = 3.5;
   const verticalPadding = Math.max(4, Math.ceil(pointRadius + lineStrokeWidth / 2));
-
-  const idSuffix = useMemo(() => Math.random().toString(36).substr(2, 9), []);
+  const plotInset = 12;
+  const reactId = useId();
+  const idSuffix = reactId.replace(/:/g, '');
   const areaId = `cardAreaGrad-${idSuffix}`;
   const lineId = `cardLineGrad-${idSuffix}`;
   const maskId = `cardMask-${idSuffix}`;
@@ -59,30 +65,34 @@ export default function SparkLine({
     min -= 1;
     max += 1;
   }
-  // Add small padding so the line doesn't touch the edges
+  // Ensure a minimum visual range so small fluctuations don't look extreme
   const rawRange = max - min;
-  const pad = Math.max(rawRange * 0.08, Math.abs(max + min) / 2 * 0.02, 0.001);
-  min = min - pad;
-  max = max + pad;
+  const minRange = Math.max(2, (Math.abs(max + min) / 2) * 0.1);
+  if (rawRange < minRange) {
+    const mid = (max + min) / 2;
+    min = mid - minRange / 2;
+    max = mid + minRange / 2;
+  }
+  // Snap to nice round numbers for a calmer visual
+  const snapStep = rawRange <= 2 ? 0.5 : rawRange <= 5 ? 1 : rawRange <= 20 ? 2 : 5;
+  min = Math.floor(min / snapStep) * snapStep;
+  max = Math.ceil(max / snapStep) * snapStep;
   const range = max - min || 1;
   const width = 300;
+  const plotWidth = width - plotInset * 2;
   const chartTop = verticalPadding;
   const chartBottom = height - verticalPadding;
   const chartHeight = Math.max(1, chartBottom - chartTop);
   const points = values.map((v, i) => [
-    values.length === 1 ? width / 2 : (i / (values.length - 1)) * width,
+    values.length === 1 ? width / 2 : plotInset + (i / (values.length - 1)) * plotWidth,
     chartBottom - ((v - min) / range) * chartHeight,
   ]);
 
-  const pathData = createBezierPath(points, 0.3);
-  const areaData = `${pathData} L ${width},${chartBottom} L 0,${chartBottom} Z`;
-
-  // Zero line: only relevant when data spans positive and negative values
-  const hasNegative = min < 0 && max > 0;
-  const zeroY = hasNegative
-    ? chartBottom - ((0 - min) / range) * chartHeight
-    : null;
-
+  const pathData = createBezierPath(points, 0.3, {
+    minY: chartTop,
+    maxY: chartBottom,
+  });
+  const areaData = `${pathData} L ${width - plotInset},${chartBottom} L ${plotInset},${chartBottom} Z`;
   const normalizedCurrentIndex =
     Number.isInteger(currentIndex) && currentIndex >= 0 && currentIndex < values.length
       ? currentIndex
@@ -107,17 +117,22 @@ export default function SparkLine({
           });
     const activeBarIndex =
       groupSize === 1 ? normalizedCurrentIndex : Math.floor(normalizedCurrentIndex / groupSize);
-    const slotWidth = width / Math.max(barValues.length, 1);
+    const slotWidth = plotWidth / Math.max(barValues.length, 1);
     const barWidth = Math.max(3, Math.min(12, slotWidth - 1.5));
 
     return (
-      <div className="relative mt-1 opacity-80 transition-all duration-700 group-hover:opacity-100">
+      <div
+        className="relative mt-1 opacity-80 transition-all duration-700 group-hover:opacity-100"
+        data-chart-safe-inset={plotInset}
+      >
         <svg
           width="100%"
           height={height}
           viewBox={`0 0 ${width} ${height}`}
           preserveAspectRatio="none"
           className="overflow-visible"
+          role="img"
+          aria-label={ariaLabel}
         >
           <defs>
             <linearGradient id={areaId} x1="0" y1="0" x2="0" y2="1">
@@ -127,27 +142,18 @@ export default function SparkLine({
           </defs>
 
           {barValues.map((value, index) => {
-            const x = index * slotWidth + (slotWidth - barWidth) / 2;
-            const fill = getValueColor(value);
+            const intensity = (value - min) / range;
+            const barHeight = Math.max(3, intensity * chartHeight);
+            const x = plotInset + index * slotWidth + (slotWidth - barWidth) / 2;
+            const y = chartBottom - barHeight;
             const isCurrent = index === activeBarIndex;
-
-            let barY, barHeight;
-            if (zeroY !== null) {
-              // Bars grow from zero: positive upward, negative downward
-              const pixelsPerUnit = chartHeight / range;
-              barHeight = Math.max(4, Math.abs(value) * pixelsPerUnit);
-              barY = value >= 0 ? zeroY - barHeight : zeroY;
-            } else {
-              const intensity = (value - min) / range;
-              barHeight = Math.max(8, intensity * chartHeight);
-              barY = chartBottom - barHeight;
-            }
+            const fill = getValueColor(value);
 
             return (
               <g key={`bar-${index}`}>
                 <rect
                   x={x}
-                  y={barY}
+                  y={y}
                   width={barWidth}
                   height={barHeight}
                   rx={Math.min(barWidth / 2, 3)}
@@ -156,7 +162,7 @@ export default function SparkLine({
                 />
                 <rect
                   x={x}
-                  y={barY}
+                  y={y}
                   width={barWidth}
                   height={Math.min(barHeight, 18)}
                   rx={Math.min(barWidth / 2, 3)}
@@ -166,9 +172,9 @@ export default function SparkLine({
                 {isCurrent && (
                   <rect
                     x={Math.max(0, x - 1)}
-                    y={Math.max(0, barY - 1)}
+                    y={Math.max(0, y - 1)}
                     width={Math.min(width - x + 1, barWidth + 2)}
-                    height={Math.min(height - barY + 1, barHeight + 2)}
+                    height={Math.min(height - y + 1, barHeight + 2)}
                     rx={Math.min((barWidth + 2) / 2, 4)}
                     fill="none"
                     stroke={fill}
@@ -179,19 +185,6 @@ export default function SparkLine({
               </g>
             );
           })}
-
-          {/* Zero line */}
-          {zeroY !== null && (
-            <line
-              x1={0}
-              y1={zeroY}
-              x2={width}
-              y2={zeroY}
-              stroke="rgba(255,255,255,0.35)"
-              strokeWidth="1"
-              strokeDasharray="4 3"
-            />
-          )}
         </svg>
         {fade && (
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--glass-bg)] opacity-60" />
@@ -201,13 +194,18 @@ export default function SparkLine({
   }
 
   return (
-    <div className="relative mt-1 opacity-80 transition-all duration-700 group-hover:opacity-100">
+    <div
+      className="relative mt-1 opacity-80 transition-all duration-700 group-hover:opacity-100"
+      data-chart-safe-inset={plotInset}
+    >
       <svg
         width="100%"
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="none"
         className="overflow-visible"
+        role="img"
+        aria-label={ariaLabel}
       >
         <defs>
           {/* Area gradient - more opaque at top */}
@@ -248,19 +246,6 @@ export default function SparkLine({
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-
-        {/* Zero line */}
-        {zeroY !== null && (
-          <line
-            x1={0}
-            y1={zeroY}
-            x2={width}
-            y2={zeroY}
-            stroke="rgba(255,255,255,0.35)"
-            strokeWidth="1"
-            strokeDasharray="4 3"
-          />
-        )}
 
         {/* Current point marker */}
         <circle

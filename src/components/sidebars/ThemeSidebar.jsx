@@ -9,36 +9,24 @@ import {
   Sparkles,
   Sun,
   Moon,
-  Home,
   RefreshCw,
   Palette,
   Globe,
-  LayoutGrid,
   Type,
   Flame,
   Feather,
+  Link,
+  Lock,
 } from '../../icons';
 import SidebarContainer from './SidebarContainer';
+import {
+  SidebarAccordion,
+  SidebarGroupHeader,
+  SidebarNavigation,
+  SidebarToggle,
+} from './SidebarControls';
 
 const APP_FONT_OPTIONS = ['sans', 'Inter', 'Roboto', 'Lato', 'Montserrat', 'Open Sans', 'Raleway'];
-
-const LinkIcon = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-  </svg>
-);
 
 export default function ThemeSidebar({
   open,
@@ -74,6 +62,7 @@ export default function ThemeSidebar({
     unlockSettingsLock,
     lockSettingsSession,
   } = useConfig();
+  const [securityOpen, setSecurityOpen] = useState(false);
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [unlockPin, setUnlockPin] = useState('');
@@ -143,149 +132,120 @@ export default function ThemeSidebar({
       open={open}
       onClose={onClose}
       title={t('system.tabAppearance')}
-      icon={Palette}
       testId="theme-sidebar"
+      closeLabel={t('nav.done')}
+      navigation={
+        <SidebarNavigation
+          active="appearance"
+          onSwitchToTheme={() => {}}
+          onSwitchToLayout={onSwitchToLayout}
+          onSwitchToHeader={onSwitchToHeader}
+          t={t}
+        />
+      }
     >
-      <div className="space-y-8 font-sans">
-        {/* Switcher Tab */}
-        <div className="mb-6 flex items-center justify-center">
-          <div
-            className="flex rounded-2xl border p-1 shadow-sm"
-            style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
-          >
-            <button
-              className="relative z-10 flex h-9 w-12 items-center justify-center rounded-xl font-medium shadow-md transition-all"
-              style={{ backgroundColor: 'var(--accent-bg)', color: 'var(--accent-color)' }}
-              disabled
-              title={t('system.tabAppearance')}
-            >
-              <Palette className="h-5 w-5" />
-            </button>
-
-            <div className="mx-1 my-1 w-px" style={{ backgroundColor: 'var(--glass-border)' }} />
-
-            <button
-              className="flex h-9 w-12 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-all hover:bg-white/5 hover:text-[var(--text-primary)]"
-              onClick={onSwitchToLayout}
-              title={t('system.tabLayout')}
-            >
-              <LayoutGrid className="h-5 w-5" />
-            </button>
-
-            <div className="mx-1 my-1 w-px" style={{ backgroundColor: 'var(--glass-border)' }} />
-
-            <button
-              className="flex h-9 w-12 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-all hover:bg-white/5 hover:text-[var(--text-primary)]"
-              onClick={onSwitchToHeader}
-              title={t('system.tabHeader')}
-            >
-              <Type className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
+      <div className="sidebar-stack font-sans">
+        <SidebarGroupHeader title={t('settings.basics')} />
 
         {/* Theme & Language */}
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 gap-4">
-            <ModernDropdown
-              label={t('settings.theme')}
-              icon={Palette}
-              options={Object.keys(themes)}
-              current={currentTheme}
-              onChange={setCurrentTheme}
-              map={{ dark: t('theme.dark'), light: t('theme.light'), contextual: 'Smart (Auto)' }}
-              placeholder={t('dropdown.noneSelected')}
-            />
-            <ModernDropdown
-              label={t('settings.language')}
-              icon={Globe}
-              options={['en', 'nb', 'nn', 'sv', 'de', 'zh', 'fr']}
-              current={language}
-              onChange={setLanguage}
-              map={{
-                en: t('language.en'),
-                nb: t('language.nb'),
-                nn: t('language.nn'),
-                sv: t('language.sv'),
-                de: t('language.de'),
-                zh: t('language.zh'),
-                fr: t('language.fr'),
-              }}
-              placeholder={t('dropdown.noneSelected')}
-            />
-            <ModernDropdown
-              label={t('settings.unitSystem')}
-              icon={RefreshCw}
-              options={['follow_ha', 'metric', 'imperial']}
-              current={unitsMode}
-              onChange={setUnitsMode}
-              map={{
-                follow_ha: t('settings.unitSystem.followHa'),
-                metric: t('settings.unitSystem.metric'),
-                imperial: t('settings.unitSystem.imperial'),
-              }}
-              placeholder={t('dropdown.noneSelected')}
-            />
-            <ModernDropdown
-              label={t('settings.appFont')}
-              icon={Type}
-              options={APP_FONT_OPTIONS}
-              current={appFont}
-              onChange={setAppFont}
-              map={{
-                sans: 'Sans-serif',
-                Inter: 'Inter',
-                Roboto: 'Roboto',
-                Lato: 'Lato',
-                Montserrat: 'Montserrat',
-                'Open Sans': 'Open Sans',
-                Raleway: 'Raleway',
-              }}
-              placeholder={t('dropdown.noneSelected')}
-            />
-          </div>
+        <div className="sidebar-inspector-list">
+          <ModernDropdown
+            label={t('settings.theme')}
+            icon={Palette}
+            options={Object.keys(themes)}
+            current={currentTheme}
+            onChange={setCurrentTheme}
+            map={{ dark: t('theme.dark'), light: t('theme.light'), contextual: 'Smart (Auto)' }}
+            placeholder={t('dropdown.noneSelected')}
+            variant="inspector"
+          />
+          <ModernDropdown
+            label={t('settings.language')}
+            icon={Globe}
+            options={['en', 'nb', 'nn', 'sv', 'de', 'zh', 'fr']}
+            current={language}
+            onChange={setLanguage}
+            map={{
+              en: t('language.en'),
+              nb: t('language.nb'),
+              nn: t('language.nn'),
+              sv: t('language.sv'),
+              de: t('language.de'),
+              zh: t('language.zh'),
+              fr: t('language.fr'),
+            }}
+            placeholder={t('dropdown.noneSelected')}
+            variant="inspector"
+          />
+          <ModernDropdown
+            label={t('settings.unitSystem')}
+            icon={RefreshCw}
+            options={['follow_ha', 'metric', 'imperial']}
+            current={unitsMode}
+            onChange={setUnitsMode}
+            map={{
+              follow_ha: t('settings.unitSystem.followHa'),
+              metric: t('settings.unitSystem.metric'),
+              imperial: t('settings.unitSystem.imperial'),
+            }}
+            placeholder={t('dropdown.noneSelected')}
+            variant="inspector"
+          />
+          <ModernDropdown
+            label={t('settings.appFont')}
+            icon={Type}
+            options={APP_FONT_OPTIONS}
+            current={appFont}
+            onChange={setAppFont}
+            map={{
+              sans: 'Sans-serif',
+              Inter: 'Inter',
+              Roboto: 'Roboto',
+              Lato: 'Lato',
+              Montserrat: 'Montserrat',
+              'Open Sans': 'Open Sans',
+              Raleway: 'Raleway',
+            }}
+            placeholder={t('dropdown.noneSelected')}
+            variant="inspector"
+          />
         </div>
 
-        <div className="h-px" style={{ backgroundColor: 'var(--glass-border)' }} />
-
         {/* Background */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p
-              className="pl-1 text-xs font-bold tracking-widest uppercase"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              {t('settings.background')}
-            </p>
-            <button
-              type="button"
-              onClick={resetBackground}
-              className="rounded-sm px-2 py-1 text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase transition-colors hover:bg-[var(--glass-bg-hover)]"
-            >
-              {t('settings.reset')}
-            </button>
-          </div>
+        <div>
+          <SidebarGroupHeader
+            title={t('settings.background')}
+            action={t('settings.reset')}
+            onAction={resetBackground}
+          />
 
-          {/* Mode Selector - Compact */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="sidebar-background-grid">
             {bgModes.map((mode) => {
               const active = bgMode === mode.key;
               const ModeIcon = mode.icon;
+              const previewStyle =
+                mode.key === 'solid'
+                  ? { background: bgColor }
+                  : mode.key === 'gradient'
+                    ? {
+                        background: `linear-gradient(135deg, ${GRADIENT_PRESETS[bgGradient]?.from || '#0f172a'}, ${GRADIENT_PRESETS[bgGradient]?.to || '#020617'})`,
+                      }
+                    : undefined;
               return (
                 <button
                   key={mode.key}
+                  type="button"
                   onClick={() => setBgMode(mode.key)}
-                  className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 text-center transition-all ${
-                    active
-                      ? 'border-[var(--accent-color)] bg-[var(--accent-bg)] text-[var(--accent-color)]'
-                      : 'border-transparent text-[var(--text-secondary)] hover:bg-white/10'
-                  }`}
-                  style={!active ? { backgroundColor: 'var(--glass-bg)' } : {}}
+                  aria-pressed={active}
+                  className={`sidebar-background-option ${active ? 'is-active' : ''}`}
                 >
-                  <ModeIcon className="h-4 w-4" />
-                  <span className="text-[9px] leading-tight font-bold tracking-wider uppercase">
-                    {mode.label}
+                  <span
+                    className={`sidebar-background-option__preview sidebar-background-option__preview--${mode.key}`}
+                    style={previewStyle}
+                  >
+                    <ModeIcon aria-hidden="true" />
                   </span>
+                  <span className="sidebar-background-option__label">{mode.label}</span>
                 </button>
               );
             })}
@@ -293,10 +253,7 @@ export default function ThemeSidebar({
 
           {/* Mode-specific controls */}
           {bgMode === 'theme' && (
-            <div
-              className="rounded-xl border p-3 text-center"
-              style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
-            >
+            <div className="sidebar-inline-panel text-center">
               <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                 {t('settings.bgFollowThemeHint')}
               </p>
@@ -304,7 +261,7 @@ export default function ThemeSidebar({
           )}
 
           {bgMode === 'solid' && (
-            <div className="flex items-center gap-4 py-2">
+            <div className="sidebar-inline-panel flex items-center gap-4">
               <div
                 className="group relative h-12 w-12 cursor-pointer overflow-hidden rounded-xl border shadow-lg"
                 style={{ borderColor: 'var(--glass-border)' }}
@@ -342,7 +299,7 @@ export default function ThemeSidebar({
           )}
 
           {bgMode === 'gradient' && (
-            <div className="flex flex-wrap gap-3 py-2">
+            <div className="sidebar-inline-panel flex flex-wrap gap-3">
               {Object.entries(GRADIENT_PRESETS).map(([key, preset]) => {
                 const active = bgGradient === key;
                 return (
@@ -369,7 +326,7 @@ export default function ThemeSidebar({
           )}
 
           {bgMode === 'custom' && (
-            <div className="space-y-3">
+            <div className="sidebar-inline-panel space-y-3">
               <div className="grid grid-cols-1 gap-3">
                 <div className="relative">
                   <input
@@ -384,7 +341,7 @@ export default function ThemeSidebar({
                     }}
                     placeholder={t('settings.bgUrl')}
                   />
-                  <LinkIcon
+                  <Link
                     className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
                     style={{ color: 'var(--text-secondary)' }}
                   />
@@ -394,16 +351,14 @@ export default function ThemeSidebar({
           )}
         </div>
 
-        <div className="h-px" style={{ backgroundColor: 'var(--glass-border)' }} />
-
-        <div className="space-y-4">
-          <p
-            className="pl-1 text-xs font-bold tracking-widest uppercase"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            {t('settings.lock.title')}
-          </p>
-          <div className="popup-surface space-y-3 rounded-xl p-3">
+        <SidebarAccordion
+          id="security"
+          icon={Lock}
+          title={t('settings.lock.title')}
+          isOpen={securityOpen}
+          toggle={() => setSecurityOpen((previous) => !previous)}
+        >
+          <div className="space-y-3">
             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
               {t('settings.lock.description')}
             </p>
@@ -528,61 +483,50 @@ export default function ThemeSidebar({
               </p>
             )}
           </div>
-        </div>
-
-        <div className="h-px" style={{ backgroundColor: 'var(--glass-border)' }} />
+        </SidebarAccordion>
 
         {/* Behavior */}
-        <div className="space-y-4">
-          <div className="mb-4 flex items-center justify-between">
-            <span
-              className="flex items-center gap-2 pl-1 text-xs font-bold tracking-widest uppercase"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              <Home className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-              {t('settings.inactivity')}
-            </span>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => {
-                  const newVal = inactivityTimeout > 0 ? 0 : 60;
-                  setInactivityTimeout(newVal);
-                  try {
-                    localStorage.setItem('tunet_inactivity_timeout', String(newVal));
-                  } catch {}
-                }}
-                className={`relative h-6 w-10 rounded-full p-1 transition-colors ${inactivityTimeout > 0 ? 'bg-[var(--glass-bg-hover)]' : 'bg-gray-500/30'}`}
-              >
-                <div
-                  className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${inactivityTimeout > 0 ? 'translate-x-4' : 'translate-x-0'}`}
-                />
-              </button>
-            </div>
-          </div>
+        <div>
+          <SidebarGroupHeader title={t('settings.behavior')} />
+          <div className="px-6 py-2 max-[479px]:px-[18px]">
+            <SidebarToggle
+              label={t('settings.inactivity')}
+              value={inactivityTimeout > 0}
+              onChange={(enabled) => {
+                const nextValue = enabled ? 60 : 0;
+                setInactivityTimeout(nextValue);
+                try {
+                  localStorage.setItem('tunet_inactivity_timeout', String(nextValue));
+                } catch {}
+              }}
+            />
 
-          {inactivityTimeout > 0 && (
-            <div className="animate-in fade-in slide-in-from-top-1 px-1 pt-2 duration-200">
-              <div className="mb-1 flex justify-end">
-                <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
-                  {inactivityTimeout}s
-                </span>
+            {inactivityTimeout > 0 && (
+              <div className="animate-in fade-in slide-in-from-top-1 pt-1 pb-4 duration-200">
+                <div className="mb-1 flex justify-end">
+                  <span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
+                    {inactivityTimeout}s
+                  </span>
+                </div>
+                <M3Slider
+                  min={10}
+                  max={300}
+                  step={10}
+                  value={inactivityTimeout}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    setInactivityTimeout(val);
+                    try {
+                      localStorage.setItem('tunet_inactivity_timeout', String(val));
+                    } catch {}
+                  }}
+                  variant="thinLg"
+                  ariaLabel={t('settings.inactivity')}
+                  ariaValueText={`${inactivityTimeout}s`}
+                />
               </div>
-              <M3Slider
-                min={10}
-                max={300}
-                step={10}
-                value={inactivityTimeout}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value, 10);
-                  setInactivityTimeout(val);
-                  try {
-                    localStorage.setItem('tunet_inactivity_timeout', String(val));
-                  } catch {}
-                }}
-                colorClass="bg-[var(--text-secondary)]"
-              />
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </SidebarContainer>

@@ -1,7 +1,7 @@
 import { Edit2, Droplets } from '../icons';
 import StatusPill from '../components/cards/StatusPill';
 import { useHomeAssistant, useModalActions, usePages } from '../contexts';
-import { isSonosMediaEntity } from '../utils';
+import { isSonosMediaEntity, resolveStatusGroupPill, STATUS_GROUP_PILL_TYPE } from '../utils';
 
 const BEREGNUNG_ZONES = [
   { key: 'z1', name: 'Terrasse R', sensorId: 'binary_sensor.irrigation_unlimited_c1_z1' },
@@ -40,6 +40,7 @@ export default function StatusBar({
     setActiveMediaSessionSensorIds,
     setActiveMediaModal,
     setShowAlarmModal,
+    setShowStatusGroupModal,
     setShowStatusPillsConfig,
     setShowEntityCountModal,
     setShowBeregnungModal,
@@ -380,6 +381,37 @@ export default function StatusBar({
                   isMobile={isMobile}
                   iconOnly={isMobile}
                   onClick={entityIds.length > 0 ? () => setShowEntityCountModal({ entityIds, activeState, label: pill.label || '', singularLabel: pill.singularLabel || '' }) : undefined}
+                />
+              );
+            }
+
+            if (pill.type === STATUS_GROUP_PILL_TYPE) {
+              const groupData = resolveStatusGroupPill(pill, entities, t);
+              if (!groupData.shouldRender) return null;
+
+              return (
+                <StatusPill
+                  key={pill.id}
+                  entity={groupData.syntheticEntity}
+                  pill={{
+                    ...pill,
+                    icon: pill.icon || groupData.preset.icon,
+                    iconBgColor: pill.iconBgColor || groupData.preset.iconBgColor,
+                    iconColor: pill.iconColor || groupData.preset.iconColor,
+                  }}
+                  getA={getA}
+                  t={t}
+                  isMobile={isMobile}
+                  badge={pill.showCount && groupData.count > 0 ? groupData.count : undefined}
+                  onClick={
+                    pill.clickable !== false
+                      ? () =>
+                          setShowStatusGroupModal({
+                            pill,
+                            presetId: groupData.preset.id,
+                          })
+                      : undefined
+                  }
                 />
               );
             }

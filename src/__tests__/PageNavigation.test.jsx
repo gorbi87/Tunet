@@ -60,4 +60,30 @@ describe('PageNavigation', () => {
 
     expect(screen.getByText('Home')).toBeInTheDocument();
   });
+
+  it('uses the larger mobile page-button font', () => {
+    mockUsePages.mockReturnValue({
+      pagesConfig: { pages: ['home'] },
+      persistConfig: vi.fn(),
+      pageSettings: {},
+      headerSettings: { showPagePillLabelsOnMobile: true },
+    });
+    mockUseModalActions.mockReturnValue({ setShowAddPageModal: vi.fn() });
+
+    render(
+      <PageNavigation
+        pages={[{ id: 'home', label: 'Home', icon: MockIcon }]}
+        activePage="home"
+        setActivePage={vi.fn()}
+        editMode={false}
+        setEditingPage={vi.fn()}
+        t={(k) => k}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Home' })).toHaveClass(
+      'text-[11px]',
+      'sm:text-xs'
+    );
+  });
 });

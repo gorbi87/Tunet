@@ -220,9 +220,7 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
       key={activePage}
       className="page-transition grid items-start font-sans"
       style={{
-        gap: isMobile
-          ? '8px'
-          : `calc(${gridGapV}px * var(--density-gap-scale, 1)) calc(${gridGapH}px * var(--density-gap-scale, 1))`,
+        gap: `calc(${gridGapV}px * var(--density-gap-scale, 1)) calc(${gridGapH}px * var(--density-gap-scale, 1))`,
         gridAutoRows: 'auto',
         gridTemplateColumns: `repeat(${gridColCount}, minmax(0, 1fr))`,
       }}

@@ -1,30 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import M3Slider from '../ui/M3Slider';
 import {
+  getEffectiveGridColumnsForWidth,
   getMaxGridColumnsForWidth,
-  MAX_GRID_COLUMNS,
   MIN_GRID_COLUMNS,
 } from '../../hooks/useResponsiveGrid';
-import { LayoutGrid, RefreshCw, Columns, Eye, Maximize2, Palette, Type } from '../../icons';
+import { MOBILE_BREAKPOINT } from '../../config/constants';
+import { Columns, Eye, Maximize2 } from '../../icons';
 import SidebarContainer from './SidebarContainer';
-
-// Additional icons
-const ChevronDownIcon = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-);
+import {
+  SidebarAccordion,
+  SidebarNavigation,
+  SidebarResetButton as ResetButton,
+} from './SidebarControls';
 
 export default function LayoutSidebar({
   open,
@@ -40,7 +28,6 @@ export default function LayoutSidebar({
   setGridColumns,
   dynamicGridColumns,
   setDynamicGridColumns,
-  effectiveGridColumns,
   cardBorderRadius,
   setCardBorderRadius,
   cardTransparency,
@@ -66,10 +53,11 @@ export default function LayoutSidebar({
     spacing: false,
     cards: false,
   });
-  const [maxGridColumns, setMaxGridColumns] = useState(() => {
-    if (typeof window === 'undefined') return MAX_GRID_COLUMNS;
-    return getMaxGridColumnsForWidth(window.innerWidth);
+  const [gridViewportWidth, setGridViewportWidth] = useState(() => {
+    if (typeof window === 'undefined') return Number.POSITIVE_INFINITY;
+    return window.innerWidth;
   });
+  const maxGridColumns = getMaxGridColumnsForWidth(gridViewportWidth);
   const selectableMaxGridColumns = dynamicGridColumns
     ? Math.min(maxGridColumns, 4)
     : maxGridColumns;
@@ -79,76 +67,25 @@ export default function LayoutSidebar({
   const pageGridColumns = pageSettings[activePage]?.gridColumns;
   const hasPageOverride = Number.isFinite(pageGridColumns);
   const displayedGridColumns = hasPageOverride ? pageGridColumns : gridColumns;
-  const computedEffectiveGridColumns = Math.max(
-    MIN_GRID_COLUMNS,
-    Math.min(displayedGridColumns, selectableMaxGridColumns)
+  const computedEffectiveGridColumns = getEffectiveGridColumnsForWidth(
+    gridViewportWidth,
+    displayedGridColumns,
+    dynamicGridColumns
   );
 
+  const updateGridColumns = (columns) => {
+    if (gridViewportWidth < MOBILE_BREAKPOINT && dynamicGridColumns) {
+      setDynamicGridColumns(false);
+    }
+    setGridColumns(columns);
+  };
+
   useEffect(() => {
-    const update = () => setMaxGridColumns(getMaxGridColumnsForWidth(window.innerWidth));
+    const update = () => setGridViewportWidth(window.innerWidth);
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
-
-  const ResetButton = ({ onClick }) => (
-    <button
-      onClick={onClick}
-      className="rounded-full p-1.5 transition-all hover:bg-white/10"
-      style={{ color: 'var(--text-secondary)' }}
-      title={t('settings.reset')}
-    >
-      <RefreshCw className="h-3.5 w-3.5" />
-    </button>
-  );
-
-  // Accordion section wrapper
-  const Section = ({ id, icon: Icon, title, children }) => {
-    const isOpen = layoutSections[id];
-    return (
-      <div
-        className={`rounded-2xl border transition-all ${isOpen ? '' : 'border-transparent'}`}
-        style={
-          isOpen ? { backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' } : {}
-        }
-      >
-        <button
-          type="button"
-          onClick={() => toggleSection(id)}
-          className="group flex w-full items-center gap-3 px-3 py-3 text-left transition-colors"
-        >
-          <div
-            className={`rounded-xl p-2 transition-colors ${isOpen ? '' : 'group-hover:bg-white/5'}`}
-            style={
-              isOpen
-                ? { backgroundColor: 'var(--accent-bg)', color: 'var(--accent-color)' }
-                : { color: 'var(--text-secondary)' }
-            }
-          >
-            <Icon className="h-4.5 w-4.5" />
-          </div>
-          <span
-            className="flex-1 text-[13px] font-semibold transition-colors"
-            style={{ color: isOpen ? 'var(--text-primary)' : 'var(--text-secondary)' }}
-          >
-            {title}
-          </span>
-          <ChevronDownIcon
-            className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-            style={{ color: 'var(--text-secondary)' }}
-          />
-        </button>
-        <div
-          className="grid transition-all duration-300 ease-in-out"
-          style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
-        >
-          <div className="overflow-hidden">
-            <div className="space-y-6 px-4 pb-4">{children}</div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const hts = sectionSpacing?.headerToStatus ?? 16;
   const stn = sectionSpacing?.statusToNav ?? 24;
@@ -191,47 +128,31 @@ export default function LayoutSidebar({
   };
 
   return (
-    <SidebarContainer open={open} onClose={onClose} title={t('settings.layout')} icon={LayoutGrid}>
-      <div className="space-y-2 font-sans">
-        {/* Switcher Tab */}
-        <div className="mb-6 flex items-center justify-center">
-          <div
-            className="flex rounded-2xl border p-1 shadow-sm"
-            style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
-          >
-            <button
-              className="flex h-9 w-12 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-all hover:bg-white/5 hover:text-[var(--text-primary)]"
-              onClick={onSwitchToTheme}
-              title={t('system.tabAppearance')}
-            >
-              <Palette className="h-5 w-5" />
-            </button>
-
-            <div className="mx-1 my-1 w-px" style={{ backgroundColor: 'var(--glass-border)' }} />
-
-            <button
-              className="relative z-10 flex h-9 w-12 items-center justify-center rounded-xl font-medium shadow-md transition-all"
-              style={{ backgroundColor: 'var(--accent-bg)', color: 'var(--accent-color)' }}
-              disabled
-              title={t('system.tabLayout')}
-            >
-              <LayoutGrid className="h-5 w-5" />
-            </button>
-
-            <div className="mx-1 my-1 w-px" style={{ backgroundColor: 'var(--glass-border)' }} />
-
-            <button
-              className="flex h-9 w-12 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-all hover:bg-white/5 hover:text-[var(--text-primary)]"
-              onClick={onSwitchToHeader}
-              title={t('system.tabHeader')}
-            >
-              <Type className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
+    <SidebarContainer
+      open={open}
+      onClose={onClose}
+      title={t('settings.layout')}
+      testId="layout-sidebar"
+      closeLabel={t('nav.done')}
+      navigation={
+        <SidebarNavigation
+          active="layout"
+          onSwitchToTheme={onSwitchToTheme}
+          onSwitchToLayout={() => {}}
+          onSwitchToHeader={onSwitchToHeader}
+          t={t}
+        />
+      }
+    >
+      <div className="sidebar-stack font-sans">
         {/* ── Grid Section ── */}
-        <Section id="grid" icon={Columns} title={t('settings.layoutGrid')}>
+        <SidebarAccordion
+          id="grid"
+          icon={Columns}
+          title={t('settings.layoutGrid')}
+          isOpen={layoutSections.grid}
+          toggle={toggleSection}
+        >
           {/* Grid Columns */}
           <div>
             <div className="mb-2 flex items-center justify-between">
@@ -335,8 +256,8 @@ export default function LayoutSidebar({
               min={MIN_GRID_COLUMNS}
               max={selectableMaxGridColumns}
               step={1}
-              value={effectiveGridColumns}
-              onChange={(e) => setGridColumns(parseInt(e.target.value, 10))}
+              value={computedEffectiveGridColumns}
+              onChange={(e) => updateGridColumns(parseInt(e.target.value, 10))}
             />
           </div>
           {/* Gap H */}
@@ -393,10 +314,16 @@ export default function LayoutSidebar({
               onChange={(e) => setGridGapV(parseInt(e.target.value, 10))}
             />
           </div>
-        </Section>
+        </SidebarAccordion>
 
         {/* ── Spacing Section ── */}
-        <Section id="spacing" icon={Maximize2} title={t('settings.sectionSpacing')}>
+        <SidebarAccordion
+          id="spacing"
+          icon={Maximize2}
+          title={t('settings.sectionSpacing')}
+          isOpen={layoutSections.spacing}
+          toggle={toggleSection}
+        >
           {/* Header -> Status */}
           <div>
             <div className="mb-2 flex items-center justify-between">
@@ -486,10 +413,16 @@ export default function LayoutSidebar({
               onChange={(e) => updateSectionSpacing({ navToGrid: parseInt(e.target.value, 10) })}
             />
           </div>
-        </Section>
+        </SidebarAccordion>
 
         {/* ── Card Style Section ── */}
-        <Section id="cards" icon={Eye} title={t('settings.layoutCards')}>
+        <SidebarAccordion
+          id="cards"
+          icon={Eye}
+          title={t('settings.layoutCards')}
+          isOpen={layoutSections.cards}
+          toggle={toggleSection}
+        >
           {/* Card Material */}
           <div className="space-y-2">
             <span
@@ -786,7 +719,7 @@ export default function LayoutSidebar({
               </div>
             </div>
           </div>
-        </Section>
+        </SidebarAccordion>
       </div>
     </SidebarContainer>
   );

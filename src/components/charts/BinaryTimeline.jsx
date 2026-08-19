@@ -1,31 +1,59 @@
 import React, { useMemo } from 'react';
 
-export default function BinaryTimeline({ events, startTime, endTime }) {
+const ACTIVE_STATES = new Set([
+  'on',
+  'open',
+  'detected',
+  'unlocked',
+  'wet',
+  'home',
+  'active',
+  'cleaning',
+  'occupied',
+]);
+
+const isActiveState = (state) => ACTIVE_STATES.has(String(state).toLowerCase());
+
+const formatDuration = (milliseconds) => {
+  const totalMinutes = Math.max(0, Math.round(milliseconds / 60000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return `${minutes}m`;
+  return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
+};
+
+export default function BinaryTimeline({
+  events,
+  startTime,
+  endTime,
+  activeLabel = 'Active',
+  eventLabel = 'Events',
+}) {
   const eventList = useMemo(() => (Array.isArray(events) ? events : []), [events]);
+  const totalDuration = endTime.getTime() - startTime.getTime();
 
   const segments = useMemo(() => {
-    const totalDuration = endTime.getTime() - startTime.getTime();
     if (totalDuration <= 0) return [];
 
-    // Sort events by time ascending
-    const sortedEvents = [...eventList].sort((a, b) => a.time - b.time);
+    const sortedEvents = [...eventList]
+      .filter((event) => event?.time instanceof Date && !Number.isNaN(event.time.getTime()))
+      .sort((a, b) => a.time - b.time);
+    if (sortedEvents.length === 0) return [];
 
-    const segs = [];
-
-    // If we only have one event, fill the whole window with that state
     if (sortedEvents.length === 1) {
-      segs.push({
-        state: sortedEvents[0].state,
-        start: startTime,
-        end: endTime,
-        duration: endTime.getTime() - startTime.getTime(),
-      });
-      return segs;
+      return [
+        {
+          state: sortedEvents[0].state,
+          start: startTime,
+          end: endTime,
+          duration: totalDuration,
+        },
+      ];
     }
 
-    // Fill initial gap if data starts late
-    if (sortedEvents.length > 0 && sortedEvents[0].time > startTime) {
-      segs.push({
+    const result = [];
+    if (sortedEvents[0].time > startTime) {
+      result.push({
         state: 'nodata',
         start: startTime,
         end: sortedEvents[0].time,
@@ -33,103 +61,75 @@ export default function BinaryTimeline({ events, startTime, endTime }) {
       });
     }
 
-    // We iterate to fill the space from startTime to endTime
-    // If the first event is after startTime, we need to handle the gap.
-    // However, usually HA history returns the state at start time as the first entry.
-    // If not, we have to assume the first available state was active before too, or 'unknown'.
-    // For simplicity, we process what we have.
+    for (let index = 0; index < sortedEvents.length; index += 1) {
+      const currentEvent = sortedEvents[index];
+      const nextEvent = sortedEvents[index + 1];
+      const segmentStart = currentEvent.time < startTime ? startTime : currentEvent.time;
+      const candidateEnd = nextEvent ? nextEvent.time : endTime;
+      const segmentEnd = candidateEnd > endTime ? endTime : candidateEnd;
+      if (segmentEnd <= segmentStart || segmentStart >= endTime) continue;
 
-    // Add a virtual event at startTime if needed ensuring we cover the full range
-    // by extending the first actual event backwards if reasonable, or simple gaps.
-    // Better strategy: Iterating and clipping.
-
-    for (let i = 0; i < sortedEvents.length; i++) {
-      const currentEvent = sortedEvents[i];
-      const nextEvent = sortedEvents[i + 1];
-
-      // Start of this segment (clipped to window start)
-      let segStart = currentEvent.time;
-      if (segStart < startTime) segStart = startTime;
-
-      // End of this segment (clipped to window end)
-      let segEnd = nextEvent ? nextEvent.time : endTime;
-      if (segEnd > endTime) segEnd = endTime;
-
-      // Special case: If this is the first event and it starts AFTER startTime,
-      // we might have a gap at the beginning.
-      // If i===0 and currentEvent.time > startTime, we theoretically have an unknown state before.
-      // But often the previous state is valid.
-      // Let's just visualize what we have.
-
-      // If effective segment has duration
-      if (segEnd > segStart) {
-        segs.push({
-          state: currentEvent.state,
-          start: segStart,
-          end: segEnd,
-          duration: segEnd.getTime() - segStart.getTime(),
-        });
-      }
+      result.push({
+        state: currentEvent.state,
+        start: segmentStart,
+        end: segmentEnd,
+        duration: segmentEnd.getTime() - segmentStart.getTime(),
+      });
     }
+    return result;
+  }, [endTime, eventList, startTime, totalDuration]);
 
-    return segs;
-  }, [eventList, startTime, endTime]);
+  const summary = useMemo(() => {
+    const activeSegments = segments.filter((segment) => isActiveState(segment.state));
+    return {
+      activeDuration: activeSegments.reduce((sum, segment) => sum + segment.duration, 0),
+      activeEvents: activeSegments.length,
+    };
+  }, [segments]);
 
-  if (eventList.length === 0) return null;
-
-  const totalDuration = endTime.getTime() - startTime.getTime();
+  if (segments.length === 0 || totalDuration <= 0) return null;
 
   const getStyle = (state) => {
-    const s = String(state).toLowerCase();
-    const isActive = [
-      'on',
-      'open',
-      'detected',
-      'unlocked',
-      'wet',
-      'home',
-      'active',
-      'cleaning',
-      'occupied',
-    ].includes(s);
-    if (isActive) return 'bg-green-400 opacity-80';
-    if (['unavailable', 'unknown'].includes(s))
+    const normalized = String(state).toLowerCase();
+    if (isActiveState(normalized)) return 'bg-[var(--status-success-fg)] opacity-85';
+    if (['unavailable', 'unknown', 'nodata'].includes(normalized)) {
       return 'bg-[var(--text-secondary)] opacity-15 pattern-diagonal-stripes';
+    }
     return 'bg-[var(--text-secondary)] opacity-25';
   };
-
-  const getLabel = (state) => {
-    // Optional: Map some common states to shorter text for tooltips
-    return state;
-  };
+  const timelineLabel = `${activeLabel}: ${formatDuration(summary.activeDuration)}. ${eventLabel}: ${
+    summary.activeEvents
+  }.`;
 
   return (
-    <div className="mb-8 w-full">
-      {/* The Bar */}
+    <div className="mb-8 w-full" style={{ containerType: 'inline-size' }}>
       <div
-        className="relative flex h-12 w-full overflow-hidden rounded-lg"
+        className="relative flex h-10 w-full overflow-hidden rounded-lg"
         style={{ backgroundColor: 'var(--glass-bg)' }}
+        role="img"
+        aria-label={timelineLabel}
       >
-        {segments.map((seg, i) => {
-          const widthPct = (seg.duration / totalDuration) * 100;
-          // Only show border if width is substantial enough to not look like glitch
-          const showBorder = widthPct > 0.5;
+        {segments.map((segment, index) => {
+          const widthPct = (segment.duration / totalDuration) * 100;
+          const active = isActiveState(segment.state);
 
           return (
             <div
-              key={`${seg.start.getTime()}-${i}`}
-              style={{ width: `${widthPct}%` }}
-              className={`h-full ${showBorder ? 'border-r border-[var(--card-bg)]' : ''} last:border-0 ${getStyle(seg.state)} transition-all`}
-              title={`${getLabel(seg.state)}: ${seg.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${seg.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+              key={`${segment.start.getTime()}-${index}`}
+              style={{
+                width: `${widthPct}%`,
+                minWidth: active ? 4 : undefined,
+              }}
+              className={`h-full ${widthPct > 0.5 ? 'border-r border-[var(--card-bg)]' : ''} last:border-0 ${getStyle(segment.state)} transition-all`}
+              title={`${segment.state}: ${segment.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${segment.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
             />
           );
         })}
       </div>
 
-      {/* Time Axis */}
-      <div className="mt-2 flex justify-between px-1 font-mono text-[10px] text-[var(--text-secondary)] uppercase opacity-50">
+      <div className="mt-2 flex justify-between px-1 font-mono text-[10px] uppercase text-[var(--text-secondary)] opacity-50">
         <span>{startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-        <span>
+        <span className="binary-timeline__axis-intermediate">
           {new Date(startTime.getTime() + totalDuration * 0.25).toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
@@ -141,7 +141,7 @@ export default function BinaryTimeline({ events, startTime, endTime }) {
             minute: '2-digit',
           })}
         </span>
-        <span>
+        <span className="binary-timeline__axis-intermediate">
           {new Date(startTime.getTime() + totalDuration * 0.75).toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',

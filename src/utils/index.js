@@ -18,16 +18,37 @@ export {
   convertValueByKind,
   formatUnitValue,
   formatKindValueForDisplay,
+  normalizeDecimalPlaces,
 } from './units';
 export { isValidPin, hashPin, verifyPin } from './pinLock';
 export {
   isEntityDataStale,
   ENTITY_STALE_DISCONNECT_GRACE_MS,
   ENTITY_STALE_NO_UPDATE_MS,
+  CONNECTION_WARNING_DELAY_MS,
+  MOBILE_CONNECTION_WARNING_DELAY_MS,
+  getConnectionWarningDelayMs,
 } from './connectionHealth';
 export { getEffectiveRoomEntityIds, filterEntitiesByDomain } from './roomEntities';
 export { matchCarEntities } from './carEntityMatcher';
 export { CHART_STATUS_COLORS, WEATHER_BAND_COLORS, getThresholdColor } from './chartColors';
 export { downsampleTimeSeries } from './sensorHistory';
 export { isMusicAssistantMediaEntity, isSonosMediaEntity } from './mediaEntityClassification';
-export { buildRegistryLookupMap, enrichEntitiesWithRegistryMetadata } from './entityRegistryMetadata';
+export {
+  buildRegistryLookupMap,
+  enrichEntitiesWithRegistryMetadata,
+} from './entityRegistryMetadata';
+export {
+  STATUS_GROUP_PILL_TYPE,
+  STATUS_GROUP_SELECTION_ALL,
+  STATUS_GROUP_SELECTION_INCLUDE,
+  STATUS_GROUP_SELECTION_EXCLUDE,
+  STATUS_GROUP_PRESETS,
+  DEFAULT_STATUS_GROUP_PRESET,
+  getStatusGroupPreset,
+  getStatusGroupPresetText,
+  getStatusGroupSelectionMode,
+  buildStatusGroupPillVisuals,
+  resolveStatusGroupCandidates,
+  resolveStatusGroupPill,
+} from './statusGroupPills';

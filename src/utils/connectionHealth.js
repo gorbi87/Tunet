@@ -1,5 +1,14 @@
+import { MOBILE_BREAKPOINT } from '../config/constants';
+
 export const ENTITY_STALE_DISCONNECT_GRACE_MS = 15_000;
 export const ENTITY_STALE_NO_UPDATE_MS = 60_000;
+export const CONNECTION_WARNING_DELAY_MS = 5_000;
+export const MOBILE_CONNECTION_WARNING_DELAY_MS = 15_000;
+
+export const getConnectionWarningDelayMs = (viewportWidth) =>
+  viewportWidth < MOBILE_BREAKPOINT
+    ? MOBILE_CONNECTION_WARNING_DELAY_MS
+    : CONNECTION_WARNING_DELAY_MS;
 
 /**
  * @param {Object} input

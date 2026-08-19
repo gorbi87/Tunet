@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X } from '../../icons';
 
 /**
  * @param {Object} props
@@ -7,10 +6,19 @@ import { X } from '../../icons';
  * @param {(e?: any) => void} props.onClose
  * @param {string} props.title
  * @param {React.ReactNode} props.children
- * @param {any} [props.icon]
  * @param {string} [props.testId]
+ * @param {React.ReactNode} [props.navigation]
+ * @param {string} [props.closeLabel]
  */
-export default function SidebarContainer({ open, onClose, title, children, icon: Icon, testId }) {
+export default function SidebarContainer({
+  open,
+  onClose,
+  title,
+  children,
+  testId,
+  navigation,
+  closeLabel = 'Done',
+}) {
   const panelRef = useRef(null);
   const [isColorPickerActive, setIsColorPickerActive] = useState(false);
 
@@ -73,12 +81,11 @@ export default function SidebarContainer({ open, onClose, title, children, icon:
     <>
       {/* Backdrop - Removed blur and reduced opacity so changes can be seen clearly */}
       <div
-        className={`fixed inset-0 z-[100] transition-opacity duration-300 ${
+        className={`tunet-sidebar-backdrop fixed inset-0 z-[100] transition-opacity duration-300 ${
           open ? 'pointer-events-auto' : 'pointer-events-none'
         }`}
         style={{
-          backgroundColor: 'var(--modal-backdrop, rgba(0, 0, 0, 0.45))',
-          opacity: open ? 0.5 : 0,
+          opacity: open ? 0.62 : 0,
         }}
         onClick={handleBackdropClick}
       />
@@ -87,48 +94,36 @@ export default function SidebarContainer({ open, onClose, title, children, icon:
       <div
         ref={panelRef}
         data-testid={testId}
-        className={`popup-anim cubic-bezier(0.34, 1.56, 0.64, 1) fixed inset-y-0 right-0 z-[101] w-full max-w-[360px] transform border-l shadow-2xl backdrop-blur-xl transition-transform duration-500 ${
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className={`tunet-sidebar popup-anim fixed inset-y-0 right-0 z-[101] w-full max-w-[420px] transform border-l backdrop-blur-2xl transition-transform duration-300 ease-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
-        style={{
-          backgroundColor: 'var(--modal-surface, var(--glass-bg))',
-          borderColor: 'var(--modal-border, var(--glass-border))',
-          borderLeftWidth: 'var(--modal-border-width, 1px)',
-        }}
       >
         <div className="flex h-full flex-col">
           {/* Header */}
-          <div
-            className="flex items-center justify-between border-b px-6 py-5"
-            style={{ borderColor: 'color-mix(in srgb, var(--glass-border) 45%, transparent)' }}
-          >
-            <div className="flex items-center gap-3">
-              {Icon && (
-                <div
-                  className="rounded-xl p-2"
-                  style={{ backgroundColor: 'var(--glass-bg-hover)', color: 'var(--text-primary)' }}
-                >
-                  <Icon className="h-5 w-5" />
-                </div>
-              )}
-              <h2
-                className="text-lg font-bold tracking-wide"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                {title}
-              </h2>
-            </div>
+          <div className="tunet-sidebar__header flex flex-none items-center justify-between border-b px-6">
+            <h2 className="text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
+              {title}
+            </h2>
             <button
+              type="button"
               onClick={onClose}
-              className="modal-close transition-colors"
-              style={{ color: 'var(--text-secondary)' }}
+              data-testid="sidebar-done"
+              aria-label={closeLabel}
+              className="tunet-sidebar__done px-3 text-sm font-medium transition-colors"
             >
-              <X className="h-5 w-5" />
+              {closeLabel}
             </button>
           </div>
 
+          {navigation}
+
           {/* Content - Scrollable */}
-          <div className="custom-scrollbar flex-1 space-y-8 overflow-y-auto p-6">{children}</div>
+          <div className="tunet-sidebar__content custom-scrollbar min-h-0 flex-1 overflow-y-auto">
+            {children}
+          </div>
         </div>
       </div>
     </>

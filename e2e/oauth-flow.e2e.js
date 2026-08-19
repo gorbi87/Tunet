@@ -14,7 +14,9 @@ test.describe('OAuth Authentication Flow', () => {
 
   test('should show onboarding when no auth is present', async ({ page }) => {
     const onboardingModal = await openOnboarding(page);
-    await expect(onboardingModal.getByRole('heading', { name: 'Connection' }).first()).toBeVisible();
+    await expect(
+      onboardingModal.getByRole('heading', { name: 'Connection' }).first()
+    ).toBeVisible();
   });
 
   test('should allow entering HA URL during onboarding', async ({ page }) => {
@@ -24,6 +26,19 @@ test.describe('OAuth Authentication Flow', () => {
 
     await urlInput.fill('http://home-assistant.local:8123');
     await expect(urlInput).toHaveValue('http://home-assistant.local:8123');
+  });
+
+  test('should keep an OAuth URL as a draft until login is clicked', async ({ page }) => {
+    await openOnboarding(page);
+    const urlInput = page.getByPlaceholder('https://homeassistant.local:8123');
+    const urlBeforeTyping = page.url();
+
+    await urlInput.fill('h');
+
+    await expect(urlInput).toHaveValue('h');
+    await expect(page.getByText('Connecting to Home Assistant...')).toHaveCount(0);
+    await expect(page).toHaveURL(urlBeforeTyping);
+    expect(await page.evaluate(() => localStorage.getItem('ha_url'))).toBeNull();
   });
 
   test('should validate HA URL format', async ({ page }) => {
@@ -76,11 +91,17 @@ test.describe('OAuth Authentication Flow', () => {
   });
 
   test('should show logout option when authenticated', async ({ page, mockHAConnection }) => {
-    test.skip(true, 'Deterministic OAuth logout coverage requires a fully mocked provider redirect flow.');
+    test.skip(
+      true,
+      'Deterministic OAuth logout coverage requires a fully mocked provider redirect flow.'
+    );
   });
 
   test('should clear tokens on logout', async ({ page, mockHAConnection }) => {
-    test.skip(true, 'Deterministic OAuth logout coverage requires a fully mocked provider redirect flow.');
+    test.skip(
+      true,
+      'Deterministic OAuth logout coverage requires a fully mocked provider redirect flow.'
+    );
   });
 
   test('should handle OAuth redirect with auth_callback parameter', async ({ page }) => {
@@ -89,7 +110,7 @@ test.describe('OAuth Authentication Flow', () => {
 
     // Should attempt to process OAuth callback
     // The auth_callback parameter indicates return from HA OAuth server
-    
+
     // Verify callback route is handled without crashing app shell.
     expect(page.url()).toContain('auth_callback=1');
     await expect(page.locator('body')).toBeVisible();
@@ -111,12 +132,12 @@ test.describe('OAuth Authentication Flow', () => {
     // Should not immediately show onboarding with valid auth attempt
     // But might show connection status
     const statusElements = page.locator('text=Connecting|Error|Unavailable|Failed');
-    
+
     // Wait a bit for connection attempt
     await page.waitForTimeout(1000);
-    
+
     // Either shows error or shows unavailable status
-    const hasStatus = await statusElements.count().then(c => c > 0);
+    const hasStatus = await statusElements.count().then((c) => c > 0);
     if (!hasStatus) {
       // If no status text is shown, auth cache should still hold the invalid token attempt.
       const currentToken = await page.evaluate(() => {

@@ -14,6 +14,33 @@ const t = (key) => {
     'statusPills.editor': 'Edit Pill',
     'statusPills.addNewPill': 'Add new pill',
     'statusPills.typeSensor': 'Sensor',
+    'statusPills.typeMedia': 'Media',
+    'statusPills.typeEmby': 'Emby',
+    'statusPills.typeSonos': 'Sonos',
+    'statusPills.typeGroup': 'Smart group',
+    'statusPills.groupPreset': 'Preset',
+    'statusPills.groupPresetLightsOn': 'Lights on',
+    'statusPills.groupPresetLightsOnEmpty': 'No lights on',
+    'statusPills.groupPresetOpeningsOpen': 'Open doors/windows',
+    'statusPills.groupPresetOpeningsOpenEmpty': 'All doors/windows closed',
+    'statusPills.groupPresetCoversOpen': 'Open covers',
+    'statusPills.groupPresetCoversOpenEmpty': 'All covers closed',
+    'statusPills.groupPresetLowBattery': 'Low battery',
+    'statusPills.groupPresetLowBatteryEmpty': 'No low batteries',
+    'statusPills.groupThreshold': 'Low battery threshold',
+    'statusPills.groupMatchedEntities': 'Matching entities',
+    'statusPills.groupScope': 'Included entities',
+    'statusPills.groupScopeAll': 'All',
+    'statusPills.groupScopeInclude': 'Selected only',
+    'statusPills.groupScopeExclude': 'All except selected',
+    'statusPills.groupScopeAllHint':
+      'All matching entities for this preset can appear in the pill.',
+    'statusPills.groupSearchEntities': 'Search entities...',
+    'statusPills.groupSelected': 'selected',
+    'statusPills.groupIncluded': 'Included',
+    'statusPills.groupExcluded': 'Excluded',
+    'statusPills.groupNoCandidates': 'No matching entities found.',
+    'statusPills.hideWhenEmpty': 'Hide when empty',
     'statusPills.show': 'Show',
     'statusPills.hide': 'Hide',
     'statusPills.newPill': 'New Pill',
@@ -30,6 +57,7 @@ const t = (key) => {
     'statusPills.headingVisible': 'Heading',
     'statusPills.subtitleVisible': 'Subtitle',
     'statusPills.automatic': 'Automatic',
+    'statusPills.decimalPlaces': 'Decimal places',
     'statusPills.colorLabel': 'Color',
     'statusPills.colorCyan': 'Cyan',
     'statusPills.conditional': 'Conditional',
@@ -83,6 +111,168 @@ describe('StatusPillsConfigModal', () => {
     });
 
     expect(screen.getByPlaceholderText('Pill name')).toHaveValue('Draft pill');
+  });
+
+  it('adds and saves a smart group pill without an entity selection', async () => {
+    const onSave = vi.fn();
+
+    await act(async () => {
+      render(
+        <StatusPillsConfigModal
+          show
+          onClose={() => {}}
+          onSave={onSave}
+          entities={{
+            'light.kitchen': {
+              state: 'on',
+              attributes: { friendly_name: 'Kitchen' },
+            },
+          }}
+          statusPillsConfig={[]}
+          t={t}
+        />
+      );
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByTitle('Add new pill'));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Smart group'));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Save/i }));
+    });
+
+    expect(onSave).toHaveBeenCalledWith([
+      expect.objectContaining({
+        type: 'group_status',
+        groupPreset: 'lights_on',
+        groupSelectionMode: 'all',
+        groupEntityIds: [],
+        hideWhenEmpty: true,
+        clickable: true,
+        showCount: true,
+      }),
+    ]);
+  });
+
+  it('saves selected smart group entities when using selected-only mode', async () => {
+    const onSave = vi.fn();
+
+    await act(async () => {
+      render(
+        <StatusPillsConfigModal
+          show
+          onClose={() => {}}
+          onSave={onSave}
+          entities={{
+            'light.kitchen': {
+              state: 'on',
+              attributes: { friendly_name: 'Kitchen' },
+            },
+            'light.hallway': {
+              state: 'off',
+              attributes: { friendly_name: 'Hallway' },
+            },
+          }}
+          statusPillsConfig={[]}
+          t={t}
+        />
+      );
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByTitle('Add new pill'));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Smart group'));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Selected only'));
+    });
+
+    const kitchenOption = screen.getAllByText('Kitchen').find((node) => node.closest('button'));
+    expect(kitchenOption).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.click(kitchenOption.closest('button'));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Save/i }));
+    });
+
+    expect(onSave).toHaveBeenCalledWith([
+      expect.objectContaining({
+        type: 'group_status',
+        groupSelectionMode: 'include',
+        groupEntityIds: ['light.kitchen'],
+      }),
+    ]);
+  });
+
+  it('adds a low-battery smart group with a configurable threshold', async () => {
+    const onSave = vi.fn();
+
+    await act(async () => {
+      render(
+        <StatusPillsConfigModal
+          show
+          onClose={() => {}}
+          onSave={onSave}
+          entities={{
+            'sensor.front_door_battery': {
+              state: '25',
+              attributes: { friendly_name: 'Front door battery', device_class: 'battery' },
+            },
+          }}
+          statusPillsConfig={[]}
+          t={t}
+        />
+      );
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByTitle('Add new pill'));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Smart group'));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Low battery'));
+    });
+
+    expect(screen.getByLabelText('Low battery threshold')).toHaveValue(20);
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText('Low battery threshold'), {
+        target: { value: '30' },
+      });
+    });
+
+    expect(screen.getByText('Front door battery')).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Save/i }));
+    });
+
+    expect(onSave).toHaveBeenCalledWith([
+      expect.objectContaining({
+        type: 'group_status',
+        groupPreset: 'low_battery',
+        groupThreshold: 30,
+      }),
+    ]);
   });
 
   it('keeps the editor open when the selected pill is clicked again', async () => {
@@ -361,6 +551,48 @@ describe('StatusPillsConfigModal', () => {
       showLabel: false,
       showSublabel: false,
     });
+  });
+
+  it('saves the selected decimal places for a sensor pill', async () => {
+    const onSave = vi.fn();
+    const initialPill = {
+      id: 'pill-1',
+      type: 'conditional',
+      entityId: 'sensor.living_room',
+      label: 'Living Room',
+      icon: 'Activity',
+      conditionEnabled: false,
+    };
+
+    await act(async () => {
+      render(
+        <StatusPillsConfigModal
+          show
+          onClose={() => {}}
+          onSave={onSave}
+          entities={{
+            'sensor.living_room': {
+              state: '21.6789',
+              attributes: { friendly_name: 'Living Room Sensor', unit_of_measurement: '%' },
+            },
+          }}
+          statusPillsConfig={[initialPill]}
+          t={t}
+        />
+      );
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Living Room').closest('button'));
+    });
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText('Decimal places'), { target: { value: '2' } });
+      fireEvent.click(screen.getByText('Save'));
+    });
+
+    expect(onSave).toHaveBeenCalledWith([expect.objectContaining({ decimals: 2 })]);
   });
 
   it('persists Heading/Subtitle toggles for automatic sensor text across reopen', async () => {

@@ -16,7 +16,14 @@ import {
 import { saveTokens, loadTokens, clearOAuthTokens, hasOAuthTokens } from '../services/oauthStorage';
 import { HOME_ASSISTANT_API_UNAUTHORIZED_EVENT, setOAuthAuthProvider } from '../services/apiAuth';
 import { getDeviceRegistry, getEntityRegistry } from '../services/haClient';
-import { buildRegistryLookupMap, enrichEntitiesWithRegistryMetadata, isEntityDataStale } from '../utils';
+import { validateUrl } from '../config/onboarding';
+import { useMobileConnectionRecovery } from '../hooks/useMobileConnectionRecovery';
+import {
+  buildRegistryLookupMap,
+  enrichEntitiesWithRegistryMetadata,
+  getConnectionWarningDelayMs,
+  isEntityDataStale,
+} from '../utils';
 
 /** @typedef {import('../types/dashboard').EntityMap} EntityMap */
 /** @typedef {import('../types/dashboard').HomeAssistantContextValue} HomeAssistantContextValue */
@@ -149,6 +156,24 @@ export const HomeAssistantProvider = ({ children, config }) => {
   const entityRegistryByIdRef = useRef(new Map());
   const deviceRegistryByIdRef = useRef(new Map());
 
+  const markConnectionHealthy = useCallback(() => {
+    setConnected(true);
+    setHaUnavailable(false);
+    setDisconnectedSince(null);
+  }, []);
+
+  const markConnectionRecovering = useCallback(() => {
+    setConnected(false);
+    setHaUnavailable(true);
+    setDisconnectedSince((current) => current ?? Date.now());
+  }, []);
+
+  useMobileConnectionRecovery({
+    conn,
+    onHealthy: markConnectionHealthy,
+    onRecovering: markConnectionRecovering,
+  });
+
   const applyRegistryMetadata = useCallback(
     (nextEntities) =>
       enrichEntitiesWithRegistryMetadata(
@@ -210,7 +235,7 @@ export const HomeAssistantProvider = ({ children, config }) => {
       typeof globalThis.window !== 'undefined' &&
       new URLSearchParams(globalThis.window.location.search).has('auth_callback');
 
-    if (!config.url) {
+    if (!validateUrl(config.url)) {
       cleanupConnection();
       setConnected(false);
       setEntityDataStale(false);
@@ -452,9 +477,13 @@ export const HomeAssistantProvider = ({ children, config }) => {
         }
       } catch (err) {
         console.error('[HA] Connection failed:', err);
-        
+
         // Clean up OAuth callback params on failure so we don't get stuck in a loop
-        if (isOAuth && typeof globalThis.window !== 'undefined' && globalThis.window.location.search.includes('auth_callback')) {
+        if (
+          isOAuth &&
+          typeof globalThis.window !== 'undefined' &&
+          globalThis.window.location.search.includes('auth_callback')
+        ) {
           globalThis.window.history.replaceState(null, '', globalThis.window.location.pathname);
         }
 
@@ -518,18 +547,10 @@ export const HomeAssistantProvider = ({ children, config }) => {
     let cancelled = false;
 
     const handleReady = () => {
-      if (!cancelled) {
-        setConnected(true);
-        setHaUnavailable(false);
-        setDisconnectedSince(null);
-      }
+      if (!cancelled) markConnectionHealthy();
     };
     const handleDisconnected = () => {
-      if (!cancelled) {
-        setConnected(false);
-        setHaUnavailable(true);
-        setDisconnectedSince(Date.now());
-      }
+      if (!cancelled) markConnectionRecovering();
     };
 
     conn.addEventListener?.('ready', handleReady);
@@ -540,7 +561,7 @@ export const HomeAssistantProvider = ({ children, config }) => {
       conn.removeEventListener?.('ready', handleReady);
       conn.removeEventListener?.('disconnected', handleDisconnected);
     };
-  }, [conn]);
+  }, [conn, markConnectionHealthy, markConnectionRecovering]);
 
   useEffect(() => {
     const updateStaleState = () => {
@@ -565,7 +586,11 @@ export const HomeAssistantProvider = ({ children, config }) => {
       setHaUnavailableVisible(false);
       return;
     }
-    const timer = setTimeout(() => setHaUnavailableVisible(true), 2500);
+    const viewportWidth = globalThis.window?.innerWidth ?? Number.POSITIVE_INFINITY;
+    const timer = setTimeout(
+      () => setHaUnavailableVisible(true),
+      getConnectionWarningDelayMs(viewportWidth)
+    );
     return () => clearTimeout(timer);
   }, [haUnavailable]);
 

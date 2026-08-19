@@ -19,6 +19,13 @@ export function getAutoGridColumnsForWidth(width) {
   return 4;
 }
 
+export function getEffectiveGridColumnsForWidth(width, gridColumns, dynamicColumns = false) {
+  const maxForWidth = getMaxGridColumnsForWidth(width);
+  const suggested = getAutoGridColumnsForWidth(width);
+  const targetColumns = dynamicColumns ? Math.min(gridColumns, suggested) : gridColumns;
+  return Math.max(MIN_GRID_COLUMNS, Math.min(targetColumns, maxForWidth));
+}
+
 /**
  * Responsive grid column count, mobile detection & compact-card flag.
  *
@@ -30,15 +37,16 @@ export function useResponsiveGrid(gridColumns, dynamicColumns = false) {
   const [gridColCount, setGridColCount] = useState(1);
   const [isCompactCards, setIsCompactCards] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window === 'undefined' ? 0 : window.innerWidth
+  );
 
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      const maxForWidth = getMaxGridColumnsForWidth(w);
-      const suggested = getAutoGridColumnsForWidth(w);
-      const targetColumns = dynamicColumns ? Math.min(gridColumns, suggested) : gridColumns;
+      setViewportWidth(w);
       setIsMobile(w < MOBILE_BREAKPOINT);
-      setGridColCount(Math.max(MIN_GRID_COLUMNS, Math.min(targetColumns, maxForWidth)));
+      setGridColCount(getEffectiveGridColumnsForWidth(w, gridColumns, dynamicColumns));
       setIsCompactCards(w >= 480 && w < 640);
     };
     update();
@@ -46,5 +54,5 @@ export function useResponsiveGrid(gridColumns, dynamicColumns = false) {
     return () => window.removeEventListener('resize', update);
   }, [gridColumns, dynamicColumns]);
 
-  return { gridColCount, isCompactCards, isMobile };
+  return { gridColCount, isCompactCards, isMobile, viewportWidth };
 }

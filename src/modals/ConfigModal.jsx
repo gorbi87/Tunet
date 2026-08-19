@@ -6,10 +6,12 @@ import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 import { GRADIENT_PRESETS } from '../contexts/ConfigContext';
 import { hasOAuthTokens } from '../services/oauthStorage';
 import {
+  getEffectiveGridColumnsForWidth,
   getMaxGridColumnsForWidth,
   MAX_GRID_COLUMNS,
   MIN_GRID_COLUMNS,
 } from '../hooks/useResponsiveGrid';
+import { MOBILE_BREAKPOINT } from '../config/constants';
 import {
   X,
   Check,
@@ -43,7 +45,7 @@ import {
   Edit2,
 } from '../icons';
 
-const SETTINGS_STATIC_VERSION = '1.10.0';
+const SETTINGS_STATIC_VERSION = '1.20.3';
 
 /** @param {any} props */
 export default function ConfigModal({
@@ -115,10 +117,12 @@ export default function ConfigModal({
   const [expandedNotes, setExpandedNotes] = useState({});
   const [failedImageMap, setFailedImageMap] = useState({});
   const [layoutPreview, setLayoutPreview] = useState(false);
-  const [maxGridColumns, setMaxGridColumns] = useState(() => {
-    if (globalThis.window === undefined) return MAX_GRID_COLUMNS;
-    return getMaxGridColumnsForWidth(globalThis.window.innerWidth);
+  const [oauthUrlDraft, setOAuthUrlDraft] = useState(() => config.url || '');
+  const [gridViewportWidth, setGridViewportWidth] = useState(() => {
+    if (globalThis.window === undefined) return Number.POSITIVE_INFINITY;
+    return globalThis.window.innerWidth;
   });
+  const maxGridColumns = getMaxGridColumnsForWidth(gridViewportWidth);
 
   const markImageFailed = (src) => {
     if (!src) return;
@@ -133,10 +137,19 @@ export default function ConfigModal({
     ? Math.min(maxGridColumns, 4)
     : maxGridColumns;
 
-  const effectiveGridColumns = Math.max(
-    MIN_GRID_COLUMNS,
-    Math.min(gridColumns, selectableMaxGridColumns)
+  const effectiveGridColumns = getEffectiveGridColumnsForWidth(
+    gridViewportWidth,
+    gridColumns,
+    dynamicGridColumns
   );
+
+  const selectGridColumns = (columns) => {
+    if (columns > selectableMaxGridColumns) return;
+    if (gridViewportWidth < MOBILE_BREAKPOINT && dynamicGridColumns) {
+      setDynamicGridColumns(false);
+    }
+    setGridColumns(columns);
+  };
 
   const isLayoutPreview = configTab === 'layout' && layoutPreview;
 
@@ -153,7 +166,7 @@ export default function ConfigModal({
   }, [layoutPreview, configTab, setConfigTab]);
 
   useEffect(() => {
-    const update = () => setMaxGridColumns(getMaxGridColumnsForWidth(globalThis.window.innerWidth));
+    const update = () => setGridViewportWidth(globalThis.window.innerWidth);
     update();
     globalThis.window.addEventListener('resize', update);
     return () => globalThis.window.removeEventListener('resize', update);
@@ -185,6 +198,12 @@ export default function ConfigModal({
       cancelled = true;
     };
   }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      setOAuthUrlDraft(config.url || '');
+    }
+  }, [open, config.url]);
 
   const handleClose = () => {
     if (!isOnboardingActive) onClose?.();
@@ -239,6 +258,7 @@ export default function ConfigModal({
         <button
           type="button"
           onClick={() => {
+            setOAuthUrlDraft(config.url || '');
             setConfig({ ...config, authMethod: 'oauth' });
             setConnectionTestResult(null);
           }}
@@ -255,7 +275,7 @@ export default function ConfigModal({
         <button
           type="button"
           onClick={() => {
-            setConfig({ ...config, authMethod: 'token' });
+            setConfig({ ...config, url: oauthUrlDraft.trim(), authMethod: 'token' });
             setConnectionTestResult(null);
           }}
           className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold tracking-wider uppercase transition-all ${isOAuth ? 'border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-hover)]' : 'bg-[var(--accent-color)] text-white shadow-lg '}`}
@@ -268,8 +288,12 @@ export default function ConfigModal({
   );
 
   const renderOAuthSection = () => {
-    const oauthActive = hasOAuthTokens() && connected;
-    const oauthConnecting = hasOAuthTokens() && !connected;
+    const cleanDraftUrl = oauthUrlDraft.trim().replace(/\/$/, '');
+    const cleanConfigUrl = String(config.url || '').trim().replace(/\/$/, '');
+    const cleanActiveUrl = String(activeUrl || '').trim().replace(/\/$/, '');
+    const oauthActive = hasOAuthTokens() && connected && cleanDraftUrl === cleanActiveUrl;
+    const oauthConnecting =
+      hasOAuthTokens() && !connected && cleanDraftUrl === cleanConfigUrl;
     let oauthContent;
 
     if (oauthConnecting) {
@@ -300,9 +324,9 @@ export default function ConfigModal({
       oauthContent = (
         <button
           type="button"
-          onClick={startOAuthLogin}
-          disabled={!config.url || !validateUrl(config.url)}
-          className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold tracking-widest uppercase shadow-lg transition-all ${!config.url || !validateUrl(config.url) ? 'cursor-not-allowed bg-[var(--glass-bg)] text-[var(--text-secondary)] opacity-50' : 'bg-[var(--accent-color)] text-white hover:bg-[var(--accent-color)] '}`}
+          onClick={() => startOAuthLogin(oauthUrlDraft)}
+          disabled={!cleanDraftUrl || !validateUrl(cleanDraftUrl)}
+          className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold tracking-widest uppercase shadow-lg transition-all ${!cleanDraftUrl || !validateUrl(cleanDraftUrl) ? 'cursor-not-allowed bg-[var(--glass-bg)] text-[var(--text-secondary)] opacity-50' : 'bg-[var(--accent-color)] text-white hover:bg-[var(--accent-color)] '}`}
         >
           <LogIn className="h-5 w-5" />
           {t('system.oauth.loginButton')}
@@ -313,7 +337,7 @@ export default function ConfigModal({
     return (
       <div className="space-y-4">
         {oauthContent}
-        {!config.url && (
+        {!cleanDraftUrl && (
           <p className="ml-1 text-xs text-[var(--text-muted)]">{t('system.oauth.urlRequired')}</p>
         )}
         {connectionTestResult && !connectionTestResult.success && isOAuth && (
@@ -366,7 +390,8 @@ export default function ConfigModal({
         <label className="ml-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] uppercase">
           <Wifi className="h-4 w-4" />
           {t('system.haUrlPrimary')}
-          {connected && activeUrl === config.url && (
+          {connected &&
+            activeUrl === (isOAuth ? oauthUrlDraft.trim().replace(/\/$/, '') : config.url) && (
             <span className="rounded bg-[var(--status-success-bg)] px-2 py-0.5 text-[10px] tracking-widest text-[var(--status-success-fg)]">
               {t('system.connected')}
             </span>
@@ -376,13 +401,20 @@ export default function ConfigModal({
           <input
             type="text"
             className="w-full rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3 text-[var(--text-primary)] transition-all outline-none placeholder:text-[var(--text-muted)] focus:border-[var(--accent-color)] focus:bg-[var(--glass-bg-hover)]"
-            value={config.url}
-            onChange={(e) => setConfig({ ...config, url: e.target.value.trim() })}
+            value={isOAuth ? oauthUrlDraft : config.url}
+            onChange={(e) => {
+              if (isOAuth) {
+                setOAuthUrlDraft(e.target.value);
+                setConnectionTestResult(null);
+                return;
+              }
+              setConfig({ ...config, url: e.target.value.trim() });
+            }}
             placeholder="https://homeassistant.local:8123"
           />
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-[var(--accent-bg)] opacity-0 transition-opacity group-hover:opacity-100" />
         </div>
-        {config.url?.endsWith('/') && (
+        {(isOAuth ? oauthUrlDraft : config.url)?.endsWith('/') && (
           <div className="flex items-center gap-2 rounded-lg border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] px-3 py-2 text-xs font-bold text-[var(--status-warning-fg)]">
             <AlertCircle className="h-3 w-3" />
             {t('onboarding.urlTrailingSlash')}
@@ -1417,7 +1449,7 @@ export default function ConfigModal({
                   return (
                     <button
                       key={cols}
-                      onClick={() => cols <= selectableMaxGridColumns && setGridColumns(cols)}
+                      onClick={() => selectGridColumns(cols)}
                       disabled={isDisabled}
                       className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${className}`}
                     >
@@ -1909,9 +1941,13 @@ export default function ConfigModal({
                           <input
                             type="text"
                             className={`w-full rounded-xl border-2 bg-[var(--glass-bg)] px-3 py-2 text-sm text-[var(--text-primary)] transition-all outline-none placeholder:text-[var(--text-muted)] ${onboardingUrlError ? 'border-[var(--status-error-border)]' : 'border-[var(--glass-border)] focus:border-[var(--accent-color)]'}`}
-                            value={config.url}
+                            value={isOAuth ? oauthUrlDraft : config.url}
                             onChange={(e) => {
-                              setConfig({ ...config, url: e.target.value.trim() });
+                              if (isOAuth) {
+                                setOAuthUrlDraft(e.target.value);
+                              } else {
+                                setConfig({ ...config, url: e.target.value.trim() });
+                              }
                               setOnboardingUrlError('');
                               setConnectionTestResult(null);
                             }}
