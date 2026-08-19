@@ -27,6 +27,7 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   letzterWechsel: 'input_datetime.wp_letzter_wechsel',
   minusPreisBoolean: 'input_boolean.wp_minus_preis_modus_aktiv',
   octopusPreis: 'sensor.octopus_a_c856c4a4_electricity_price',
+  copSensor: 'sensor.daikin_heizung_cop',
   leistungWw: 'number.daikin_heizung_leistung_ww',
   bohWartezeit: 'number.daikin_heizung_wartezeit_boh',
   kuehlung: 'input_boolean.wp_kuhlung_aktiv',
@@ -70,19 +71,15 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   const warmwasserEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.warmwasser];
   const aussentempEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.aussentemp];
   const stromEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.stromTaglich];
-  const waermeEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.waermeTaglich];
-
   const betriebsartEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.betriebsart];
+  const copEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.copSensor];
   const kompressorAktiv = kompressorEntity?.state === 'on';
   const betriebsart = betriebsartEntity?.state || null;
   const wwTemp = warmwasserEntity ? parseFloat(warmwasserEntity.state) : null;
   const aussenTemp = aussentempEntity ? parseFloat(aussentempEntity.state) : null;
   const stromKwh = stromEntity ? parseFloat(stromEntity.state) : null;
-  const waermeKwh = waermeEntity ? parseFloat(waermeEntity.state) : null;
-  const cop =
-    stromKwh != null && waermeKwh != null && stromKwh > 0
-      ? (waermeKwh / stromKwh).toFixed(1)
-      : null;
+  const copRaw = copEntity ? parseFloat(copEntity.state) : null;
+  const cop = copRaw != null && copRaw > 0 && copRaw <= 20 ? copRaw.toFixed(1) : null;
 
   const kompressorColor = kompressorAktiv
     ? 'bg-[var(--status-success-fg)]'

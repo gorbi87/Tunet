@@ -402,6 +402,7 @@ export default function StatusBar({
                   getA={getA}
                   t={t}
                   isMobile={isMobile}
+                  iconOnly={isMobile}
                   badge={pill.showCount && groupData.count > 0 ? groupData.count : undefined}
                   onClick={
                     pill.clickable !== false

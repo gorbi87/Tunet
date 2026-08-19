@@ -132,7 +132,7 @@ const PersonStatus = ({
       </div>
 
       {(showName || showState) && (
-        <div className="flex min-w-0 flex-col justify-center">
+        <div className="hidden min-w-0 flex-col justify-center sm:flex">
           {showName && (
             <div className="flex items-center gap-2">
               <span className="max-w-20 truncate text-xs leading-tight font-bold tracking-normal text-[var(--text-primary)] sm:max-w-none sm:text-sm sm:tracking-wide">

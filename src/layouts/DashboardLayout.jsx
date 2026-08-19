@@ -170,7 +170,7 @@ export default function DashboardLayout(props) {
 
   const personHeader = (
     <div
-      className={`flex min-w-0 flex-wrap items-center gap-2.5 ${isMobile ? 'flex-1 origin-left scale-90 empty:hidden' : ''}`}
+      className="flex flex-shrink-0 flex-nowrap items-center gap-2.5"
     >
       {(pagesConfig.header || []).map((id) => personStatus(id))}
       {editMode && (

@@ -65,18 +65,10 @@ export default function SparkLine({
     min -= 1;
     max += 1;
   }
-  // Ensure a minimum visual range so small fluctuations don't look extreme
   const rawRange = max - min;
-  const minRange = Math.max(2, (Math.abs(max + min) / 2) * 0.1);
-  if (rawRange < minRange) {
-    const mid = (max + min) / 2;
-    min = mid - minRange / 2;
-    max = mid + minRange / 2;
-  }
-  // Snap to nice round numbers for a calmer visual
-  const snapStep = rawRange <= 2 ? 0.5 : rawRange <= 5 ? 1 : rawRange <= 20 ? 2 : 5;
-  min = Math.floor(min / snapStep) * snapStep;
-  max = Math.ceil(max / snapStep) * snapStep;
+  const pad = Math.max(rawRange * 0.08, Math.abs(max + min) / 2 * 0.02, 0.001);
+  min = min - pad;
+  max = max + pad;
   const range = max - min || 1;
   const width = 300;
   const plotWidth = width - plotInset * 2;

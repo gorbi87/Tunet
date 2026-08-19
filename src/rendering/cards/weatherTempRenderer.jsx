@@ -10,6 +10,7 @@ export function renderWeatherTempCard(cardId, dragProps, getControls, cardStyle,
     forecastsById,
     setShowWeatherModal,
     isMobile,
+    isTwoColMobile,
     t,
   } = ctx;
   const settings = getSettings(cardSettings, settingsKey, cardId);
@@ -43,6 +44,7 @@ export function renderWeatherTempCard(cardId, dragProps, getControls, cardStyle,
       weatherEntityId={null}
       editMode={editMode}
       isMobile={isMobile}
+      isTwoColMobile={isTwoColMobile}
       onOpen={() => {
         if (!editMode) setShowWeatherModal(cardId);
       }}

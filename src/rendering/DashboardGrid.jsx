@@ -266,7 +266,8 @@ export default function DashboardGrid({ page, media, grid, cards, actions, t }) 
             id.startsWith('luftungsanlage_card_') ||
             id.startsWith('pv_card_') ||
             id.startsWith('beregnung_card_') ||
-            id.startsWith('pool_card_');
+            id.startsWith('pool_card_') ||
+            id.startsWith('navimow_card_');
           const baseRowPx = isTwoColMobile ? 72 : isMobile ? (isCustomCard ? 100 : 82) : 100;
           const rowPx = baseRowPx * scaleFactor;
           let cardHeight;

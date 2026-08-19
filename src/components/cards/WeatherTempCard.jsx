@@ -51,6 +51,7 @@ const WeatherTempCard = memo(/** @param {any} props */ function WeatherTempCard(
   weatherEntityId,
   editMode,
   isMobile,
+  isTwoColMobile,
   onOpen,
   t,
 }) {
@@ -221,7 +222,7 @@ const WeatherTempCard = memo(/** @param {any} props */ function WeatherTempCard(
             <div className="flex items-center gap-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1 text-[var(--text-secondary)]">
               <span className="text-xs font-bold tracking-widest uppercase">{info.label}</span>
             </div>
-            <span className="text-4xl leading-none font-thin text-[var(--text-primary)]">
+            <span className={`leading-none font-thin text-[var(--text-primary)] ${isTwoColMobile ? 'text-2xl' : 'text-4xl'}`}>
               {formatUnitValue(displayTempValue, { fallback: '--' })}
               {displayTempUnit}
             </span>
@@ -229,7 +230,7 @@ const WeatherTempCard = memo(/** @param {any} props */ function WeatherTempCard(
         </div>
       </div>
       <div
-        className={`relative z-0 mt-auto h-32 overflow-hidden rounded-b-3xl opacity-80 ${isMobile ? '-mx-5 -mb-5' : '-mx-7 -mb-7'}`}
+        className={`relative z-0 mt-auto overflow-hidden rounded-b-3xl opacity-80 ${isTwoColMobile ? 'h-16' : 'h-32'} ${isMobile ? '-mx-5 -mb-5' : '-mx-7 -mb-7'}`}
       >
         <WeatherGraph
           history={historyForDisplay}

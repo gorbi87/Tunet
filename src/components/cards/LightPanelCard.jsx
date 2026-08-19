@@ -52,7 +52,7 @@ const DEFAULT_TABS = [
     entities: [
       { entityId: 'light.terasse', name: 'Terrasse' },
       { entityId: 'light.eingang', name: 'Eingang' },
-      { entityId: 'switch.beleuchtung_schuppen', name: 'Schuppen' },
+      { entityId: 'light.beleuchtung_schuppen', name: 'Schuppen' },
       { entityId: 'light.wled_anpentaplus', name: 'Vordach' },
       { entityId: 'light.wled_anpentaplus_segment_1', name: 'Weg' },
       { entityId: 'light.wled_anpentaplus_segment_2', name: 'Einfahrt' },

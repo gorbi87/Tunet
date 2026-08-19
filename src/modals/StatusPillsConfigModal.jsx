@@ -16,6 +16,7 @@ import {
   Clapperboard,
   Speaker,
   Shield,
+  Hash,
   getAllIconKeys,
   getIconComponent,
   preloadMdiIcons,
@@ -670,6 +671,18 @@ export default function StatusPillsConfigModal({
           : t('statusPills.typeAlarm'),
       Icon: Shield,
       iconClass: 'bg-[var(--status-error-bg)] text-[var(--status-error-fg)]',
+    },
+    {
+      type: 'entity_count',
+      label: 'Zähler',
+      Icon: Hash,
+      iconClass: 'bg-[var(--glass-bg)] text-[var(--text-secondary)]',
+    },
+    {
+      type: 'waste',
+      label: 'Müllabholung',
+      Icon: Trash2,
+      iconClass: 'bg-[var(--glass-bg)] text-[var(--text-secondary)]',
     },
   ];
 
@@ -1872,7 +1885,7 @@ export default function StatusPillsConfigModal({
                                   onKeyDown={(e) => e.stopPropagation()}
                                   rows={6}
                                   spellCheck={false}
-                                  placeholder={'light.wohnzimmer\nswitch.beleuchtung_schuppen'}
+                                  placeholder={'light.wohnzimmer\nlight.beleuchtung_schuppen'}
                                   className="w-full rounded-xl border-0 bg-[var(--glass-bg)] px-3 py-2 font-mono text-xs text-[var(--text-primary)] outline-none"
                                 />
                                 <p className="text-[10px] text-[var(--text-muted)]">Eine Entity ID pro Zeile. Aktiv-Zustand: <code className="rounded bg-[var(--glass-bg)] px-1">{pill.activeState || 'on'}</code></p>

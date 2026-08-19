@@ -40,10 +40,13 @@ export default function SensorHistoryGraph({
   strokeColor = undefined,
   areaColor = undefined,
   ariaLabel = undefined,
+  unit = '',
 }) {
   const containerRef = useRef(null);
+  const svgRef = useRef(null);
   const reactId = useId().replace(/:/g, '');
   const [containerWidth, setContainerWidth] = useState(600);
+  const [hoverIdx, setHoverIdx] = useState(null);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -182,6 +185,20 @@ export default function SensorHistoryGraph({
     { value: (chart.max + chart.min) / 2, y: padding.top + graphHeight / 2 },
     { value: chart.min, y: padding.top + graphHeight },
   ];
+  const handlePointerMove = (e) => {
+    if (!svgRef.current || safeData.length === 0) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const relX = ((clientX - rect.left) / rect.width) * 600;
+    const idx = Math.max(0, Math.min(safeData.length - 1,
+      Math.round((relX - padding.left) / graphWidth * (safeData.length - 1))
+    ));
+    setHoverIdx(idx);
+  };
+
+  const hoverPoint = hoverIdx !== null ? chart.points[hoverIdx] : null;
+  const hoverData = hoverIdx !== null ? safeData[hoverIdx] : null;
+
   const lineColor = strokeColor || color;
   const fillColor = areaColor || color;
   const areaGradientId = `area-gradient-${reactId}`;
@@ -210,12 +227,41 @@ export default function SensorHistoryGraph({
       data-chart-label-count={labelCount}
       data-chart-safe-inset={padding.right}
     >
+      {/* Hover info bar */}
+      <div className="mb-3 flex items-end justify-between px-1" style={{ minHeight: 36 }}>
+        {hoverData ? (
+          <>
+            <div>
+              <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">Zeit</p>
+              <p className="text-base font-medium text-[var(--text-primary)]">
+                {new Date(hoverData.time).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                <span className="ml-2 text-xs text-[var(--text-muted)]">
+                  {new Date(hoverData.time).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
+                </span>
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-bold tracking-widest uppercase" style={{ color }}>Wert</p>
+              <p className="text-2xl leading-none font-light" style={{ color }}>
+                {hoverData.value.toFixed(1)}
+                {unit && <span className="ml-1 text-sm text-[var(--text-muted)]">{unit}</span>}
+              </p>
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-[var(--text-muted)] opacity-50">← Über den Graph fahren</p>
+        )}
+      </div>
       <svg
+        ref={svgRef}
         viewBox={`0 0 ${width} ${height}`}
-        className="h-full w-full overflow-visible"
+        className="h-full w-full cursor-crosshair overflow-visible"
         preserveAspectRatio="none"
         role="img"
         aria-label={summaryLabel}
+        onMouseMove={handlePointerMove}
+        onTouchMove={handlePointerMove}
+        onMouseLeave={() => setHoverIdx(null)}
       >
         <defs>
           <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
@@ -283,6 +329,17 @@ export default function SensorHistoryGraph({
             {label.label}
           </text>
         ))}
+
+        {hoverPoint && (
+          <>
+            <line
+              x1={hoverPoint[0]} y1={padding.top}
+              x2={hoverPoint[0]} y2={padding.top + graphHeight}
+              stroke={lineColor} strokeWidth="1" strokeOpacity="0.5" strokeDasharray="3 2"
+            />
+            <circle cx={hoverPoint[0]} cy={hoverPoint[1]} r="5" fill={lineColor} stroke="var(--card-bg)" strokeWidth="2" />
+          </>
+        )}
       </svg>
     </div>
   );

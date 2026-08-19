@@ -364,6 +364,7 @@ export function useCardRendering({
         saveCardSetting,
         language,
         isMobile,
+        isTwoColMobile: isMobile && gridColCount >= 2,
         isFullWidthMobileCard: isMobile && getCardColSpan(cardId) >= gridColCount,
         activePage,
         t,
