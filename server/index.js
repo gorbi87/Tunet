@@ -1,3 +1,5 @@
+import http from 'http';
+import https from 'https';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { existsSync, readFileSync, readdirSync } from 'fs';
@@ -98,6 +100,54 @@ export const createApp = ({
   // Health check
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', version: appVersion });
+  });
+
+  // go2rtc HTTP proxy — avoids mixed-content blocking when Tunet is served over HTTPS.
+  // For m3u8 playlists the proxy rewrites segment URLs so the browser can fetch
+  // them through this same proxy (native HLS players resolve segments relative
+  // to the playlist URL, which would otherwise break).
+  app.get('/api/go2rtc-proxy', (req, res) => {
+    const { url: targetUrl } = req.query;
+    if (!targetUrl) return res.status(400).end();
+
+    let target;
+    try { target = new URL(targetUrl); } catch { return res.status(400).end(); }
+    const lib = target.protocol === 'https:' ? https.request : http.request;
+    const forwardHeaders = {};
+    if (req.headers['range']) forwardHeaders['range'] = req.headers['range'];
+    const proxyReq = lib(target.href, { timeout: 8000, headers: forwardHeaders }, (proxyRes) => {
+      const contentType = (proxyRes.headers['content-type'] || '').toLowerCase();
+      const isM3u8 = contentType.includes('mpegurl') || target.pathname.endsWith('.m3u8');
+
+      if (isM3u8) {
+        let body = '';
+        proxyRes.setEncoding('utf8');
+        proxyRes.on('data', (chunk) => { body += chunk; });
+        proxyRes.on('end', () => {
+          const rewritten = body.split('\n').map((line) => {
+            const t = line.trim();
+            if (!t || t.startsWith('#')) return line;
+            try {
+              const abs = new URL(t, target.href).href;
+              return `/api/go2rtc-proxy?url=${encodeURIComponent(abs)}`;
+            } catch { return line; }
+          }).join('\n');
+          res.status(proxyRes.statusCode || 200)
+            .setHeader('content-type', 'application/vnd.apple.mpegurl')
+            .setHeader('access-control-allow-origin', '*')
+            .send(rewritten);
+        });
+        proxyRes.on('error', () => { try { res.status(502).end(); } catch {} });
+      } else {
+        res.status(proxyRes.statusCode || 200);
+        for (const [k, v] of Object.entries(proxyRes.headers)) {
+          if (!['transfer-encoding', 'connection'].includes(k.toLowerCase())) res.setHeader(k, v);
+        }
+        proxyRes.pipe(res);
+      }
+    });
+    proxyReq.on('error', () => { try { res.status(502).end(); } catch {} });
+    proxyReq.end();
   });
 
   // Serve static frontend files in production
