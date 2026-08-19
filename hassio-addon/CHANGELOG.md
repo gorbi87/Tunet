@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.20.9
+
+### Changed
+- Includes dashboard release `1.20.9` with redesigned settings sidebars, per-card mobile width controls, and configurable script status text.
+
+### Fixed
+- Improves Home Assistant reconnect feedback and mobile grid behavior.
+
 ## 1.20.8
 
 ### Changed

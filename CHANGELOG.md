@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.20.9] — 2026-08-19
+
+### Added
+- Added per-card mobile width controls for supported dashboard cards.
+- Added configurable ready and running text for script cards.
+
+### Changed
+- Redesigned the appearance, layout, and header sidebars with clearer shared controls.
+- Improved automatic mobile sizing for media, climate, weather, cost, and Nordpool cards.
+
+### Fixed
+- Improved Home Assistant reconnect feedback and kept grid settings within usable device widths.
+- Fixed custom card name updates and several mobile rendering details across sensor, status, lock, weather, and media cards.
+
+
 ## [1.20.8] — 2026-08-16
 
 ### Added
