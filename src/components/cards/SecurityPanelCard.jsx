@@ -43,6 +43,7 @@ const MOTION_SENSORS = [
   { entityId: 'binary_sensor.presence_sensor_fp2_bfb8_presence_sensor_4', name: 'Durchgang'   },
   { entityId: 'binary_sensor.bewegung_bad_og_dusche',                     name: 'Dusche OG'   },
   { entityId: 'binary_sensor.bewegung_bad_og_wc',                         name: 'WC OG'       },
+  { entityId: 'binary_sensor.fp300_schuppen_presence',                    name: 'Schuppen'    },
 ];
 
 /* ── Alarm state helpers ─────────────────────────────────────────────── */

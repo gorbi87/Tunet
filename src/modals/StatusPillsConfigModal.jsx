@@ -228,6 +228,9 @@ export default function StatusPillsConfigModal({
         typeof pill.mediaSelectionMode === 'string' ? pill.mediaSelectionMode : 'filter',
       mediaEntityIds: Array.isArray(pill.mediaEntityIds) ? pill.mediaEntityIds : [],
       sessionSensorIds: Array.isArray(pill.sessionSensorIds) ? pill.sessionSensorIds : [],
+      entityIds: Array.isArray(pill.entityIds) ? pill.entityIds : [],
+      singularLabel: typeof pill.singularLabel === 'string' ? pill.singularLabel : '',
+      activeState: typeof pill.activeState === 'string' ? pill.activeState : 'on',
       sonosHeadingSource:
         typeof pill.sonosHeadingSource === 'string' ? pill.sonosHeadingSource : 'song',
       sonosSubheadingSource:
@@ -345,6 +348,7 @@ export default function StatusPillsConfigModal({
         return translated === 'statusPills.typeAlarm' ? 'Alarm' : translated;
       }
       if (pillType === 'waste') return 'Müllabholung';
+      if (pillType === 'entity_count') return 'Zähler';
       return t('statusPills.typeSonos');
     },
     [t]
@@ -1412,6 +1416,43 @@ export default function StatusPillsConfigModal({
                               )}
                             </div>
                           )}
+
+                          {/* Entity Count — editable entity list */}
+                          {pill.type === 'entity_count' && (() => {
+                            const ids = Array.isArray(pill.entityIds) ? pill.entityIds : [];
+                            const rawVal = typeof pill._entityIdsRaw === 'string'
+                              ? pill._entityIdsRaw
+                              : ids.join('\n');
+                            const activeCount = ids.filter((id) => entities[id]?.state === (pill.activeState || 'on')).length;
+                            return (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
+                                    Entity IDs
+                                  </label>
+                                  <span className="text-[10px] text-[var(--text-muted)]">
+                                    {activeCount} / {ids.length} aktiv
+                                  </span>
+                                </div>
+                                <textarea
+                                  value={rawVal}
+                                  onChange={(e) => {
+                                    const raw = e.target.value;
+                                    updatePill(pill.id, {
+                                      _entityIdsRaw: raw,
+                                      entityIds: raw.split('\n').map((s) => s.trim()).filter(Boolean),
+                                    });
+                                  }}
+                                  onKeyDown={(e) => e.stopPropagation()}
+                                  rows={6}
+                                  spellCheck={false}
+                                  placeholder={'light.wohnzimmer\nswitch.beleuchtung_schuppen'}
+                                  className="w-full rounded-xl border-0 bg-[var(--glass-bg)] px-3 py-2 font-mono text-xs text-[var(--text-primary)] outline-none"
+                                />
+                                <p className="text-[10px] text-[var(--text-muted)]">Eine Entity ID pro Zeile. Aktiv-Zustand: <code className="rounded bg-[var(--glass-bg)] px-1">{pill.activeState || 'on'}</code></p>
+                              </div>
+                            );
+                          })()}
 
                           {/* Sessions Sensors (Emby only) */}
                           {pill.type === 'emby' && (

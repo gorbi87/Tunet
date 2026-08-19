@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.18.64] — 2026-08-19
+
+### Added
+- StatusPillsConfigModal: Entity-Count-Pills können jetzt direkt im Editor bearbeitet werden (Entity IDs, Zähler-Anzeige)
+- SecurityPanel: FP300 Schuppen Bewegungsmelder in Bewegungsmelder-Liste aufgenommen
+
+
 ## [1.18.63] — 2026-08-18
 
 ### Changed

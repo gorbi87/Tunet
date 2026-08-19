@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.18.64
+
+### Added
+- Entity-Count-Pills editierbar im StatusPill-Editor
+- SecurityPanel: FP300 Schuppen Bewegungsmelder
+
 ## 1.18.63
 
 ### Changed
