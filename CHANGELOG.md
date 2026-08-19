@@ -1327,35 +1327,22 @@
 
 - Cleared the `ip-address` Dependabot advisory through the `express-rate-limit` update.
 
-## [1.20.10] — 2026-08-19
+## [1.20.12] — 2026-08-19
 
-### Added
-- Add release notes.
+### Removed
+- Removed custom go2rtc_camera_card and Go2rtcCameraModal (replaced by the upstream CameraCard with native HA stream support). Proxy endpoints (go2rtc-proxy, go2rtc-ws) are kept for FrigateEvents and the upstream camera modal.
 
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
 
 ## [1.20.11] — 2026-08-19
 
-### Added
-- Add release notes.
+### Fixed
+- Restored WebSocket proxy (`/api/go2rtc-ws`) and switched server startup from `app.listen()` to `httpServer.listen()` so WebSocket upgrades are handled correctly.
+- Restored `hls.js` dependency that was dropped during merge conflict resolution.
 
-### Changed
-- Add release notes.
+
+## [1.20.10] — 2026-08-19
 
 ### Fixed
-- Add release notes.
-
-## [1.20.12] — 2026-08-19
-
-### Added
-- Add release notes.
-
-### Changed
-- Add release notes.
-
-### Fixed
-- Add release notes.
+- Restored addon slug (`tunet-gorbi87`) and name (`Casa`) in `hassio-addon/config.yaml` so Home Assistant update detection works correctly after upstream merge.
+- Fixed COP display in Wärmepumpe card: now reads `sensor.daikin_heizung_cop` directly instead of computing from cumulative thermal energy counters (which produced unrealistic values like 361).
+- Restored `/api/go2rtc-proxy` HTTP proxy endpoint for Frigate and camera stream proxying (removed by upstream merge).

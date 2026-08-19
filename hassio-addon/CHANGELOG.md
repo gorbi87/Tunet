@@ -2,18 +2,21 @@
 
 ## 1.20.12
 
-### Changed
-- Add release notes.
+### Removed
+- Benutzerdefinierte go2rtc_camera_card entfernt — ersetzt durch die Upstream-CameraCard mit nativem HA-Stream. Proxy-Endpunkte (go2rtc-proxy, go2rtc-ws) bleiben für FrigateEvents erhalten.
 
 ## 1.20.11
 
-### Changed
-- Add release notes.
+### Fixed
+- WebSocket-Proxy (/api/go2rtc-ws) wiederhergestellt; Server nutzt jetzt httpServer.listen() für korrekte WS-Upgrade-Verarbeitung.
+- hls.js-Abhängigkeit wiederhergestellt (war beim Merge-Konflikt weggefallen).
 
 ## 1.20.10
 
-### Changed
-- Add release notes.
+### Fixed
+- Addon-Slug (tunet-gorbi87) und Name (Casa) in config.yaml wiederhergestellt — HA-Update-Erkennung funktioniert wieder.
+- COP-Anzeige in der Wärmepumpen-Karte korrigiert: liest jetzt sensor.daikin_heizung_cop direkt aus (statt Berechnung aus kumulativen Zählern).
+- /api/go2rtc-proxy wiederhergestellt (war durch Upstream-Merge entfernt worden).
 
 ## 1.18.64
 
