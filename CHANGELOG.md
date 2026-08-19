@@ -1326,3 +1326,14 @@
 ### Security
 
 - Cleared the `ip-address` Dependabot advisory through the `express-rate-limit` update.
+
+## [1.20.10] — 2026-08-19
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
