@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.17
+
+### Fixed
+- Wetterkarte Mobile 2-Spalten: Condition-Pill (z.B. "Teilweise bewölkt") ausgeblendet — zu langer Text verschob die Temperaturanzeige
+
 ## 1.20.16
 
 ### Changed

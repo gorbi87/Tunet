@@ -219,9 +219,11 @@ const WeatherTempCard = memo(/** @param {any} props */ function WeatherTempCard(
             )}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
-            <div className="flex items-center gap-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1 text-[var(--text-secondary)]">
-              <span className="text-xs font-bold tracking-widest uppercase">{info.label}</span>
-            </div>
+            {!isTwoColMobile && (
+              <div className="flex items-center gap-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1 text-[var(--text-secondary)]">
+                <span className="text-xs font-bold tracking-widest uppercase">{info.label}</span>
+              </div>
+            )}
             <span className={`leading-none font-thin text-[var(--text-primary)] ${isTwoColMobile ? 'text-2xl' : 'text-4xl'}`}>
               {formatUnitValue(displayTempValue, { fallback: '--' })}
               {displayTempUnit}

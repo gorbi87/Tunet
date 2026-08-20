@@ -1369,3 +1369,8 @@
 
 ### Changed
 - WP-Karte + WP-Modal: COP-Berechnung wieder auf Tagesdaten (Wärme/Strom) zurückgestellt — sensor.daikin_heizung_cop revertiert
+
+## [1.20.17] — 2026-08-20
+
+### Fixed
+- WeatherTempCard Mobile 2-Spalten: Condition-Pill (z.B. "TEILWEISE BEWÖLKT") im 2-Spalten-Mobile-Modus ausgeblendet — langer Text mit tracking-widest überlief die Karte und verschob die Temperaturanzeige nach rechts
