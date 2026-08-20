@@ -1374,3 +1374,8 @@
 
 ### Fixed
 - WeatherTempCard Mobile 2-Spalten: Condition-Pill (z.B. "TEILWEISE BEWÖLKT") im 2-Spalten-Mobile-Modus ausgeblendet — langer Text mit tracking-widest überlief die Karte und verschob die Temperaturanzeige nach rechts
+
+## [1.20.18] — 2026-08-20
+
+### Fixed
+- WP-Modal Hydraulik-Ansicht: "Therm. Leistung" zeigt jetzt `sensor.thermische_leistung_gefiltert` statt der rohen Daikin-CAN-Werte — vermeidet Anzeige von Fehlmessungen durch Durchflusssensor-Glitches und PID-Ringing bei Kompressorstillstand

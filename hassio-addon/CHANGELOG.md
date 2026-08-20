@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.18
+
+### Fixed
+- WP-Modal Hydraulik-Ansicht: "Therm. Leistung" zeigt jetzt den gefilterten Sensor statt der rohen Daikin-CAN-Werte — vermeidet Anzeige von Fehlmessungen durch Durchflusssensor-Glitches und PID-Ringing bei Kompressorstillstand
+
 ## 1.20.17
 
 ### Fixed

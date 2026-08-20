@@ -33,7 +33,7 @@ const SENSOR_MAP = [
   { entityId: 'sensor.daikin_heizung_fehlercode',                               rectId: 'fehlercode_value',        offset: 6, fontSize: '40', align: 'left', text: true,   prefix: 'Fehlercode: ' },
   { entityId: 'select.daikin_heizung_betriebsmodus',                            rectId: 'betriebsmodus_value',     offset: 6, fontSize: '40', align: 'left', text: true,   prefix: 'Modus: ' },
   { entityId: 'sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can',           rectId: 'betriebsart_value',       offset: 6, fontSize: '40', align: 'left', text: true,   prefix: 'Betriebsart: ', shorten: true },
-  { entityId: 'sensor.daikin_heizung_thermische_leistung',                      rectId: 'therm_leistung_value',    offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Therm. Leistung: ' },
+  { entityId: 'sensor.thermische_leistung_gefiltert',                           rectId: 'therm_leistung_value',    offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Therm. Leistung: ' },
   { entityId: 'sensor.daikin_heizung_leistung',                                 rectId: 'el_power_value',          offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Elektr. Leistung: ' },
   { entityId: 'sensor.daikin_heizung_cop',                                      rectId: 'cop_value',               offset: 6, fontSize: '40', align: 'left', digits: 2,   prefix: 'COP: ' },
   { entityId: 'sensor.klima_durchschnittliche_temperatur_haus',                 rectId: 't_room_is_value',         offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Raum-Ist: ' },
