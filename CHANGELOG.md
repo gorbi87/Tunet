@@ -1379,3 +1379,8 @@
 
 ### Fixed
 - WP-Modal Hydraulik-Ansicht: "Therm. Leistung" zeigt jetzt `sensor.thermische_leistung_gefiltert` statt der rohen Daikin-CAN-Werte — vermeidet Anzeige von Fehlmessungen durch Durchflusssensor-Glitches und PID-Ringing bei Kompressorstillstand
+
+## [1.20.19] — 2026-08-25
+
+### Fixed
+- Addon-Schema: `ha_url` und `ha_token` wiederhergestellt (beim Upstream-Merge aus config.yaml entfernt) — ohne diese Felder konnte HA den Shared-Mode-Token nicht persistieren, Geräte mussten sich einzeln authentifizieren

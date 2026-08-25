@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.19
+
+### Fixed
+- Addon-Optionen `ha_url` und `ha_token` wiederhergestellt (beim Upstream-Merge entfernt) — ohne diese Felder im Schema konnte HA den Shared-Token nicht speichern, Shared Mode war deaktiviert und jedes Gerät musste einzeln einloggen
+
 ## 1.20.18
 
 ### Fixed

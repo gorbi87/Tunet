@@ -1,6 +1,6 @@
 name: 'Casa'
 description: 'A modern, responsive dashboard for Home Assistant'
-version: "1.20.18"
+version: "1.20.19"
 slug: 'tunet-gorbi87'
 url: 'https://github.com/oyvhov/Tunet'
 init: false
@@ -19,10 +19,14 @@ ports:
 ports_description:
   3002/tcp: 'Tunet Web Interface (not needed when using Ingress)'
 options:
+  ha_url: ''
+  ha_token: ''
   data_encryption_mode: 'off'
   data_encryption_key: ''
   data_encryption_salt: ''
 schema:
+  ha_url: 'str?'
+  ha_token: 'password?'
   data_encryption_mode: 'list(off|dual|enc_only)?'
   data_encryption_key: 'password?'
   data_encryption_salt: 'password?'
