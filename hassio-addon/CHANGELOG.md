@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.20
+
+### Fixed
+- Ingress-Modus: Token-Eingabe-Dialog erscheint nicht mehr nach geleertem Browser-Cache — Ingress-Authentifizierung via HA Supervisor reicht aus, kein manueller Token nötig
+
 ## 1.20.19
 
 ### Fixed

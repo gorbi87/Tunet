@@ -18,6 +18,16 @@ export const getStoredAuthMethod = () => {
   }
 };
 
+// When served via HA Ingress the Supervisor adds x-ingress-path and authenticates
+// the request server-side — no client-side bearer token or HA URL is required.
+const isIngressMode = () => {
+  try {
+    return /\/api\/hassio_ingress\//.test(globalThis.window?.location?.pathname || '');
+  } catch {
+    return false;
+  }
+};
+
 const isOAuthAuthMethod = () => getStoredAuthMethod() === 'oauth';
 
 const getOAuthAuth = () => oauthAuthProvider?.current ?? detachedOAuthAuth ?? null;
@@ -268,12 +278,17 @@ export async function getHomeAssistantRequestHeadersAsync({ forceRefreshOAuth = 
 }
 
 export function hasHomeAssistantRequestAuth() {
+  if (isIngressMode()) return true;
   const headers = getHomeAssistantRequestHeaders();
   return Boolean(headers['x-ha-url'] && headers.Authorization);
 }
 
 export function getValidatedHomeAssistantRequestHeaders() {
   const headers = getHomeAssistantRequestHeaders();
+
+  // In Ingress mode the HA Supervisor authenticates via x-ingress-path headers —
+  // neither x-ha-url nor Authorization are required from the client.
+  if (isIngressMode()) return headers;
 
   if (!headers['x-ha-url']) {
     throw notifyHomeAssistantApiUnauthorized('Missing Home Assistant URL');
@@ -288,6 +303,8 @@ export function getValidatedHomeAssistantRequestHeaders() {
 
 export async function getValidatedHomeAssistantRequestHeadersAsync(options = {}) {
   const headers = await getHomeAssistantRequestHeadersAsync(options);
+
+  if (isIngressMode()) return headers;
 
   if (!headers['x-ha-url']) {
     throw notifyHomeAssistantApiUnauthorized('Missing Home Assistant URL');

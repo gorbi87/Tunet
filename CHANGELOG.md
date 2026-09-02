@@ -1384,3 +1384,11 @@
 
 ### Fixed
 - Addon-Schema: `ha_url` und `ha_token` wiederhergestellt (beim Upstream-Merge aus config.yaml entfernt) — ohne diese Felder konnte HA den Shared-Mode-Token nicht persistieren, Geräte mussten sich einzeln authentifizieren
+
+## [1.20.20] — 2026-09-02
+
+### Fixed
+- Ingress-Modus: Token-Eingabe-Dialog erscheint nicht mehr nach geleertem localStorage — im Ingress-Modus authentifiziert der HA Supervisor alle Anfragen serverseitig, kein clientseitiger Token nötig
+
+### Fixed
+- Add release notes.
