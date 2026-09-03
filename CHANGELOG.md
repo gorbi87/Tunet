@@ -1,3 +1,8 @@
+## [1.20.22] — 2026-09-03
+
+### Changed
+- WP-Modal: Hausverbrauch-Schwelle für WW-Bonus dynamisch aus `input_number.wp_bonus_max_hausverbrauch` lesen (war hardcodiert 600W)
+
 ## [1.18.64] — 2026-08-19
 
 ### Added
@@ -1400,6 +1405,17 @@
 
 ### Changed
 - WP-Modal: Entscheidungslog-Parser erkennt neue Keys 'Akku-bis-voll' und 'Puffer' (ab nächster WW_Heizen-Transition sichtbar)
+
+### Fixed
+- Add release notes.
+
+## [1.20.22] — 2026-09-03
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
 
 ### Fixed
 - Add release notes.

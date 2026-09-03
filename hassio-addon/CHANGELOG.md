@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.22
+
+### Changed
+- WP-Modal: Hausverbrauch-Schwelle für WW-Bonus dynamisch aus `input_number.wp_bonus_max_hausverbrauch` lesen (war hardcodiert 600W)
+
 ## 1.20.21
 
 ### Added

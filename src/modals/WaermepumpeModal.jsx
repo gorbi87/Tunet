@@ -280,6 +280,7 @@ export default function WaermepumpeModal({
   const leistungWwVal = val(WAERMEPUMPE_ENTITY_IDS.leistungWw);
   const bohWartezeitVal = val(WAERMEPUMPE_ENTITY_IDS.bohWartezeit) ?? 95;
   const pvRestprognose = val(WAERMEPUMPE_ENTITY_IDS.pvRestprognose);
+  const hausMaxBonus = val(WAERMEPUMPE_ENTITY_IDS.hausMaxBonus) ?? 600;
 
   // Batterie-Priorität (4,0 kWh Kapazität, SOC live aus sensor)
   const AKKU_KWH = 4.0;
@@ -287,7 +288,7 @@ export default function WaermepumpeModal({
   const akkuBisVoll = socVal != null ? AKKU_KWH * (100 - socVal) / 100 : null;
   const wwBonusPuffer = pvRestprognose != null && akkuBisVoll != null ? pvRestprognose - akkuBisVoll : null;
   const wwBonusPufferOk = wwBonusPuffer != null && wwBonusPuffer >= PUFFER_MIN_KWH;
-  const wwBonusHausOk = hausWatt != null && hausWatt <= 600;
+  const wwBonusHausOk = hausWatt != null && hausWatt <= hausMaxBonus;
   const wwBonusWwOk = wwTemp != null && wwTemp >= 48;
   const wwBonusMoeglich = wwBonusPufferOk && wwBonusHausOk && wwBonusWwOk;
   const autoOn = automationState === 'on';
@@ -1174,7 +1175,7 @@ export default function WaermepumpeModal({
                       <div className="flex flex-wrap gap-1.5">
                         {[
                           { label: `Puffer ≥${PUFFER_MIN_KWH} kWh`, ok: wwBonusPufferOk, detail: wwBonusPuffer != null ? `${wwBonusPuffer.toFixed(2)} kWh` : '—' },
-                          { label: 'Haus ≤600W', ok: wwBonusHausOk, detail: hausWatt != null ? `${Math.round(hausWatt)}W` : '—' },
+                          { label: `Haus ≤${Math.round(hausMaxBonus)}W`, ok: wwBonusHausOk, detail: hausWatt != null ? `${Math.round(hausWatt)}W` : '—' },
                           { label: 'WW ≥48°C', ok: wwBonusWwOk, detail: wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—' },
                         ].map(({ label, ok, detail }) => (
                           <div

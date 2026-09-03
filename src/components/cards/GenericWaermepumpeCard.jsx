@@ -35,6 +35,7 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   hausverbrauch: 'sensor.solar_house_consumption_w',
   raumTemp: 'sensor.durchschnittstemperatur_haus',
   pvRestprognose: 'sensor.solcast_pv_forecast_prognose_verbleibende_leistung_heute',
+  hausMaxBonus: 'input_number.wp_bonus_max_hausverbrauch',
 };
 
 export const MODUS_META = {
