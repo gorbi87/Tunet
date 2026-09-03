@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.21
+
+### Added
+- WP-Modal: Akku-Priorität / WW-Bonus Widget — Restprognose-Aufteilung (Akku-Reserve · WW-Puffer), Bonus-Bedingungen live prüfbar
+
 ## 1.20.20
 
 ### Fixed

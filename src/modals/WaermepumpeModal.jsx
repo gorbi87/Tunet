@@ -96,6 +96,19 @@ function buildLogBullets(reason, curState) {
         if (curState === 'Standby' || curState === 'WW_Heizen' || curState === 'WW_Boost' || curState === 'WW_Fertig')
           return { label: 'Raumtemp', val };
         return { label: 'Raumtemp', val, op: '≥', ziel: `Kühlschwelle ${WP_CFG.kuehlTemp}°C` };
+      case 'Akku-bis-voll':
+        return { label: 'Akku bis voll', val };
+      case 'Puffer': {
+        const pufferNum = parseFloat(val);
+        const pufferOk = pufferNum >= 1.0;
+        return {
+          label: 'WW-Puffer',
+          val,
+          op: pufferOk ? '≥' : '<',
+          ziel: 'Min 1,0 kWh',
+          aktion: pufferOk ? '→ Bonus möglich' : undefined,
+        };
+      }
       case 'Laufzeit':
         return { label: 'Kompressor-Laufzeit', val, op: '≥', ziel: `BOH-Schutz ${WP_CFG.bohSchutz}min` };
       case 'Fenster': {
@@ -266,6 +279,17 @@ export default function WaermepumpeModal({
   const heizstabLaeuft = heizstabSelectState != null && heizstabSelectState !== 'Aus';
   const leistungWwVal = val(WAERMEPUMPE_ENTITY_IDS.leistungWw);
   const bohWartezeitVal = val(WAERMEPUMPE_ENTITY_IDS.bohWartezeit) ?? 95;
+  const pvRestprognose = val(WAERMEPUMPE_ENTITY_IDS.pvRestprognose);
+
+  // Batterie-Priorität (4,0 kWh Kapazität, SOC live aus sensor)
+  const AKKU_KWH = 4.0;
+  const PUFFER_MIN_KWH = 1.0;
+  const akkuBisVoll = socVal != null ? AKKU_KWH * (100 - socVal) / 100 : null;
+  const wwBonusPuffer = pvRestprognose != null && akkuBisVoll != null ? pvRestprognose - akkuBisVoll : null;
+  const wwBonusPufferOk = wwBonusPuffer != null && wwBonusPuffer >= PUFFER_MIN_KWH;
+  const wwBonusHausOk = hausWatt != null && hausWatt <= 600;
+  const wwBonusWwOk = wwTemp != null && wwTemp >= 48;
+  const wwBonusMoeglich = wwBonusPufferOk && wwBonusHausOk && wwBonusWwOk;
   const autoOn = automationState === 'on';
 
   // Upcoming negative price within 12h
@@ -1072,6 +1096,108 @@ export default function WaermepumpeModal({
                     );
                   })}
                 </div>
+
+                {/* ── Akku-Priorität · WW-Bonus-Puffer ── */}
+                {pvRestprognose != null && akkuBisVoll != null && (() => {
+                  const barScale = Math.max(pvRestprognose, akkuBisVoll, 0.1);
+                  const akkuBarPct = Math.min(100, (akkuBisVoll / barScale) * 100);
+                  const pufferBarPct = wwBonusPuffer != null && wwBonusPuffer > 0
+                    ? Math.min(100 - akkuBarPct, (wwBonusPuffer / barScale) * 100)
+                    : 0;
+                  const thresholdPct = Math.min(99, ((akkuBisVoll + PUFFER_MIN_KWH) / barScale) * 100);
+                  const akkuColor = wwBonusPuffer != null && wwBonusPuffer < 0 ? '#ef9a9a' : '#fbbf24';
+                  const pufferColor = wwBonusPufferOk ? '#4ade80' : '#f97316';
+                  const summaryMsg = wwBonusPuffer == null
+                    ? 'Keine Daten'
+                    : wwBonusPuffer < 0
+                    ? `Prognose reicht nicht für Akku (${Math.abs(wwBonusPuffer).toFixed(2)} kWh fehlen)`
+                    : wwBonusMoeglich
+                    ? 'WW-Bonus freigegeben'
+                    : !wwBonusPufferOk
+                    ? `Puffer ${wwBonusPuffer.toFixed(2)} kWh < ${PUFFER_MIN_KWH} kWh · kein WW-Bonus`
+                    : 'Puffer ok · andere Bedingung nicht erfüllt';
+                  const summaryColor = wwBonusMoeglich ? '#4ade80' : wwBonusPuffer != null && wwBonusPuffer < 0 ? '#ef9a9a' : 'var(--text-muted)';
+
+                  return (
+                    <div className="popup-surface rounded-2xl p-4 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                          Akku-Priorität · WW-Bonus
+                        </p>
+                        <span className="text-[10px] tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                          Restprognose <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{pvRestprognose.toFixed(2)} kWh</span>
+                        </span>
+                      </div>
+
+                      {/* Stacked bar */}
+                      <div className="space-y-1.5">
+                        <div className="relative h-3.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--glass-border)' }}>
+                          {/* Akku segment */}
+                          <div
+                            className="absolute inset-y-0 left-0 transition-all duration-500"
+                            style={{ width: `${akkuBarPct}%`, backgroundColor: akkuColor }}
+                          />
+                          {/* Puffer segment */}
+                          {pufferBarPct > 0 && (
+                            <div
+                              className="absolute inset-y-0 transition-all duration-500"
+                              style={{ left: `${akkuBarPct}%`, width: `${pufferBarPct}%`, backgroundColor: pufferColor }}
+                            />
+                          )}
+                          {/* Min-Puffer-Schwelle Marker */}
+                          {thresholdPct < 99 && akkuBisVoll + PUFFER_MIN_KWH <= barScale * 1.01 && (
+                            <div
+                              className="absolute inset-y-0 w-0.5"
+                              style={{ left: `${thresholdPct}%`, backgroundColor: 'rgba(255,255,255,0.4)' }}
+                            />
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between gap-3 text-[9px]">
+                          <div className="flex items-center gap-1">
+                            <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: akkuColor }} />
+                            <span style={{ color: 'var(--text-muted)' }}>Akku bis voll</span>
+                            <span className="ml-0.5 tabular-nums font-bold" style={{ color: akkuColor }}>
+                              {akkuBisVoll.toFixed(2)} kWh
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: wwBonusPuffer != null && wwBonusPuffer > 0 ? pufferColor : 'var(--glass-border)' }} />
+                            <span style={{ color: 'var(--text-muted)' }}>WW-Puffer</span>
+                            <span className="ml-0.5 tabular-nums font-bold" style={{ color: wwBonusPuffer != null && wwBonusPuffer > 0 ? pufferColor : 'var(--text-muted)' }}>
+                              {wwBonusPuffer != null && wwBonusPuffer > 0 ? `${wwBonusPuffer.toFixed(2)} kWh` : '—'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Condition pills */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { label: `Puffer ≥${PUFFER_MIN_KWH} kWh`, ok: wwBonusPufferOk, detail: wwBonusPuffer != null ? `${wwBonusPuffer.toFixed(2)} kWh` : '—' },
+                          { label: 'Haus ≤600W', ok: wwBonusHausOk, detail: hausWatt != null ? `${Math.round(hausWatt)}W` : '—' },
+                          { label: 'WW ≥48°C', ok: wwBonusWwOk, detail: wwTemp != null ? `${wwTemp.toFixed(1)}°C` : '—' },
+                        ].map(({ label, ok, detail }) => (
+                          <div
+                            key={label}
+                            className="flex items-center gap-1 rounded-full border px-2 py-0.5"
+                            style={{
+                              backgroundColor: ok ? 'rgba(74,222,128,0.08)' : 'rgba(239,154,154,0.08)',
+                              borderColor: ok ? 'rgba(74,222,128,0.3)' : 'rgba(239,154,154,0.3)',
+                            }}
+                          >
+                            <span style={{ color: ok ? '#4ade80' : '#ef9a9a', fontSize: '10px' }}>{ok ? '✓' : '✗'}</span>
+                            <span className="text-[8.5px] font-bold" style={{ color: ok ? '#4ade80' : '#ef9a9a' }}>{label}</span>
+                            <span className="text-[8.5px] tabular-nums" style={{ color: 'var(--text-muted)' }}>· {detail}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <p className="text-[10px] font-semibold" style={{ color: summaryColor }}>
+                        → {summaryMsg}
+                      </p>
+                    </div>
+                  );
+                })()}
 
                 {/* ── Tagesverlauf + Entscheidungsprotokoll ── */}
                 {wwHistory.length > 0 && (() => {

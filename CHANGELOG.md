@@ -1392,3 +1392,14 @@
 
 ### Fixed
 - Add release notes.
+
+## [1.20.21] — 2026-09-03
+
+### Added
+- WP-Modal Automatik-Tab: Akku-Priorität / WW-Bonus Widget — zeigt live wie die PV-Restprognose aufgeteilt wird (Akku-Reserve vs. WW-Puffer), ob alle drei Bonus-Bedingungen erfüllt sind (Puffer ≥1,0 kWh · Haus ≤600W · WW ≥48°C) und warum WW-Bonus aktiv ist oder nicht
+
+### Changed
+- WP-Modal: Entscheidungslog-Parser erkennt neue Keys 'Akku-bis-voll' und 'Puffer' (ab nächster WW_Heizen-Transition sichtbar)
+
+### Fixed
+- Add release notes.

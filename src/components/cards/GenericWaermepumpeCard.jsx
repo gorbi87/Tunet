@@ -34,6 +34,7 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   pvProduktion: 'sensor.solar_panel_production_w',
   hausverbrauch: 'sensor.solar_house_consumption_w',
   raumTemp: 'sensor.durchschnittstemperatur_haus',
+  pvRestprognose: 'sensor.solcast_pv_forecast_prognose_verbleibende_leistung_heute',
 };
 
 export const MODUS_META = {
