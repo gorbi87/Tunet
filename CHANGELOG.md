@@ -1,3 +1,8 @@
+## [1.20.23] — 2026-09-04
+
+### Changed
+- WP-Modal: WW-Bonus-Puffer-Minimum von 1,0 auf 3,0 kWh erhöht — WP braucht ~2,5 kWh für WW-Zyklus (50→55°C)
+
 ## [1.20.22] — 2026-09-03
 
 ### Changed
@@ -1410,6 +1415,17 @@
 - Add release notes.
 
 ## [1.20.22] — 2026-09-03
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+## [1.20.23] — 2026-09-04
 
 ### Added
 - Add release notes.

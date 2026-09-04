@@ -100,12 +100,12 @@ function buildLogBullets(reason, curState) {
         return { label: 'Akku bis voll', val };
       case 'Puffer': {
         const pufferNum = parseFloat(val);
-        const pufferOk = pufferNum >= 1.0;
+        const pufferOk = pufferNum >= 3.0;
         return {
           label: 'WW-Puffer',
           val,
           op: pufferOk ? '≥' : '<',
-          ziel: 'Min 1,0 kWh',
+          ziel: 'Min 3,0 kWh',
           aktion: pufferOk ? '→ Bonus möglich' : undefined,
         };
       }
@@ -284,7 +284,7 @@ export default function WaermepumpeModal({
 
   // Batterie-Priorität (4,0 kWh Kapazität, SOC live aus sensor)
   const AKKU_KWH = 4.0;
-  const PUFFER_MIN_KWH = 1.0;
+  const PUFFER_MIN_KWH = 3.0;
   const akkuBisVoll = socVal != null ? AKKU_KWH * (100 - socVal) / 100 : null;
   const wwBonusPuffer = pvRestprognose != null && akkuBisVoll != null ? pvRestprognose - akkuBisVoll : null;
   const wwBonusPufferOk = wwBonusPuffer != null && wwBonusPuffer >= PUFFER_MIN_KWH;

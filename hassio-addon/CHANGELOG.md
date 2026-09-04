@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.23
+
+### Changed
+- WP-Modal: WW-Bonus-Puffer-Minimum von 1,0 auf 3,0 kWh erhöht — WP braucht ~2,5 kWh für WW-Zyklus (50→55°C), daher war 1 kWh zu knapp und führte zu unerwünschten Bonus-Auslösungen bei niedrigem Akku-SOC
+
 ## 1.20.22
 
 ### Changed
