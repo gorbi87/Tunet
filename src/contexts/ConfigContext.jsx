@@ -209,13 +209,33 @@ export const ConfigProvider = ({ children }) => {
 
   const [config, setConfig] = useState(() => {
     if (typeof globalThis.window !== 'undefined') {
-      // Ingress auto-detection: if served under /api/hassio_ingress/<token>,
-      // connect to HA's root URL via Token (OAuth often fails in Ingress iframe)
       const path = globalThis.window.location.pathname;
       const ingressMatch = /(.*\/api\/hassio_ingress\/[^/]+)/.exec(path);
-      if (ingressMatch && ingressMatch[1]) {
-        // Still load saved URL/token from localStorage so the user doesn't
-        // have to re-enter credentials on every page reload
+      const isIngress = !!(ingressMatch && ingressMatch[1]);
+
+      // Server-injected config (addon ha_token option) — available synchronously
+      // without localStorage so the onboarding dialog never appears in shared mode,
+      // even when iOS clears site data or the Ingress URL pattern doesn't match.
+      const serverCfg = globalThis.window.__HA_SERVER_CONFIG__;
+      if (serverCfg?.token) {
+        try {
+          localStorage.setItem('ha_token', serverCfg.token);
+          localStorage.setItem('ha_auth_method', 'token');
+          if (!isIngress && serverCfg.haUrl) localStorage.setItem('ha_url', serverCfg.haUrl);
+        } catch {}
+        return {
+          url: isIngress
+            ? globalThis.window.location.origin
+            : (serverCfg.haUrl || localStorage.getItem?.('ha_url') || ''),
+          fallbackUrl: '',
+          token: serverCfg.token,
+          authMethod: 'token',
+          isIngress,
+        };
+      }
+
+      // Ingress without server config: load saved token from localStorage.
+      if (isIngress) {
         let savedUrl, savedToken;
         try {
           savedUrl = localStorage.getItem('ha_url') || '';

@@ -1,3 +1,8 @@
+## [1.20.24] — 2026-09-05
+
+### Fixed
+- Auth: Token wird direkt in die initiale HTML-Antwort eingebettet — Token-Dialog erscheint nicht mehr wenn iOS den Cache leert, auch wenn Ingress-URL-Erkennung fehlschlägt
+
 ## [1.20.23] — 2026-09-04
 
 ### Changed
@@ -1426,6 +1431,17 @@
 - Add release notes.
 
 ## [1.20.23] — 2026-09-04
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+## [1.20.24] — 2026-09-05
 
 ### Added
 - Add release notes.

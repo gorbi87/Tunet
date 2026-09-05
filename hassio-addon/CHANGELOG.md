@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.24
+
+### Fixed
+- Auth: Token wird jetzt direkt in die initiale HTML-Antwort eingebettet (`window.__HA_SERVER_CONFIG__`) — kein asynchroner Fetch mehr nötig; Token-Eingabe-Dialog erscheint nicht mehr wenn iOS den Browser-Cache leert, unabhängig von der Ingress-URL-Erkennung
+
 ## 1.20.23
 
 ### Changed

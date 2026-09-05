@@ -160,7 +160,21 @@ export const createApp = ({
     if (existsSync(distPath)) {
       const assetsPath = join(distPath, 'assets');
       const indexHtmlPath = join(distPath, 'index.html');
-      const indexHtml = existsSync(indexHtmlPath) ? readFileSync(indexHtmlPath, 'utf8') : null;
+      const indexHtmlRaw = existsSync(indexHtmlPath) ? readFileSync(indexHtmlPath, 'utf8') : null;
+      // Inject server config synchronously so the client never needs an async
+      // fetch to discover the shared HA token — prevents the onboarding dialog
+      // from appearing when iOS clears localStorage in Ingress/shared mode.
+      const indexHtml = (() => {
+        if (!indexHtmlRaw || !process.env.HA_TOKEN) return indexHtmlRaw;
+        const cfg = JSON.stringify({
+          token: process.env.HA_TOKEN,
+          haUrl: process.env.HA_URL || '',
+        }).replace(/<\/script>/gi, '<\\/script>');
+        const tag = `<script>window.__HA_SERVER_CONFIG__=${cfg}</script>`;
+        return indexHtmlRaw.includes('</head>')
+          ? indexHtmlRaw.replace('</head>', `${tag}</head>`)
+          : indexHtmlRaw + tag;
+      })();
       const assetFiles = existsSync(assetsPath) ? readdirSync(assetsPath) : [];
       const hashedAssetFallbackMap = new Map();
 
