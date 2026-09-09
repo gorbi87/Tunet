@@ -213,22 +213,22 @@ export const ConfigProvider = ({ children }) => {
       const ingressMatch = /(.*\/api\/hassio_ingress\/[^/]+)/.exec(path);
       const isIngress = !!(ingressMatch && ingressMatch[1]);
 
-      // Server-injected config (addon ha_token option) — available synchronously
-      // without localStorage so the onboarding dialog never appears in shared mode,
-      // even when iOS clears site data or the Ingress URL pattern doesn't match.
-      const serverCfg = globalThis.window.__HA_SERVER_CONFIG__;
-      if (serverCfg?.token) {
+      // Token injected as data-ha-token on <html> by the server — bypasses
+      // script-src CSP (iOS WKWebView blocks inline scripts but not data attributes).
+      const serverToken = globalThis.document?.documentElement?.dataset?.haToken || '';
+      const serverHaUrl = globalThis.document?.documentElement?.dataset?.haUrl || '';
+      if (serverToken) {
         try {
-          localStorage.setItem('ha_token', serverCfg.token);
+          localStorage.setItem('ha_token', serverToken);
           localStorage.setItem('ha_auth_method', 'token');
-          if (!isIngress && serverCfg.haUrl) localStorage.setItem('ha_url', serverCfg.haUrl);
+          if (!isIngress && serverHaUrl) localStorage.setItem('ha_url', serverHaUrl);
         } catch {}
         return {
           url: isIngress
             ? globalThis.window.location.origin
-            : (serverCfg.haUrl || localStorage.getItem?.('ha_url') || ''),
+            : (serverHaUrl || localStorage.getItem?.('ha_url') || ''),
           fallbackUrl: '',
-          token: serverCfg.token,
+          token: serverToken,
           authMethod: 'token',
           isIngress,
         };
@@ -284,37 +284,6 @@ export const ConfigProvider = ({ children }) => {
     }
     return { url: '', fallbackUrl: '', token: '', authMethod: 'oauth' };
   });
-
-  // Fetch shared HA config from server (set via addon options ha_url / ha_token).
-  // Overwrites any previously saved per-device credentials so all devices share one identity.
-  useEffect(() => {
-    fetch('./api/ha-config')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((serverCfg) => {
-        if (!serverCfg?.token) return;
-        // Under HA Ingress the page is served over HTTPS — use window.location.origin
-        // so the HA WebSocket connection uses HTTPS/WSS (avoids mixed-content block).
-        // Outside ingress keep the existing URL or fall back to the server-provided one.
-        const isIngress = /\/api\/hassio_ingress\//.test(
-          globalThis.window?.location?.pathname || ''
-        );
-        const haUrl = isIngress
-          ? globalThis.window.location.origin
-          : undefined;
-        try {
-          localStorage.setItem('ha_token', serverCfg.token);
-          localStorage.setItem('ha_auth_method', 'token');
-          if (haUrl) localStorage.setItem('ha_url', haUrl);
-        } catch {}
-        setConfig((prev) => ({
-          ...prev,
-          ...(haUrl ? { url: haUrl } : {}),
-          token: serverCfg.token,
-          authMethod: 'token',
-        }));
-      })
-      .catch(() => {});
-  }, []);
 
   // Apply theme to DOM
   useEffect(() => {

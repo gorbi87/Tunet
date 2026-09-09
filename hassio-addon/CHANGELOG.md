@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.25
+
+### Fixed
+- Auth: Token-Injection über `data-ha-token` HTML-Attribut statt Inline-Script — CSP `script-src 'self'` hat das Inline-Script in iOS WebKit blockiert, weshalb der Token-Dialog weiterhin erschien
+
 ## 1.20.24
 
 ### Fixed

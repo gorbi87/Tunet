@@ -161,19 +161,15 @@ export const createApp = ({
       const assetsPath = join(distPath, 'assets');
       const indexHtmlPath = join(distPath, 'index.html');
       const indexHtmlRaw = existsSync(indexHtmlPath) ? readFileSync(indexHtmlPath, 'utf8') : null;
-      // Inject server config synchronously so the client never needs an async
-      // fetch to discover the shared HA token — prevents the onboarding dialog
-      // from appearing when iOS clears localStorage in Ingress/shared mode.
+      // Inject token as data attributes on <html> — data attributes are not
+      // subject to script-src CSP so they work even when inline scripts are blocked
+      // (iOS WKWebView / HA Companion App). ConfigContext.jsx reads them synchronously
+      // via document.documentElement.dataset before React hydrates.
       const indexHtml = (() => {
         if (!indexHtmlRaw || !process.env.HA_TOKEN) return indexHtmlRaw;
-        const cfg = JSON.stringify({
-          token: process.env.HA_TOKEN,
-          haUrl: process.env.HA_URL || '',
-        }).replace(/<\/script>/gi, '<\\/script>');
-        const tag = `<script>window.__HA_SERVER_CONFIG__=${cfg}</script>`;
-        return indexHtmlRaw.includes('</head>')
-          ? indexHtmlRaw.replace('</head>', `${tag}</head>`)
-          : indexHtmlRaw + tag;
+        const esc = (s) => (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        const attrs = ` data-ha-token="${esc(process.env.HA_TOKEN)}" data-ha-url="${esc(process.env.HA_URL || '')}"`;
+        return indexHtmlRaw.replace('<html', `<html${attrs}`);
       })();
       const assetFiles = existsSync(assetsPath) ? readdirSync(assetsPath) : [];
       const hashedAssetFallbackMap = new Map();

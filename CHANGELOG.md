@@ -1,3 +1,8 @@
+## [1.20.25] — 2026-09-09
+
+### Fixed
+- Auth: Token-Injection nutzt jetzt `data-ha-token` Attribut am `<html>`-Element statt Inline-Script — der CSP-Header `script-src 'self'` hat Inline-Scripts lautlos blockiert (iOS WKWebView / HA Companion App), weshalb der Token-Dialog trotz Injection weiterhin erschien
+
 ## [1.20.24] — 2026-09-05
 
 ### Fixed
@@ -1442,6 +1447,17 @@
 - Add release notes.
 
 ## [1.20.24] — 2026-09-05
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+## [1.20.25] — 2026-09-09
 
 ### Added
 - Add release notes.
