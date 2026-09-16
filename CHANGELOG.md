@@ -1,3 +1,18 @@
+## [1.20.29] — 2026-09-16
+
+### Added
+- Solar-Modal Prognose-Chart: echte PV-Erzeugung als geglättete blaue Kurve (5-Min-Buckets aus `sensor.solar_panel_production_w`) über der Helios-Prognose
+
+### Changed
+- Prognose-Chart Y-Achse: `2k` → `2kW`; X-Achse: Stunden ohne „h"-Suffix
+- History-Abruf via WebSocket (`conn`) statt direktem REST-Fetch (CORS-kompatibel)
+
+## [1.20.28] — 2026-09-16
+
+### Fixed
+- WP-Karte: COP und Strom-Werte wurden durch den State-Machine-Fortschrittsbalken abgeschnitten (`overflow-hidden`); untere Zeile jetzt als eigenständiger Flex-Block immer sichtbar
+- WP-Modal Entscheidungslog: `HV-ohne-WP`-Zeile mit Klammerausdruck wurde als Roh-Token ausgegeben; jetzt per Regex extrahiert und als aufgeräumte Sub-Note angezeigt
+
 ## [1.20.27] — 2026-09-16
 
 ### Changed
@@ -1502,6 +1517,17 @@
 - Add release notes.
 
 ## [1.20.28] — 2026-09-16
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+## [1.20.29] — 2026-09-16
 
 ### Added
 - Add release notes.

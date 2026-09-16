@@ -1,9 +1,21 @@
 # Changelog
 
-## 1.20.28
+## 1.20.29
+
+### Added
+- Solar-Modal: Prognose-Chart zeigt echte PV-Erzeugung als blaue Kurve (geglättet) über der Helios-Prognose
 
 ### Changed
-- Add release notes.
+- Prognose-Chart: Y-Achse mit kW-Einheit, X-Achse ohne h-Suffix
+
+### Fixed
+- WP-Karte: COP und Strom nicht mehr abgeschnitten wenn Fortschrittsbalken sichtbar
+
+## 1.20.28
+
+### Fixed
+- WP-Karte: COP/Strom-Clipping durch Fortschrittsbalken behoben
+- WP-Modal: HV-ohne-WP-Zeile im Entscheidungslog korrekt formatiert
 
 ## 1.20.27
 

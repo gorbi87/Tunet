@@ -208,11 +208,12 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
         e.stopPropagation();
         if (!editMode && onOpen) onOpen();
       }}
-      className={`glass-texture touch-feedback group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isUltraCompact ? 'p-3' : isDenseMobile ? 'p-5' : 'p-6'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
+      className={`glass-texture touch-feedback group relative flex h-full flex-col overflow-hidden rounded-3xl border font-sans transition-colors duration-500 ${isUltraCompact ? 'p-3' : isDenseMobile ? 'p-5' : 'p-6'} ${!editMode ? 'cursor-pointer active:scale-[0.98]' : 'cursor-move'}`}
       style={cardStyle}
     >
       {controls}
-      <div className="relative z-10">
+      {/* Top section: fills available space, clips if state-machine block makes it too tall */}
+      <div className="relative z-10 min-h-0 flex-1 overflow-hidden">
         {/* Top row: icon + kompressor status */}
         <div className="flex items-start justify-between">
           <div
@@ -347,28 +348,28 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
             )}
           </div>
         )}
+      </div>
 
-        {/* Bottom row: COP + Strom */}
-        <div className={`flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'mt-2 pt-1.5' : 'mt-2 pt-2'}`}>
-            {cop != null && (
-              <div className="flex flex-col">
-                <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">
-                  COP
-                </span>
-                <span className={`font-light text-[var(--accent-color)] ${isUltraCompact ? 'text-sm' : 'text-lg'}`}>{cop}</span>
-              </div>
-            )}
-            {stromKwh != null && (
-              <div className="flex flex-col">
-                <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">
-                  {translate('waermepumpe.strom')}
-                </span>
-                <span className={`font-light text-[var(--text-primary)] ${isUltraCompact ? 'text-sm' : 'text-lg'}`}>
-                  {stromKwh.toFixed(2)} kWh
-                </span>
-              </div>
-            )}
+      {/* Bottom row: COP + Strom — pinned outside top section so it's never clipped */}
+      <div className={`relative z-10 flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'mt-2 pt-1.5' : 'mt-2 pt-2'}`}>
+        {cop != null && (
+          <div className="flex flex-col">
+            <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">
+              COP
+            </span>
+            <span className={`font-light text-[var(--accent-color)] ${isUltraCompact ? 'text-sm' : 'text-lg'}`}>{cop}</span>
           </div>
+        )}
+        {stromKwh != null && (
+          <div className="flex flex-col">
+            <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">
+              {translate('waermepumpe.strom')}
+            </span>
+            <span className={`font-light text-[var(--text-primary)] ${isUltraCompact ? 'text-sm' : 'text-lg'}`}>
+              {stromKwh.toFixed(2)} kWh
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

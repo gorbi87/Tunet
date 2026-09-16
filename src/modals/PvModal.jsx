@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getHistory, getHistoryRest, canUseHistoryRest } from '../services/haClient';
 import { Sun, X } from '../icons';
 import { PV_ENTITY_IDS } from '../components/cards/GenericPvCard';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
@@ -233,6 +234,160 @@ function PowerFlowSvg({ pvW, houseW, heatPumpW, batteryInW, batteryOutW, gridImp
   );
 }
 
+// ─── ForecastAreaChart ────────────────────────────────────────────────────
+
+function ForecastAreaChart({ forecastData, dayOffset = 0, pvHistory = [] }) {
+  if (!Array.isArray(forecastData) || forecastData.length === 0) return null;
+
+  const W = 400, H = 114, PAD_L = 34, PAD_R = 6, PAD_T = 8, PAD_B = 20;
+  const chartW = W - PAD_L - PAD_R;
+  const chartH = H - PAD_T - PAD_B;
+
+  // Target calendar date (local)
+  const target = new Date();
+  target.setDate(target.getDate() + dayOffset);
+  const tY = target.getFullYear(), tM = target.getMonth(), tD = target.getDate();
+
+  // Parse + filter to this day, 5:00–21:00
+  const dayPoints = forecastData
+    .map(d => ({ ...d, dt: new Date(d.datetime) }))
+    .filter(d =>
+      d.dt.getFullYear() === tY && d.dt.getMonth() === tM && d.dt.getDate() === tD &&
+      d.dt.getHours() >= 5 && d.dt.getHours() <= 21
+    );
+
+  if (dayPoints.length === 0)
+    return <div className="py-6 text-center text-[11px]" style={{ color: 'var(--text-muted)' }}>Keine Daten für diesen Tag</div>;
+
+  // X: 5:00–21:00 fixed window
+  const xStart = new Date(tY, tM, tD, 5, 0);
+  const xEnd   = new Date(tY, tM, tD, 21, 0);
+  const xSpan  = xEnd - xStart;
+
+  // Y: 0..maxW with 10% headroom, rounded to 500 W
+  const histMax = dayOffset === 0 ? Math.max(...pvHistory.map(h => h.watts), 0) : 0;
+  const maxW = Math.max(...dayPoints.map(d => Math.max(d.watts || 0, d.p90 || 0)), histMax, 200);
+  const yMax = Math.ceil(maxW * 1.1 / 500) * 500;
+
+  const xp = dt  => PAD_L + Math.max(0, Math.min(1, (dt - xStart) / xSpan)) * chartW;
+  const yp = w   => PAD_T + chartH - Math.max(0, Math.min(1, w / yMax)) * chartH;
+
+  // Forecast paths
+  const coords = dayPoints.map(d => [xp(d.dt), yp(d.watts || 0)]);
+  const lineD   = 'M' + coords.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join('L');
+  const areaD   = lineD
+    + `L${xp(dayPoints.at(-1).dt).toFixed(1)},${(PAD_T + chartH).toFixed(1)}`
+    + `L${xp(dayPoints[0].dt).toFixed(1)},${(PAD_T + chartH).toFixed(1)}Z`;
+
+  // Confidence band (p10/p90)
+  const hasConf = dayPoints.some(d => d.p10 != null && d.p90 != null);
+  let bandD = '';
+  if (hasConf) {
+    const top = dayPoints.map(d => `${xp(d.dt).toFixed(1)},${yp(d.p90 ?? d.watts ?? 0).toFixed(1)}`);
+    const bot = [...dayPoints].reverse().map(d => `${xp(d.dt).toFixed(1)},${yp(d.p10 ?? d.watts ?? 0).toFixed(1)}`);
+    bandD = `M${top.join('L')}L${bot.join('L')}Z`;
+  }
+
+  // Actual production history — bucket into 5-min averages for a smooth line
+  const showHistory = dayOffset === 0 && pvHistory.length > 1;
+  let histLineD = '';
+  if (showHistory) {
+    const BUCKET_MS = 5 * 60 * 1000;
+    const buckets = {};
+    for (const h of pvHistory) {
+      if (h.dt < xStart || h.dt > xEnd) continue;
+      const key = Math.floor(h.dt.getTime() / BUCKET_MS);
+      if (!buckets[key]) buckets[key] = { sum: 0, n: 0, t: key * BUCKET_MS };
+      buckets[key].sum += h.watts;
+      buckets[key].n += 1;
+    }
+    const pts = Object.values(buckets)
+      .sort((a, b) => a.t - b.t)
+      .map(b => ({ dt: new Date(b.t + BUCKET_MS / 2), watts: b.sum / b.n }));
+    if (pts.length > 1) {
+      histLineD = 'M' + pts.map(p => `${xp(p.dt).toFixed(1)},${yp(p.watts).toFixed(1)}`).join('L');
+    }
+  }
+
+  // Current-time hairline
+  const now = new Date();
+  const nowInRange = dayOffset === 0 && now >= xStart && now <= xEnd;
+  const nowX = nowInRange ? xp(now) : null;
+
+  // Y-axis ticks
+  const yStep = yMax <= 2000 ? 1000 : yMax <= 4000 ? 2000 : 2500;
+  const yTicks = [];
+  for (let w = yStep; w < yMax; w += yStep) yTicks.push(w);
+
+  // X-axis hour labels
+  const xHours = [6, 8, 10, 12, 14, 16, 18, 20];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
+      <defs>
+        <linearGradient id="pv-area-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#fb923c" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#fb923c" stopOpacity="0.02" />
+        </linearGradient>
+        <linearGradient id="pv-band-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#fb923c" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="#fb923c" stopOpacity="0.04" />
+        </linearGradient>
+      </defs>
+
+      {/* Gridlines + Y labels */}
+      {yTicks.map(w => (
+        <g key={w}>
+          <line x1={PAD_L} y1={yp(w)} x2={W - PAD_R} y2={yp(w)}
+            stroke="var(--glass-border)" strokeWidth="0.5" />
+          <text x={PAD_L - 3} y={yp(w) + 3.5} textAnchor="end" fontSize="7.5"
+            fill="var(--text-muted)" fontFamily="var(--mono, monospace)">
+            {`${(w / 1000).toFixed(0)}kW`}
+          </text>
+        </g>
+      ))}
+
+      {/* Baseline */}
+      <line x1={PAD_L} y1={PAD_T + chartH} x2={W - PAD_R} y2={PAD_T + chartH}
+        stroke="var(--glass-border)" strokeWidth="0.8" />
+
+      {/* Confidence band (p10/p90) — Helios Unsicherheitsbereich */}
+      {hasConf && <path d={bandD} fill="url(#pv-band-grad)" />}
+
+      {/* Forecast area fill */}
+      <path d={areaD} fill="url(#pv-area-grad)" />
+
+      {/* Forecast line */}
+      <path d={lineD} fill="none" stroke="#fb923c" strokeWidth="1.5"
+        strokeLinejoin="round" strokeLinecap="round" />
+
+      {/* Actual production (history) */}
+      {histLineD && (
+        <path d={histLineD} fill="none" stroke="rgba(148,210,255,0.75)" strokeWidth="1.2"
+          strokeLinejoin="round" strokeLinecap="round" />
+      )}
+
+      {/* Current-time hairline */}
+      {nowX != null && (
+        <line x1={nowX} y1={PAD_T} x2={nowX} y2={PAD_T + chartH}
+          stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="2 3" />
+      )}
+
+      {/* X labels */}
+      {xHours.map(h => {
+        const dt = new Date(tY, tM, tD, h, 0);
+        const x  = xp(dt);
+        return (
+          <text key={h} x={x.toFixed(1)} y={H - 3} textAnchor="middle" fontSize="7.5"
+            fill="var(--text-muted)" fontFamily="var(--mono, monospace)">
+            {h}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
 // ─── InfoTile ─────────────────────────────────────────────────────────────
 
 const InfoTile = ({ label, value, color = 'var(--text-primary)', sub = '' }) => (
@@ -261,7 +416,50 @@ export default function PvModal({
   t,
 }) {
   const [mainTab, setMainTab] = useState('leistung');
+  const [forecastChartDay, setForecastChartDay] = useState(0);
+  const [pvHistory, setPvHistory] = useState([]);
   const modalTitleId = 'pv-modal-title';
+
+  useEffect(() => {
+    if (!show) { setPvHistory([]); return; }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const opts = {
+      entityId: 'sensor.solar_panel_production_w',
+      start: today,
+      end: new Date(),
+      minimal_response: true,
+      no_attributes: true,
+    };
+
+    function parseRaw(raw) {
+      return (Array.isArray(raw) ? raw : [])
+        .map(s => {
+          const ts = s.lu != null ? new Date(s.lu * 1000) : new Date(s.last_changed ?? s.last_updated ?? 0);
+          const w = parseFloat(s.s ?? s.state);
+          return { dt: ts, watts: w };
+        })
+        .filter(s => Number.isFinite(s.watts) && s.watts >= 0);
+    }
+
+    async function load() {
+      if (conn) {
+        try {
+          const wsData = await getHistory(conn, opts);
+          const raw = Array.isArray(wsData?.[0]) ? wsData[0] : Array.isArray(wsData) ? wsData : [];
+          if (raw.length > 0) { setPvHistory(parseRaw(raw)); return; }
+        } catch (_) {}
+      }
+      if (canUseHistoryRest(haUrl) && haToken) {
+        try {
+          const restData = await getHistoryRest(haUrl, haToken, opts);
+          const raw = Array.isArray(restData?.[0]) ? restData[0] : Array.isArray(restData) ? restData : [];
+          setPvHistory(parseRaw(raw));
+        } catch (_) {}
+      }
+    }
+    load();
+  }, [show, conn, haUrl, haToken]);
 
   if (!show) return null;
 
@@ -292,6 +490,7 @@ export default function PvModal({
   const batteryMaxEnergy = v(PV_ENTITY_IDS.batteryMaxEnergy);
   const forecastRemaining = v(PV_ENTITY_IDS.forecastRemaining);
   const forecastPeakToday = v(PV_ENTITY_IDS.forecastPeakToday);
+  const forecastData = entities?.[PV_ENTITY_IDS.forecastCurrent]?.attributes?.forecast ?? [];
 
   // Compute battery discharge estimate
   const batteryOutW = Math.max(0, (houseW ?? 0) - (pvW ?? 0) - (gridImportW ?? 0));
@@ -458,22 +657,48 @@ export default function PvModal({
                 />
               </div>
 
-              {/* Stundenverlauf */}
+              {/* Tagesverlauf Chart */}
               <div>
-                <p className="mb-3 text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
-                  Stundenverlauf
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <InfoTile
-                    label="Diese Stunde"
-                    value={v(PV_ENTITY_IDS.forecastThisHour) != null ? `${v(PV_ENTITY_IDS.forecastThisHour).toFixed(2)} kWh` : null}
-                    color={SOLAR_COLOR}
-                  />
-                  <InfoTile
-                    label="Nächste Stunde"
-                    value={v(PV_ENTITY_IDS.forecastNextHour) != null ? `${v(PV_ENTITY_IDS.forecastNextHour).toFixed(2)} kWh` : null}
-                    color="#fbbf24"
-                  />
+                {/* Day tabs */}
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
+                    Tagesverlauf
+                  </p>
+                  <div className="flex gap-1">
+                    {['Heute', 'Morgen', '+2'].map((label, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setForecastChartDay(i)}
+                        className="rounded-lg px-2.5 py-1 text-[10px] font-bold transition-all"
+                        style={forecastChartDay === i
+                          ? { backgroundColor: 'rgba(251,146,60,0.15)', color: SOLAR_COLOR, border: `1px solid rgba(251,146,60,0.4)` }
+                          : { color: 'var(--text-muted)', border: '1px solid transparent' }
+                        }
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="popup-surface rounded-2xl p-3">
+                  <ForecastAreaChart forecastData={forecastData} dayOffset={forecastChartDay} pvHistory={pvHistory} />
+                  {/* Diese/Nächste Stunde below chart */}
+                  {forecastChartDay === 0 && (
+                    <div className="mt-2 flex gap-3 border-t border-[var(--glass-border)] pt-2">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold tracking-wide uppercase" style={{ color: 'var(--text-muted)' }}>Diese Stunde</span>
+                        <span className="text-sm font-light" style={{ color: SOLAR_COLOR }}>
+                          {v(PV_ENTITY_IDS.forecastThisHour) != null ? `${v(PV_ENTITY_IDS.forecastThisHour).toFixed(2)} kWh` : '—'}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold tracking-wide uppercase" style={{ color: 'var(--text-muted)' }}>Nächste Stunde</span>
+                        <span className="text-sm font-light" style={{ color: '#fbbf24' }}>
+                          {v(PV_ENTITY_IDS.forecastNextHour) != null ? `${v(PV_ENTITY_IDS.forecastNextHour).toFixed(2)} kWh` : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
