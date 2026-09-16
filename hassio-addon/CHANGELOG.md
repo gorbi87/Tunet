@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.28
+
+### Changed
+- Add release notes.
+
 ## 1.20.27
 
 ### Changed

@@ -68,7 +68,19 @@ const NAECHSTER_ZUSTAND = {
 };
 
 function buildLogBullets(reason, curState) {
-  const tokens = (reason || '').trim().split(/\s+/);
+  let processed = (reason || '').trim();
+  let hvSubNote = null;
+
+  // Extract "HV-ohne-WP X (roh Y − Komp Z − Heizstab W)" before tokenizing.
+  // roh = Hausverbrauch gesamt, Komp = WP Live-W, Heizstab = konfigurierter HS-Sollwert (kein Messwert)
+  const hvRx = /HV-ohne-WP (\S+)\s+\(roh (\S+)\s+[−-]\s+Komp (\S+)\s+[−-]\s+Heizstab ([^)]+)\)/;
+  const hvMatch = processed.match(hvRx);
+  if (hvMatch) {
+    hvSubNote = `Haus ${hvMatch[2]}  WP-Ist ${hvMatch[3]}  HS-Soll ${hvMatch[4].trim()}`;
+    processed = processed.replace(hvMatch[0], `HV-ohne-WP ${hvMatch[1]}`);
+  }
+
+  const tokens = processed.split(/\s+/);
   const pairs = [];
   for (let i = 0; i + 1 < tokens.length; i += 2) pairs.push([tokens[i], tokens[i + 1]]);
   if (tokens.length % 2 !== 0 && tokens.length > 0) pairs.push([tokens[tokens.length - 1], '']);
@@ -115,6 +127,11 @@ function buildLogBullets(reason, curState) {
         const inWindow = val === 'True' || val === 'true' || val === '1' || val === 'ja';
         return { label: `WW-Fenster (${WP_CFG.wwFensterStart}–${WP_CFG.wwFensterEnde})`, val: '', aktion: inWindow ? '→ freigegeben' : '→ gesperrt' };
       }
+      case 'Forecast':
+        return { label: 'Restprognose', val };
+      case 'HV-ohne-WP':
+        // Hausverbrauch nach Abzug von WP-Last + HS-Sollwert (Schwelle für hausverbrauch_niedrig ≤ 800W)
+        return { label: 'Haus bereinigt', val, subNote: hvSubNote };
       default:
         return { label: key, val };
     }
@@ -1059,6 +1076,7 @@ export default function WaermepumpeModal({
                               {b.label}{b.val ? <> <span style={{ color: '#80C0E0' }}>{b.val}</span></> : null}
                               {b.op ? <> <span style={{ color: modusColor, fontFamily: 'inherit' }}>{b.op}</span> {b.ziel}</> : null}
                               {b.aktion ? <> <span style={{ color: '#4ade80' }}>{b.aktion}</span></> : null}
+                              {b.subNote ? <><br /><span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{b.subNote}</span></> : null}
                             </span>
                           </div>
                         ))}

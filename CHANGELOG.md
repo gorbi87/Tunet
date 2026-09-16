@@ -1500,3 +1500,14 @@
 
 ### Fixed
 - Add release notes.
+
+## [1.20.28] — 2026-09-16
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
