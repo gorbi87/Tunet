@@ -25,8 +25,10 @@ export const PV_ENTITY_IDS = {
   forecastDay4: 'sensor.pv_anlage_energy_day_4',
   forecastDay5: 'sensor.pv_anlage_energy_day_5',
   forecastCurrent: 'sensor.pv_anlage_power_now',
-  forecastPeakToday: null,
+  forecastPeakToday: 'sensor.pv_anlage_peak_power_day_1',
   forecastRemaining: 'sensor.pv_anlage_energy_today_remaining',
+  forecastThisHour: 'sensor.pv_anlage_energy_this_hour',
+  forecastNextHour: 'sensor.pv_anlage_energy_next_hour',
   pvToHouseDaily: 'sensor.solar_panel_to_house_daily',
   batteryMaxEnergy: 'sensor.solaredge_b1_maximum_energy',
 };

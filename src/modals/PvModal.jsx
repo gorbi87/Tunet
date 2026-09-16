@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Sun, X } from '../icons';
 import { PV_ENTITY_IDS } from '../components/cards/GenericPvCard';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
-import { getHistoryRest, getHistory } from '../services/haClient';
 
 const SOLAR_COLOR = '#fb923c';
 const BATT_COLOR = '#f06292';
@@ -234,165 +233,6 @@ function PowerFlowSvg({ pvW, houseW, heatPumpW, batteryInW, batteryOutW, gridImp
   );
 }
 
-// ─── Solcast Forecast Bar Chart ────────────────────────────────────────────
-
-function ForecastBarChart({ forecastToday, forecastTomorrow, forecastDay3, pvHistory }) {
-  const PAD = { top: 16, right: 12, bottom: 28, left: 38 };
-  const VBW = 600;
-  const HEIGHT = 160;
-  const GW = VBW - PAD.left - PAD.right;
-  const GH = HEIGHT - PAD.top - PAD.bottom;
-
-  // Parse detailedForecast from entity attributes
-  const parseForecast = (entity) => {
-    const raw = entity?.attributes?.detailedForecast;
-    if (!Array.isArray(raw)) return [];
-    return raw.map((e) => ({
-      time: new Date(e.period_start),
-      kW: (e.pv_estimate || 0) * 2, // kWh per 30min → kW
-      kW10: (e.pv_estimate10 || 0) * 2,
-      kW90: (e.pv_estimate90 || 0) * 2,
-    })).filter((e) => !isNaN(e.time.getTime()));
-  };
-
-  const todayEntries = parseForecast(forecastToday);
-  const tomorrowEntries = parseForecast(forecastTomorrow);
-  const day3Entries = parseForecast(forecastDay3);
-
-  // Combine: today + tomorrow + day3 (limited to daylight hours 4:00–22:00 local)
-  const inDaylight = (d) => { const h = d.getHours(); return h >= 4 && h <= 22; };
-  const todayBars = todayEntries.filter((e) => inDaylight(e.time));
-  const tomorrowBars = tomorrowEntries.filter((e) => inDaylight(e.time));
-  const day3Bars = day3Entries.filter((e) => inDaylight(e.time));
-
-  // Combine with day separator gaps
-  // We draw each day group separately with a small gap between
-  const allBars = [
-    ...todayBars.map((b) => ({ ...b, day: 0 })),
-    ...tomorrowBars.map((b) => ({ ...b, day: 1 })),
-    ...day3Bars.map((b) => ({ ...b, day: 2 })),
-  ];
-
-  if (allBars.length === 0) {
-    return (
-      <div className="flex h-[160px] items-center justify-center text-xs" style={{ color: 'var(--text-muted)' }}>
-        Keine Prognosedaten
-      </div>
-    );
-  }
-
-  const maxKw = Math.max(...allBars.map((b) => b.kW90 || b.kW), 1);
-  const toY = (kw) => PAD.top + GH - (kw / maxKw) * GH;
-  const barH = (kw) => (kw / maxKw) * GH;
-
-  // Group sizes
-  const sizes = [todayBars.length, tomorrowBars.length, day3Bars.length].filter((s) => s > 0);
-  const nGroups = sizes.length;
-  const gapBetween = 12; // px gap between day groups
-  const totalBars = allBars.length;
-  const totalGap = (nGroups - 1) * gapBetween;
-  const barW = Math.max(2, (GW - totalGap) / totalBars - 1);
-  const barGap = 1;
-
-  // Compute x for each bar considering group gaps
-  let xOffset = PAD.left;
-  let dayGroup = allBars[0]?.day;
-  const bars = allBars.map((b, i) => {
-    if (i > 0 && b.day !== allBars[i - 1].day) xOffset += gapBetween;
-    const x = xOffset;
-    xOffset += barW + barGap;
-    return { ...b, x };
-  });
-
-  // Day labels
-  const dayColors = ['#fb923c', '#fbbf24', '#94a3b8'];
-  const dayLabels = ['Heute', 'Morgen', 'Übermorgen'];
-  const dayLabelX = [0, 1, 2].map((d) => {
-    const group = bars.filter((b) => b.day === d);
-    if (!group.length) return null;
-    return { x: (group[0].x + group[group.length - 1].x + barW) / 2, label: dayLabels[d], color: dayColors[d] };
-  }).filter(Boolean);
-
-  // pvHistory overlay (actual production line)
-  const historyLine = Array.isArray(pvHistory) && pvHistory.length > 1 ? pvHistory : null;
-  let histPoints = null;
-  if (historyLine) {
-    const minTime = bars[0].time.getTime();
-    const maxTime = bars[bars.length - 1].time.getTime() + 30 * 60 * 1000;
-    const timeRange = maxTime - minTime;
-    histPoints = historyLine
-      .filter((p) => p.time.getTime() >= minTime && p.time.getTime() <= maxTime)
-      .map((p) => {
-        const px = PAD.left + ((p.time.getTime() - minTime) / timeRange) * GW;
-        const py = toY(p.value / 1000); // W → kW
-        return `${px.toFixed(1)},${py.toFixed(1)}`;
-      });
-  }
-
-  // Y axis labels
-  const yLabels = [maxKw, maxKw / 2, 0].map((v, i) => ({
-    value: v,
-    y: toY(v),
-  }));
-
-  return (
-    <div className="relative w-full select-none">
-      <svg viewBox={`0 0 ${VBW} ${HEIGHT}`} className="h-full w-full overflow-visible" preserveAspectRatio="none">
-        {/* Grid lines */}
-        {yLabels.map((l, i) => (
-          <line key={i} x1={PAD.left} y1={l.y} x2={VBW - PAD.right} y2={l.y}
-            stroke="currentColor" strokeOpacity="0.06" strokeDasharray="4 4" />
-        ))}
-
-        {/* Confidence band (10–90) */}
-        {bars.map((b, i) => b.kW90 > 0 && (
-          <rect key={`conf-${i}`}
-            x={b.x} y={toY(b.kW90)}
-            width={barW} height={Math.max(1, barH(b.kW90) - barH(b.kW10))}
-            fill={dayColors[b.day]} opacity="0.12" rx="1"
-          />
-        ))}
-
-        {/* Forecast bars */}
-        {bars.map((b, i) => (
-          <rect key={`bar-${i}`}
-            x={b.x} y={toY(b.kW)}
-            width={barW} height={Math.max(1, barH(b.kW))}
-            fill={dayColors[b.day]} opacity={b.day === 0 ? 0.65 : b.day === 1 ? 0.4 : 0.25}
-            rx="1"
-          />
-        ))}
-
-        {/* Actual production line */}
-        {histPoints && histPoints.length > 1 && (
-          <polyline
-            points={histPoints.join(' ')}
-            fill="none" stroke={SOLAR_COLOR}
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            opacity="0.9"
-          />
-        )}
-
-        {/* Y labels */}
-        {yLabels.map((l, i) => (
-          <text key={i} x={PAD.left - 6} y={l.y} textAnchor="end" dominantBaseline="middle"
-            style={{ fill: 'var(--text-secondary)', fontSize: '10px', opacity: 0.55, fontFamily: 'monospace' }}>
-            {l.value.toFixed(1)}
-          </text>
-        ))}
-
-        {/* Day labels */}
-        {dayLabelX.map((l, i) => (
-          <text key={i} x={l.x} y={HEIGHT - 4} textAnchor="middle"
-            style={{ fill: l.color, fontSize: '10px', opacity: 0.8, fontFamily: 'monospace', fontWeight: 'bold' }}>
-            {l.label}
-          </text>
-        ))}
-      </svg>
-    </div>
-  );
-}
-
 // ─── InfoTile ─────────────────────────────────────────────────────────────
 
 const InfoTile = ({ label, value, color = 'var(--text-primary)', sub = '' }) => (
@@ -421,53 +261,7 @@ export default function PvModal({
   t,
 }) {
   const [mainTab, setMainTab] = useState('leistung');
-  const [pvHistory, setPvHistory] = useState([]);
-  const [histLoading, setHistLoading] = useState(false);
   const modalTitleId = 'pv-modal-title';
-
-  // Fetch actual production history when on Prognose tab
-  useEffect(() => {
-    if (!show || mainTab !== 'prognose') return;
-    if (!conn && !haUrl) return;
-
-    const fetchHistory = async () => {
-      setHistLoading(true);
-      const end = new Date();
-      const start = new Date(end.getTime() - 48 * 60 * 60 * 1000);
-      try {
-        const data = await getHistoryRest(haUrl, haToken, {
-          entityId: PV_ENTITY_IDS.pvW,
-          start, end,
-          minimal_response: false,
-          no_attributes: false,
-          significant_changes_only: false,
-        });
-        const raw = Array.isArray(data?.[0]) ? data[0] : (Array.isArray(data) ? data : []);
-        const pts = raw
-          .filter((d) => !isNaN(parseFloat(d?.state)))
-          .map((d) => ({
-            value: parseFloat(d.state),
-            time: new Date(d.last_changed || d.last_updated || d.lu || d.lc),
-          }))
-          .filter((d) => !isNaN(d.time.getTime()));
-        setPvHistory(pts);
-      } catch (_e) {
-        try {
-          const wsData = await getHistory(conn, { entityId: PV_ENTITY_IDS.pvW, start, end });
-          const raw = Array.isArray(wsData?.[0]) ? wsData[0] : (Array.isArray(wsData) ? wsData : []);
-          setPvHistory(raw
-            .filter((d) => !isNaN(parseFloat(d?.state)))
-            .map((d) => ({
-              value: parseFloat(d.state),
-              time: new Date(d.last_changed || d.last_updated || d.lu || d.lc),
-            }))
-            .filter((d) => !isNaN(d.time.getTime())));
-        } catch (_e2) { /* ignore */ }
-      }
-      setHistLoading(false);
-    };
-    fetchHistory();
-  }, [show, mainTab, conn, haUrl, haToken]);
 
   if (!show) return null;
 
@@ -664,23 +458,23 @@ export default function PvModal({
                 />
               </div>
 
-              {/* Forecast chart */}
-              <div className="popup-surface rounded-2xl p-4">
-                <p className="mb-3 text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
-                  Prognose · orangefarbene Linie = tatsächliche Produktion
+              {/* Stundenverlauf */}
+              <div>
+                <p className="mb-3 text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] uppercase">
+                  Stundenverlauf
                 </p>
-                {histLoading ? (
-                  <div className="flex h-[160px] items-center justify-center">
-                    <div className="h-6 w-6 animate-spin rounded-full border-b-2 opacity-30" style={{ borderColor: SOLAR_COLOR }} />
-                  </div>
-                ) : (
-                  <ForecastBarChart
-                    forecastToday={e(PV_ENTITY_IDS.forecastToday)}
-                    forecastTomorrow={e(PV_ENTITY_IDS.forecastTomorrow)}
-                    forecastDay3={e(PV_ENTITY_IDS.forecastDay3)}
-                    pvHistory={pvHistory}
+                <div className="grid grid-cols-2 gap-3">
+                  <InfoTile
+                    label="Diese Stunde"
+                    value={v(PV_ENTITY_IDS.forecastThisHour) != null ? `${v(PV_ENTITY_IDS.forecastThisHour).toFixed(2)} kWh` : null}
+                    color={SOLAR_COLOR}
                   />
-                )}
+                  <InfoTile
+                    label="Nächste Stunde"
+                    value={v(PV_ENTITY_IDS.forecastNextHour) != null ? `${v(PV_ENTITY_IDS.forecastNextHour).toFixed(2)} kWh` : null}
+                    color="#fbbf24"
+                  />
+                </div>
               </div>
 
               {/* 5-day forecast tiles */}

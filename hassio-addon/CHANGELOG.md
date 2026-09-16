@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.27
+
+### Changed
+- Solar-Modal: Balkendiagramm durch Stunden-Tiles ersetzt (Diese/Nächste Stunde); Peak heute aus Helios peak_power_day_1
+
 ## 1.20.26
 
 ### Changed

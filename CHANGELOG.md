@@ -1,3 +1,8 @@
+## [1.20.27] — 2026-09-16
+
+### Changed
+- Solar-Modal Prognose-Tab: Balkendiagramm durch "Diese Stunde / Nächste Stunde" Tiles ersetzt (`pv_anlage_energy_this_hour` + `energy_next_hour`); Peak heute aus `pv_anlage_peak_power_day_1`
+
 ## [1.20.26] — 2026-09-16
 
 ### Changed
@@ -1475,6 +1480,17 @@
 - Add release notes.
 
 ## [1.20.26] — 2026-09-16
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+## [1.20.27] — 2026-09-16
 
 ### Added
 - Add release notes.
