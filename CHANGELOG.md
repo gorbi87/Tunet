@@ -1,3 +1,9 @@
+## [1.20.26] — 2026-09-16
+
+### Changed
+- Stundenplan: Di 5. Stunde Kunst ↔ Fr 3. Stunde Sport getauscht
+- Solar-Modal / WP-Modal: Solcast-Prognose-Entities durch Helios ersetzt (`sensor.pv_anlage_energy_day_1–5`, `power_now`, `energy_today_remaining`)
+
 ## [1.20.25] — 2026-09-09
 
 ### Fixed
@@ -1458,6 +1464,17 @@
 - Add release notes.
 
 ## [1.20.25] — 2026-09-09
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+## [1.20.26] — 2026-09-16
 
 ### Added
 - Add release notes.

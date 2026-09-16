@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.20.26
+
+### Changed
+- Stundenplan: Di 5. Stunde Kunst ↔ Fr 3. Stunde Sport getauscht
+- Solar-Modal / WP-Modal: Solcast-Prognose-Entities durch Helios ersetzt
+
 ## 1.20.25
 
 ### Fixed

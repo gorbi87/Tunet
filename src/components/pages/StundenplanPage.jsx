@@ -21,11 +21,11 @@ const FAECHER = {
   // 2. Stunde
   '2-0': 'Lernzeit', '2-1': 'Musik', '2-2': 'Sport', '2-3': 'Lernzeit', '2-4': 'Lernzeit',
   // 3. Stunde
-  '3-0': 'Lernzeit', '3-1': 'Lernzeit', '3-2': 'Sachunterricht', '3-3': 'Sachunterricht', '3-4': 'Sport',
+  '3-0': 'Lernzeit', '3-1': 'Lernzeit', '3-2': 'Sachunterricht', '3-3': 'Sachunterricht', '3-4': 'Kunst',
   // 4. Stunde
   '4-0': 'Kunst', '4-1': 'Lernzeit', '4-2': 'Religion', '4-3': 'Lernzeit', '4-4': 'SichBasis',
   // 5. Stunde (nur Dienstag)
-  '5-0': null, '5-1': 'Kunst', '5-2': null, '5-3': null, '5-4': null,
+  '5-0': null, '5-1': 'Sport', '5-2': null, '5-3': null, '5-4': null,
 };
 
 const FACH_META = {
