@@ -336,7 +336,7 @@ export default function WaermepumpeModal({
     return min >= 11 * 60 && min < 19 * 60 + 30;
   })();
   const fensterStatusText = imFenster
-    ? `Fenster offen (${WP_CFG.wwFensterStart}–${WP_CFG.wwFensterEnde})`
+    ? `Zeitfenster offen (${WP_CFG.wwFensterStart}–${WP_CFG.wwFensterEnde})`
     : new Date().getHours() < 11
       ? `Gesperrt bis ${WP_CFG.wwFensterStart}`
       : `Gesperrt bis morgen ${WP_CFG.wwFensterStart}`;
@@ -1024,71 +1024,129 @@ export default function WaermepumpeModal({
                     )}
                   </div>
 
-                  {/* Nächster Zustand */}
-                  {NAECHSTER_ZUSTAND[tagesmodus] && (
-                    <div
-                      className="popup-surface rounded-2xl sm:w-48 shrink-0"
-                      style={{ padding: '12px 14px' }}
-                    >
-                      <p className="text-[8.5px] font-bold tracking-[0.12em] uppercase mb-2" style={{ color: 'var(--text-muted)' }}>
-                        Nächster Zustand
-                      </p>
-                      {NAECHSTER_ZUSTAND[tagesmodus].split('\n').map((line, i) => (
-                        <p key={i} className="text-[11px] leading-snug" style={{ color: '#2B9FE0', marginTop: i > 0 ? '6px' : 0 }}>
-                          {line}
-                        </p>
-                      ))}
-                      {(tagesmodus === 'Standby' || tagesmodus === 'Kühlen') && (
-                        <p className="text-[10px] font-semibold leading-snug mt-2" style={{ color: imFenster ? '#4ade80' : '#ef9a9a' }}>
-                          {imFenster ? '✓' : '✗'} {fensterStatusText}
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </div>
 
-                {/* ── Warum dieser Zustand? ── */}
-                {entscheidungslog && (() => {
-                  const [header, reason] = entscheidungslog.split(' | ');
+                {/* ── Ablauf: Warum eingetreten + Als Nächstes ── */}
+                {(() => {
+                  const [header, reason] = (entscheidungslog || '').split(' | ');
                   const timeMatch = header?.match(/^(\d{2}:\d{2})/);
                   const transitionMatch = header?.match(/→(\S+)/);
                   const logCurState = transitionMatch ? transitionMatch[1] : tagesmodus;
                   const bullets = buildLogBullets(reason, logCurState);
                   const showFensterSperr = (tagesmodus === 'Standby' || tagesmodus === 'Kühlen') && !imFenster;
-                  if (!bullets.length && !showFensterSperr) return null;
+
+                  // ww_start_ok uses ww_ist < _ww_ziel (63°C = wwFertig), not wwStart
+                  const wwHeizbarNow = wwTemp == null || wwTemp < WP_CFG.wwFertig;
+                  const nextStateMap = {
+                    Standby: [
+                      ...(wwHeizbarNow ? [{ state: 'WW Heizen', cond: `WW < ${WP_CFG.wwFertig}°C · Forecast ≥ 3 kWh · im Zeitfenster + SOC`, c: '#60a5fa' }] : []),
+                      ...(kuehlungAktiv ? [{ state: 'Kühlen', cond: `Raum ≥ ${WP_CFG.kuehlTemp}°C · PV ≥ ${WP_CFG.kuehlPv} kW`, c: '#2dd4bf' }] : []),
+                    ],
+                    WW_Heizen: [
+                      { state: 'WW Boost',  cond: 'WW ≥ 55°C — Heizstab intern zugeschaltet', c: '#c084fc' },
+                      // WW_Pause ist nur erreichbar wenn WW < 55°C (sonst feuert WW_Boost zuerst)
+                      ...(wwTemp == null || wwTemp < 55 ? [{ state: 'WW Pause', cond: `Kompressor ≥ ${WP_CFG.bohSchutz} min (BOH-Schutz)`, c: '#fb923c' }] : []),
+                      { state: 'Standby',   cond: 'kein Weiterlaufen (PV/Puffer/SOC) · Zeitfenster zu', c: '#f87171' },
+                    ],
+                    WW_Pause: [
+                      { state: 'WW Heizen', cond: `nach ${WP_CFG.bohPause} min automatisch`, c: '#60a5fa' },
+                    ],
+                    WW_Boost: [
+                      { state: 'WW Fertig', cond: `WW ≥ ${WP_CFG.wwFertig}°C — Tagesziel erreicht`, c: '#4ade80' },
+                      { state: 'Standby',   cond: 'kein Weiterlaufen (PV/Puffer/SOC)', c: '#f87171' },
+                    ],
+                    WW_Fertig: [
+                      ...(kuehlungAktiv ? [{ state: 'Kühlen', cond: `Raum ≥ ${WP_CFG.kuehlTemp}°C · PV ≥ ${WP_CFG.kuehlPv} kW + MLZ`, c: '#2dd4bf' }] : []),
+                      { state: 'Standby', cond: `Zeitfenster zu (nach ${WP_CFG.wwFensterEnde}) + MLZ erfüllt`, c: '#64748b' },
+                    ],
+                    Kühlen: [
+                      ...(wwHeizbarNow ? [{ state: 'WW Heizen', cond: `WW < ${WP_CFG.wwFertig}°C · Forecast ≥ 3 kWh · im Zeitfenster`, c: '#60a5fa' }] : []),
+                      { state: 'Standby',   cond: `Raum < ${WP_CFG.kuehlTemp}°C ODER PV < ${WP_CFG.kuehlPv} kW`, c: '#64748b' },
+                    ],
+                  };
+                  const nextItems = nextStateMap[tagesmodus] || [];
+
+                  if (!bullets.length && !showFensterSperr && !nextItems.length) return null;
+
                   return (
-                    <div className="popup-surface rounded-2xl p-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <p className="text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: 'var(--text-muted)' }}>
-                          Warum dieser Zustand?
-                        </p>
+                    <div className="popup-surface rounded-2xl p-4">
+                      {/* Header */}
+                      <div className="flex items-center mb-3">
+                        <p className="text-[8.5px] font-bold tracking-[0.14em] uppercase" style={{ color: 'var(--text-muted)' }}>Ablauf</p>
                         {timeMatch && (
-                          <span className="ml-auto font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                          <span className="ml-auto font-mono text-[9.5px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
                             {timeMatch[1]}
                           </span>
                         )}
                       </div>
-                      <div className="space-y-2.5">
-                        {bullets.map((b, i) => (
-                          <div key={i} className="flex items-start gap-3">
-                            <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: '#4ade80', marginTop: '4px' }} />
-                            <span className="text-[11.5px] leading-snug" style={{ color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--mono, monospace)' }}>
-                              {b.label}{b.val ? <> <span style={{ color: '#80C0E0' }}>{b.val}</span></> : null}
-                              {b.op ? <> <span style={{ color: modusColor, fontFamily: 'inherit' }}>{b.op}</span> {b.ziel}</> : null}
-                              {b.aktion ? <> <span style={{ color: '#4ade80' }}>{b.aktion}</span></> : null}
-                              {b.subNote ? <><br /><span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{b.subNote}</span></> : null}
-                            </span>
+
+                      {/* Warum eingetreten */}
+                      {(bullets.length > 0 || showFensterSperr) && (
+                        <div className="mb-1">
+                          <p className="text-[7.5px] font-semibold tracking-[0.13em] uppercase mb-2" style={{ color: 'var(--text-muted)', opacity: 0.65 }}>
+                            Warum eingetreten
+                          </p>
+                          <div className="space-y-1.5">
+                            {bullets.map((b, i) => {
+                              const dotC = b.aktion?.includes('→') ? '#4ade80' : (b.op === '≥' ? '#fbbf24' : '#4ade80');
+                              return (
+                                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '6px 10px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
+                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: dotC, flexShrink: 0, marginTop: '5px' }} />
+                                  <div style={{ flex: 1 }}>
+                                    <span style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{b.label}</span>
+                                    {b.val && <span style={{ fontFamily: 'monospace', fontSize: '10px', fontWeight: 500, color: modusColor, background: `${modusColor}1a`, padding: '0 5px', borderRadius: '4px', marginLeft: '5px' }}>{b.val}</span>}
+                                    {b.op && <span style={{ fontSize: '10px', color: 'var(--text-secondary)', marginLeft: '4px' }}>{b.op} {b.ziel}</span>}
+                                    {b.aktion && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '4px' }}>{b.aktion}</span>}
+                                    {b.subNote && <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '2px' }}>{b.subNote}</div>}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {showFensterSperr && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
+                                <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#f87171', flexShrink: 0 }} />
+                                <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>
+                                  WW-Zeitfenster <span style={{ color: '#f87171', fontWeight: 600 }}>gesperrt</span> — {fensterStatusText}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        ))}
-                        {showFensterSperr && (
-                          <div className="flex items-start gap-3">
-                            <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: '#ef9a9a', marginTop: '4px' }} />
-                            <span className="text-[11.5px] leading-snug" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--mono, monospace)' }}>
-                              WW-Fenster <span style={{ color: '#ef9a9a' }}>gesperrt</span> — {fensterStatusText}
-                            </span>
+                        </div>
+                      )}
+
+                      {/* Connector */}
+                      {(bullets.length > 0 || showFensterSperr) && nextItems.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '10px 0 8px' }}>
+                          <div style={{ width: '1px', height: '8px', background: 'var(--glass-border)' }} />
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1 }}>▼</span>
+                          <div style={{ width: '1px', height: '4px', background: 'var(--glass-border)' }} />
+                        </div>
+                      )}
+
+                      {/* Als Nächstes */}
+                      {nextItems.length > 0 && (
+                        <div>
+                          <p className="text-[7.5px] font-semibold tracking-[0.13em] uppercase mb-2" style={{ color: 'var(--text-muted)', opacity: 0.65 }}>
+                            Als Nächstes
+                          </p>
+                          <div className="space-y-1.5">
+                            {nextItems.map((n, i) => (
+                              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px', borderRadius: '8px', background: `${n.c}10`, border: `1px solid ${n.c}38` }}>
+                                <span style={{ fontSize: '10px', color: n.c, flexShrink: 0, fontWeight: 700 }}>→</span>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <span style={{ fontSize: '11px', fontWeight: 700, color: n.c }}>{n.state}</span>
+                                  <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)', marginLeft: '6px' }}>{n.cond}</span>
+                                </div>
+                              </div>
+                            ))}
+                            {(tagesmodus === 'Standby' || tagesmodus === 'Kühlen') && (
+                              <p style={{ fontSize: '9.5px', fontWeight: 600, color: imFenster ? '#4ade80' : '#f87171', paddingLeft: '4px', marginTop: '4px' }}>
+                                {imFenster ? '✓' : '✗'} {fensterStatusText}
+                              </p>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
@@ -1278,21 +1336,33 @@ export default function WaermepumpeModal({
                             {todayLog.map((entry, i) => {
                               const col = MODUS_META[entry.curState]?.color || '#94a3b8';
                               const label = MODUS_META[entry.curState]?.label || entry.curState;
-                              const timeStr = entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                              const vonStr = entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                              // newest-first: i-1 is the next state in time, i=0 is still active
+                              const bisTime = i === 0 ? new Date() : todayLog[i - 1].time;
+                              const bisStr = bisTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                              const durMin = Math.max(0, Math.round((bisTime.getTime() - entry.time.getTime()) / 60000));
+                              const durStr = durMin < 60 ? `${durMin} min` : `${Math.floor(durMin / 60)}h ${durMin % 60}min`;
                               const bullets2 = buildLogBullets(entry.reason, entry.curState);
                               const reasonText = bullets2
                                 .map(b => [b.label, b.val, b.op, b.ziel].filter(Boolean).join(' '))
                                 .join(' · ');
                               return (
-                                <div key={i} className="flex items-baseline gap-2 py-1.5 border-b flex-wrap" style={{ borderColor: 'var(--glass-border)' }}>
-                                  <span className="shrink-0 font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{timeStr}</span>
-                                  <span className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ backgroundColor: `${col}22`, color: col }}>
-                                    {label}
-                                  </span>
-                                  {reasonText && (
-                                    <span className="text-[10px] leading-snug" style={{ color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
-                                      {reasonText}
+                                <div key={i} className="py-1.5 border-b" style={{ borderColor: 'var(--glass-border)' }}>
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="shrink-0 font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{vonStr}</span>
+                                    <span style={{ fontSize: '9px', color: 'var(--text-muted)', opacity: 0.5 }}>–</span>
+                                    <span className="shrink-0 font-mono text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{bisStr}</span>
+                                    <span className="tabular-nums" style={{ fontSize: '9px', padding: '1px 5px', borderRadius: '4px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}>
+                                      {durStr}
                                     </span>
+                                    <span className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ backgroundColor: `${col}22`, color: col }}>
+                                      {label}
+                                    </span>
+                                  </div>
+                                  {reasonText && (
+                                    <p className="text-[10px] leading-snug mt-0.5" style={{ color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+                                      {reasonText}
+                                    </p>
                                   )}
                                 </div>
                               );

@@ -1537,3 +1537,26 @@
 
 ### Fixed
 - Add release notes.
+
+## [1.20.30] — 2026-09-28
+
+### Added
+- WP-Modal Automatik-Tab: neuer "Ablauf"-Block ersetzt "Warum dieser Zustand?" + "Nächster Zustand" — zeigt "Warum eingetreten" (farbige Chip-Zeilen aus Entscheidungslog) und "Als Nächstes" (Blueprint-korrekte Übergänge, sensor-aware gefiltert)
+- Entscheidungsprotokoll: von–bis-Zeiten und Phasendauer (z.B. "44 min") je Eintrag
+- WP-Modal: "Als Nächstes" für WW_Heizen blendet WW_Pause aus wenn WW ≥ 55°C (Blueprint-Reihenfolge: WW_Boost-Check greift zuerst)
+
+### Changed
+- WP-Modal: Bedingungsschwelle für WW-Start-Anzeige korrigiert von `wwStart` (54°C) auf `wwFertig` (63°C) — Blueprint prüft `ww_ist < _ww_ziel`
+- WP-Modal: WW Heizen in "Als Nächstes" wird nur angezeigt wenn `wwTemp < 63°C` (Tagesziel noch nicht erreicht)
+- WP-Modal: alle "Fenster"-Texte → "Zeitfenster"
+- WP-Karte: unterer Slot zeigt State-Machine-Fortschrittsbalken während aktiver Phase, COP/Strom im Standby
+- Personenkarte: Landkarten-Tiles von CARTO (API-Key-Pflicht) auf OpenStreetMap gewechselt; Dark Mode via CSS-Filter
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.

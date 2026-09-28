@@ -207,9 +207,9 @@ export default function PersonModal({
 
   const isLightTheme =
     typeof document !== 'undefined' && document.documentElement.dataset.theme === 'light';
-  const tileUrl = isLightTheme
-    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+  // OSM tiles are free with no API key; dark mode applied via CSS filter on tiles only
+  const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const tileClassName = isLightTheme ? '' : 'osm-tile-dark';
 
   // 1. Manual Override
   if (manualBatteryId && entities?.[manualBatteryId]) {
@@ -274,8 +274,9 @@ export default function PersonModal({
         }).setView([currentLat, currentLon], 14);
 
         tileLayerRef.current = L.tileLayer(tileUrl, {
-          subdomains: 'abcd',
+          subdomains: 'abc',
           maxZoom: 19,
+          className: tileClassName,
         }).addTo(map);
 
         mapInstanceRef.current = map;
@@ -286,8 +287,9 @@ export default function PersonModal({
         if (hasDifferentLayer) {
           tileLayerRef.current?.remove();
           tileLayerRef.current = L.tileLayer(tileUrl, {
-            subdomains: 'abcd',
+            subdomains: 'abc',
             maxZoom: 19,
+            className: tileClassName,
           }).addTo(mapInstanceRef.current);
         }
         mapInstanceRef.current.setView([currentLat, currentLon]);
@@ -422,6 +424,7 @@ export default function PersonModal({
           </div>
         </div>
 
+        <style>{`.osm-tile-dark{filter:invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)}`}</style>
         <div className="grid h-full grid-cols-1 items-start gap-3 sm:gap-6 lg:grid-cols-5">
           <section className="min-w-0 lg:col-span-3">
             {currentLat && currentLon ? (

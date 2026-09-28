@@ -212,9 +212,9 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
       style={cardStyle}
     >
       {controls}
-      {/* Top section: fills available space, clips if state-machine block makes it too tall */}
-      <div className="relative z-10 min-h-0 flex-1 overflow-hidden">
-        {/* Top row: icon + kompressor status */}
+
+      {/* Main content — icon, name, temp */}
+      <div className="relative z-10">
         <div className="flex items-start justify-between">
           <div
             className={`transition-transform duration-500 group-hover:scale-110 ${isUltraCompact ? 'rounded-lg p-2' : isDenseMobile ? 'rounded-xl p-2.5' : 'rounded-2xl p-3'}`}
@@ -285,7 +285,6 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
           </div>
         </div>
 
-        {/* Card name */}
         <div className={isUltraCompact ? 'mt-1.5' : isDenseMobile ? 'mt-3' : 'mt-2'}>
           <p
             className={`${isUltraCompact ? 'mb-0.5 text-[9px]' : isDenseMobile ? 'mb-1 text-[10px]' : 'mb-0.5 text-xs'} leading-none font-bold text-[var(--text-secondary)] uppercase opacity-60`}
@@ -295,7 +294,6 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
           </p>
         </div>
 
-        {/* WW Temp (large) + Außentemp */}
         <div className={`flex items-end justify-between ${isUltraCompact ? 'mt-1' : isDenseMobile ? 'mt-2' : 'mt-3'}`}>
           <div className="flex items-baseline gap-1 leading-none">
             <span
@@ -314,63 +312,60 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
             </div>
           )}
         </div>
+      </div>
 
-        {/* State Machine Status */}
-        {!isUltraCompact && tagesmodus !== 'Standby' && (
-          <div className={isDenseMobile ? 'mt-2' : 'mt-2'}>
-            <div className="mb-1">
-              <span
-                className="shrink-0 text-[9px] font-bold tracking-widest uppercase"
-                style={{ color: modusMeta.color }}
+      {/* Bottom slot: State Machine when phase active, COP/Strom when Standby — never both at once */}
+      {!isUltraCompact && tagesmodus !== 'Standby' ? (
+        <div className="relative z-10 mt-auto pt-2">
+          <div className="mb-1 flex items-center gap-2">
+            <span
+              className="text-[9px] font-bold tracking-widest uppercase"
+              style={{ color: modusMeta.color }}
+            >
+              {modusMeta.label}
+            </span>
+          </div>
+          {wwPct != null && (
+            <>
+              <div
+                className="h-1 w-full overflow-hidden rounded-full"
+                style={{ backgroundColor: 'var(--glass-bg)' }}
               >
-                {modusMeta.label}
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${wwPct}%`, backgroundColor: modusMeta.color }}
+                />
+              </div>
+              <div
+                className="mt-1 flex justify-between"
+                style={{ fontSize: '9px', color: 'var(--text-muted)' }}
+              >
+                <span>{wwTemp?.toFixed(1)}°C</span>
+                <span style={{ color: modusMeta.color }}>→ {wwTarget}°C</span>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (cop != null || stromKwh != null) ? (
+        <div className={`relative z-10 mt-auto flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'pt-1.5' : 'pt-2'}`}>
+          {cop != null && (
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">COP</span>
+              <span className={`font-light text-[var(--accent-color)] ${isUltraCompact ? 'text-sm' : 'text-lg'}`}>{cop}</span>
+            </div>
+          )}
+          {stromKwh != null && (
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">
+                {translate('waermepumpe.strom')}
+              </span>
+              <span className={`font-light text-[var(--text-primary)] ${isUltraCompact ? 'text-sm' : 'text-lg'}`}>
+                {stromKwh.toFixed(2)} kWh
               </span>
             </div>
-            {wwPct != null && (
-              <>
-                <div
-                  className="h-1 w-full overflow-hidden rounded-full"
-                  style={{ backgroundColor: 'var(--glass-bg)' }}
-                >
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{ width: `${wwPct}%`, backgroundColor: modusMeta.color }}
-                  />
-                </div>
-                <div
-                  className="mt-1 flex justify-between"
-                  style={{ fontSize: '9px', color: 'var(--text-muted)' }}
-                >
-                  <span>{wwTemp?.toFixed(1)}°C</span>
-                  <span style={{ color: modusMeta.color }}>→ {wwTarget}°C</span>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Bottom row: COP + Strom — pinned outside top section so it's never clipped */}
-      <div className={`relative z-10 flex items-center gap-3 border-t border-[var(--glass-border)] ${isUltraCompact ? 'mt-2 pt-1.5' : 'mt-2 pt-2'}`}>
-        {cop != null && (
-          <div className="flex flex-col">
-            <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">
-              COP
-            </span>
-            <span className={`font-light text-[var(--accent-color)] ${isUltraCompact ? 'text-sm' : 'text-lg'}`}>{cop}</span>
-          </div>
-        )}
-        {stromKwh != null && (
-          <div className="flex flex-col">
-            <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">
-              {translate('waermepumpe.strom')}
-            </span>
-            <span className={`font-light text-[var(--text-primary)] ${isUltraCompact ? 'text-sm' : 'text-lg'}`}>
-              {stromKwh.toFixed(2)} kWh
-            </span>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 });

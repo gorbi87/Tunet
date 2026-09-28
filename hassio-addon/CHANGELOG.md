@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.20.30
+
+### Added
+- WP-Modal: "Ablauf"-Visualisierung mit "Warum eingetreten" + "Als Nächstes" (Blueprint-korrekt, sensor-aware)
+- Entscheidungsprotokoll: von–bis-Zeiten und Phasendauer je Eintrag
+
+### Changed
+- WP-Modal: WW-Startschwelle korrigiert auf 63°C; "Fenster" → "Zeitfenster"
+- WP-Karte: Fortschrittsbalken bei aktiver Phase, COP/Strom im Standby
+- Personenkarte: OSM-Tiles statt CARTO (kein API-Key mehr erforderlich)
+
 ## 1.20.29
 
 ### Added
