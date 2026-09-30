@@ -338,8 +338,10 @@ export default function LuftungsanlageModal({
   const bypass = val(LUFTUNGSANLAGE_ENTITY_IDS.bypass);
   const zuluftRpm = val(LUFTUNGSANLAGE_ENTITY_IDS.zuluftRpm);
   const abluftRpm = val(LUFTUNGSANLAGE_ENTITY_IDS.abluftRpm);
-  const luftstufe = str(LUFTUNGSANLAGE_ENTITY_IDS.luftstufe);
-  const filter = str(LUFTUNGSANLAGE_ENTITY_IDS.filter);
+  const FAN_MODE_LABELS = { low: 'Low', medium: 'Medium', high: 'High', off: 'Aus', auto: 'Auto' };
+  const luftstufe = fanMode ? (FAN_MODE_LABELS[fanMode] || fanMode) : null;
+  const filterBinState = e(LUFTUNGSANLAGE_ENTITY_IDS.filter)?.state;
+  const filter = filterBinState === 'on' ? 'Wartung' : filterBinState === 'off' ? 'OK' : null;
   const lastMode = str(LUFTUNGSANLAGE_ENTITY_IDS.lastMode);
   const outsideTemp = val(LUFTUNGSANLAGE_ENTITY_IDS.outsideTemp);
   const insideTemp = val(LUFTUNGSANLAGE_ENTITY_IDS.insideTemp);
@@ -677,7 +679,7 @@ export default function LuftungsanlageModal({
                 <InfoTile
                   label={translate('luftungsanlage.filter') || 'Filter'}
                   value={filter}
-                  color={filter && filter !== 'Normal' ? '#fb923c' : 'var(--text-primary)'}
+                  color={filter === 'Wartung' ? '#fb923c' : 'var(--text-primary)'}
                 />
                 <InfoTile
                   label={translate('luftungsanlage.modeSource') || 'Quelle'}

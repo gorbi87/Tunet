@@ -1,3 +1,12 @@
+## [1.20.31] — 2026-09-30
+
+### Added
+- WP-Modal Ablauf-Block: "Als Nächstes" zeigt jetzt pro Folgezustand farbige Bedingungsanzeige als Chips (✓/✗) mit aktuellen Sensorwerten — sofort erkennbar warum eine Phase noch nicht anläuft ("blockiert" / "startklar")
+
+### Changed
+- WP-Modal Ablauf-Block: Label "Startschwelle" im Entscheidungslog für Standby-Zustand → "Ausschaltschwelle" (trifft den tatsächlichen Sachverhalt besser)
+- Lüftungskarte & -modal: Alle Modbus-Sensor-Entitäten auf Blauberg-Integration umgestellt (`sensor.blauberg_s21_*`); Lüftungsstufe wird jetzt aus `climate.blauberg_s21` `fan_mode` abgeleitet; Filter-Status aus `binary_sensor.blauberg_s21_filterwartung_erforderlich`
+
 ## [1.20.29] — 2026-09-16
 
 ### Added
@@ -1551,6 +1560,17 @@
 - WP-Modal: alle "Fenster"-Texte → "Zeitfenster"
 - WP-Karte: unterer Slot zeigt State-Machine-Fortschrittsbalken während aktiver Phase, COP/Strom im Standby
 - Personenkarte: Landkarten-Tiles von CARTO (API-Key-Pflicht) auf OpenStreetMap gewechselt; Dark Mode via CSS-Filter
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+## [1.20.31] — 2026-09-30
 
 ### Added
 - Add release notes.

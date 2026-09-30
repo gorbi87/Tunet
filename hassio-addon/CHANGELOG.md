@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.20.31
+
+### Added
+- WP-Modal Ablauf-Block: Bedingungsanzeige als Chips (✓/✗) mit Sensorwerten je Folgezustand
+
+### Changed
+- WP-Modal: Label "Startschwelle" → "Ausschaltschwelle" im Entscheidungslog
+- Lüftung: Modbus-Entitäten auf Blauberg-Integration umgestellt (`sensor.blauberg_s21_*`)
+
 ## 1.20.30
 
 ### Added

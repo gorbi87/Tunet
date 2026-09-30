@@ -99,7 +99,7 @@ function buildLogBullets(reason, curState) {
         if (curState === 'Kühlen')    return { label: 'PV-Überschuss', val, op: '≥', ziel: `Startschwelle ${WP_CFG.kuehlPv}kW` };
         if (curState === 'WW_Heizen') return { label: 'PV-Überschuss', val, op: '≥', ziel: `Startschwelle ${WP_CFG.pvStart}kW` };
         if (curState === 'WW_Boost')  return { label: 'PV-Überschuss', val, op: '≥', ziel: `Heizstab-Min ${WP_CFG.pvBoost}kW` };
-        if (curState === 'Standby')   return { label: 'PV-Überschuss', val, op: '<',  ziel: `Startschwelle ${WP_CFG.pvStart}kW — zu wenig` };
+        if (curState === 'Standby')   return { label: 'PV-Überschuss', val, op: '<',  ziel: `Ausschaltschwelle ${WP_CFG.pvStart}kW` };
         return { label: 'PV-Überschuss', val };
       case 'SOC':
         if (curState === 'Standby')   return { label: 'SOC', val, op: '<', ziel: `Minimum ${WP_CFG.socNotaus}%` };
@@ -1037,31 +1037,44 @@ export default function WaermepumpeModal({
 
                   // ww_start_ok uses ww_ist < _ww_ziel (63°C = wwFertig), not wwStart
                   const wwHeizbarNow = wwTemp == null || wwTemp < WP_CFG.wwFertig;
+                  // Einzelne Bedingungen als Chips für "Als Nächstes"
+                  const chkFenster = { label: imFenster ? 'Zeitfenster offen' : 'Zeitfenster zu', met: imFenster };
+                  const chkWwZiel  = { label: `WW ${wwTemp != null ? wwTemp.toFixed(0) + '°C' : '—'} < ${WP_CFG.wwFertig}°C`, met: wwTemp == null ? null : wwTemp < WP_CFG.wwFertig };
+                  const chkSocOk   = { label: `SOC ${socVal != null ? socVal.toFixed(0) + '%' : '—'} > ${WP_CFG.socNotaus}%`, met: socVal == null ? null : socVal > WP_CFG.socNotaus };
+                  const chkPufOk   = minusPreisAktiv
+                    ? { label: 'Minus-Preis aktiv', met: true }
+                    : { label: `Puffer ${wwBonusPuffer != null ? wwBonusPuffer.toFixed(1) + ' kWh' : '—'} ≥ ${PUFFER_MIN_KWH} kWh`, met: wwBonusPuffer == null ? null : wwBonusPufferOk };
+                  const chkSaison  = { label: saisonState || 'Saison', met: saisonState !== 'Winter' };
+                  const chkRaum    = { label: `Raum ${raumTempVal != null ? raumTempVal.toFixed(1) + '°C' : '—'} ≥ ${WP_CFG.kuehlTemp}°C`, met: raumTempVal == null ? null : raumTempVal >= WP_CFG.kuehlTemp };
+                  const chkPvKuehl = { label: `PV ${pvWatt != null ? (pvWatt / 1000).toFixed(1) + ' kW' : '—'} ≥ ${WP_CFG.kuehlPv} kW`, met: pvWatt == null ? null : pvWatt >= WP_CFG.kuehlPv * 1000 };
+                  const chkWw55    = { label: `WW ${wwTemp != null ? wwTemp.toFixed(0) + '°C' : '—'} ≥ 55°C`, met: wwTemp == null ? null : wwTemp >= 55 };
+                  const chkWwFin   = { label: `WW ${wwTemp != null ? wwTemp.toFixed(0) + '°C' : '—'} ≥ ${WP_CFG.wwFertig}°C`, met: wwTemp == null ? null : wwTemp >= WP_CFG.wwFertig };
+                  const chkBoh     = { label: `Komp. ${kompressorLaufzeitMin.toFixed(0)} / ${bohSchwelle.toFixed(0)} min`, met: kompressorLaufzeitMin >= bohSchwelle };
                   const nextStateMap = {
                     Standby: [
-                      ...(wwHeizbarNow ? [{ state: 'WW Heizen', cond: `WW < ${WP_CFG.wwFertig}°C · Forecast ≥ 3 kWh · im Zeitfenster + SOC`, c: '#60a5fa' }] : []),
-                      ...(kuehlungAktiv ? [{ state: 'Kühlen', cond: `Raum ≥ ${WP_CFG.kuehlTemp}°C · PV ≥ ${WP_CFG.kuehlPv} kW`, c: '#2dd4bf' }] : []),
+                      ...(wwHeizbarNow ? [{ state: 'WW Heizen', c: '#60a5fa', checks: [chkSaison, chkFenster, chkWwZiel, chkSocOk, chkPufOk] }] : []),
+                      ...(kuehlungAktiv ? [{ state: 'Kühlen', c: '#2dd4bf', checks: [chkRaum, chkPvKuehl, chkSocOk] }] : []),
                     ],
                     WW_Heizen: [
-                      { state: 'WW Boost',  cond: 'WW ≥ 55°C — Heizstab intern zugeschaltet', c: '#c084fc' },
+                      { state: 'WW Boost',  c: '#c084fc', checks: [chkWw55] },
                       // WW_Pause ist nur erreichbar wenn WW < 55°C (sonst feuert WW_Boost zuerst)
-                      ...(wwTemp == null || wwTemp < 55 ? [{ state: 'WW Pause', cond: `Kompressor ≥ ${WP_CFG.bohSchutz} min (BOH-Schutz)`, c: '#fb923c' }] : []),
-                      { state: 'Standby',   cond: 'kein Weiterlaufen (PV/Puffer/SOC) · Zeitfenster zu', c: '#f87171' },
+                      ...(wwTemp == null || wwTemp < 55 ? [{ state: 'WW Pause', c: '#fb923c', checks: [chkBoh] }] : []),
+                      { state: 'Standby',   c: '#f87171', cond: 'Wenn PV/Puffer/SOC wegfällt oder Zeitfenster zu', checks: [] },
                     ],
                     WW_Pause: [
-                      { state: 'WW Heizen', cond: `nach ${WP_CFG.bohPause} min automatisch`, c: '#60a5fa' },
+                      { state: 'WW Heizen', c: '#60a5fa', cond: `nach ${WP_CFG.bohPause} min automatisch`, checks: [] },
                     ],
                     WW_Boost: [
-                      { state: 'WW Fertig', cond: `WW ≥ ${WP_CFG.wwFertig}°C — Tagesziel erreicht`, c: '#4ade80' },
-                      { state: 'Standby',   cond: 'kein Weiterlaufen (PV/Puffer/SOC)', c: '#f87171' },
+                      { state: 'WW Fertig', c: '#4ade80', checks: [chkWwFin] },
+                      { state: 'Standby',   c: '#f87171', cond: 'Wenn PV/Puffer/SOC wegfällt', checks: [] },
                     ],
                     WW_Fertig: [
-                      ...(kuehlungAktiv ? [{ state: 'Kühlen', cond: `Raum ≥ ${WP_CFG.kuehlTemp}°C · PV ≥ ${WP_CFG.kuehlPv} kW + MLZ`, c: '#2dd4bf' }] : []),
-                      { state: 'Standby', cond: `Zeitfenster zu (nach ${WP_CFG.wwFensterEnde}) + MLZ erfüllt`, c: '#64748b' },
+                      ...(kuehlungAktiv ? [{ state: 'Kühlen', c: '#2dd4bf', checks: [chkRaum, chkPvKuehl, chkSocOk] }] : []),
+                      { state: 'Standby', c: '#64748b', cond: `Zeitfenster-Ende ${WP_CFG.wwFensterEnde} + MLZ`, checks: [] },
                     ],
                     Kühlen: [
-                      ...(wwHeizbarNow ? [{ state: 'WW Heizen', cond: `WW < ${WP_CFG.wwFertig}°C · Forecast ≥ 3 kWh · im Zeitfenster`, c: '#60a5fa' }] : []),
-                      { state: 'Standby',   cond: `Raum < ${WP_CFG.kuehlTemp}°C ODER PV < ${WP_CFG.kuehlPv} kW`, c: '#64748b' },
+                      ...(wwHeizbarNow ? [{ state: 'WW Heizen', c: '#60a5fa', checks: [chkSaison, chkFenster, chkWwZiel, chkSocOk, chkPufOk] }] : []),
+                      { state: 'Standby',   c: '#64748b', cond: `Raum < ${WP_CFG.kuehlTemp}°C oder PV < ${WP_CFG.kuehlPv} kW`, checks: [] },
                     ],
                   };
                   const nextItems = nextStateMap[tagesmodus] || [];
@@ -1130,20 +1143,42 @@ export default function WaermepumpeModal({
                             Als Nächstes
                           </p>
                           <div className="space-y-1.5">
-                            {nextItems.map((n, i) => (
-                              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px', borderRadius: '8px', background: `${n.c}10`, border: `1px solid ${n.c}38` }}>
-                                <span style={{ fontSize: '10px', color: n.c, flexShrink: 0, fontWeight: 700 }}>→</span>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <span style={{ fontSize: '11px', fontWeight: 700, color: n.c }}>{n.state}</span>
-                                  <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)', marginLeft: '6px' }}>{n.cond}</span>
+                            {nextItems.map((n, i) => {
+                              const allMet = n.checks.length > 0 && n.checks.every(c => c.met === true);
+                              const anyFail = n.checks.some(c => c.met === false);
+                              return (
+                                <div key={i} style={{ padding: '8px 10px', borderRadius: '8px', background: `${n.c}10`, border: `1px solid ${n.c}38`, marginBottom: i < nextItems.length - 1 ? '6px' : 0 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: n.checks.length ? '5px' : 0 }}>
+                                    <span style={{ fontSize: '10px', color: n.c, fontWeight: 700, flexShrink: 0 }}>→</span>
+                                    <span style={{ fontSize: '11px', fontWeight: 700, color: n.c }}>{n.state}</span>
+                                    {allMet && (
+                                      <span style={{ fontSize: '9px', color: '#4ade80', fontWeight: 700, marginLeft: 'auto', background: '#4ade8015', padding: '1px 5px', borderRadius: '4px', border: '1px solid #4ade8030' }}>startklar</span>
+                                    )}
+                                    {!allMet && anyFail && (
+                                      <span style={{ fontSize: '9px', color: '#f87171', fontWeight: 700, marginLeft: 'auto', background: '#f8717115', padding: '1px 5px', borderRadius: '4px', border: '1px solid #f8717130' }}>blockiert</span>
+                                    )}
+                                  </div>
+                                  {n.checks.length > 0 && (
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px' }}>
+                                      {n.checks.map((c, j) => {
+                                        const bg    = c.met === true ? '#4ade8015' : c.met === false ? '#f8717115' : '#ffffff08';
+                                        const bd    = c.met === true ? '#4ade8035' : c.met === false ? '#f8717135' : '#ffffff18';
+                                        const color = c.met === true ? '#4ade80'   : c.met === false ? '#f87171'   : '#64748b';
+                                        const icon  = c.met === true ? '✓' : c.met === false ? '✗' : '·';
+                                        return (
+                                          <span key={j} style={{ fontSize: '9.5px', fontWeight: c.met === false ? 700 : 500, padding: '2px 6px', borderRadius: '4px', background: bg, border: `1px solid ${bd}`, color, whiteSpace: 'nowrap' }}>
+                                            {icon} {c.label}
+                                          </span>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                  {n.cond && n.checks.length === 0 && (
+                                    <p style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '1px', paddingLeft: '16px' }}>{n.cond}</p>
+                                  )}
                                 </div>
-                              </div>
-                            ))}
-                            {(tagesmodus === 'Standby' || tagesmodus === 'Kühlen') && (
-                              <p style={{ fontSize: '9.5px', fontWeight: 600, color: imFenster ? '#4ade80' : '#f87171', paddingLeft: '4px', marginTop: '4px' }}>
-                                {imFenster ? '✓' : '✗'} {fensterStatusText}
-                              </p>
-                            )}
+                              );
+                            })}
                           </div>
                         </div>
                       )}

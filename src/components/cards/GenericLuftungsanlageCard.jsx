@@ -9,16 +9,16 @@ export const LUFTUNGSANLAGE_ENTITY_IDS = {
   lastMode: 'input_text.luftung_letzter_modus',
   outsideTemp: 'sensor.wetterstation_temperatur',
   insideTemp: 'sensor.durchschnittstemperatur_haus',
-  aussenluft: 'sensor.luftung_aussenluft',
-  zuluft: 'sensor.luftung_zuluft',
-  abluft: 'sensor.luftung_abluft',
-  fortluft: 'sensor.luftung_fortluft',
-  bypass: 'sensor.luftung_bypass',
-  zuluftRpm: 'sensor.luftung_zuluftforderleistung',
-  abluftRpm: 'sensor.luftung_abluftforderleistung',
-  luftstufe: 'sensor.luftung_aktuelle_luftungstufe',
-  filter: 'sensor.luftung_filter',
-  alarm: 'sensor.luftung_alarm',
+  aussenluft: 'sensor.blauberg_s21_aussenlufttemperatur',
+  zuluft: 'sensor.blauberg_s21_zulufttemperatur',
+  abluft: 'sensor.blauberg_s21_ablufttemperatur',
+  fortluft: 'sensor.blauberg_s21_fortlufttemperatur',
+  bypass: 'sensor.blauberg_s21_bypassposition',
+  zuluftRpm: 'sensor.blauberg_s21_zuluftventilator_drehzahl',
+  abluftRpm: 'sensor.blauberg_s21_abluftventilator_drehzahl',
+  // luftstufe wird aus climate.fan_mode abgeleitet (kein eigener Sensor mehr)
+  filter: 'binary_sensor.blauberg_s21_filterwartung_erforderlich',
+  alarm: 'sensor.blauberg_s21_alarm',
   lockTimestamp: 'input_datetime.luftung_lock_timestamp',
   co2Schwelle: 'input_number.luftung_co2_schwelle',
   vocSchwelle: 'input_number.luftung_voc_schwelle',
@@ -27,7 +27,7 @@ export const LUFTUNGSANLAGE_ENTITY_IDS = {
   tempDiffKaltAus: 'input_number.luftung_temp_diff_kalt_aus',
   tempDiffMild: 'input_number.luftung_temp_diff_mild_warm',
   tempDiffMildAus: 'input_number.luftung_temp_diff_mild_warm_aus',
-  luftfeuchtigkeit: 'sensor.luftung_luftfeuchtigkeit',
+  luftfeuchtigkeit: 'sensor.blauberg_s21_luftfeuchtigkeit',
   feuchtigkeitsDiff: 'sensor.innen_aussen_luftfeuchtigkeit_differenz',
   co2Eg: 'sensor.alpstuga_air_quality_monitor_kohlendioxid',
   feuchteEg: 'sensor.alpstuga_air_quality_monitor_luftfeuchtigkeit',
@@ -72,12 +72,12 @@ const GenericLuftungsanlageCard = memo(function GenericLuftungsanlageCard({
   const climateEntity = entities?.[LUFTUNGSANLAGE_ENTITY_IDS.climate];
   const zuluftEntity = entities?.[LUFTUNGSANLAGE_ENTITY_IDS.zuluft];
   const co2Entity = entities?.[LUFTUNGSANLAGE_ENTITY_IDS.co2Eg];
-  const luftstufeEntity = entities?.[LUFTUNGSANLAGE_ENTITY_IDS.luftstufe];
 
   const hvacState = climateEntity?.state || null;
   const zuluftTemp = zuluftEntity ? parseFloat(zuluftEntity.state) : null;
   const co2Ppm = co2Entity ? parseFloat(co2Entity.state) : null;
-  const luftstufe = luftstufeEntity?.state || null;
+  const FAN_LABELS = { low: 'Low', medium: 'Medium', high: 'High' };
+  const luftstufe = FAN_LABELS[climateEntity?.attributes?.fan_mode] || null;
 
   const STATE_LABELS = {
     off: translate('luftungsanlage.state.off') || 'Aus',
