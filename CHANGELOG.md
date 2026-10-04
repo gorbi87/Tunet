@@ -1,3 +1,8 @@
+## [1.20.32] — 2026-10-04
+
+### Added
+- WP-Modal Ablauf-Block: MLZ- und BOH-Pause-Countdowns als Chips — zeigt Restzeit der Mindestlaufzeit-Sperren (z. B. "MLZ 23 / 45 min") und BOH-Pause-Countdown ("noch 7 min") live im "Als Nächstes"-Block; bei WW ≥ 55°C greift die kürzere 10-Min-Sperre für Heiß-Neustarts
+
 ## [1.20.31] — 2026-09-30
 
 ### Added
@@ -1571,6 +1576,17 @@
 - Add release notes.
 
 ## [1.20.31] — 2026-09-30
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+## [1.20.32] — 2026-10-04
 
 ### Added
 - Add release notes.

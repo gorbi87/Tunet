@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.32
+
+### Added
+- WP-Modal Ablauf-Block: MLZ- und BOH-Pause-Countdowns als live Chips ("MLZ 23 / 45 min", "noch 7 min"); kürzere 10-Min-Sperre bei WW ≥ 55°C
+
 ## 1.20.31
 
 ### Added

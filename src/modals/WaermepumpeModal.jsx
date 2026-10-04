@@ -54,6 +54,7 @@ const WP_CFG = {
   bohSchutz: 75,    // boh_schutz_min
   bohPause: 10,     // boh_pause_min
   mindestlaufzeit: 45, // mindestlaufzeit_min
+  mlzHeiss: 10,        // mindestlaufzeit_heiss_neustart_min
   wwFensterStart: '11:00',
   wwFensterEnde:   '19:30',
 };
@@ -85,7 +86,9 @@ function buildLogBullets(reason, curState) {
   for (let i = 0; i + 1 < tokens.length; i += 2) pairs.push([tokens[i], tokens[i + 1]]);
   if (tokens.length % 2 !== 0 && tokens.length > 0) pairs.push([tokens[tokens.length - 1], '']);
 
-  return pairs.map(([key, val]) => {
+  return pairs
+    .filter(([key]) => !['≥', '≤', '<', '>'].includes(key))
+    .map(([key, val]) => {
     // Automation uses 'ÜS' for Überschuss and 'WW-Ist' for WW temperature
     const k = key === 'ÜS' ? 'PV' : key === 'WW-Ist' ? 'WW' : key;
     switch (k) {
@@ -129,6 +132,8 @@ function buildLogBullets(reason, curState) {
       }
       case 'Forecast':
         return { label: 'Restprognose', val };
+      case 'Heizstab':
+        return { label: 'Heizstab', val: null, aktion: `→ ${val || 'intern'} zugeschaltet` };
       case 'HV-ohne-WP':
         // Hausverbrauch nach Abzug von WP-Last + HS-Sollwert (Schwelle für hausverbrauch_niedrig ≤ 800W)
         return { label: 'Haus bereinigt', val, subNote: hvSubNote };
@@ -340,6 +345,12 @@ export default function WaermepumpeModal({
     : new Date().getHours() < 11
       ? `Gesperrt bis ${WP_CFG.wwFensterStart}`
       : `Gesperrt bis morgen ${WP_CFG.wwFensterStart}`;
+
+  // Seit-letztem-Wechsel Timer (für MLZ + BOH-Pause Countdown)
+  const letzterWechselTs = e(WAERMEPUMPE_ENTITY_IDS.letzterWechsel)?.attributes?.timestamp;
+  const seitMinVal = letzterWechselTs != null
+    ? Math.max(0, (Date.now() / 1000 - letzterWechselTs) / 60)
+    : 0;
 
   // BOH Kompressor-Laufzeit
   let kompressorLaufzeitMin = 0;
@@ -1050,31 +1061,46 @@ export default function WaermepumpeModal({
                   const chkWw55    = { label: `WW ${wwTemp != null ? wwTemp.toFixed(0) + '°C' : '—'} ≥ 55°C`, met: wwTemp == null ? null : wwTemp >= 55 };
                   const chkWwFin   = { label: `WW ${wwTemp != null ? wwTemp.toFixed(0) + '°C' : '—'} ≥ ${WP_CFG.wwFertig}°C`, met: wwTemp == null ? null : wwTemp >= WP_CFG.wwFertig };
                   const chkBoh     = { label: `Komp. ${kompressorLaufzeitMin.toFixed(0)} / ${bohSchwelle.toFixed(0)} min`, met: kompressorLaufzeitMin >= bohSchwelle };
+                  // MLZ (Mindestlaufzeit) — verhindert Moduswechsel zu Standby
+                  const mlzOk       = seitMinVal >= WP_CFG.mindestlaufzeit;
+                  const mlzHeissOk  = seitMinVal >= WP_CFG.mlzHeiss;
+                  const mlzStartOk  = mlzOk || (wwTemp != null && wwTemp >= 55 && mlzHeissOk);
+                  const mlzLabel    = wwTemp != null && wwTemp >= 55 && !mlzOk
+                    ? `MLZ ${seitMinVal.toFixed(0)} / ${WP_CFG.mlzHeiss} min (heiß)`
+                    : `MLZ ${seitMinVal.toFixed(0)} / ${WP_CFG.mindestlaufzeit} min`;
+                  const chkMlz      = { label: `MLZ ${seitMinVal.toFixed(0)} / ${WP_CFG.mindestlaufzeit} min`, met: mlzOk };
+                  const chkMlzStart = { label: mlzLabel, met: mlzStartOk };
+                  // BOH-Pause Countdown
+                  const bohPauseRest = Math.max(0, WP_CFG.bohPause - seitMinVal);
+                  const chkBohPause  = {
+                    label: bohPauseRest > 0.5 ? `noch ${Math.ceil(bohPauseRest)} min` : 'Pause beendet',
+                    met: bohPauseRest <= 0.5,
+                  };
                   const nextStateMap = {
                     Standby: [
-                      ...(wwHeizbarNow ? [{ state: 'WW Heizen', c: '#60a5fa', checks: [chkSaison, chkFenster, chkWwZiel, chkSocOk, chkPufOk] }] : []),
+                      ...(wwHeizbarNow ? [{ state: 'WW Heizen', c: '#60a5fa', checks: [chkSaison, chkFenster, chkWwZiel, chkSocOk, chkPufOk, chkMlzStart] }] : []),
                       ...(kuehlungAktiv ? [{ state: 'Kühlen', c: '#2dd4bf', checks: [chkRaum, chkPvKuehl, chkSocOk] }] : []),
                     ],
                     WW_Heizen: [
                       { state: 'WW Boost',  c: '#c084fc', checks: [chkWw55] },
                       // WW_Pause ist nur erreichbar wenn WW < 55°C (sonst feuert WW_Boost zuerst)
                       ...(wwTemp == null || wwTemp < 55 ? [{ state: 'WW Pause', c: '#fb923c', checks: [chkBoh] }] : []),
-                      { state: 'Standby',   c: '#f87171', cond: 'Wenn PV/Puffer/SOC wegfällt oder Zeitfenster zu', checks: [] },
+                      { state: 'Standby',   c: '#f87171', cond: 'Wenn PV/Puffer/SOC wegfällt oder Zeitfenster zu', checks: [chkMlz] },
                     ],
                     WW_Pause: [
-                      { state: 'WW Heizen', c: '#60a5fa', cond: `nach ${WP_CFG.bohPause} min automatisch`, checks: [] },
+                      { state: 'WW Heizen', c: '#60a5fa', checks: [chkBohPause] },
                     ],
                     WW_Boost: [
                       { state: 'WW Fertig', c: '#4ade80', checks: [chkWwFin] },
-                      { state: 'Standby',   c: '#f87171', cond: 'Wenn PV/Puffer/SOC wegfällt', checks: [] },
+                      { state: 'Standby',   c: '#f87171', cond: 'Wenn PV/Puffer/SOC wegfällt', checks: [chkMlz] },
                     ],
                     WW_Fertig: [
                       ...(kuehlungAktiv ? [{ state: 'Kühlen', c: '#2dd4bf', checks: [chkRaum, chkPvKuehl, chkSocOk] }] : []),
-                      { state: 'Standby', c: '#64748b', cond: `Zeitfenster-Ende ${WP_CFG.wwFensterEnde} + MLZ`, checks: [] },
+                      { state: 'Standby', c: '#64748b', cond: `ab Zeitfenster-Ende ${WP_CFG.wwFensterEnde}`, checks: [chkMlz] },
                     ],
                     Kühlen: [
-                      ...(wwHeizbarNow ? [{ state: 'WW Heizen', c: '#60a5fa', checks: [chkSaison, chkFenster, chkWwZiel, chkSocOk, chkPufOk] }] : []),
-                      { state: 'Standby',   c: '#64748b', cond: `Raum < ${WP_CFG.kuehlTemp}°C oder PV < ${WP_CFG.kuehlPv} kW`, checks: [] },
+                      ...(wwHeizbarNow ? [{ state: 'WW Heizen', c: '#60a5fa', checks: [chkSaison, chkFenster, chkWwZiel, chkSocOk, chkPufOk, chkMlzStart] }] : []),
+                      { state: 'Standby',   c: '#64748b', cond: `Raum < ${WP_CFG.kuehlTemp}°C oder PV < ${WP_CFG.kuehlPv} kW`, checks: [chkMlz] },
                     ],
                   };
                   const nextItems = nextStateMap[tagesmodus] || [];
