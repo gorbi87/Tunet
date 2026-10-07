@@ -1,3 +1,9 @@
+## [1.20.34] — 2026-10-07
+
+### Added
+- WP-Karte: Heizstab-Zustand sichtbar — bei aktivem Heizstab (Standby-Modus) wechselt Badge zu "Heizstab" (orange), Icon wird orange, Fortschrittsbalken zeigt WW-Temperatur → 63°C inkl. täglichem kWh-Verbrauch (`sensor.wp_heizstab_energie_taglich`)
+- WP-Modal: Heizstab-Aktivanzeige reagiert jetzt auf `binary_sensor.wp_heizstab_aktiv`; dritte Energie-Kachel "Heizstab" im Stats-Grid mit Tagesverbrauch
+
 ## [1.20.33] — 2026-10-07
 
 ### Added
@@ -1604,6 +1610,17 @@
 - Add release notes.
 
 ## [1.20.33] — 2026-10-07
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+## [1.20.34] — 2026-10-07
 
 ### Added
 - Add release notes.

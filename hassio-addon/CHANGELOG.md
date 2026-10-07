@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.20.34
+
+### Added
+- WP-Karte: Heizstab aktiv → Badge "Heizstab" (orange) + WW-Fortschrittsbalken + kWh-Verbrauch
+- WP-Modal: `binary_sensor.wp_heizstab_aktiv` + Heizstab-Energiekachel im Stats-Grid
+
 ## 1.20.33
 
 ### Added

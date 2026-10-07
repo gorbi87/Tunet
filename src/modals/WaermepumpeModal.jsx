@@ -299,6 +299,8 @@ export default function WaermepumpeModal({
   const betriebsartState = str(WAERMEPUMPE_ENTITY_IDS.betriebsart);
   const heizstabSelectState = str(WAERMEPUMPE_ENTITY_IDS.heizstabSelect);
   const heizstabLaeuft = heizstabSelectState != null && heizstabSelectState !== 'Aus';
+  const heizstabAktivBin = e(WAERMEPUMPE_ENTITY_IDS.heizstabAktiv)?.state === 'on';
+  const heizstabEnergieHeuteVal = val(WAERMEPUMPE_ENTITY_IDS.heizstabEnergieTaglich);
   const leistungWwVal = val(WAERMEPUMPE_ENTITY_IDS.leistungWw);
   const bohWartezeitVal = val(WAERMEPUMPE_ENTITY_IDS.bohWartezeit) ?? 95;
   const pvRestprognose = val(WAERMEPUMPE_ENTITY_IDS.pvRestprognose);
@@ -568,27 +570,29 @@ export default function WaermepumpeModal({
                       />
                     </div>
 
-                    {heizstab != null && heizstab > 0 && (
+                    {(heizstabAktivBin || (heizstab != null && heizstab > 0)) && (
                       <div
                         className="flex items-center gap-3 rounded-2xl border p-3"
                         style={{
-                          backgroundColor: 'var(--status-error-bg)',
-                          borderColor: 'var(--status-error-border)',
+                          backgroundColor: 'rgba(249,115,22,0.08)',
+                          borderColor: 'rgba(249,115,22,0.3)',
                         }}
                       >
-                        <Zap className="h-4 w-4 text-[var(--status-error-fg)]" />
+                        <Zap className="h-4 w-4 text-orange-400" />
                         <div>
-                          <p className="text-[10px] font-bold tracking-widest text-[var(--status-error-fg)] uppercase">
-                            {translate('waermepumpe.heizstab')}
+                          <p className="text-[10px] font-bold tracking-widest text-orange-400 uppercase">
+                            {translate('waermepumpe.heizstab')} aktiv
                           </p>
                           <p className="text-sm font-light text-[var(--text-primary)]">
-                            {heizstab} W
-                            {heizstabTaglich != null && (
-                              <span className="ml-2 text-[var(--text-muted)]">
-                                · {heizstabTaglich.toFixed(2)} kWh{' '}
-                                {translate('waermepumpe.heute')}
-                              </span>
-                            )}
+                            {heizstab != null && heizstab > 0 ? `${heizstab} W` : '—'}
+                            {(() => {
+                              const kwh = heizstabEnergieHeuteVal ?? heizstabTaglich;
+                              return kwh != null ? (
+                                <span className="ml-2 text-[var(--text-muted)]">
+                                  · {kwh.toFixed(2)} kWh {translate('waermepumpe.heute')}
+                                </span>
+                              ) : null;
+                            })()}
                           </p>
                         </div>
                       </div>
@@ -642,7 +646,7 @@ export default function WaermepumpeModal({
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                       <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3">
                         <Zap className="h-4 w-4 text-[var(--accent-color)]" />
                         <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
@@ -660,6 +664,16 @@ export default function WaermepumpeModal({
                         </p>
                         <p className="text-lg font-light text-[var(--text-primary)]">
                           {aktivWaerme != null ? aktivWaerme.toFixed(2) : '—'}
+                        </p>
+                        <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
+                      </div>
+                      <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3">
+                        <Zap className="h-4 w-4 text-orange-400" />
+                        <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
+                          Heizstab
+                        </p>
+                        <p className="text-lg font-light text-[var(--text-primary)]">
+                          {energyTab === 'today' && heizstabEnergieHeuteVal != null ? heizstabEnergieHeuteVal.toFixed(2) : '—'}
                         </p>
                         <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
                       </div>

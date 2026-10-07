@@ -14,6 +14,8 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   waermeMonatlich: 'sensor.warmepumpe_thermische_energie_monatlich',
   heizstab: 'input_number.warmepumpe_heizstab',
   heizstabTaglich: 'sensor.warmepumpe_heizstab_verbrauch_taglich',
+  heizstabAktiv: 'binary_sensor.wp_heizstab_aktiv',
+  heizstabEnergieTaglich: 'sensor.wp_heizstab_energie_taglich',
   wwSoll: 'select.daikin_heizung_t_ww_soll1',
   betriebsmodus: 'select.daikin_heizung_betriebsmodus',
   heizstabSelect: 'select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018',
@@ -74,6 +76,10 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   const stromEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.stromTaglich];
   const waermeEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.waermeTaglich];
   const betriebsartEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.betriebsart];
+  const heizstabAktivEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.heizstabAktiv];
+  const heizstabAktiv = heizstabAktivEntity?.state === 'on';
+  const heizstabEnergieEntity = entities?.[WAERMEPUMPE_ENTITY_IDS.heizstabEnergieTaglich];
+  const heizstabEnergieKwh = heizstabEnergieEntity ? parseFloat(heizstabEnergieEntity.state) : null;
   const kompressorAktiv = kompressorEntity?.state === 'on';
   const betriebsart = betriebsartEntity?.state || null;
   const wwTemp = warmwasserEntity ? parseFloat(warmwasserEntity.state) : null;
@@ -87,16 +93,22 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
 
   const kompressorColor = kompressorAktiv
     ? 'bg-[var(--status-success-fg)]'
+    : heizstabAktiv
+    ? 'bg-orange-500'
     : 'bg-[var(--text-muted)]';
 
   const isWW = betriebsart === 'Warmwasserbereitung';
-  const iconColor = !kompressorAktiv
+  const iconColor = !kompressorAktiv && !heizstabAktiv
     ? 'var(--text-muted)'
+    : heizstabAktiv && !kompressorAktiv
+    ? '#f97316'
     : isWW
     ? '#38bdf8'
     : '#fb923c';
-  const iconBg = !kompressorAktiv
+  const iconBg = !kompressorAktiv && !heizstabAktiv
     ? 'rgba(127,127,127,0.1)'
+    : heizstabAktiv && !kompressorAktiv
+    ? 'rgba(249,115,22,0.15)'
     : isWW
     ? 'rgba(56,189,248,0.15)'
     : 'rgba(234,88,12,0.1)';
@@ -113,6 +125,8 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
   // When active: show betriebsart text if available, else "Aktiv"
   const statusLabel = kompressorAktiv
     ? (betriebsartShort || translate('waermepumpe.kompressor.on'))
+    : heizstabAktiv
+    ? 'Heizstab'
     : translate('waermepumpe.kompressor.off');
 
   const minusPreisAktiv = entities?.[WAERMEPUMPE_ENTITY_IDS.minusPreisBoolean]?.state === 'on';
@@ -314,7 +328,7 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
         </div>
       </div>
 
-      {/* Bottom slot: State Machine when phase active, COP/Strom when Standby — never both at once */}
+      {/* Bottom slot: State Machine when phase active, Heizstab when standby+active, COP/Strom otherwise */}
       {!isUltraCompact && tagesmodus !== 'Standby' ? (
         <div className="relative z-10 mt-auto pt-2">
           <div className="mb-1 flex items-center gap-2">
@@ -342,6 +356,31 @@ const GenericWaermepumpeCard = memo(function GenericWaermepumpeCard({
               >
                 <span>{wwTemp?.toFixed(1)}°C</span>
                 <span style={{ color: modusMeta.color }}>→ {wwTarget}°C</span>
+              </div>
+            </>
+          )}
+        </div>
+      ) : !isUltraCompact && heizstabAktiv ? (
+        <div className="relative z-10 mt-auto pt-2">
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: '#f97316' }}>
+              Heizstab
+            </span>
+            {heizstabEnergieKwh != null && Number.isFinite(heizstabEnergieKwh) && (
+              <span className="text-[9px] text-[var(--text-muted)]">{heizstabEnergieKwh.toFixed(2)} kWh</span>
+            )}
+          </div>
+          {wwTemp != null && (
+            <>
+              <div className="h-1 w-full overflow-hidden rounded-full" style={{ backgroundColor: 'var(--glass-bg)' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${Math.min(100, Math.max(0, (wwTemp - 40) / (63 - 40) * 100))}%`, backgroundColor: '#f97316' }}
+                />
+              </div>
+              <div className="mt-1 flex justify-between" style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                <span>{wwTemp.toFixed(1)}°C</span>
+                <span style={{ color: '#f97316' }}>→ 63°C</span>
               </div>
             </>
           )}
