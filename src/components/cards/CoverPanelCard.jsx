@@ -315,38 +315,41 @@ const BeschattungsStatusPanel = memo(({ entities, isMobile }) => {
 
 const GROUP_ACTIONS = {
   eg: [
-    { entityId: 'cover.gruppe_rolladen_eg',  label: 'EG runter',         icon: '↓' },
-    { entityId: 'cover.eg_komplett_ohne_tur', label: 'EG ohne Tür',       icon: '↓' },
+    { entityId: 'cover.gruppe_rolladen_eg',   label: 'EG runter',   icon: '↓', action: 'close_cover' },
+    { entityId: 'cover.eg_komplett_ohne_tur',  label: 'EG ohne Tür', icon: '↓', action: 'close_cover' },
+    { entityId: 'cover.gruppe_rolladen_eg',   label: 'EG hoch',     icon: '↑', action: 'open_cover' },
   ],
   og: [
-    { entityId: 'cover.gruppe_rolladen_og',  label: 'OG runter',         icon: '↓' },
+    { entityId: 'cover.gruppe_rolladen_og',   label: 'OG runter',   icon: '↓', action: 'close_cover' },
+    { entityId: 'cover.gruppe_rolladen_og',   label: 'OG hoch',     icon: '↑', action: 'open_cover' },
   ],
 };
 
-const ALL_DOWN_ENTITY = 'cover.alle_rolladen';
+const ALL_ROLLADEN_ENTITY = 'cover.alle_rolladen';
 
 const GroupActionBar = memo(({ tabId, callService, isMobile }) => {
   const tabActions = GROUP_ACTIONS[tabId] || [];
   if (tabActions.length === 0) return null;
 
-  const btn = (entityId, label) => (
+  const btn = (entityId, label, icon, action) => (
     <button
-      key={entityId}
+      key={`${entityId}-${action}`}
       type="button"
       data-haptic="card"
-      onClick={() => callService('cover', 'close_cover', { entity_id: entityId })}
+      onClick={() => callService('cover', action, { entity_id: entityId })}
       style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
       className="flex items-center gap-1.5 rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase text-[var(--text-secondary)] transition-all hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] active:scale-95"
     >
-      <span className="text-xs leading-none">↓</span>
+      <span className="text-xs leading-none">{icon}</span>
       {label}
     </button>
   );
 
   return (
-    <div className="col-span-full flex items-center gap-2">
-      {btn(ALL_DOWN_ENTITY, 'Alle runter')}
-      {tabActions.map((a) => btn(a.entityId, a.label))}
+    <div className="col-span-full flex flex-wrap items-center gap-2">
+      {btn(ALL_ROLLADEN_ENTITY, 'Alle runter', '↓', 'close_cover')}
+      {btn(ALL_ROLLADEN_ENTITY, 'Alle hoch',   '↑', 'open_cover')}
+      {tabActions.map((a) => btn(a.entityId, a.label, a.icon, a.action))}
     </div>
   );
 });

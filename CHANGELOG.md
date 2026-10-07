@@ -1,3 +1,9 @@
+## [1.20.33] — 2026-10-07
+
+### Added
+- Beschattungsseite: "Alle hoch"-Button (↑) für EG- und OG-Tab; außerdem separate "EG hoch"- und "OG hoch"-Buttons neben den bestehenden "runter"-Aktionen
+- Rollo-Modal: Kalibrierungs-Sektion mit Fahrzeitmessung-Toggle — startet einmalige Auf-/Ab-Fahrt zur Laufzeitmessung; für jedes Rollo mit eigenem `switch.*_fahrzeitmessung` automatisch sichtbar
+
 ## [1.20.32] — 2026-10-04
 
 ### Added
@@ -1587,6 +1593,17 @@
 - Add release notes.
 
 ## [1.20.32] — 2026-10-04
+
+### Added
+- Add release notes.
+
+### Changed
+- Add release notes.
+
+### Fixed
+- Add release notes.
+
+## [1.20.33] — 2026-10-07
 
 ### Added
 - Add release notes.

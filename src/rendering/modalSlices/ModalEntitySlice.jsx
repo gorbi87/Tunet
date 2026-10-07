@@ -401,6 +401,7 @@ export function ModalEntitySlice({ core, modals, cardConfig, entityHelpers, reso
                 onClose={() => setShowCoverModal(null)}
                 entityId={coverEntityId}
                 entity={coverEntity}
+                entities={entities}
                 callService={callService}
                 customIcons={customIcons}
                 t={t}

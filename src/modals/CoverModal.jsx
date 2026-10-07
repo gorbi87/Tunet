@@ -241,11 +241,27 @@ const TiltVisual = ({ tilt, onTiltChange, accent, disabled, translate }) => {
   );
 };
 
+const FAHRZEITMESSUNG_MAP = {
+  'cover.eg_kuche_fenster':      'switch.eg_kuche_arbeitsplatte_fahrzeitmessung',
+  'cover.eg_kuche_tur':          'switch.eg_kuche_terasse_fahrzeitmessung',
+  'cover.eg_esstisch_tur':       'switch.eg_esszimmer_terasse_fahrzeitmessung',
+  'cover.eg_wohnzimmer_fenster': 'switch.eg_wohnzimmer_fahrzeitmessung',
+  'cover.eg_gaste_wc':           'switch.eg_gaste_wc_fahrzeitmessung',
+  'cover.eg_buro':               'switch.eg_buro_fahrzeitmessung',
+  'cover.og_schlafzimmer':       'switch.og_schlafzimmer_fahrzeitmessung',
+  'cover.og_kinderzimmer':       'switch.og_kinderzimmer_fahrzeitmessung',
+  'cover.og_badezimmer':         'switch.og_badezimmer_fahrzeitmessung',
+  'cover.og_buro_rechts':        'switch.og_buro_rechts_fahrzeitmessung',
+  'cover.eg_buro_links':         'switch.og_buro_links_fahrzeitmessung',
+  'cover.og_tur_dach':           'switch.og_tur_dach_fahrzeitmessung',
+};
+
 export default function CoverModal({
   show,
   onClose,
   entityId,
   entity,
+  entities,
   callService,
   customIcons,
   t,
@@ -659,6 +675,44 @@ export default function CoverModal({
                 </div>
               </div>
             </div>
+
+            {/* Fahrzeitmessung */}
+            {(() => {
+              const fzId = FAHRZEITMESSUNG_MAP[activeEntityId];
+              const fzEntity = fzId && entities ? entities[fzId] : null;
+              if (!fzId) return null;
+              const isRunning = fzEntity?.state === 'on';
+              const isUnavailableFz = !fzEntity?.state || fzEntity.state === 'unavailable';
+              return (
+                <div className="border-t border-[var(--glass-border)] pt-4 md:pt-6">
+                  <h3 className="mb-3 pl-1 text-xs font-bold tracking-[0.2em] text-[var(--text-secondary)] uppercase">
+                    Kalibrierung
+                  </h3>
+                  <button
+                    type="button"
+                    disabled={isUnavailableFz}
+                    onClick={() => callService('switch', isRunning ? 'turn_off' : 'turn_on', { entity_id: fzId })}
+                    className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 transition-all duration-300 ${isUnavailableFz ? 'cursor-default opacity-40' : 'cursor-pointer hover:bg-[var(--glass-bg-hover)] active:scale-[0.98]'} ${isRunning ? 'border-amber-500/30 bg-amber-500/10' : 'border-[var(--glass-border)] bg-[var(--glass-bg)]'}`}
+                  >
+                    <div className="min-w-0 text-left">
+                      <p className="text-xs font-bold tracking-widest uppercase text-[var(--text-secondary)]">
+                        Fahrzeitmessung
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">
+                        Rollo fährt einmal komplett auf &amp; ab
+                      </p>
+                    </div>
+                    <div
+                      className={`ml-3 flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-all duration-300 ${isRunning ? 'bg-amber-500' : 'bg-[var(--glass-bg-hover)]'}`}
+                    >
+                      <div
+                        className={`h-5 w-5 rounded-full bg-white shadow-sm transition-all duration-300 ${isRunning ? 'translate-x-5' : 'translate-x-0.5'}`}
+                      />
+                    </div>
+                  </button>
+                </div>
+              );
+            })()}
           </div>
         </div>
         </>

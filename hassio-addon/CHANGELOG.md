@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.20.33
+
+### Added
+- Beschattungsseite: "Alle hoch" + "EG/OG hoch"-Buttons
+- Rollo-Modal: Fahrzeitmessung-Toggle für Kalibrierung
+
 ## 1.20.32
 
 ### Added
