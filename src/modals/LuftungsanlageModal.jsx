@@ -338,10 +338,13 @@ export default function LuftungsanlageModal({
   const bypass = val(LUFTUNGSANLAGE_ENTITY_IDS.bypass);
   const zuluftRpm = val(LUFTUNGSANLAGE_ENTITY_IDS.zuluftRpm);
   const abluftRpm = val(LUFTUNGSANLAGE_ENTITY_IDS.abluftRpm);
+  const zuluftLeistung = val(LUFTUNGSANLAGE_ENTITY_IDS.zuluftLeistung);
+  const abluftLeistung = val(LUFTUNGSANLAGE_ENTITY_IDS.abluftLeistung);
   const FAN_MODE_LABELS = { low: 'Low', medium: 'Medium', high: 'High', off: 'Aus', auto: 'Auto' };
   const luftstufe = fanMode ? (FAN_MODE_LABELS[fanMode] || fanMode) : null;
   const filterBinState = e(LUFTUNGSANLAGE_ENTITY_IDS.filter)?.state;
   const filter = filterBinState === 'on' ? 'Wartung' : filterBinState === 'off' ? 'OK' : null;
+  const kaminmodusAktiv = e(LUFTUNGSANLAGE_ENTITY_IDS.kaminmodus)?.state === 'on';
   const lastMode = str(LUFTUNGSANLAGE_ENTITY_IDS.lastMode);
   const outsideTemp = val(LUFTUNGSANLAGE_ENTITY_IDS.outsideTemp);
   const insideTemp = val(LUFTUNGSANLAGE_ENTITY_IDS.insideTemp);
@@ -516,22 +519,35 @@ export default function LuftungsanlageModal({
               >
                 {name}
               </h3>
-              <div
-                className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 transition-all duration-500"
-                style={{
-                  backgroundColor: isActive ? 'var(--status-success-bg)' : 'var(--glass-bg)',
-                  borderColor: isActive ? 'var(--status-success-border)' : 'var(--glass-border)',
-                }}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${isActive ? 'bg-[var(--status-success-fg)]' : 'bg-[var(--text-muted)]'}`}
-                />
-                <p
-                  className="text-[10px] font-bold tracking-widest uppercase italic"
-                  style={{ color: isActive ? 'var(--status-success-fg)' : 'var(--text-secondary)' }}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {kaminmodusAktiv && (
+                  <div
+                    className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 animate-pulse"
+                    style={{ backgroundColor: 'rgba(249,115,22,0.12)', borderColor: 'rgba(249,115,22,0.5)' }}
+                  >
+                    <span className="h-2 w-2 rounded-full bg-orange-500" />
+                    <p className="text-[10px] font-bold tracking-widest uppercase italic" style={{ color: '#f97316' }}>
+                      🔥 Kaminmodus aktiv
+                    </p>
+                  </div>
+                )}
+                <div
+                  className="inline-flex items-center gap-2 rounded-full border px-3 py-1 transition-all duration-500"
+                  style={{
+                    backgroundColor: isActive ? 'var(--status-success-bg)' : 'var(--glass-bg)',
+                    borderColor: isActive ? 'var(--status-success-border)' : 'var(--glass-border)',
+                  }}
                 >
-                  {hvacLabel}
-                </p>
+                  <span
+                    className={`h-2 w-2 rounded-full ${isActive ? 'bg-[var(--status-success-fg)]' : 'bg-[var(--text-muted)]'}`}
+                  />
+                  <p
+                    className="text-[10px] font-bold tracking-widest uppercase italic"
+                    style={{ color: isActive ? 'var(--status-success-fg)' : 'var(--text-secondary)' }}
+                  >
+                    {hvacLabel}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -636,7 +652,7 @@ export default function LuftungsanlageModal({
                     </text>
 
                     {/* ZULUFT — top right */}
-                    <rect x="236" y="22" width="62" height="46" rx="8" fill="rgba(129,199,132,0.1)" stroke="rgba(129,199,132,0.4)" strokeWidth="1" />
+                    <rect x="236" y="22" width="62" height="58" rx="8" fill="rgba(129,199,132,0.1)" stroke="rgba(129,199,132,0.4)" strokeWidth="1" />
                     <text x="267" y="34" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#81c784" letterSpacing="0.08em">ZULUFT</text>
                     <text x="267" y="50" textAnchor="middle" fontSize="14" fontWeight="300" fill="#81c784">
                       {zuluft != null ? `${zuluft.toFixed(1)}°` : '—'}
@@ -646,9 +662,14 @@ export default function LuftungsanlageModal({
                         {zuluftRpm.toFixed(0)} RPM
                       </text>
                     )}
+                    {zuluftLeistung != null && (
+                      <text x="267" y="74" textAnchor="middle" fontSize="7" fill="#81c784" opacity="0.7">
+                        {zuluftLeistung.toFixed(0)} %
+                      </text>
+                    )}
 
                     {/* ABLUFT — bottom right */}
-                    <rect x="236" y="127" width="62" height="46" rx="8" fill="rgba(239,154,154,0.1)" stroke="rgba(239,154,154,0.4)" strokeWidth="1" />
+                    <rect x="236" y="127" width="62" height="58" rx="8" fill="rgba(239,154,154,0.1)" stroke="rgba(239,154,154,0.4)" strokeWidth="1" />
                     <text x="267" y="139" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ef9a9a" letterSpacing="0.08em">ABLUFT</text>
                     <text x="267" y="155" textAnchor="middle" fontSize="14" fontWeight="300" fill="#ef9a9a">
                       {abluft != null ? `${abluft.toFixed(1)}°` : '—'}
@@ -656,6 +677,11 @@ export default function LuftungsanlageModal({
                     {abluftRpm != null && (
                       <text x="267" y="168" textAnchor="middle" fontSize="7" fill="#ef9a9a" opacity="0.7">
                         {abluftRpm.toFixed(0)} RPM
+                      </text>
+                    )}
+                    {abluftLeistung != null && (
+                      <text x="267" y="179" textAnchor="middle" fontSize="7" fill="#ef9a9a" opacity="0.7">
+                        {abluftLeistung.toFixed(0)} %
                       </text>
                     )}
 

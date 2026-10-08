@@ -1,3 +1,12 @@
+## [1.20.35] — 2026-10-08
+
+### Added
+- Lüftungskarte: `binary_sensor.blauberg_s21_kaminmodus_aktiv` wird als oranges "🔥 Kaminmodus"-Badge angezeigt; ersetzt die Stufenangabe (Stufe ist bei aktivem Kaminmodus irrelevant); Icon pulsiert orange
+- Lüftungsmodal: Kaminmodus-Badge auch im Modal-Header sichtbar
+- Lüftungsmodal: Zuluft- und Abluftventilator-Leistung (`sensor.blauberg_s21_zuluft/abluftventilator_leistung`) als `XX %` im SVG-Diagramm unterhalb der Drehzahl
+- Lüftungskarte: CO-Melder (`sensor.co_melder_co_lesung`) neben CO₂ im unteren Bereich der Karte; Farbkodierung: grün < 10 ppm, orange 10–49 ppm, rot ≥ 50 ppm
+- WP-Modal Monatsansicht: Heizstab-Monatswert aus `sensor.wp_heizstab_energie_gesamt` via HA Statistics API (`period: 'month'`) berechnet
+
 ## [1.20.34] — 2026-10-07
 
 ### Added

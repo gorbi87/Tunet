@@ -16,6 +16,7 @@ export const WAERMEPUMPE_ENTITY_IDS = {
   heizstabTaglich: 'sensor.warmepumpe_heizstab_verbrauch_taglich',
   heizstabAktiv: 'binary_sensor.wp_heizstab_aktiv',
   heizstabEnergieTaglich: 'sensor.wp_heizstab_energie_taglich',
+  heizstabEnergieGesamt: 'sensor.wp_heizstab_energie_gesamt',
   wwSoll: 'select.daikin_heizung_t_ww_soll1',
   betriebsmodus: 'select.daikin_heizung_betriebsmodus',
   heizstabSelect: 'select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018',

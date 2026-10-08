@@ -3,7 +3,7 @@ import { Flame, X, Thermometer, Zap } from '../icons';
 import { WAERMEPUMPE_ENTITY_IDS, MODUS_META } from '../components/cards/GenericWaermepumpeCard';
 import { HpsuHydraulicView } from '../components/HpsuHydraulicView';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
-import { getHistoryRest, getHistory } from '../services/haClient';
+import { getHistoryRest, getHistory, getStatistics } from '../services/haClient';
 
 const ACCENT = '#fb923c';
 
@@ -159,6 +159,7 @@ export default function WaermepumpeModal({
   const translate = t || ((key) => key);
   const [mainTab, setMainTab] = useState('overview');
   const [energyTab, setEnergyTab] = useState('today');
+  const [heizstabMonatKwh, setHeizstabMonatKwh] = useState(null);
   const [wwHistory, setWwHistory] = useState([]);
   const [logHistory, setLogHistory] = useState([]);
   const [wwHistoryOpen, setWwHistoryOpen] = useState(false);
@@ -236,6 +237,27 @@ export default function WaermepumpeModal({
 
     fetchHistory();
   }, [show, mainTab, conn, haUrl, haToken]);
+
+  useEffect(() => {
+    if (!show || !conn || energyTab !== 'month') return;
+    let cancelled = false;
+    const now = new Date();
+    // Go back to start of previous month to get a reference sum for diff
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    getStatistics(conn, {
+      start,
+      end: now,
+      statisticId: WAERMEPUMPE_ENTITY_IDS.heizstabEnergieGesamt,
+      period: 'month',
+    }).then((stats) => {
+      if (cancelled || !stats || stats.length === 0) return;
+      const last = stats[stats.length - 1];
+      const prev = stats.length >= 2 ? stats[stats.length - 2] : null;
+      const monthKwh = prev != null ? last.sum - prev.sum : last.sum;
+      setHeizstabMonatKwh(Math.max(0, monthKwh));
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [show, conn, energyTab]);
 
   if (!show) return null;
 
@@ -673,7 +695,9 @@ export default function WaermepumpeModal({
                           Heizstab
                         </p>
                         <p className="text-lg font-light text-[var(--text-primary)]">
-                          {energyTab === 'today' && heizstabEnergieHeuteVal != null ? heizstabEnergieHeuteVal.toFixed(2) : '—'}
+                          {energyTab === 'today'
+                            ? (heizstabEnergieHeuteVal != null ? heizstabEnergieHeuteVal.toFixed(2) : '—')
+                            : (heizstabMonatKwh != null ? heizstabMonatKwh.toFixed(2) : '—')}
                         </p>
                         <p className="text-[10px] text-[var(--text-muted)]">kWh</p>
                       </div>

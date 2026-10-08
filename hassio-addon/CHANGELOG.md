@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.20.35
+
+### Added
+- Lüftungskarte: Kaminmodus-Badge (orange, pulsierend) ersetzt Stufen-Badge bei aktivem Kaminmodus
+- Lüftungsmodal: Kaminmodus-Badge im Modal-Header; Ventilator-Leistung (%) im SVG-Diagramm
+- Lüftungskarte: CO-Melder-Wert neben CO₂ mit Farbkodierung
+- WP-Modal: Heizstab-Monatswert via HA Statistics API
+
 ## 1.20.34
 
 ### Added
