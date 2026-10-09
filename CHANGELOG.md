@@ -1,3 +1,14 @@
+## [1.20.37] — 2026-10-09
+
+### Changed
+- Automatisierung-Tab: Zustandsableitung auf 5 Stufen korrigiert (Pausiert → Lädt → Nutzt → Hält → Inaktiv) mit spec-konformen Farben (Lädt=blau, Hält=gelb, Nutzt=grün)
+- Varianten-Karten: Speicher-Balken zeigt jetzt simulierten Gesamtspeicherstand in % (`sensor.netzladung_sim_{v}_speicherstand`) statt Schattenspeicher in kWh
+- Ersparnis-Kachel: 4ct-Zustand-Chip direkt daneben sichtbar
+
+### Added
+- Speicher-Vergleich: zwei Balken „Echt" vs. „Mit 4 ct" mit Differenz-Hinweis
+- Simulation-Label im Tab-Header (kein Eingriff am Wechselrichter)
+
 ## [1.20.36] — 2026-10-09
 
 ### Added

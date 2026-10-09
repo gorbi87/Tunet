@@ -5,35 +5,41 @@ import { useHomeAssistantMeta } from '../contexts';
 import AccessibleModalShell from '../components/ui/AccessibleModalShell';
 
 const SIM_VARIANTS = [
-  { key: '0ct', label: '0 ct', minSpanne: 0 },
-  { key: '4ct', label: '4 ct', minSpanne: 4 },
-  { key: '8ct', label: '8 ct', minSpanne: 8 },
+  { key: '0ct', label: '0 ct' },
+  { key: '4ct', label: '4 ct' },
+  { key: '8ct', label: '8 ct' },
 ];
 
-const MAX_SPEICHER_KWH = 3.3;
-
-function getSimVariantData(v, entities) {
+// State derivation per spec (5 states, checked in order)
+function getVariantState(v, entities, statusRaw) {
   const e = (id) => entities?.[id];
-  const num = (id) => {
-    const val = parseFloat(e(id)?.state);
-    return isNaN(val) ? null : val;
-  };
-  const ersparnis = num(`sensor.netzladung_sim_${v}_ersparnis`);
-  const kosten = num(`input_number.netzladung_sim_${v}_kosten`);
-  const erlos = num(`input_number.netzladung_sim_${v}_erlos`);
-  const speicher = num(`input_number.netzladung_sim_${v}_speicher`);
-
   const now = Date.now();
   const changedMs = (entityId) => {
     const lc = e(entityId)?.last_changed;
     if (!lc) return Infinity;
     return now - new Date(lc).getTime();
   };
-  const isLaden = changedMs(`input_number.netzladung_sim_${v}_kosten`) < 90000;
-  const isNutzen = changedMs(`input_number.netzladung_sim_${v}_erlos`) < 90000;
-  const isHalten = !isLaden && !isNutzen && speicher != null && speicher > 0.05;
+  const speicherRaw = e(`input_number.netzladung_sim_${v}_speicher`)?.state;
+  const speicher = parseFloat(speicherRaw);
 
-  return { ersparnis, kosten, erlos, speicher, isLaden, isNutzen, isHalten };
+  if (statusRaw?.startsWith('Pausiert')) return 'pausiert';
+  if (changedMs(`input_number.netzladung_sim_${v}_kosten`) < 90000) return 'laden';
+  if (changedMs(`input_number.netzladung_sim_${v}_erlos`) < 90000) return 'nutzen';
+  if (!isNaN(speicher) && speicher > 0.05) return 'halten';
+  return 'inaktiv';
+}
+
+function getSimVariantData(v, entities) {
+  const num = (id) => {
+    const val = parseFloat(entities?.[id]?.state);
+    return isNaN(val) ? null : val;
+  };
+  return {
+    ersparnis: num(`sensor.netzladung_sim_${v}_ersparnis`),
+    kosten: num(`input_number.netzladung_sim_${v}_kosten`),
+    erlos: num(`input_number.netzladung_sim_${v}_erlos`),
+    speicherstandPct: num(`sensor.netzladung_sim_${v}_speicherstand`),
+  };
 }
 
 function parseSimStatus(raw) {
@@ -41,56 +47,50 @@ function parseSimStatus(raw) {
     return { type: 'unavailable', label: '—', detail: '' };
   }
   if (raw.startsWith('Pausiert')) {
-    return { type: 'paused', label: 'Pausiert', detail: raw.replace(/^Pausiert\s*[–-]\s*/, '') };
+    return { type: 'pausiert', label: 'Pausiert', detail: raw.replace(/^Pausiert\s*[–-]\s*/, '') };
   }
   if (raw.startsWith('Kein Laden:')) {
     const after = raw.replace('Kein Laden:', '').trim();
-    const [reason, ...rest] = after.split('·');
-    return { type: 'idle', label: 'Kein Laden', detail: reason.trim(), sub: rest.join('·').trim() };
+    const parts = after.split('·');
+    return { type: 'idle', label: 'Kein Laden', detail: parts[0].trim(), sub: parts.slice(1).join('·').trim() };
   }
   if (raw.startsWith('Ladefenster:')) {
-    const after = raw.replace('Ladefenster:', '').trim();
-    return { type: 'active', label: 'Ladefenster', detail: after };
+    return { type: 'ladefenster', label: 'Ladefenster', detail: raw.replace('Ladefenster:', '').trim() };
   }
   return { type: 'neutral', label: raw, detail: '' };
+}
+
+const STATE_STYLE = {
+  pausiert: { bg: 'rgba(107,114,128,0.12)', border: 'rgba(107,114,128,0.3)', color: '#9ca3af', label: 'Pausiert', pulse: false },
+  inaktiv:  { bg: 'rgba(107,114,128,0.08)', border: 'rgba(107,114,128,0.2)', color: '#6b7280', label: 'Inaktiv',  pulse: false },
+  laden:    { bg: 'rgba(96,165,250,0.12)',  border: 'rgba(96,165,250,0.3)',  color: '#60a5fa', label: 'Lädt',     pulse: true  },
+  halten:   { bg: 'rgba(251,191,36,0.12)',  border: 'rgba(251,191,36,0.3)',  color: '#fbbf24', label: 'Hält',     pulse: false },
+  nutzen:   { bg: 'rgba(34,197,94,0.12)',   border: 'rgba(34,197,94,0.3)',   color: '#4ade80', label: 'Nutzt',    pulse: true  },
+};
+
+function StateChip({ state }) {
+  const s = STATE_STYLE[state] || STATE_STYLE.inaktiv;
+  return (
+    <span
+      className={`rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase ${s.pulse ? 'animate-pulse' : ''}`}
+      style={{ backgroundColor: s.bg, color: s.color }}
+    >
+      {s.label}
+    </span>
+  );
 }
 
 function SimStatusBadge({ raw }) {
   const { type, label, detail, sub } = parseSimStatus(raw);
 
-  const colors = {
-    paused: {
-      bg: 'rgba(107,114,128,0.12)',
-      border: 'rgba(107,114,128,0.3)',
-      dot: '#6b7280',
-      text: '#9ca3af',
-    },
-    idle: {
-      bg: 'rgba(96,165,250,0.1)',
-      border: 'rgba(96,165,250,0.3)',
-      dot: '#60a5fa',
-      text: '#93c5fd',
-    },
-    active: {
-      bg: 'rgba(34,197,94,0.1)',
-      border: 'rgba(34,197,94,0.3)',
-      dot: '#22c55e',
-      text: '#4ade80',
-    },
-    unavailable: {
-      bg: 'rgba(107,114,128,0.08)',
-      border: 'rgba(107,114,128,0.2)',
-      dot: '#4b5563',
-      text: '#6b7280',
-    },
-    neutral: {
-      bg: 'rgba(156,163,175,0.1)',
-      border: 'rgba(156,163,175,0.2)',
-      dot: '#9ca3af',
-      text: '#d1d5db',
-    },
+  const COLOR = {
+    pausiert:    { bg: 'rgba(107,114,128,0.12)', border: 'rgba(107,114,128,0.3)', dot: '#6b7280',  text: '#9ca3af' },
+    idle:        { bg: 'rgba(96,165,250,0.1)',   border: 'rgba(96,165,250,0.3)',  dot: '#60a5fa',  text: '#93c5fd' },
+    ladefenster: { bg: 'rgba(34,197,94,0.1)',    border: 'rgba(34,197,94,0.3)',   dot: '#22c55e',  text: '#4ade80' },
+    unavailable: { bg: 'rgba(107,114,128,0.08)', border: 'rgba(107,114,128,0.2)', dot: '#4b5563', text: '#6b7280' },
+    neutral:     { bg: 'rgba(156,163,175,0.1)',  border: 'rgba(156,163,175,0.2)', dot: '#9ca3af',  text: '#d1d5db' },
   };
-  const c = colors[type] || colors.neutral;
+  const c = COLOR[type] || COLOR.neutral;
 
   return (
     <div
@@ -98,7 +98,7 @@ function SimStatusBadge({ raw }) {
       style={{ backgroundColor: c.bg, borderColor: c.border }}
     >
       <span
-        className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${type === 'active' ? 'animate-pulse' : ''}`}
+        className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${type === 'ladefenster' ? 'animate-pulse' : ''}`}
         style={{ backgroundColor: c.dot }}
       />
       <div className="min-w-0 flex-1">
@@ -106,7 +106,7 @@ function SimStatusBadge({ raw }) {
           {label}
         </span>
         {detail && (
-          <p className="mt-0.5 text-xs text-[var(--text-secondary)] leading-snug">{detail}</p>
+          <p className="mt-0.5 text-xs leading-snug text-[var(--text-secondary)]">{detail}</p>
         )}
         {sub && (
           <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{sub}</p>
@@ -116,105 +116,105 @@ function SimStatusBadge({ raw }) {
   );
 }
 
-function SpeicherBar({ kwh }) {
-  const pct = kwh != null ? Math.min(100, (kwh / MAX_SPEICHER_KWH) * 100) : 0;
+function SpeicherBar({ pct, color = '#38bdf8' }) {
+  const w = pct != null ? Math.min(100, Math.max(0, pct)) : 0;
   return (
-    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--glass-border)]">
+    <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--glass-border)]">
       <div
         className="h-full rounded-full transition-all duration-700"
-        style={{
-          width: `${pct}%`,
-          backgroundColor: pct > 10 ? '#38bdf8' : 'rgba(56,189,248,0.3)',
-        }}
+        style={{ width: `${w}%`, backgroundColor: w > 5 ? color : 'rgba(56,189,248,0.25)' }}
       />
     </div>
   );
 }
 
-function ActivityChip({ isLaden, isNutzen, isHalten }) {
-  if (isLaden) return (
-    <span className="rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase animate-pulse"
-      style={{ backgroundColor: 'rgba(251,191,36,0.15)', color: '#fbbf24' }}>
-      Laden
-    </span>
-  );
-  if (isNutzen) return (
-    <span className="rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase animate-pulse"
-      style={{ backgroundColor: 'rgba(34,197,94,0.15)', color: '#4ade80' }}>
-      Nutzen
-    </span>
-  );
-  if (isHalten) return (
-    <span className="rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase"
-      style={{ backgroundColor: 'rgba(96,165,250,0.12)', color: '#60a5fa' }}>
-      Halten
-    </span>
-  );
-  return null;
-}
-
-function VariantCard({ variant, entities }) {
+function VariantCard({ variant, entities, statusRaw }) {
   const d = getSimVariantData(variant.key, entities);
+  const state = getVariantState(variant.key, entities, statusRaw);
   const ersparnisColor =
-    d.ersparnis == null
-      ? 'var(--text-muted)'
-      : d.ersparnis >= 0
-      ? '#4ade80'
-      : '#f87171';
+    d.ersparnis == null ? 'var(--text-muted)' : d.ersparnis >= 0 ? '#4ade80' : '#f87171';
 
   return (
-    <div
-      className="popup-surface flex flex-col gap-2 rounded-2xl p-3 sm:rounded-3xl sm:p-5"
-    >
-      {/* Header */}
+    <div className="popup-surface flex flex-col gap-2 rounded-2xl p-3 sm:rounded-3xl sm:p-4">
       <div className="flex items-center justify-between">
         <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
           {variant.label}
         </span>
-        <ActivityChip isLaden={d.isLaden} isNutzen={d.isNutzen} isHalten={d.isHalten} />
+        <StateChip state={state} />
       </div>
 
-      {/* Ersparnis */}
       <div>
         <p className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">Ersparnis</p>
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-light leading-none" style={{ color: ersparnisColor }}>
-            {d.ersparnis != null
-              ? `${d.ersparnis >= 0 ? '+' : ''}${d.ersparnis.toFixed(2)}`
-              : '—'}
+          <span className="text-xl font-light leading-none sm:text-2xl" style={{ color: ersparnisColor }}>
+            {d.ersparnis != null ? `${d.ersparnis >= 0 ? '+' : ''}${d.ersparnis.toFixed(2)}` : '—'}
           </span>
-          {d.ersparnis != null && (
-            <span className="text-xs text-[var(--text-muted)]">€</span>
-          )}
+          {d.ersparnis != null && <span className="text-xs text-[var(--text-muted)]">€</span>}
         </div>
       </div>
 
-      {/* Kosten / Erlös */}
       <div className="flex gap-3 border-t border-[var(--glass-border)] pt-2">
         <div>
           <p className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">Kosten</p>
-          <p className="text-sm text-[var(--text-secondary)]">
+          <p className="text-xs text-[var(--text-secondary)] sm:text-sm">
             {d.kosten != null ? `${d.kosten.toFixed(2)} €` : '—'}
           </p>
         </div>
         <div>
           <p className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">Erlös</p>
-          <p className="text-sm text-[var(--text-secondary)]">
+          <p className="text-xs text-[var(--text-secondary)] sm:text-sm">
             {d.erlos != null ? `${d.erlos.toFixed(2)} €` : '—'}
           </p>
         </div>
       </div>
 
-      {/* Schatten-Speicher */}
       <div>
         <div className="flex items-center justify-between">
-          <p className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">Speicher</p>
+          <p className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">Sim. Speicher</p>
           <p className="text-[10px] text-[var(--text-muted)]">
-            {d.speicher != null ? `${d.speicher.toFixed(2)} / ${MAX_SPEICHER_KWH} kWh` : '—'}
+            {d.speicherstandPct != null ? `${d.speicherstandPct.toFixed(0)} %` : '—'}
           </p>
         </div>
-        <SpeicherBar kwh={d.speicher} />
+        <SpeicherBar pct={d.speicherstandPct} />
       </div>
+    </div>
+  );
+}
+
+function SpeicherVergleich({ entities }) {
+  const num = (id) => {
+    const val = parseFloat(entities?.[id]?.state);
+    return isNaN(val) ? null : val;
+  };
+  const echtPct = num('sensor.solaredge_b1_state_of_energy');
+  const simPct  = num('sensor.netzladung_sim_4ct_speicherstand');
+  const diff    = echtPct != null && simPct != null ? simPct - echtPct : null;
+
+  const Row = ({ label, pct, color, sub }) => (
+    <div>
+      <div className="flex items-center justify-between">
+        <span className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">{label}</span>
+        <span className="text-[10px] text-[var(--text-secondary)]">
+          {pct != null ? `${pct.toFixed(0)} %` : '—'}
+          {sub && <span className="ml-1 text-[var(--text-muted)]">{sub}</span>}
+        </span>
+      </div>
+      <SpeicherBar pct={pct} color={color} />
+    </div>
+  );
+
+  return (
+    <div className="popup-surface flex flex-col gap-3 rounded-2xl p-3 sm:rounded-3xl sm:p-5">
+      <div className="flex items-center justify-between">
+        <p className="text-[9px] font-bold tracking-wide text-[var(--text-muted)] uppercase">Speicher-Vergleich</p>
+        {diff != null && diff > 0.5 && (
+          <span className="text-[10px] font-medium" style={{ color: '#38bdf8' }}>
+            +{diff.toFixed(0)} % durch Netzladung
+          </span>
+        )}
+      </div>
+      <Row label="Echt"         pct={echtPct} color="#94a3b8" />
+      <Row label="Mit 4 ct"     pct={simPct}  color="#38bdf8" />
     </div>
   );
 }
@@ -273,7 +273,8 @@ export default function NordpoolModal({
   };
 
   const simStatusRaw = entities?.['input_text.netzladung_sim_status']?.state || '';
-  const sim4ct = getSimVariantData('4ct', entities);
+  const sim4ctData = getSimVariantData('4ct', entities);
+  const sim4ctState = getVariantState('4ct', entities, simStatusRaw);
 
   const tabBtnClass = (active) =>
     `px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${
@@ -422,55 +423,76 @@ export default function NordpoolModal({
           {/* Tab: Automatisierung */}
           {tab === 'automatisierung' && (
             <div className="flex flex-col gap-4 font-sans">
+              {/* Simulation-Label */}
+              <div className="flex items-center gap-2">
+                <span
+                  className="rounded-full border px-3 py-1 text-[9px] font-bold tracking-widest uppercase"
+                  style={{
+                    backgroundColor: 'rgba(251,191,36,0.08)',
+                    borderColor: 'rgba(251,191,36,0.3)',
+                    color: '#fbbf24',
+                  }}
+                >
+                  Simulation
+                </span>
+                <span className="text-[10px] text-[var(--text-muted)]">
+                  — kein Eingriff am Wechselrichter
+                </span>
+              </div>
+
               {/* Status + 4ct-Ersparnis */}
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                 <div className="flex-1">
                   <SimStatusBadge raw={simStatusRaw} />
                 </div>
-                <div
-                  className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl border p-3 sm:w-36 sm:rounded-3xl sm:p-5"
-                >
-                  <p className="text-[9px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-                    Ersparnis 4 ct
-                  </p>
+                <div className="popup-surface flex flex-col items-center justify-center gap-1 rounded-2xl p-3 sm:w-40 sm:rounded-3xl sm:p-5">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[9px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
+                      4 ct · Ersparnis
+                    </p>
+                    <StateChip state={sim4ctState} />
+                  </div>
                   <div className="flex items-baseline gap-1">
                     <span
                       className="text-3xl font-light leading-none"
                       style={{
                         color:
-                          sim4ct.ersparnis == null
+                          sim4ctData.ersparnis == null
                             ? 'var(--text-muted)'
-                            : sim4ct.ersparnis >= 0
+                            : sim4ctData.ersparnis >= 0
                             ? '#4ade80'
                             : '#f87171',
                       }}
                     >
-                      {sim4ct.ersparnis != null
-                        ? `${sim4ct.ersparnis >= 0 ? '+' : ''}${sim4ct.ersparnis.toFixed(2)}`
+                      {sim4ctData.ersparnis != null
+                        ? `${sim4ctData.ersparnis >= 0 ? '+' : ''}${sim4ctData.ersparnis.toFixed(2)}`
                         : '—'}
                     </span>
-                    {sim4ct.ersparnis != null && (
+                    {sim4ctData.ersparnis != null && (
                       <span className="text-sm text-[var(--text-muted)]">€</span>
                     )}
                   </div>
                 </div>
               </div>
 
+              {/* Speicher-Vergleich */}
+              <SpeicherVergleich entities={entities} />
+
               {/* Varianten-Vergleich */}
               <div>
                 <p className="mb-2 text-[9px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                   Varianten-Vergleich
                 </p>
-                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   {SIM_VARIANTS.map((v) => (
-                    <VariantCard key={v.key} variant={v} entities={entities} />
+                    <VariantCard key={v.key} variant={v} entities={entities} statusRaw={simStatusRaw} />
                   ))}
                 </div>
               </div>
 
               {/* Hinweis */}
-              <p className="text-[10px] text-[var(--text-muted)] leading-relaxed">
-                Simulation läuft seit 09.10.2026 — belastbare Zahlen ab ca. November (weniger PV).
+              <p className="text-[10px] leading-relaxed text-[var(--text-muted)]">
+                Läuft seit 09.10.2026 — belastbare Zahlen ab ca. November (weniger PV).
               </p>
             </div>
           )}

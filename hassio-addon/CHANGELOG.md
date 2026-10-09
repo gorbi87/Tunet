@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.20.37
+
+### Changed
+- Automatisierung-Tab: 5-stufige Zustandsableitung + korrekte Farben; Speicher-Balken zeigt simulierten % statt kWh
+
+### Added
+- Speicher-Vergleich: Echt vs. Mit 4 ct als Balken mit Differenz
+
 ## 1.20.36
 
 ### Added
