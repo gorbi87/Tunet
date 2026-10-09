@@ -1,3 +1,11 @@
+## [1.20.36] — 2026-10-09
+
+### Added
+- Strompreis-Modal (Octopus): neuer Tab „Automatisierung" mit Netzladungs-Simulation-Visualisierung
+- Status-Badge (grau/blau/grün) aus `input_text.netzladung_sim_status` mit Echtzeit-Aktivitätsstatus
+- Varianten-Vergleich 0 ct / 4 ct / 8 ct: Ersparnis, Kosten, Erlös, Schatten-Speicher-Balken und Live-Chips (Laden / Nutzen / Halten)
+- Ersparnis der 4ct-Variante prominent neben dem Status-Badge
+
 ## [1.20.35] — 2026-10-08
 
 ### Added

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.36
+
+### Added
+- Strompreis-Modal: Tab „Automatisierung" mit Netzladungs-Simulation (Status-Badge, Varianten 0/4/8 ct, Speicher-Balken, Live-Chips)
+
 ## 1.20.35
 
 ### Added
