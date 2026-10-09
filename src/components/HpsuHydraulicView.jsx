@@ -27,13 +27,13 @@ const SENSOR_MAP = [
   { entityId: 'sensor.daikin_heizung_kompressor_drehzahl',                      rectId: 'compressor_value',        offset: 6, fontSize: '44' },
   { entityId: 'sensor.daikin_heizung_warmwassertemperatur',                     rectId: 'storage_value',           offset: 6, fontSize: '56' },
   { entityId: 'select.daikin_heizung_t_ww_soll1',                              rectId: 'storage_setpoint_value',  offset: 6, fontSize: '56', digits: 0 },
-  { entityId: 'select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018',   rectId: 'buh_info_value',          offset: 6, fontSize: '56', text: true },
+  { entityId: 'binary_sensor.wp_heizstab_aktiv',                                rectId: 'buh_info_value',          offset: 6, fontSize: '56', binary: true },
   { entityId: 'sensor.daikin_heizung_dhw_mischer_position',                     rectId: 'dhw_mixer_value',         offset: 6, fontSize: '40' },
   { entityId: 'sensor.daikin_heizung_bpv',                                      rectId: 'bypass_value',            offset: 6, fontSize: '40' },
   { entityId: 'sensor.daikin_heizung_fehlercode',                               rectId: 'fehlercode_value',        offset: 6, fontSize: '40', align: 'left', text: true,   prefix: 'Fehlercode: ' },
   { entityId: 'select.daikin_heizung_betriebsmodus',                            rectId: 'betriebsmodus_value',     offset: 6, fontSize: '40', align: 'left', text: true,   prefix: 'Modus: ' },
   { entityId: 'sensor.daikin_3_r_ech2o_seriell_can_betriebsart_can',           rectId: 'betriebsart_value',       offset: 6, fontSize: '40', align: 'left', text: true,   prefix: 'Betriebsart: ', shorten: true },
-  { entityId: 'sensor.thermische_leistung_gefiltert',                           rectId: 'therm_leistung_value',    offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Therm. Leistung: ' },
+  { entityId: 'sensor.daikin_3_r_ech2o_seriell_can_thermische_leistung_uart',   rectId: 'therm_leistung_value',    offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Therm. Leistung: ' },
   { entityId: 'sensor.daikin_heizung_leistung',                                 rectId: 'el_power_value',          offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Elektr. Leistung: ' },
   { entityId: 'sensor.daikin_heizung_cop',                                      rectId: 'cop_value',               offset: 6, fontSize: '40', align: 'left', digits: 2,   prefix: 'COP: ' },
   { entityId: 'sensor.klima_durchschnittliche_temperatur_haus',                 rectId: 't_room_is_value',         offset: 6, fontSize: '40', align: 'left', digits: 1,   prefix: 'Raum-Ist: ' },
@@ -227,9 +227,8 @@ export function HpsuHydraulicView({ entities }) {
     svgEl.getElementById('eev_arrow_left')?.setAttribute('fill', eevColor);
     svgEl.getElementById('eev_arrow_right')?.setAttribute('fill', eevColor);
 
-    // Heizstab fill (mirrors card.ts updateLabels buh_power handling)
-    const buhEntity = entities?.['select.daikin_heizung_heizst_be_f_r_pumpen_nach_oktober_2018'];
-    const buhActive = buhEntity && parseFloat(buhEntity.state) > 0;
+    // Heizstab fill
+    const buhActive = entities?.['binary_sensor.wp_heizstab_aktiv']?.state === 'on';
     svgEl.getElementById('buh-control')?.setAttribute('fill', buhActive ? '#d4aa00ff' : '#7f7f7f');
   }, [entities]);
 

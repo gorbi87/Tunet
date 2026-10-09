@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.38
+
+### Changed
+- WP Hydraulik: thermische Leistung → UART-Sensor; Heizstab → binary_sensor.wp_heizstab_aktiv
+
 ## 1.20.37
 
 ### Changed

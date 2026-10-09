@@ -1,3 +1,9 @@
+## [1.20.38] — 2026-10-09
+
+### Changed
+- WP Hydraulik-Grafik: thermische Leistung zeigt jetzt `sensor.daikin_3_r_ech2o_seriell_can_thermische_leistung_uart` (alter gefilterter Sensor wurde gelöscht)
+- WP Hydraulik-Grafik: Heizstab-Anzeige (Text + Füllfarbe) auf `binary_sensor.wp_heizstab_aktiv` umgestellt
+
 ## [1.20.37] — 2026-10-09
 
 ### Changed
