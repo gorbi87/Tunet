@@ -102,8 +102,7 @@ const LAYOUTS = {
       ['vlbh', 'Vorlauf BH', 790, 118, 84],
       ['vls', 'Vorlauf-Soll', 790, 166, 84],
       ['bar', 'Druck', 790, 214, 84],
-      ['rl', 'Rücklauf', 790, 428, 90],
-      ['dt', 'Spreizung', 890, 428, 90],
+      ['dt', 'Spreizung', 790, 428, 90],
     ],
   },
   portrait: {
@@ -129,11 +128,10 @@ const LAYOUTS = {
     tags: [
       ['hg', 'Heißgas', 130, 308, 92],
       ['kond', 'Kondensat', 236, 308, 86],
-      ['vlbh', 'Vorlauf BH', 20, 1504, 74],
-      ['vls', 'Vorlauf-Soll', 98, 1504, 74],
-      ['bar', 'Druck', 176, 1504, 74],
-      ['rl', 'Rücklauf', 254, 1504, 74],
-      ['dt', 'Spreizung', 332, 1504, 74],
+      ['vlbh', 'Vorlauf BH', 20, 1504, 92],
+      ['vls', 'Vorlauf-Soll', 118, 1504, 92],
+      ['bar', 'Druck', 216, 1504, 92],
+      ['dt', 'Spreizung', 314, 1504, 92],
     ],
   },
 };
@@ -240,7 +238,6 @@ function HydraulikPage({ entities, isMobile = false }) {
     vlbh: deg(num('vlbh')),
     vls: deg(num('vls')),
     bar: `${fmt(num('bar'))} bar`,
-    rl: deg(num('rl')),
     dt: `${fmt(num('dt'))} K`,
   };
 
@@ -442,6 +439,7 @@ function HydraulikPage({ entities, isMobile = false }) {
               <path d="M750 246L760 230L770 246Z" style={{ fill: waterRuns && bp < 1 ? COLORS.cold : 'var(--hyd-dim)' }} className="hyd-v3" />
 
               <Tag x={530} y={100} w={66} label="Vorlauf" value={deg(num('vl'))} />
+              <Tag x={622} y={150} w={66} label="Rücklauf" value={deg(num('rl'))} />
               <Tag x={700} y={100} w={54} label="3UV DHW" value={`${Math.round(mix * 100)} %`} />
               <Tag x={700} y={150} w={54} label="Bypass" value={`${Math.round(bp * 100)} %`} />
               <Tag x={488} y={240} w={84} label="Durchfluss" value={`${Math.round(flow)} l/h`} />
