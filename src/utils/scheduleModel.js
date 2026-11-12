@@ -79,8 +79,16 @@ export function formatOffset(minutes) {
   return `${m > 0 ? '+' : '−'}${text}`;
 }
 
+export function formatDuration(minutes) {
+  const m = Math.max(0, Math.round(Number(minutes) || 0));
+  const h = Math.floor(m / 60);
+  if (!h) return `${m} min`;
+  return m % 60 ? `${h} h ${m % 60} min` : `${h} h`;
+}
+
 export function describePoint(point, t) {
   if (!point) return '–';
+  if (point.type === 'duration') return `${t('schedule.after')} ${formatDuration(point.minutes)}`;
   if (point.type === 'sunrise' || point.type === 'sunset') {
     const base = t(point.type === 'sunrise' ? 'schedule.sunrise' : 'schedule.sunset');
     const offset = formatOffset(point.offset);
@@ -199,13 +207,17 @@ const SCHEDULABLE = new Set([
 
 export const isSchedulable = (entityId) => ENTITY_ID.test(entityId || '') && SCHEDULABLE.has(domainOf(entityId));
 
+// Vorerst bietet die Oberfläche nur Lichter an; Server und Datenformat können mehr
+export const PICKABLE_DOMAINS = new Set(['light']);
+export const isPickable = (entityId) => isSchedulable(entityId) && PICKABLE_DOMAINS.has(domainOf(entityId));
+
 /** Alle schaltbaren Entitäten, die eine Karte zeigt (Karten-ID und Karteneinstellungen). */
 export function entityIdsForCard(cardId, settings) {
   const found = new Set();
   const visit = (value, depth = 0) => {
     if (depth > 6 || value == null) return;
     if (typeof value === 'string') {
-      if (isSchedulable(value)) found.add(value);
+      if (isPickable(value)) found.add(value);
     } else if (Array.isArray(value)) value.forEach((v) => visit(v, depth + 1));
     else if (typeof value === 'object') Object.values(value).forEach((v) => visit(v, depth + 1));
   };

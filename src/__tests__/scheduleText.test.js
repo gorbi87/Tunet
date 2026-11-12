@@ -14,6 +14,7 @@ const entities = {
   'light.schlafzimmer': { attributes: { friendly_name: 'Schlafzimmer' } },
   'cover.wohnzimmer': { attributes: { friendly_name: 'Rollladen Wohnzimmer' } },
   'switch.kaffee': { attributes: { friendly_name: 'Kaffeemaschine' } },
+  'light.terrasse': { attributes: { friendly_name: 'Terrasse' } },
   'calendar.feiertage': { attributes: { friendly_name: 'Feiertage' } },
   'sensor.temperatur': { attributes: { friendly_name: 'Flur Temperatur' } },
 };
@@ -38,7 +39,8 @@ describe('parseScheduleText', () => {
   });
 
   it('creates single switch points with an off verb', () => {
-    const { draft } = parseScheduleText('Kaffeemaschine werktags um 9 Uhr aus, nicht an Feiertagen', { entities, areas });
+    const { draft } = parseScheduleText('Terrasse werktags um 9 Uhr aus, nicht an Feiertagen', { entities, areas });
+    expect(draft.targets.entities).toEqual(['light.terrasse']);
     expect(draft.mode).toBe('off');
     expect(draft.slots[0]).toMatchObject({ start: { type: 'time', time: '09:00' }, end: null });
     expect(draft.conditions.skipEntity).toBe('calendar.feiertage');
@@ -72,6 +74,13 @@ describe('parseScheduleText', () => {
       'light.eg_flur': { attributes: { friendly_name: 'EG Flur' } },
     };
     expect(parseScheduleText('EG Flur um 18 Uhr an', { entities: dup }).draft.targets.entities).toEqual(['light.eg_flur']);
+  });
+
+  it('offers only lights for now and understands a duration', () => {
+    expect(parseScheduleText('Kaffeemaschine um 6 Uhr an', { entities, areas }).missing).toContain('target');
+    const { draft } = parseScheduleText('Terrasse täglich ab Sonnenuntergang für 2,5 Stunden', { entities, areas });
+    expect(draft.slots[0]).toMatchObject({ start: { type: 'sunset', offset: 0 }, end: { type: 'duration', minutes: 150 } });
+    expect(parseScheduleText('Schlafzimmer 6:30 bis 8 Uhr 10 min lang aufdimmen', { entities, areas }).draft.slots[0].end).toEqual({ type: 'time', time: '08:00' });
   });
 
   it('reports what is missing', () => {

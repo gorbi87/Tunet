@@ -98,7 +98,15 @@ function DayRing({ slots, mode = 'window', onChange, ctx, now = Date.now(), t, c
     const minutes = minutesFromEvent(event);
     const slot = slots[drag.index];
     if (!slot) return;
-    update(drag.index, drag.edge, pointFor(minutes, slot[drag.edge]));
+    const previous = slot[drag.edge];
+    if (drag.edge === 'end' && previous?.type === 'duration') {
+      // Dauer bleibt Dauer: Abstand zum Einschalten
+      const from = pointMinutes(slot.start);
+      const span = Math.max(STEP, ((minutes - from + 1440) % 1440) || 1440);
+      update(drag.index, 'end', { type: 'duration', minutes: Math.min(1439, span) });
+      return;
+    }
+    update(drag.index, drag.edge, pointFor(minutes, previous));
   };
 
   const startDrag = (index, edge) => (event) => {
@@ -114,7 +122,8 @@ function DayRing({ slots, mode = 'window', onChange, ctx, now = Date.now(), t, c
     if (readOnly || drag) return;
     const minutes = minutesFromEvent(event);
     const start = pointFor(minutes, null);
-    const end = windowed ? { type: 'time', time: fmt((minutes + 60) % 1440) } : null;
+    const durationStyle = slots[0]?.end?.type === 'duration';
+    const end = windowed ? (durationStyle ? { type: 'duration', minutes: 60 } : { type: 'time', time: fmt((minutes + 60) % 1440) }) : null;
     onChange([...slots, { id: newSlotId(), start, end }]);
     setSelected(slots.length);
   };
@@ -174,7 +183,11 @@ function DayRing({ slots, mode = 'window', onChange, ctx, now = Date.now(), t, c
 
         {slots.map((slot, i) => {
           const from = pointMinutes(slot.start);
-          const to = windowed ? pointMinutes(slot.end) : null;
+          const to = !windowed || !slot.end
+            ? null
+            : slot.end.type === 'duration'
+              ? (from + Math.round(slot.end.minutes || 0)) % 1440
+              : pointMinutes(slot.end);
           if (from == null) return null;
           const active = i === selected;
           return (
@@ -184,7 +197,7 @@ function DayRing({ slots, mode = 'window', onChange, ctx, now = Date.now(), t, c
               )}
               {[['start', from], ...(windowed && to != null ? [['end', to]] : [])].map(([edge, m]) => {
                 const [x, y] = polar(m);
-                const sunny = slot[edge]?.type !== 'time';
+                const sunny = slot[edge]?.type === 'sunrise' || slot[edge]?.type === 'sunset';
                 return (
                   <g key={edge} onPointerDown={startDrag(i, edge)} style={{ cursor: readOnly ? 'default' : 'grab' }}>
                     <circle cx={x} cy={y} r={22} fill="transparent" />

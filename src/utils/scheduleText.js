@@ -3,7 +3,7 @@
 // Bereiche (über ihre Namen), Wochentage, Uhrzeiten, Sonnenauf-/-untergang mit Versatz, Helligkeit,
 // Position, Temperatur, Dimm-Verläufe und Bedingungen.
 
-import { ALL_WEEKDAYS, WEEKEND, WORKDAYS, createDraft, isSchedulable, newSlotId } from './scheduleModel';
+import { ALL_WEEKDAYS, WEEKEND, WORKDAYS, createDraft, isPickable, newSlotId } from './scheduleModel';
 
 const DAY_WORDS = [
   ['montag', 'mo'],
@@ -135,7 +135,7 @@ function matchTargets(text, entities, areas) {
     if (name.length >= 3) candidates.push({ name, area });
   }
   for (const [id, entity] of Object.entries(entities || {})) {
-    if (!isSchedulable(id)) continue;
+    if (!isPickable(id)) continue;
     const name = fold(entity?.attributes?.friendly_name);
     if (name.length >= 3) candidates.push({ name, entityId: id });
     // „EG Flur“ soll auch auf „Flur“ passen (Stockwerk oder Gattungswort vorne weglassen)
@@ -203,7 +203,16 @@ export function parseScheduleText(input, { entities = {}, areas = [] } = {}) {
   const end = points.find((p) => p.role === 'end' && p !== start) || points.find((p) => p !== start);
   points.forEach((p) => found.push(p.text));
 
-  if (start && end) {
+  const lasting = new RegExp(`(?:für|fuer) (\\d+(?:[.,]5)?) ?${UNIT_MIN}|(\\d+(?:[.,]5)?) ?${UNIT_MIN} lang(?! (?:auf|ab|runter)?dimmen| heller| wecker)`).exec(text);
+  const lastingMinutes = lasting
+    ? Math.round(toMinutes(Number((lasting[1] || lasting[3]).replace(',', '.')), lasting[2] || lasting[4]))
+    : 0;
+  if (lasting) found.push(lasting[0].trim());
+
+  if (start && lastingMinutes > 0) {
+    draft.mode = 'window';
+    draft.slots = [{ id: newSlotId(), start: start.point, end: { type: 'duration', minutes: Math.min(1439, lastingMinutes) } }];
+  } else if (start && end) {
     draft.mode = 'window';
     draft.slots = [{ id: newSlotId(), start: start.point, end: end.point }];
   } else if (start) {

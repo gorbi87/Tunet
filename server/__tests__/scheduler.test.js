@@ -47,6 +47,13 @@ describe('scheduleTime', () => {
     expect(activeInstance(s, berlin('2026-11-14T00:00:00Z'), ctx)).toBeTruthy();
   });
 
+  it('switches off after a duration counted from the actual start', () => {
+    const s = schedule({ slots: [{ id: 'd', start: { type: 'sunset', offset: 0 }, end: { type: 'duration', minutes: 150 } }] });
+    const [on, off] = nextEvents(s, berlin('2026-11-12T11:00:00Z'), ctx, {}, { limit: 2 });
+    expect(off.at - on.at).toBe(150 * 60_000);
+    expect(sanitizeSchedule({ ...s, slots: [{ start: { type: 'time', time: '06:00' }, end: { type: 'duration', minutes: 45 } }] }).value.slots[0].end).toEqual({ type: 'duration', minutes: 45 });
+  });
+
   it('shifts simulated schedules by a stable random offset in vacation mode', () => {
     const s = schedule({ simulate: true });
     const from = berlin('2026-11-12T11:00:00Z');

@@ -143,12 +143,17 @@ export function instancesForDay(schedule, day, ctx, opts = {}) {
     let start = resolvePoint(slot.start, day, ctx);
     if (start == null) continue;
     let end = null;
-    if (usesWindow(schedule) && slot.end) {
+    if (usesWindow(schedule) && slot.end?.type === 'duration') {
+      // „Ausschalten nach Dauer“: gerechnet ab dem tatsächlichen Einschalten
+      end = start + Math.max(1, Number(slot.end.minutes) || 0) * 60_000;
+    } else if (usesWindow(schedule) && slot.end) {
       end = resolvePoint(slot.end, day, ctx);
       if (end != null && end <= start) end = resolvePoint(slot.end, addDays(day, 1), ctx);
     }
     if (jitter) {
-      start += jitterMinutes(`${instanceKey}|start`) * 60_000;
+      const shift = jitterMinutes(`${instanceKey}|start`) * 60_000;
+      start += shift;
+      if (slot.end?.type === 'duration') end += shift;
       if (end != null) end = Math.max(start + 60_000, end + jitterMinutes(`${instanceKey}|end`) * 60_000);
     }
     out.push({ scheduleId: schedule.id, slotId: slot.id, day: key, instanceKey, start, end });

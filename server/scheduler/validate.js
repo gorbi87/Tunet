@@ -23,6 +23,11 @@ function point(p) {
   return { type: 'time', time: `${match[1].padStart(2, '0')}:${match[2]}` };
 }
 
+function duration(p) {
+  const minutes = Math.round(num(p?.minutes, 1, 1439) ?? 0);
+  return minutes ? { type: 'duration', minutes } : null;
+}
+
 function phaseValues(v) {
   const out = {};
   if (!v || typeof v !== 'object') return out;
@@ -54,7 +59,7 @@ export function sanitizeSchedule(input) {
     .map((s, i) => {
       const start = point(s?.start);
       if (!start) return null;
-      const end = mode === 'window' ? point(s?.end) : null;
+      const end = mode === 'window' ? (s?.end?.type === 'duration' ? duration(s.end) : point(s?.end)) : null;
       if (mode === 'window' && !end) return null;
       return { id: str(s?.id, 40) || `s${i + 1}`, start, end };
     })

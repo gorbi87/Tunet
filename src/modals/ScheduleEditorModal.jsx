@@ -8,16 +8,36 @@ import {
   WORKDAYS,
   eventVerb,
   formatWhen,
-  isSchedulable,
+  isPickable,
   nextEvents,
   newSlotId,
   scheduleContext,
   targetKind,
 } from '../utils/scheduleModel';
 import { parseScheduleText } from '../utils/scheduleText';
+import { parseClock } from '../../server/scheduler/scheduleTime.js';
+
+const clockOf = (minutes) => {
+  const m = ((Math.round(minutes) % 1440) + 1440) % 1440;
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+};
+
+function DurationEditor({ minutes, onChange, t }) {
+  const total = Math.max(1, Math.round(Number(minutes) || 0));
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  const setParts = (hours, mins) => onChange({ type: 'duration', minutes: Math.min(1439, Math.max(1, hours * 60 + mins)) });
+  return (
+    <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+      <input type="number" min="0" max="23" value={h} onChange={(e) => setParts(Number(e.target.value) || 0, m)} className={`${inputBase} w-20`} aria-label={t('schedule.hours')} />
+      <span>{t('schedule.hoursShort')}</span>
+      <input type="number" min="0" max="55" step="5" value={m} onChange={(e) => setParts(h, Number(e.target.value) || 0)} className={`${inputBase} w-20`} aria-label={t('schedule.minutes')} />
+      <span>min</span>
+    </div>
+  );
+}
 
 const RAMP_STEPS = [0, 5, 10, 15, 20, 30, 45, 60];
-const AREA_DOMAINS = ['light', 'cover', 'switch', 'climate'];
 
 const chip = (active) =>
   `rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
@@ -82,6 +102,7 @@ function PointEditor({ point, onChange, title, t }) {
             title={t('schedule.minutesOffset')}
           />
         )}
+        {type !== 'time' && <span className="self-center text-xs text-[var(--text-muted)]">min</span>}
       </div>
     </div>
   );
@@ -93,7 +114,7 @@ function EntityPicker({ entities, selected, onAdd, t }) {
     const q = query.trim().toLowerCase();
     if (q.length < 2) return [];
     return Object.entries(entities || {})
-      .filter(([id]) => isSchedulable(id) && !selected.includes(id))
+      .filter(([id]) => isPickable(id) && !selected.includes(id))
       .filter(
         ([id, e]) =>
           id.includes(q) ||
@@ -104,7 +125,7 @@ function EntityPicker({ entities, selected, onAdd, t }) {
       .slice(0, 8);
   }, [query, entities, selected]);
   return (
-    <div className="relative">
+    <div>
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -112,7 +133,7 @@ function EntityPicker({ entities, selected, onAdd, t }) {
         className={input}
       />
       {matches.length > 0 && (
-        <div className="popup-surface absolute right-0 left-0 z-10 mt-1 max-h-64 overflow-y-auto rounded-xl border border-[var(--glass-border)] p-1 shadow-2xl">
+        <div className="mt-1.5 max-h-64 overflow-y-auto rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1">
           {matches.map(([id, e]) => (
             <button
               key={id}
@@ -227,14 +248,37 @@ export default function ScheduleEditorModal({
     }));
   };
 
-  const setMode = (mode) =>
+  // Ausschalten: zu einer Uhrzeit, nach einer Dauer oder gar nicht – alles in einem Zeitplan
+  const offStyle =
+    draft.mode === 'on' || draft.mode === 'off'
+      ? 'none'
+      : draft.slots[0]?.end?.type === 'duration'
+        ? 'duration'
+        : 'time';
+  const setOffStyle = (style) =>
     setDraft((d) => ({
       ...d,
-      mode,
-      slots: d.slots.map((s) => ({
-        ...s,
-        end: mode === 'window' ? s.end || { type: 'time', time: '23:00' } : null,
-      })),
+      mode: style === 'none' ? 'on' : 'window',
+      slots: d.slots.map((slot) => {
+        // „Nur ausschalten“ aus dem HACS-Umzug: bisheriger Schaltpunkt wird zum Ausschalten
+        const legacyOff = d.mode === 'off';
+        const start = legacyOff ? { type: 'sunset', offset: 0 } : slot.start;
+        const previousEnd = legacyOff ? slot.start : slot.end;
+        if (style === 'none') return { ...slot, start, end: null };
+        if (style === 'duration') {
+          if (previousEnd?.type === 'duration') return { ...slot, start, end: previousEnd };
+          const a = parseClock(start?.time);
+          const b = parseClock(previousEnd?.time);
+          const minutes = start?.type === 'time' && previousEnd?.type === 'time' && a != null && b != null ? (b - a + 1440) % 1440 || 60 : 120;
+          return { ...slot, start, end: { type: 'duration', minutes } };
+        }
+        if (previousEnd && previousEnd.type !== 'duration') return { ...slot, start, end: previousEnd };
+        const a = parseClock(start?.time);
+        const end = start?.type === 'time' && a != null && previousEnd?.type === 'duration'
+          ? clockOf(a + previousEnd.minutes)
+          : '23:00';
+        return { ...slot, start, end: { type: 'time', time: end } };
+      }),
     }));
 
   const toggleDay = (day) =>
@@ -248,7 +292,7 @@ export default function ScheduleEditorModal({
 
   const toggleArea = (area) => {
     const exists = draft.targets.areas.some((a) => a.id === area.area_id);
-    const domain = kind === 'cover' || kind === 'climate' ? kind : 'light';
+    const domain = 'light';
     set({
       targets: {
         ...draft.targets,
@@ -353,21 +397,9 @@ export default function ScheduleEditorModal({
             <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
               <div className="space-y-4">
                 <Section title={t('schedule.when')}>
-                  <div className="flex flex-wrap gap-1.5">
-                    {['window', 'on', 'off'].map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => setMode(m)}
-                        className={chip((draft.mode || 'window') === m)}
-                      >
-                        {t(`schedule.mode.${m}`)}
-                      </button>
-                    ))}
-                  </div>
                   <DayRing
                     slots={draft.slots}
-                    mode={draft.mode}
+                    mode={draft.mode === 'off' ? 'on' : draft.mode}
                     onChange={(slots) => set({ slots })}
                     ctx={ctx}
                     now={now}
@@ -409,6 +441,71 @@ export default function ScheduleEditorModal({
                     ))}
                   </div>
                 </Section>
+                <Section title={t('schedule.times')}>
+                  {draft.slots.map((slot, i) => {
+                    const setSlot = (patch) => set({ slots: draft.slots.map((s, j) => (j === i ? { ...s, ...patch } : s)) });
+                    return (
+                      <div key={slot.id} className={`flex flex-col gap-3 ${i ? 'border-t border-[var(--glass-border)] pt-3' : ''}`}>
+                        <PointEditor
+                          title={draft.mode === 'off' ? t('schedule.switchOffAt') : t('schedule.switchOnAt')}
+                          point={slot.start}
+                          onChange={(p) => setSlot({ start: p })}
+                          t={t}
+                        />
+                        {i === 0 && (
+                          <div>
+                            <span className="mb-1 block text-[10px] font-semibold text-[var(--text-muted)] uppercase">{t('schedule.switchOff')}</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {['time', 'duration', 'none'].map((style) => (
+                                <button key={style} type="button" onClick={() => setOffStyle(style)} className={chip(offStyle === style)}>
+                                  {t(`schedule.offStyle.${style}`)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {offStyle === 'time' && (
+                          <PointEditor title={t('schedule.switchOffAt')} point={slot.end} onChange={(p) => setSlot({ end: p })} t={t} />
+                        )}
+                        {offStyle === 'duration' && (
+                          <div>
+                            <span className="mb-1 block text-[10px] font-semibold text-[var(--text-muted)] uppercase">{t('schedule.switchOffAfter')}</span>
+                            <DurationEditor minutes={slot.end?.minutes} onChange={(p) => setSlot({ end: p })} t={t} />
+                          </div>
+                        )}
+                        {draft.slots.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => set({ slots: draft.slots.filter((_, j) => j !== i) })}
+                            className="inline-flex items-center gap-1 self-end text-xs text-[var(--text-muted)] hover:text-[var(--status-error-fg)]"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            {t('schedule.removeSlot')}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      set({
+                        slots: [
+                          ...draft.slots,
+                          {
+                            id: newSlotId(),
+                            start: { type: 'time', time: '06:00' },
+                            end: offStyle === 'time' ? { type: 'time', time: '08:00' } : offStyle === 'duration' ? { type: 'duration', minutes: 60 } : null,
+                          },
+                        ],
+                      })
+                    }
+                    className={`${chip(false)} inline-flex items-center gap-1`}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    {t('schedule.addSlot')}
+                  </button>
+                </Section>
               </div>
 
               <div className="min-w-0 space-y-4">
@@ -420,26 +517,6 @@ export default function ScheduleEditorModal({
                         className={`${chip(true)} inline-flex items-center gap-1.5`}
                       >
                         {a.name}
-                        <select
-                          value={a.domain}
-                          onChange={(e) =>
-                            set({
-                              targets: {
-                                ...draft.targets,
-                                areas: draft.targets.areas.map((x) =>
-                                  x.id === a.id ? { ...x, domain: e.target.value } : x
-                                ),
-                              },
-                            })
-                          }
-                          className="bg-transparent text-[11px] outline-none"
-                        >
-                          {AREA_DOMAINS.map((d) => (
-                            <option key={d} value={d}>
-                              {t(`schedule.areaDomain.${d}`)}
-                            </option>
-                          ))}
-                        </select>
                         <button
                           type="button"
                           onClick={() => toggleArea({ area_id: a.id })}
@@ -503,66 +580,6 @@ export default function ScheduleEditorModal({
                   )}
                 </Section>
 
-                <Section title={t('schedule.times')}>
-                  {draft.slots.map((slot, i) => (
-                    <div
-                      key={slot.id}
-                      className="flex flex-col gap-2 border-b border-[var(--glass-border)] pb-3 last:border-0 last:pb-0"
-                    >
-                      <PointEditor
-                        title={windowed ? t('schedule.start') : t('schedule.at')}
-                        point={slot.start}
-                        onChange={(p) =>
-                          set({
-                            slots: draft.slots.map((s, j) => (j === i ? { ...s, start: p } : s)),
-                          })
-                        }
-                        t={t}
-                      />
-                      {windowed && (
-                        <PointEditor
-                          title={t('schedule.end')}
-                          point={slot.end}
-                          onChange={(p) =>
-                            set({
-                              slots: draft.slots.map((s, j) => (j === i ? { ...s, end: p } : s)),
-                            })
-                          }
-                          t={t}
-                        />
-                      )}
-                      {draft.slots.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => set({ slots: draft.slots.filter((_, j) => j !== i) })}
-                          className="self-end pb-2.5 text-[var(--text-muted)] hover:text-[var(--status-error-fg)]"
-                          aria-label={t('schedule.removeSlot')}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      set({
-                        slots: [
-                          ...draft.slots,
-                          {
-                            id: newSlotId(),
-                            start: { type: 'time', time: '06:00' },
-                            end: windowed ? { type: 'time', time: '08:00' } : null,
-                          },
-                        ],
-                      })
-                    }
-                    className={`${chip(false)} inline-flex items-center gap-1`}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    {t('schedule.addSlot')}
-                  </button>
-                </Section>
 
                 {(kind === 'light' || kind === 'cover' || kind === 'climate') && (
                   <Section title={t('schedule.how')}>
