@@ -72,8 +72,8 @@ const INDOOR_SEGMENTS = [
   { d: COIL, c: 'hot', share: 'tank' },
   { d: 'M520 594H470V56H740V84H760', c: 'cold', share: 'tank' },
   { d: 'M760 84V214', c: 'bypass', share: 'bypass' },
-  { d: 'M744 230H600V186', c: 'cold', share: 'all' },
-  { d: 'M584 170H524', c: 'cold', share: 'all' },
+  { d: 'M744 230H556V146', c: 'cold', share: 'all' },
+  { d: 'M540 130H524', c: 'cold', share: 'all' },
 ];
 
 // Building blocks are drawn in landscape coordinates and shifted per layout;
@@ -426,9 +426,9 @@ function HydraulikPage({ entities, isMobile = false }) {
               <text className="hyd-lbl" x="484" y="206">Kondensator</text>
 
               {/* Pumpe */}
-              <circle cx="600" cy="170" r="16" className="hyd-part" />
+              <circle cx="556" cy="130" r="16" className="hyd-part" />
               <g className={`hyd-spin ${waterRuns ? 'hyd-go' : ''}`} style={{ animationDuration: '.6s' }}>
-                <path d="M600 157v26M587 170h26" className="hyd-part-line" />
+                <path d="M556 117v26M543 130h26" className="hyd-part-line" />
               </g>
 
               {/* 3UV DHW (M1S) */}
@@ -441,7 +441,7 @@ function HydraulikPage({ entities, isMobile = false }) {
               <path d="M750 214L760 230L770 214Z" style={{ fill: waterRuns && bp > 0 ? COLORS.cold : 'var(--hyd-dim)' }} className="hyd-v3" />
               <path d="M750 246L760 230L770 246Z" style={{ fill: waterRuns && bp < 1 ? COLORS.cold : 'var(--hyd-dim)' }} className="hyd-v3" />
 
-              <Tag x={530} y={100} w={66} label="Vorlauf" value={deg(num('vl'))} />
+              <Tag x={606} y={100} w={66} label="Vorlauf" value={deg(num('vl'))} />
               <Tag x={700} y={100} w={54} label="3UV DHW" value={`${Math.round(mix * 100)} %`} />
               <Tag x={700} y={150} w={54} label="Bypass" value={`${Math.round(bp * 100)} %`} />
               <Tag x={488} y={240} w={84} label="Durchfluss" value={`${Math.round(flow)} l/h`} />
