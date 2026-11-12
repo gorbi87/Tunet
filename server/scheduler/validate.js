@@ -70,7 +70,7 @@ export function sanitizeSchedule(input) {
 
   return {
     value: {
-      name: str(input.name, 80) || 'Zeitplan',
+      name: str(input.name, 80),
       icon: str(input.icon, 60) || null,
       enabled: input.enabled !== false,
       mode,
@@ -94,7 +94,7 @@ export function sanitizeSchedule(input) {
       simulate: Boolean(input.simulate),
       skipDay: /^\d{4}-\d{2}-\d{2}$/.test(input.skipDay || '') ? input.skipDay : null,
       skipInstance: str(input.skipInstance, 200) || null,
-      source: str(input.source, 80) || null,
+      source: str(input.source, 200) || null,
     },
   };
 }

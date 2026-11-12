@@ -26,6 +26,7 @@ const SPAN_TABLE = {
   heizungTile: { default: 2 }, // Heizungs-Kachel, so groß wie die Wetter-Kachel
   pufferTile: { default: 2 }, // Puffer-Kachel mit Verlauf, ebenso
   medienTile: { default: 2 }, // Medien-Kachel eines Raums, ebenso
+  zeitschaltuhrTile: { default: 2 }, // Zeitschaltuhr mit den nächsten Schaltungen, ebenso
 };
 
 const CARD_SPAN_RULES = [
@@ -36,6 +37,7 @@ const CARD_SPAN_RULES = [
   { prefix: 'heizung_card_', category: 'heizungTile' },
   { prefix: 'puffer_card_', category: 'pufferTile' },
   { prefix: 'medien_card_', category: 'medienTile' },
+  { prefix: 'zeitschaltuhr_card_', category: 'zeitschaltuhrTile' },
   { prefix: 'entity_card_', category: 'dualSize' },
   { prefix: 'calendar_card_', category: 'triSize' },
   { prefix: 'todo_card_', category: 'triSize' },

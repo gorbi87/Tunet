@@ -87,8 +87,9 @@ export function createSchedulerEngine({
     for (const call of calls) await ha.callService(call.domain, call.service, call.data);
   }
 
+  const displayName = (s) => s.name || s.targets?.areas?.[0]?.name || s.targets?.entities?.[0] || 'Zeitplan';
   const log = (schedule, kind, status, message, at = now()) =>
-    store.addRun({ scheduleId: schedule.id, scheduleName: schedule.name, at, kind, status, message });
+    store.addRun({ scheduleId: schedule.id, scheduleName: displayName(schedule), at, kind, status, message });
 
   async function handleEvent(schedule, event, env) {
     const kindLabel = event.kind === 'start' ? 'Beginn' : 'Ende';

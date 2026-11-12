@@ -139,3 +139,6 @@ export function publishCurrentSettings({
     body: JSON.stringify({ ha_user_id, source_device_id, target_device_id, history_keep_limit }),
   });
 }
+
+// Gemeinsamer Zugang für weitere Tunet-APIs (z. B. Zeitschaltuhr)
+export { request as apiRequest };

@@ -3,6 +3,7 @@ import StatusPill from '../components/cards/StatusPill';
 import { useHomeAssistant, useModalActions, usePages } from '../contexts';
 import { isSonosMediaEntity, resolveStatusGroupPill, STATUS_GROUP_PILL_TYPE } from '../utils';
 import { getWasteBins, getWasteDaysAhead, isWasteDue } from '../utils/wastePills';
+import SchedulePill from '../components/schedule/SchedulePill';
 
 const BEREGNUNG_ZONES = [
   { key: 'z1', name: 'Terrasse R', sensorId: 'binary_sensor.irrigation_unlimited_c1_z1' },
@@ -346,6 +347,10 @@ export default function StatusBar({
                   }
                 />
               );
+            }
+
+            if (pill.type === 'schedule') {
+              return <SchedulePill key={pill.id} isMobile={isMobile} t={t} />;
             }
 
             if (pill.type === 'waste') {

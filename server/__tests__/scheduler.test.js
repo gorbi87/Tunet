@@ -189,3 +189,37 @@ describe('engine', () => {
     expect(t.ha.callService).toHaveBeenCalledWith('light', 'turn_off', { entity_id: ['light.flur'] });
   });
 });
+
+describe('schedules API', () => {
+  it('creates, skips, lists and deletes schedules', async () => {
+    const { default: express } = await import('express');
+    const { createSchedulesRouter } = await import('../routes/schedules.js');
+    const store = createScheduleStore(new Database(':memory:'));
+    const app = express();
+    app.use(express.json());
+    app.use('/api/schedules', createSchedulesRouter({ store, engineInfo: { reason: 'dev' } }));
+    const server = app.listen(0, '127.0.0.1');
+    await new Promise((r) => server.once('listening', r));
+    const base = `http://127.0.0.1:${server.address().port}/api/schedules`;
+    const send = (path, method = 'GET', body) =>
+      fetch(`${base}${path}`, { method, headers: { 'Content-Type': 'application/json' }, body: body && JSON.stringify(body) });
+    try {
+      expect((await send('', 'POST', { name: 'leer' })).status).toBe(400);
+      const created = await (await send('', 'POST', schedule())).json();
+      const id = created.schedule.id;
+      expect(created.schedule.name).toBe('Flur');
+      expect((await send(`/${id}/skip`, 'POST', { mode: 'instance', instanceKey: 'fremd|s1|2026-11-12' })).status).toBe(400);
+      const skipped = await (await send(`/${id}/skip`, 'POST', { mode: 'day', day: '2026-11-12' })).json();
+      expect(skipped.schedule.skipDay).toBe('2026-11-12');
+      await send('/settings', 'PUT', { vacation: true });
+      const list = await (await send('')).json();
+      expect(list).toMatchObject({ settings: { vacation: true }, engine: { active: false, reason: 'dev' } });
+      expect(list.schedules).toHaveLength(1);
+      expect((await send(`/${id}/run`, 'POST', { kind: 'start' })).status).toBe(409);
+      expect((await send(`/${id}`, 'DELETE')).status).toBe(200);
+      expect((await (await send('')).json()).schedules).toHaveLength(0);
+    } finally {
+      server.close();
+    }
+  });
+});

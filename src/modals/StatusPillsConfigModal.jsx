@@ -17,6 +17,7 @@ import {
   Speaker,
   Shield,
   Hash,
+  Clock,
   getAllIconKeys,
   getIconComponent,
   preloadMdiIcons,
@@ -444,6 +445,7 @@ export default function StatusPillsConfigModal({
         return translated === 'statusPills.typeAlarm' ? 'Alarm' : translated;
       }
       if (pillType === 'waste') return 'Müllabholung';
+      if (pillType === 'schedule') return t('schedule.nextSwitch');
       if (pillType === 'entity_count') return 'Zähler';
       return t('statusPills.typeSonos');
     },
@@ -684,6 +686,12 @@ export default function StatusPillsConfigModal({
       label: 'Müllabholung',
       Icon: Trash2,
       iconClass: 'bg-[var(--glass-bg)] text-[var(--text-secondary)]',
+    },
+    {
+      type: 'schedule',
+      label: t('schedule.nextSwitch'),
+      Icon: Clock,
+      iconClass: 'bg-[var(--accent-bg)] text-[var(--accent-color)]',
     },
   ];
 

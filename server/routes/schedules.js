@@ -47,7 +47,7 @@ export function createSchedulesRouter({ store, engine = null, engineInfo = {} })
 
   router.delete('/:id', (req, res) => {
     if (!store.remove(req.params.id)) return res.status(404).json({ error: 'Schedule not found' });
-    res.status(204).end();
+    res.json({ ok: true });
   });
 
   // Aussetzen: mode 'day' (ganzer Tag, day = YYYY-MM-DD in HA-Zeitzone), 'instance' (nur das nächste
