@@ -439,7 +439,7 @@ function HydraulikPage({ entities, isMobile = false }) {
               <path d="M750 246L760 230L770 246Z" style={{ fill: waterRuns && bp < 1 ? COLORS.cold : 'var(--hyd-dim)' }} className="hyd-v3" />
 
               <Tag x={530} y={100} w={66} label="Vorlauf" value={deg(num('vl'))} />
-              <Tag x={622} y={150} w={66} label="Rücklauf" value={deg(num('rl'))} />
+              <Tag x={580} y={240} w={66} label="Rücklauf" value={deg(num('rl'))} />
               <Tag x={700} y={100} w={54} label="3UV DHW" value={`${Math.round(mix * 100)} %`} />
               <Tag x={700} y={150} w={54} label="Bypass" value={`${Math.round(bp * 100)} %`} />
               <Tag x={488} y={240} w={84} label="Durchfluss" value={`${Math.round(flow)} l/h`} />
