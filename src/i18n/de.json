@@ -1746,5 +1746,8 @@
   "schedule.cardOff": "ausgeschaltet",
   "schedule.cardRunning": "läuft",
   "schedule.cardLit": "Lichter an",
-  "schedule.cardUntil": "bis"
+  "schedule.cardUntil": "bis",
+  "schedule.cardWidth": "Breite",
+  "schedule.cardFullWidth": "Volle Breite",
+  "schedule.cardWidthHint": "Spalten im Raster – „Volle Breite“ ist so breit wie das Licht-Panel"
 }

@@ -1746,5 +1746,8 @@
   "schedule.cardOff": "switched off",
   "schedule.cardRunning": "running",
   "schedule.cardLit": "lights on",
-  "schedule.cardUntil": "until"
+  "schedule.cardUntil": "until",
+  "schedule.cardWidth": "Width",
+  "schedule.cardFullWidth": "Full width",
+  "schedule.cardWidthHint": "Grid columns – “Full width” matches the light panel"
 }

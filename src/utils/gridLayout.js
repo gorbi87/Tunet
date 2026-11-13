@@ -77,6 +77,9 @@ export const getCardGridSpan = (
     }
   }
 
+  // Zeitschaltuhr über die volle Breite: Höhe nach Inhalt wie die Panels
+  if (cardId.startsWith('zeitschaltuhr_card_') && settings.colSpan === 'full') return 1;
+
   // Automations have their own logic based on type sub-setting
   if (cardId.startsWith('automation.')) {
     if (['sensor', 'entity', 'toggle'].includes(settings.type)) {

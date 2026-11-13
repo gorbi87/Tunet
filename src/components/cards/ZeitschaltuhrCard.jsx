@@ -174,7 +174,7 @@ function ZeitschaltuhrCard({ cardId, dragProps, controls, cardStyle, editMode, e
           <span className="text-sm text-[var(--text-muted)]">{t('schedule.emptyHint')}</span>
         </div>
       ) : (
-        <div className={`-mx-1.5 flex min-h-0 flex-1 flex-col gap-0.5 ${editMode ? 'pointer-events-none overflow-hidden' : 'overflow-y-auto'}`} style={{ scrollbarWidth: 'none' }}>
+        <div className={`-mx-1.5 grid min-h-0 flex-1 content-start gap-x-3 gap-y-0.5 ${editMode ? 'pointer-events-none overflow-hidden' : 'overflow-y-auto'}`} style={{ scrollbarWidth: 'none', gridTemplateColumns: 'repeat(auto-fill, minmax(min(190px, 100%), 1fr))' }}>
           {sorted.map((s) => (
             <ScheduleEntry key={s.id} schedule={s} entities={entities} ctx={ctx} now={now} vacation={vacation} t={t} />
           ))}
