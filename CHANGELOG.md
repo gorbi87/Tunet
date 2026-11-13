@@ -1,3 +1,21 @@
+## [1.31.8] — 2026-11-13
+
+### Added
+- Zeitschaltuhr direkt in Tunet, ohne HACS-Scheduler: Zeitpläne laufen im Tunet-Server (Add-on) und schalten Lichter zu Uhrzeit oder Sonnenauf-/-untergang mit Versatz
+- Ein- und Ausschalten in einem Zeitplan: „Einschalten um“ plus „Ausschalten um“, „nach Dauer“ oder „nicht ausschalten“
+- Editor mit 24-h-Tagesring zum Ziehen (rastet an der Sonne ein), Wochentagen, Helligkeit, Aufdimmen, Bedingungen (jemand zu Hause, nur bei Dunkelheit, aussetzen wenn …) und Urlaubsmodus mit leicht verschobenen Zeiten
+- Zeitpläne einfach hinschreiben, z. B. „Terrasse täglich ab Sonnenuntergang für 2 Stunden“; langer Druck auf eine Lichtkarte legt einen Zeitplan für deren Lichter an
+- Karte „Zeitschaltuhr“ unter „Karte hinzufügen“: alle Zeitpläne mit Status, Uhrzeiten, Tagesleiste und Schalter; Breite einstellbar bis volle Breite
+- Licht-Panel: Zeitpläne als Kacheln unter „Zeitsteuerung“ im Tab „Automatik“ (pro Tab schaltbar)
+- Übersicht mit Aussetzen (heute / nächstes Mal), Testen, Konflikthinweisen, Protokoll und Übernahme der HACS-Scheduler-Zeitpläne (Ein/Aus-Paare werden zu einem Zeitplan)
+- Status-Pill „Nächste Schaltung“
+
+### Changed
+- Wärmepumpen-Schema: Rücklauf am Kondensator, Spreizung neben dem Vorlauf über der Pumpe
+
+### Removed
+- Licht-Panel: Kachel für den HACS-Scheduler (ersetzt durch die Zeitschaltuhr)
+
 ## [1.31.7] — 2026-11-07
 
 ### Added

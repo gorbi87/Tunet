@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.31.8
+
+### Added
+- Built-in timer, no HACS scheduler needed: schedules run in the Tunet server (add-on) and switch lights at a time or at sunrise/sunset with an offset
+- On and off in one schedule: "switch on at" plus "switch off at", "after a duration" or "don't switch off"
+- Editor with a draggable 24 h day ring (snaps to the sun), weekdays, brightness, fade-in, conditions (someone home, only when dark, skip if …) and vacation mode with slightly shifted times
+- Type schedules in plain words, e.g. "Terrasse täglich ab Sonnenuntergang für 2 Stunden"; long-press a light card to create a schedule for its lights
+- "Timer" card under "Add card": all schedules with status, times, day strip and switch; width adjustable up to full width
+- Light panel: schedules as tiles under "Scheduling" in the "Automatik" tab (per tab)
+- Overview with skip (today / next time), test, conflict hints, log and import of HACS scheduler schedules (on/off pairs become one schedule)
+- Status pill "Next switch"
+
+### Changed
+- Heat pump diagram: return at the condenser, spread next to the flow above the pump
+
+### Removed
+- Light panel: tile for the HACS scheduler (replaced by the timer)
+
 ## 1.31.7
 
 ### Added
