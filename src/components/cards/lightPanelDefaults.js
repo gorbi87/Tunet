@@ -51,8 +51,6 @@ export const DEFAULT_LIGHT_PANEL_TABS = [
     title: 'Automatik',
     icon: 'mdi:auto-mode',
     entities: [
-      { entityId: 'switch.schedule_789cd8', name: 'Carport Ein' },
-      { entityId: 'switch.schedule_0cc89b', name: 'Carport Aus' },
       { entityId: 'automation.treppenbeleuchtung_blueprint', name: 'Treppenbeleuchtung' },
     ],
   },
