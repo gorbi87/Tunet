@@ -1742,5 +1742,9 @@
   "schedule.hours": "Stunden",
   "schedule.hoursShort": "h",
   "schedule.minutes": "Minuten",
-  "schedule.after": "nach"
+  "schedule.after": "nach",
+  "schedule.cardOff": "ausgeschaltet",
+  "schedule.cardRunning": "läuft",
+  "schedule.cardLit": "Lichter an",
+  "schedule.cardUntil": "bis"
 }
