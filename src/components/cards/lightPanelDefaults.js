@@ -57,3 +57,6 @@ export const DEFAULT_LIGHT_PANEL_TABS = [
     ],
   },
 ];
+
+/** Zeitschaltuhr im Tab zeigen? Ohne Einstellung nur im Tab „Automatik“. */
+export const tabShowsSchedules = (tab) => (typeof tab?.showSchedules === 'boolean' ? tab.showSchedules : tab?.id === 'automatik');

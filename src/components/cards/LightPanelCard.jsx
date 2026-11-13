@@ -2,7 +2,8 @@ import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { Lightbulb, ChevronRight, Zap, ToggleLeft, Workflow, Lock, Unlock, Edit2, Check, X } from '../../icons';
 import { getIconComponent } from '../../icons';
 import M3Slider from '../ui/M3Slider';
-import { DEFAULT_LIGHT_PANEL_TABS as DEFAULT_TABS } from './lightPanelDefaults';
+import { DEFAULT_LIGHT_PANEL_TABS as DEFAULT_TABS, tabShowsSchedules } from './lightPanelDefaults';
+import PanelSchedules from '../schedule/PanelSchedules';
 
 const DEBOUNCE_MS = 200;
 
@@ -457,6 +458,7 @@ const LightPanelCard = ({
   settings,
   onOpenLightModal,
   isMobile,
+  t,
 }) => {
   const tabs = settings?.panelTabs || DEFAULT_TABS;
   const [activeTabId, setActiveTabId] = useState(null);
@@ -472,7 +474,9 @@ const LightPanelCard = ({
   });
   const schedulerEntities = entities_.filter(({ entityId }) => !!entities[entityId]?.attributes?.timeslots);
   const regularEntities = entities_.filter(({ entityId }) => !entities[entityId]?.attributes?.timeslots);
-  const hasBothGroups = schedulerEntities.length > 0 && regularEntities.length > 0;
+  const showSchedules = tabShowsSchedules(activeTab) && typeof t === 'function';
+  const hasSchedulerGroup = showSchedules || schedulerEntities.length > 0;
+  const hasBothGroups = hasSchedulerGroup && regularEntities.length > 0;
   const remainder = regularEntities.length % cols;
   const spacers = remainder === 0 ? 0 : cols - remainder;
 
@@ -553,7 +557,7 @@ const LightPanelCard = ({
       {/* Tile grid */}
       <div className={`grid gap-3 ${cols === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
         {/* Zeitsteuerung section */}
-        {schedulerEntities.length > 0 && (
+        {hasSchedulerGroup && (
           <>
             {hasBothGroups && (
               <div className="col-span-full flex items-center gap-2">
@@ -561,6 +565,7 @@ const LightPanelCard = ({
                 <div className="h-px flex-1 bg-[var(--glass-border)]" />
               </div>
             )}
+            {showSchedules && <PanelSchedules entities={entities} editMode={editMode} t={t} />}
             {schedulerEntities.map(({ entityId, name }) => (
               <SchedulerTile
                 key={entityId}

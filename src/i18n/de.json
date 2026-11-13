@@ -1749,5 +1749,7 @@
   "schedule.cardUntil": "bis",
   "schedule.cardWidth": "Breite",
   "schedule.cardFullWidth": "Volle Breite",
-  "schedule.cardWidthHint": "Spalten im Raster – „Volle Breite“ ist so breit wie das Licht-Panel"
+  "schedule.cardWidthHint": "Spalten im Raster – „Volle Breite“ ist so breit wie das Licht-Panel",
+  "schedule.panelToggle": "Zeitschaltuhr in diesem Tab",
+  "schedule.panelToggleHint": "Zeigt die Zeitpläne unter „Zeitsteuerung“"
 }
